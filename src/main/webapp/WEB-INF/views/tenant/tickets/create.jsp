@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle"  value="Gửi yêu cầu - Cổng cư dân"/>
@@ -19,7 +19,7 @@
             </div>
 
             <div class="data-surface" style="max-width:640px">
-                <form method="post" action="${ctx}/tenant/tickets/create" class="p-4">
+                <form method="post" action="${ctx}/tenant/tickets/create" class="p-4" enctype="multipart/form-data">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
                     <%-- Thông tin phòng auto-fill --%>
@@ -62,6 +62,12 @@
                         <textarea class="form-control" name="content" rows="5"
                                   required placeholder="Mô tả chi tiết tình trạng, vị trí, thời gian xảy ra..."
                                   maxlength="2000"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Hình ảnh đính kèm</label>
+                        <input type="file" class="form-control" name="attachment" accept="image/*">
+                        <div class="form-text">Định dạng hỗ trợ: JPG, PNG, GIF (Tối đa 10MB)</div>
                     </div>
 
                     <div class="d-flex gap-2 mt-3">

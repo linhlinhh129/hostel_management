@@ -1,207 +1,176 @@
-# Notification Management
+# [CONTEXT.md](http://CONTEXT.md) - Notification Management
 
-# Người viết: Business Analyst | Ngày: 2026-06-10
-
-## 1. PROBLEM STATEMENT
-
-Trong quá trình quản lý nhà trọ/chung cư, Ban quản lý và Chủ nhà thường xuyên gửi các thông báo liên quan đến:
-
-- Thu tiền phòng, tiền dịch vụ
-
-- Bảo trì cơ sở vật chất
-
-- Thay đổi nội quy
-
-- Các sự kiện hoặc thông báo khẩn cấp
-
-Hiện tại người thuê có thể bỏ lỡ các thông báo quan trọng do thông tin được truyền đạt qua nhiều kênh khác nhau (tin nhắn, điện thoại, giấy thông báo,...).
-
-Hệ thống cần cung cấp một nơi tập trung để người thuê có thể xem lại lịch sử thông báo và theo dõi các thông tin mới nhất từ Ban quản lý hoặc Chủ nhà.
+**Người viết:** Business Analyst\
+**Ngày:** 2026-06-20
 
 ---
 
-## 2. DOMAIN KNOWLEDGE
+# 1. PROBLEM STATEMENT
 
-### Notification (Thông báo)
+Hiện tại người thuê không có một nơi tập trung để xem lại các thông báo từ Chủ nhà hoặc Ban quản lý. Các thông tin như lịch bảo trì, thông báo thu tiền phòng, thay đổi nội quy hoặc các thông báo khẩn cấp có thể bị bỏ lỡ nếu chỉ được gửi qua các kênh bên ngoài (Zalo, Facebook, SMS,...).
 
-Là thông tin được gửi từ hệ thống, Ban quản lý hoặc Chủ nhà đến người thuê.
+Việc thiếu một chức năng quản lý thông báo trong hệ thống khiến người thuê khó tra cứu lại các thông báo cũ, đồng thời Ban quản lý cũng không có một kênh chính thức để truyền tải thông tin đến cư dân.
 
-### Public Notification
+---
 
-Thông báo được gửi cho toàn bộ người thuê trong hệ thống.
+# 2. DOMAIN KNOWLEDGE
+
+### Notification
+
+Là thông báo được tạo bởi Chủ nhà hoặc Ban quản lý nhằm truyền tải thông tin đến người thuê.
 
 Ví dụ:
 
-- Thông báo bảo trì điện nước
+- Thông báo bảo trì
+
+- Thông báo thu tiền phòng
 
 - Thông báo thay đổi nội quy
 
-### Targeted Notification
+- Thông báo sự kiện
 
-Thông báo chỉ gửi cho một hoặc một nhóm người thuê cụ thể.
+- Thông báo khẩn
 
-Ví dụ:
+---
 
-- Nhắc thanh toán tiền phòng
+### Tenant
 
-- Thông báo liên quan đến phòng thuê cụ thể
+Người đang thuê phòng trong hệ thống và đã có tài khoản đăng nhập hợp lệ.
 
-### Notification List
+---
 
-Danh sách các thông báo mà người thuê được phép xem.
+### Public Notification
+
+Thông báo được gửi đến tất cả người thuê trong hệ thống hoặc toàn bộ người thuê thuộc một khu nhà.
+
+---
+
+### Private Notification
+
+Thông báo chỉ được gửi cho một hoặc nhiều người thuê cụ thể.
+
+---
 
 ### Notification Detail
 
-Nội dung đầy đủ của một thông báo.
+Là nội dung đầy đủ của một thông báo, bao gồm tiêu đề, nội dung và thời gian tạo.
 
-### Created At
-
-Thời điểm thông báo được tạo trong hệ thống.
+---
 
 ### Business Rules
 
-- Người thuê chỉ được xem các thông báo được gửi cho mình hoặc thông báo công khai.
-
-- Thông báo mới nhất phải hiển thị đầu danh sách.
-
-- Thông báo đã xem vẫn được lưu trong lịch sử.
+- Người thuê chỉ được xem các thông báo thuộc quyền truy cập của mình.
 
 - Người thuê không được chỉnh sửa hoặc xóa thông báo.
 
-- Chỉ người có quyền quản trị mới được tạo hoặc quản lý thông báo.
+- Thông báo được hiển thị theo thời gian tạo mới nhất.
+
+- Một thông báo có thể được gửi cho nhiều người thuê.
+
+- Thông báo đã tạo chỉ dùng để tra cứu, không chỉnh sửa trong phạm vi tính năng này.
 
 ---
 
-## 3. STAKEHOLDERS
+# 3. STAKEHOLDERS
 
 ### Primary Stakeholders
 
-#### Tenant (Người thuê)
-
-- Xem danh sách thông báo
-
-- Xem chi tiết thông báo
-
-- Theo dõi các thông tin mới nhất
+- Người thuê (Tenant): Xem danh sách và nội dung thông báo.
 
 ### Secondary Stakeholders
 
-#### Board Management (Ban quản lý)
+- Chủ nhà (Landlord): Tạo và gửi thông báo cho người thuê.
 
-- Gửi thông báo đến cư dân/người thuê
+- Ban quản lý: Quản lý việc gửi thông báo trong hệ thống.
 
-- Đảm bảo thông tin được truyền đạt đầy đủ
+### Technical Stakeholders
 
-#### Landlord (Chủ nhà)
+- Backend Developer
 
-- Gửi các thông báo liên quan đến phòng thuê
+- Frontend Developer
 
-- Theo dõi việc truyền tải thông tin đến người thuê
+- QA/Tester
 
-### System Administrator
+- Business Analyst
 
-- Quản lý quyền truy cập
-
-- Quản lý dữ liệu thông báo
-
-- Giám sát hệ thống
+- Product Owner
 
 ---
 
-## 4. CONSTRAINTS
+# 4. CONSTRAINTS (Ràng buộc)
 
-### Business Constraints
+## Business Constraints
 
 - Chỉ người dùng đã đăng nhập mới được truy cập chức năng.
 
-- Người dùng phải có vai trò Tenant.
+- Người thuê chỉ được xem các thông báo được gửi cho mình hoặc thông báo công khai.
 
-- Người thuê chỉ được xem các thông báo thuộc phạm vi được cấp quyền.
-
-### Security Constraints
-
-- Không được truy cập thông báo của người thuê khác.
-
-- API phải xác thực người dùng trước khi trả dữ liệu.
-
-- Dữ liệu thông báo phải được bảo vệ theo cơ chế phân quyền của hệ thống.
-
-### Technical Constraints
-
-- Hệ thống sử dụng API REST.
-
-- Thời gian tải danh sách thông báo cần đáp ứng trải nghiệm người dùng.
-
-- Thông báo phải được sắp xếp theo thời gian tạo giảm dần.
-
-### UI Constraints
-
-- Danh sách thông báo phải hỗ trợ trạng thái rỗng.
-
-- Phải có cơ chế hiển thị lỗi tải dữ liệu.
-
-- Người dùng phải có khả năng quay lại danh sách từ màn hình chi tiết.
+- Không cho phép chỉnh sửa hoặc xóa thông báo từ phía người thuê.
 
 ---
 
-## 5. ASSUMPTIONS
+## Technical Constraints
 
-### A01
+- Sử dụng REST API hiện có.
 
-Mỗi thông báo có một mã định danh duy nhất (notificationId).
+- Không thay đổi schema cơ sở dữ liệu trong phạm vi feature này.
 
-### A02
-
-Thông báo không bị xóa khỏi hệ thống sau khi người thuê đã xem.
-
-### A03
-
-Thời gian hiển thị sử dụng cùng múi giờ với hệ thống.
-
-### A04
-
-Một thông báo có thể được gửi cho nhiều người thuê cùng lúc.
-
-### A05
-
-Tất cả thông báo đều được lưu trữ trong cơ sở dữ liệu trung tâm.
-
-### A06
-
-Người thuê chỉ có quyền đọc thông báo, không có quyền tạo, sửa hoặc xóa.
+- API phải hỗ trợ phân trang để xử lý số lượng thông báo lớn.
 
 ---
 
-## 6. OPEN QUESTIONS
+## Performance Constraints
 
-### Q01
+- Danh sách thông báo phải tải nhanh (&lt;300ms ở P95).
 
-Thông báo có cần đánh dấu trạng thái "Đã đọc / Chưa đọc" hay không?
+- Hệ thống phải hỗ trợ số lượng lớn thông báo mà không ảnh hưởng đến hiệu năng.
 
-### Q02
+---
 
-Hệ thống có cần gửi thông báo đẩy (Push Notification) khi có thông báo mới không?
+## Security Constraints
 
-### Q03
+- Bắt buộc xác thực bằng Access Token.
 
-Thông báo có thời gian hết hạn hay không?
+- Kiểm tra quyền truy cập trước khi trả về dữ liệu.
 
-### Q04
+- Không cho phép truy cập thông báo của người thuê khác thông qua việc thay đổi `notificationId`.
 
-Người thuê có được phép tìm kiếm hoặc lọc thông báo theo thời gian, loại thông báo không?
+---
 
-### Q05
+# 5. ASSUMPTIONS (Giả định)
 
-Có cần hỗ trợ đính kèm tập tin trong thông báo không?
+- Mỗi thông báo đều có tiêu đề, nội dung và thời gian tạo.
 
-### Q06
+- Mỗi thông báo có một `notificationId` duy nhất.
 
-Thông báo có cần phân loại theo mức độ ưu tiên (Khẩn cấp, Quan trọng, Thông thường) không?
+- API trả về đúng các thông báo mà Tenant được phép xem.
 
-### Q07
+- Danh sách thông báo đã được sắp xếp theo thời gian tạo giảm dần từ phía Backend.
 
-Thông báo đã bị quản trị viên thu hồi có còn hiển thị cho người thuê hay không?
+- Người thuê luôn có kết nối Internet khi sử dụng chức năng.
 
-### Q08
+- Thông báo không bị thay đổi hoặc xóa trong quá trình người dùng đang xem.
 
-Có giới hạn số lượng thông báo được lưu hoặc hiển thị trong danh sách hay không?
+---
+
+# 6. OPEN QUESTIONS (Cần xác nhận)
+
+ 1. Có cần hỗ trợ trạng thái **đã đọc/chưa đọc** (Read/Unread) hay không?
+
+ 2. Khi mở chi tiết thông báo có cần tự động đánh dấu là **đã đọc** không?
+
+ 3. Có cần hiển thị số lượng thông báo chưa đọc trên Header hoặc Dashboard không?
+
+ 4. Có cần chức năng tìm kiếm hoặc lọc thông báo theo loại hoặc khoảng thời gian không?
+
+ 5. Thông báo có được phép đính kèm file (PDF, Word, hình ảnh...) không?
+
+ 6. Khi thông báo bị thu hồi hoặc xóa sau khi đã gửi, người thuê sẽ nhìn thấy thông báo gì?
+
+ 7. Có cần lưu lịch sử người thuê đã xem thông báo vào thời điểm nào không?
+
+ 8. Có giới hạn thời gian lưu trữ thông báo (ví dụ 6 tháng hoặc 1 năm) hay hiển thị toàn bộ lịch sử?
+
+ 9. Trong tương lai có cần hỗ trợ Push Notification hoặc thông báo theo thời gian thực (WebSocket/Firebase) hay không?
+
+10. Có cần phân loại thông báo theo mức độ ưu tiên (Khẩn cấp, Quan trọng, Thông thường) để hỗ trợ hiển thị trên giao diện không?

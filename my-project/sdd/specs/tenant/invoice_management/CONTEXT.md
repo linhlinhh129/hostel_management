@@ -1,35 +1,25 @@
-# [CONTEXT.md](http://CONTEXT.md) - Invoice Management
+# [CONTEXT.md](http://CONTEXT.md) - Invoice Management & VNPAY Payment
 
 **Người viết:** Business Analyst\
-**Ngày:** 2026-06-10
+**Ngày:** 2026-06-21
 
 ---
 
-## 1. PROBLEM STATEMENT
+# 1. PROBLEM STATEMENT
 
-Người thuê hiện không có một nơi tập trung để theo dõi toàn bộ các khoản phí phát sinh trong quá trình thuê phòng.
+Trong quá trình thuê trọ, người thuê cần theo dõi các khoản phí phát sinh hàng tháng như tiền phòng, tiền điện, tiền nước, phí Internet, phí dịch vụ và các khoản phụ thu khác. Nếu không có một hệ thống quản lý hóa đơn tập trung, người thuê khó biết được số tiền cần thanh toán, hạn thanh toán và trạng thái của từng hóa đơn.
 
-Các vấn đề chính bao gồm:
+Bên cạnh đó, việc thanh toán thủ công (tiền mặt hoặc chuyển khoản ngoài hệ thống) khiến cả người thuê và Ban quản lý gặp khó khăn trong việc xác nhận giao dịch, đối soát thanh toán và lưu trữ lịch sử. Sai sót trong quá trình xác nhận có thể dẫn đến tranh chấp về việc đã thanh toán hay chưa.
 
-- Không biết tổng số tiền cần thanh toán của từng kỳ.
-
-- Khó theo dõi chi tiết cách tính hóa đơn điện, nước và các khoản phí dịch vụ.
-
-- Không biết hóa đơn nào đã thanh toán, chưa thanh toán hoặc đã quá hạn.
-
-- Không có khả năng xem lại lịch sử các giao dịch thanh toán trước đó.
-
-- Dễ xảy ra tranh chấp về chi phí nếu không có thông tin minh bạch và dễ tra cứu.
-
-Hệ thống cần cung cấp chức năng quản lý hóa đơn giúp người thuê dễ dàng theo dõi, kiểm tra và đối chiếu các khoản phí cũng như lịch sử thanh toán của mình.
+Do đó, hệ thống cần cung cấp chức năng xem hóa đơn, thanh toán trực tuyến thông qua VNPAY và tự động cập nhật trạng thái hóa đơn cũng như lưu vết giao dịch sau khi thanh toán thành công.
 
 ---
 
-## 2. DOMAIN KNOWLEDGE
+# 2. DOMAIN KNOWLEDGE
 
-### Invoice (Hóa đơn)
+### Invoice
 
-Là bản ghi tổng hợp các khoản phí phát sinh của một kỳ thuê phòng.
+Là hóa đơn thanh toán của một phòng trong một kỳ tính tiền, bao gồm toàn bộ các khoản phí mà người thuê phải thanh toán.
 
 Một hóa đơn có thể bao gồm:
 
@@ -39,521 +29,236 @@ Một hóa đơn có thể bao gồm:
 
 - Tiền nước
 
-- Phí dịch vụ
-
-- Các khoản phụ phí khác
-
-### Billing Period (Kỳ hóa đơn)
-
-Khoảng thời gian tính phí, thường theo tháng.
-
-Ví dụ:
-
-- 05/2026
-
-- 06/2026
-
-### Payment Status (Trạng thái thanh toán)
-
-Các trạng thái hợp lệ:
-
-- UNPAID (Chưa thanh toán)
-
-- PAID (Đã thanh toán)
-
-- OVERDUE (Quá hạn)
-
-### Electricity Consumption
-
-Tiền điện được tính dựa trên:
-
-- Chỉ số điện cũ
-
-- Chỉ số điện mới
-
-- Đơn giá điện
-
-### Water Consumption
-
-Tiền nước được tính dựa trên:
-
-- Chỉ số nước cũ
-
-- Chỉ số nước mới
-
-- Đơn giá nước
-
-### Payment Transaction
-
-Là giao dịch thanh toán của người thuê cho một hóa đơn.
-
-Thông tin cần lưu:
-
-- Mã giao dịch
-
-- Hóa đơn liên quan
-
-- Số tiền thanh toán
-
-- Thời gian thanh toán
-
-- Phương thức thanh toán
-
-- Trạng thái giao dịch
-
-### Ownership Rule
-
-Người thuê chỉ được phép xem:
-
-- Hóa đơn của chính mình
-
-- Lịch sử thanh toán của chính mình
-
-Không được phép truy cập dữ liệu của người thuê khác.
-
----
-
-## 3. STAKEHOLDERS
-
-### Primary Stakeholders
-
-#### Tenant (Người thuê)
-
-- Xem danh sách hóa đơn
-
-- Xem chi tiết hóa đơn
-
-- Theo dõi trạng thái thanh toán
-
-- Kiểm tra lịch sử thanh toán
-
-### Secondary Stakeholders
-
-#### Landlord (Chủ nhà)
-
-- Tạo và quản lý hóa đơn
-
-- Theo dõi tình trạng thanh toán của người thuê
-
-#### Property Manager / Board (Ban quản lý)
-
-- Kiểm tra công nợ
-
-- Hỗ trợ xử lý tranh chấp hóa đơn
-
-### Technical Stakeholders
-
-#### Backend Developer
-
-- Xây dựng API hóa đơn
-
-- Kiểm soát phân quyền truy cập
-
-#### Frontend Developer
-
-- Hiển thị danh sách và chi tiết hóa đơn
-
-- Hiển thị lịch sử thanh toán
-
-#### QA Engineer
-
-- Kiểm thử tính đúng đắn của dữ liệu hóa đơn
-
-- Kiểm thử bảo mật truy cập dữ liệu
-
----
-
-## 4. CONSTRAINTS (Ràng buộc không thể thay đổi)
-
-### Business Constraints
-
-- Người thuê chỉ được xem dữ liệu thuộc tài khoản của mình.
-
-- Hệ thống phải đảm bảo tính minh bạch của các khoản phí.
-
-- Trạng thái hóa đơn phải phản ánh chính xác tình trạng thanh toán thực tế.
-
-### Security Constraints
-
-- Bắt buộc xác thực người dùng trước khi truy cập.
-
-- Bắt buộc phân quyền Tenant.
-
-- Truy cập trái phép phải trả về HTTP 403 Forbidden.
-
-### Data Constraints
-
-- invoiceId phải tồn tại.
-
-- invoiceId phải thuộc người thuê hiện tại.
-
-- paymentId phải thuộc người thuê hiện tại.
-
-- Các giao dịch thanh toán phải được lưu vết đầy đủ.
-
-### Technical Constraints
-
-- Sử dụng REST API.
-
-- Dashboard và các module khác sử dụng cùng cơ chế Access Token.
-
-- Không thay đổi cấu trúc cơ sở dữ liệu hiện tại (DB Changes = None).
-
----
-
-## 5. ASSUMPTIONS (Giả định cần xác nhận)
-
-### A01
-
-Mỗi hóa đơn chỉ thuộc về một người thuê.
-
-### A02
-
-Mỗi kỳ hóa đơn chỉ có một hóa đơn cho một phòng thuê.
-
-### A03
-
-Tiền điện và tiền nước đã được tính toán trước khi hóa đơn được phát hành.
-
-### A04
-
-Một giao dịch thanh toán chỉ liên kết với một hóa đơn.
-
-### A05
-
-Người thuê không được chỉnh sửa hoặc hủy hóa đơn.
-
-### A06
-
-Lịch sử thanh toán chỉ hiển thị các giao dịch thành công.
-
-### A07
-
-Tất cả hóa đơn đều được tạo theo chu kỳ hàng tháng.
-
-### A08
-
-Các khoản phụ phí đã được tính vào serviceFee hoặc một nhóm phí khác trong hệ thống.
-
----
-
-## 6. OPEN QUESTIONS (Câu hỏi cần làm rõ)
-
-### OQ01
-
-Một hóa đơn có cho phép thanh toán nhiều lần (partial payment) hay không?
-
-### OQ02
-
-Khi thanh toán một phần, trạng thái hóa đơn sẽ là gì?
-
-### OQ03
-
-Có cần lưu lịch sử thay đổi hóa đơn sau khi phát hành hay không?
-
-### OQ04
-
-Người thuê có được tải hóa đơn dưới dạng PDF không?
-
-### OQ05
-
-Hệ thống có hỗ trợ thanh toán trực tuyến trực tiếp từ màn hình hóa đơn không?
-
-### OQ06
-
-Có cần hiển thị chi tiết đơn giá điện và đơn giá nước hay không?
-
-### OQ07
-
-Khi hóa đơn quá hạn, hệ thống có áp dụng phí phạt hay không?
-
-### OQ08
-
-Có cần hỗ trợ tìm kiếm hoặc lọc hóa đơn theo kỳ hóa đơn, trạng thái thanh toán hoặc khoảng thời gian không?
-
-### OQ09
-
-Có cần hỗ trợ xuất lịch sử thanh toán ra Excel hoặc PDF không?
-
-### OQ10
-
-Nếu một giao dịch thanh toán thất bại hoặc đang xử lý, có cần hiển thị trong lịch sử thanh toán của người thuê không?[CONTEXT.md](http://CONTEXT.md) - Invoice Management
-
-**Người viết:** Business Analyst\
-**Ngày:** 2026-06-10
-
----
-
-## 1. PROBLEM STATEMENT
-
-Người thuê hiện không có một nơi tập trung để theo dõi toàn bộ các khoản phí phát sinh trong quá trình thuê phòng.
-
-Các vấn đề chính bao gồm:
-
-- Không biết tổng số tiền cần thanh toán của từng kỳ.
-
-- Khó theo dõi chi tiết cách tính hóa đơn điện, nước và các khoản phí dịch vụ.
-
-- Không biết hóa đơn nào đã thanh toán, chưa thanh toán hoặc đã quá hạn.
-
-- Không có khả năng xem lại lịch sử các giao dịch thanh toán trước đó.
-
-- Dễ xảy ra tranh chấp về chi phí nếu không có thông tin minh bạch và dễ tra cứu.
-
-Hệ thống cần cung cấp chức năng quản lý hóa đơn giúp người thuê dễ dàng theo dõi, kiểm tra và đối chiếu các khoản phí cũng như lịch sử thanh toán của mình.
-
----
-
-## 2. DOMAIN KNOWLEDGE
-
-### Invoice (Hóa đơn)
-
-Là bản ghi tổng hợp các khoản phí phát sinh của một kỳ thuê phòng.
-
-Một hóa đơn có thể bao gồm:
-
-- Tiền phòng
-
-- Tiền điện
-
-- Tiền nước
+- Phí Internet
 
 - Phí dịch vụ
 
+- Thuế
+
 - Các khoản phụ phí khác
 
-### Billing Period (Kỳ hóa đơn)
+---
 
-Khoảng thời gian tính phí, thường theo tháng.
+### Billing Period
 
-Ví dụ:
+Khoảng thời gian áp dụng của hóa đơn (ví dụ: tháng 06/2026).
 
-- 05/2026
+Một phòng chỉ có một hóa đơn cho mỗi kỳ thanh toán.
 
-- 06/2026
+---
 
-### Payment Status (Trạng thái thanh toán)
+### Payment
 
-Các trạng thái hợp lệ:
+Là giao dịch thanh toán cho một hóa đơn.
 
-- UNPAID (Chưa thanh toán)
-
-- PAID (Đã thanh toán)
-
-- OVERDUE (Quá hạn)
-
-### Electricity Consumption
-
-Tiền điện được tính dựa trên:
-
-- Chỉ số điện cũ
-
-- Chỉ số điện mới
-
-- Đơn giá điện
-
-### Water Consumption
-
-Tiền nước được tính dựa trên:
-
-- Chỉ số nước cũ
-
-- Chỉ số nước mới
-
-- Đơn giá nước
-
-### Payment Transaction
-
-Là giao dịch thanh toán của người thuê cho một hóa đơn.
-
-Thông tin cần lưu:
+Mỗi giao dịch lưu các thông tin phục vụ đối soát như:
 
 - Mã giao dịch
 
-- Hóa đơn liên quan
+- Phương thức thanh toán
 
-- Số tiền thanh toán
+- Số tiền
 
 - Thời gian thanh toán
 
-- Phương thức thanh toán
-
 - Trạng thái giao dịch
-
-### Ownership Rule
-
-Người thuê chỉ được phép xem:
-
-- Hóa đơn của chính mình
-
-- Lịch sử thanh toán của chính mình
-
-Không được phép truy cập dữ liệu của người thuê khác.
 
 ---
 
-## 3. STAKEHOLDERS
+### VNPAY
+
+Là cổng thanh toán trực tuyến của bên thứ ba.
+
+Hệ thống chỉ tạo yêu cầu thanh toán và nhận kết quả giao dịch từ VNPAY thông qua Return URL và IPN (Instant Payment Notification).
+
+---
+
+### Payment History
+
+Là danh sách các giao dịch thanh toán đã hoàn thành của người thuê.
+
+---
+
+### Invoice Status
+
+- **UNPAID**: Chưa thanh toán.
+
+- **PROCESSING**: Đang xử lý thanh toán qua VNPAY.
+
+- **PAID**: Đã thanh toán thành công.
+
+- **FAILED**: Thanh toán thất bại.
+
+- **OVERDUE**: Quá hạn thanh toán (nếu hệ thống hỗ trợ).
+
+---
+
+### Business Rules
+
+- Người thuê chỉ được xem hóa đơn thuộc phòng mình đang thuê.
+
+- Một hóa đơn chỉ được thanh toán một lần.
+
+- Hóa đơn đã thanh toán không được phép thanh toán lại.
+
+- Chỉ khi VNPAY xác nhận giao dịch thành công thì hóa đơn mới được cập nhật sang trạng thái **PAID**.
+
+- Thông tin giao dịch phải được lưu lại để phục vụ đối soát và tra cứu.
+
+- Mỗi giao dịch thanh toán phải liên kết với đúng một hóa đơn.
+
+- Lịch sử thanh toán chỉ hiển thị các giao dịch đã được ghi nhận thành công.
+
+---
+
+# 3. STAKEHOLDERS
 
 ### Primary Stakeholders
 
-#### Tenant (Người thuê)
+- **Tenant (Người thuê):**
 
-- Xem danh sách hóa đơn
+  - Xem danh sách hóa đơn.
 
-- Xem chi tiết hóa đơn
+  - Xem chi tiết hóa đơn.
 
-- Theo dõi trạng thái thanh toán
+  - Thanh toán hóa đơn.
 
-- Kiểm tra lịch sử thanh toán
+  - Xem lịch sử thanh toán.
+
+---
 
 ### Secondary Stakeholders
 
-#### Landlord (Chủ nhà)
+- **Landlord (Chủ nhà):**
 
-- Tạo và quản lý hóa đơn
+  - Theo dõi trạng thái thanh toán của hóa đơn.
 
-- Theo dõi tình trạng thanh toán của người thuê
+- **Ban quản lý:**
 
-#### Property Manager / Board (Ban quản lý)
+  - Quản lý hóa đơn.
 
-- Kiểm tra công nợ
+  - Đối soát các giao dịch thanh toán.
 
-- Hỗ trợ xử lý tranh chấp hóa đơn
+---
+
+### External Stakeholders
+
+- **VNPAY**
+
+  - Xử lý giao dịch thanh toán.
+
+  - Gửi kết quả giao dịch về hệ thống.
+
+---
 
 ### Technical Stakeholders
 
-#### Backend Developer
+- Product Owner
 
-- Xây dựng API hóa đơn
+- Business Analyst
 
-- Kiểm soát phân quyền truy cập
+- Backend Developer
 
-#### Frontend Developer
+- Frontend Developer
 
-- Hiển thị danh sách và chi tiết hóa đơn
+- QA/Tester
 
-- Hiển thị lịch sử thanh toán
-
-#### QA Engineer
-
-- Kiểm thử tính đúng đắn của dữ liệu hóa đơn
-
-- Kiểm thử bảo mật truy cập dữ liệu
+- DevOps
 
 ---
 
-## 4. CONSTRAINTS (Ràng buộc không thể thay đổi)
+# 4. CONSTRAINTS (Ràng buộc)
 
-### Business Constraints
+## Business Constraints
 
-- Người thuê chỉ được xem dữ liệu thuộc tài khoản của mình.
+- Người dùng phải đăng nhập với vai trò Tenant.
 
-- Hệ thống phải đảm bảo tính minh bạch của các khoản phí.
+- Người thuê chỉ được xem hóa đơn và lịch sử thanh toán của chính mình.
 
-- Trạng thái hóa đơn phải phản ánh chính xác tình trạng thanh toán thực tế.
+- Không được phép chỉnh sửa nội dung hóa đơn sau khi đã phát hành.
 
-### Security Constraints
+- Hóa đơn đã thanh toán không được thanh toán lại.
+
+---
+
+## Technical Constraints
+
+- Tích hợp với cổng thanh toán VNPAY.
+
+- Giao tiếp thông qua REST API.
+
+- Kết quả thanh toán được xác nhận thông qua Return URL và IPN.
+
+- Việc cập nhật bảng `invoices` và lưu dữ liệu vào bảng `payments` phải thực hiện trong cùng một Database Transaction.
+
+- Áp dụng cơ chế Idempotency để tránh xử lý trùng lặp khi VNPAY gửi lại IPN.
+
+---
+
+## Security Constraints
 
 - Bắt buộc xác thực người dùng trước khi truy cập.
 
-- Bắt buộc phân quyền Tenant.
+- Kiểm tra quyền sở hữu hóa đơn trước khi trả dữ liệu.
 
-- Truy cập trái phép phải trả về HTTP 403 Forbidden.
+- Xác thực chữ ký `vnp_SecureHash` trước khi xử lý kết quả thanh toán.
 
-### Data Constraints
+- Không lưu thông tin tài khoản hoặc thẻ ngân hàng của người dùng trong hệ thống.
 
-- invoiceId phải tồn tại.
-
-- invoiceId phải thuộc người thuê hiện tại.
-
-- paymentId phải thuộc người thuê hiện tại.
-
-- Các giao dịch thanh toán phải được lưu vết đầy đủ.
-
-### Technical Constraints
-
-- Sử dụng REST API.
-
-- Dashboard và các module khác sử dụng cùng cơ chế Access Token.
-
-- Không thay đổi cấu trúc cơ sở dữ liệu hiện tại (DB Changes = None).
+- Khóa bí mật (`vnp_HashSecret`) phải được lưu trong biến môi trường, không được hardcode.
 
 ---
 
-## 5. ASSUMPTIONS (Giả định cần xác nhận)
+## Performance Constraints
 
-### A01
+- Danh sách hóa đơn phản hồi dưới **300ms (P95)**.
 
-Mỗi hóa đơn chỉ thuộc về một người thuê.
+- Chi tiết hóa đơn phản hồi dưới **300ms (P95)**.
 
-### A02
+- Tạo URL thanh toán phản hồi dưới **500ms**.
 
-Mỗi kỳ hóa đơn chỉ có một hóa đơn cho một phòng thuê.
-
-### A03
-
-Tiền điện và tiền nước đã được tính toán trước khi hóa đơn được phát hành.
-
-### A04
-
-Một giao dịch thanh toán chỉ liên kết với một hóa đơn.
-
-### A05
-
-Người thuê không được chỉnh sửa hoặc hủy hóa đơn.
-
-### A06
-
-Lịch sử thanh toán chỉ hiển thị các giao dịch thành công.
-
-### A07
-
-Tất cả hóa đơn đều được tạo theo chu kỳ hàng tháng.
-
-### A08
-
-Các khoản phụ phí đã được tính vào serviceFee hoặc một nhóm phí khác trong hệ thống.
+- Hệ thống phải đảm bảo không phát sinh thanh toán trùng cho cùng một hóa đơn.
 
 ---
 
-## 6. OPEN QUESTIONS (Câu hỏi cần làm rõ)
+# 5. ASSUMPTIONS (Giả định cần xác nhận)
 
-### OQ01
+- Mỗi hóa đơn có một mã định danh (`invoiceId`) duy nhất.
 
-Một hóa đơn có cho phép thanh toán nhiều lần (partial payment) hay không?
+- Mỗi hóa đơn chỉ được thanh toán bằng một giao dịch thành công.
 
-### OQ02
+- Mỗi giao dịch VNPAY có `vnp_TransactionNo` là duy nhất.
 
-Khi thanh toán một phần, trạng thái hóa đơn sẽ là gì?
+- API của VNPAY luôn trả đầy đủ các trường cần thiết để đối soát.
 
-### OQ03
+- Người dùng có kết nối Internet ổn định trong quá trình thanh toán.
 
-Có cần lưu lịch sử thay đổi hóa đơn sau khi phát hành hay không?
+- Trạng thái hóa đơn chỉ được thay đổi bởi hệ thống sau khi nhận được kết quả xác thực từ VNPAY.
 
-### OQ04
+- Thông tin hóa đơn không thay đổi trong thời gian người dùng thực hiện thanh toán.
 
-Người thuê có được tải hóa đơn dưới dạng PDF không?
+- Thời gian trên máy chủ và VNPAY được đồng bộ để tránh lỗi xác thực giao dịch.
 
-### OQ05
+---
 
-Hệ thống có hỗ trợ thanh toán trực tuyến trực tiếp từ màn hình hóa đơn không?
+# 6. OPEN QUESTIONS (Câu hỏi cần làm rõ)
 
-### OQ06
+ 1. Hệ thống có cho phép thanh toán một phần hóa đơn (Partial Payment) hay chỉ thanh toán toàn bộ?
 
-Có cần hiển thị chi tiết đơn giá điện và đơn giá nước hay không?
+ 2. Khi hóa đơn đã quá hạn (OVERDUE), người thuê có còn được thanh toán trực tuyến qua VNPAY không?
 
-### OQ07
+ 3. Nếu người dùng đóng trình duyệt sau khi thanh toán nhưng trước khi quay lại hệ thống, trạng thái hóa đơn sẽ được cập nhật dựa trên Return URL hay chỉ dựa vào IPN?
 
-Khi hóa đơn quá hạn, hệ thống có áp dụng phí phạt hay không?
+ 4. Hệ thống có cần gửi Email hoặc thông báo sau khi thanh toán thành công không?
 
-### OQ08
+ 5. Có cần sinh và tải biên lai (Receipt) sau khi thanh toán thành công không?
 
-Có cần hỗ trợ tìm kiếm hoặc lọc hóa đơn theo kỳ hóa đơn, trạng thái thanh toán hoặc khoảng thời gian không?
+ 6. Khi giao dịch thất bại, hệ thống có cần giới hạn số lần người dùng thử thanh toán lại không?
 
-### OQ09
+ 7. Thông tin phản hồi đầy đủ từ VNPAY (`raw_vnpay_response`) sẽ được lưu trong bảng `payments` hay lưu tại bảng log riêng?
 
-Có cần hỗ trợ xuất lịch sử thanh toán ra Excel hoặc PDF không?
+ 8. Hệ thống có cần hỗ trợ hoàn tiền (Refund) hoặc hủy giao dịch trong các phiên bản tiếp theo không?
 
-### OQ10
+ 9. Hóa đơn có thể được thanh toán bằng nhiều phương thức khác nhau (VNPAY, chuyển khoản, tiền mặt...) hay chỉ sử dụng VNPAY trong giai đoạn đầu?
 
-Nếu một giao dịch thanh toán thất bại hoặc đang xử lý, có cần hiển thị trong lịch sử thanh toán của người thuê không?
+10. Sau khi thanh toán thành công, hệ thống có cần tự động cập nhật các báo cáo doanh thu và công nợ của Ban quản lý hay được xử lý bởi một module khác?
