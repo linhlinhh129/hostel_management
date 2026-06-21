@@ -20,7 +20,7 @@ public class DetailRequestServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        this.requestService = new RequestService();
+        this.requestService = new com.quanlyphongtro.service.impl.RequestServiceImpl();
     }
 
     @Override

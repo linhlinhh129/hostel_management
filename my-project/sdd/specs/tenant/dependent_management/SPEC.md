@@ -1,144 +1,226 @@
-# Feature: Dependent Management
+# Feature: Dependent Management (Quản lý Người phụ thuộc)
 
-**Status:** Draft\
-**Author:** Business Analyst\
-**Date:** 2026-06-10
+**Status:** Approved
+**Author:** AI Agent
+**Date:** 2026-06-21
 
-## User Story
+---
 
-As a Tenant (Người thuê),
+# 1. Bối cảnh & Mục tiêu
+Tính năng **Dependent Management** cho phép Người thuê (Tenant) quản lý danh sách và xem thông tin chi tiết của những người phụ thuộc ở cùng phòng với mình (vợ/chồng, con cái...). 
+Mục tiêu là hỗ trợ theo dõi nhân khẩu chính xác mà vẫn tuân thủ nghiêm ngặt bảo vệ quyền riêng tư (SEC-01) và không sửa đổi schema CSDL.
 
-I want to xem danh sách và thông tin chi tiết của những người phụ thuộc đã được đăng ký,
+---
 
-so that tôi có thể quản lý và kiểm tra thông tin cư trú của các thành viên liên quan đến hợp đồng thuê của mình.
+# 2. Phân quyền và Ràng buộc (Constraints)
+- **Tenant:** CHỈ được xem những người phụ thuộc có `tenant_id` khớp với mình. KHÔNG được xem của người khác.
+- **Data Protection:** Tuyệt đối không xóa vật lý (Hard Delete), chỉ thao tác qua cột `deleted_at` (Soft delete).
+- **Database:** Giữ nguyên bảng `dependents`, không thêm cột mới. Truy xuất thuần túy qua DAO.
 
-## Acceptance Criteria (EARS notation)
+---
 
-### AC01 - Hiển thị danh sách người phụ thuộc
+# 3. Yêu cầu chức năng (FR)
 
-WHEN người thuê truy cập chức năng Quản lý người phụ thuộc
+## 3.1. Danh sách người phụ thuộc
+- **Hành động:** Tenant truy cập mục Quản lý Người phụ thuộc.
+- **Hệ thống xử lý:** Lấy danh sách từ CSDL điều kiện `tenant_id = [current_user]` VÀ `deleted_at IS NULL`.
+- **Hiển thị:** Danh sách tóm tắt (Mã, Họ tên, Mối quan hệ, Số điện thoại).
 
-THE SYSTEM SHALL hiển thị danh sách người phụ thuộc thuộc tài khoản người thuê hiện tại.
-
-### AC02 - Hiển thị thông tin tóm tắt người phụ thuộc
-
-WHEN danh sách người phụ thuộc được tải thành công
-
-THE SYSTEM SHALL hiển thị các thông tin sau:
-
+## 3.2. Chi tiết người phụ thuộc
+- **Hành động:** Tenant bấm vào xem chi tiết 1 người phụ thuộc.
+- **Hệ thống xử lý:** Xác thực IDOR (ID truyền lên phải thuộc `tenant_id` hiện tại). Nếu sai báo lỗi 403.
+- **Hiển thị:** 
 - Mã người phụ thuộc
-
 - Họ và tên
-
+  - Ngày tháng năm sinh
+- Số điện thoại
+  - CCCD (Phải được mask thông tin nhạy cảm, VD: `0790******123`)
+  - Email
 - Mối quan hệ
 
 - Số điện thoại
-
-### AC03 - Sắp xếp danh sách người phụ thuộc
-
-WHEN danh sách người phụ thuộc được hiển thị
-
-THE SYSTEM SHALL sắp xếp danh sách theo họ tên tăng dần.
-
-### AC04 - Xem chi tiết người phụ thuộc
-
-WHEN người thuê chọn một người phụ thuộc trong danh sách
-
-THE SYSTEM SHALL hiển thị màn hình Chi tiết người phụ thuộc.
-
-### AC05 - Hiển thị đầy đủ thông tin người phụ thuộc
-
-WHEN màn hình Chi tiết người phụ thuộc được tải thành công
-
-THE SYSTEM SHALL hiển thị các thông tin sau:
-
-- Mã người phụ thuộc
-
-- Họ và tên
-
-- Ngày sinh
-
-- Số điện thoại
-
-- CCCD
 
 - Email
 
-- Mối quan hệ
+- CCCD/CMND (đã che thông tin)
 
-- Người thuê bảo trợ (Phụ thuộc bởi ai)
+- Người thuê bảo trợ
 
-### AC06 - Không có người phụ thuộc
+- Ngày đăng ký
 
-WHEN người thuê chưa đăng ký người phụ thuộc nào
+- Trạng thái xác thực
 
-THE SYSTEM SHALL hiển thị thông báo:
+---
 
-"Hiện chưa có người phụ thuộc nào được đăng ký."
+### FR06
 
-### AC07 - Người phụ thuộc không tồn tại
+**THE SYSTEM SHALL**
 
-WHEN người thuê truy cập một người phụ thuộc không tồn tại
+Mask thông tin CCCD/CMND trước khi hiển thị.
 
-THE SYSTEM SHALL return HTTP 404 Not Found.
+Ví dụ:
 
-### AC08 - Truy cập trái phép
+```
+0790******123
+```
 
-WHEN người thuê cố gắng truy cập thông tin người phụ thuộc không thuộc quyền quản lý của mình
+---
 
-THE SYSTEM SHALL từ chối truy cập
+## Empty State
 
-AND return HTTP 403 Forbidden.
+### FR07
 
-### AC09 - Người dùng chưa xác thực
+**WHERE** Tenant chưa có người phụ thuộc
 
-WHEN người dùng truy cập chức năng Quản lý người phụ thuộc mà chưa đăng nhập
+**THE SYSTEM SHALL**
 
-THE SYSTEM SHALL chuyển hướng người dùng đến màn hình Đăng nhập.
+Hiển thị:
 
-### AC10 - Lỗi tải dữ liệu
+> "Hiện chưa có người phụ thuộc nào được đăng ký."
 
-WHEN hệ thống không thể tải danh sách hoặc chi tiết người phụ thuộc
+---
 
-THE SYSTEM SHALL hiển thị thông báo lỗi phù hợp
+## Authorization
 
-AND cho phép người dùng tải lại dữ liệu.
+### FR08
 
-## Technical Notes
+**WHERE** Tenant truy cập người phụ thuộc không thuộc quyền quản lý
 
-### API Endpoint
+**THE SYSTEM SHALL**
 
-#### Danh sách người phụ thuộc
+- Từ chối truy cập
 
-`GET /api/v1/tenant/dependents`
+- Trả HTTP 403 Forbidden
 
-#### Chi tiết người phụ thuộc
+---
 
-`GET /api/v1/tenant/dependents/{dependentId}`
+### FR09
 
-### DB Changes
+**WHEN** người dùng chưa đăng nhập
 
-None
+**THE SYSTEM SHALL**
 
-### Validation
+Chuyển hướng đến màn hình Login.
 
-#### Quyền truy cập
+---
 
-- Người dùng phải đăng nhập hợp lệ.
+### FR10
 
-- Người dùng phải có vai trò Tenant.
+**WHEN** dependentId không tồn tại hoặc đã bị Soft Delete
 
-- Chỉ được xem người phụ thuộc thuộc tài khoản của chính mình.
+**THE SYSTEM SHALL**
 
-#### dependentId
+Trả HTTP 404 Not Found.
 
-- Phải tồn tại trong hệ thống.
+---
 
-- Phải thuộc Tenant hiện tại.
+### FR11
 
-- Là mã hợp lệ theo định dạng hệ thống.
+**WHERE** hệ thống không thể tải danh sách hoặc chi tiết người phụ thuộc
 
-## Response Data - Dependent List
+**THE SYSTEM SHALL**
+
+- Hiển thị thông báo lỗi phù hợp.
+
+- Cho phép người dùng Retry.
+
+---
+
+# 5. Non-functional Requirements
+
+## Performance
+
+- API danh sách phản hồi &lt; **200ms (P95)**.
+
+- API chi tiết phản hồi &lt; **200ms (P95)**.
+
+---
+
+## Security
+
+- Chỉ Tenant đã xác thực được truy cập.
+
+- Chỉ xem dữ liệu thuộc quyền sở hữu.
+
+- CCCD/CMND phải được mask theo chuẩn SEC-01.
+
+- Không trả về dữ liệu của bản ghi đã Soft Delete.
+
+---
+
+## Privacy
+
+Các trường sau được xem là PII:
+
+- CCCD/CMND
+
+- Email
+
+- Số điện thoại
+
+- Ngày sinh
+
+Các trường này phải tuân thủ chính sách bảo vệ dữ liệu của hệ thống.
+
+---
+
+## Availability
+
+API đạt **99.9% uptime**.
+
+---
+
+# 6. Technical Notes
+
+## API
+
+### Danh sách người phụ thuộc
+
+GET /api/v1/tenant/dependents
+
+---
+
+### Chi tiết người phụ thuộc
+
+GET /api/v1/tenant/dependents/{dependentId}
+
+---
+
+## Database
+
+Không thay đổi schema.
+
+Hệ thống chỉ truy vấn các bản ghi:
+
+```
+deleted_at IS NULL
+```
+
+---
+
+## Validation
+
+### Authorization
+
+- User đã đăng nhập.
+
+- Role = Tenant.
+
+- dependentId thuộc Tenant hiện tại.
+
+### Dependent
+
+- dependentId tồn tại.
+
+- Chưa Soft Delete.
+
+- Là mã hợp lệ.
+
+---
+
+# 7. Response Data
+
+## Dependent List
 
 ```json
 [
@@ -146,28 +228,36 @@ None
     "dependentId": "DEP001",
     "fullName": "Nguyễn Văn B",
     "relationship": "Em trai",
-    "phoneNumber": "0912345678"
+    "phoneNumber": "0912345678",
+    "isVerified": true
   },
   {
     "dependentId": "DEP002",
     "fullName": "Nguyễn Thị C",
     "relationship": "Mẹ",
-    "phoneNumber": "0987654321"
+    "phoneNumber": "0987654321",
+    "isVerified": false
   }
 ]
 ```
 
-## Response Data - Dependent Detail
+---
+
+## Dependent Detail
 
 ```json
 {
   "dependentId": "DEP001",
   "fullName": "Nguyễn Văn B",
+  "avatar": "https://...",
   "dateOfBirth": "2005-10-12",
+  "gender": "Male",
   "phoneNumber": "0912345678",
-  "citizenId": "001234567890",
+  "citizenId": "0790******123",
   "email": "nguyenvanb@gmail.com",
   "relationship": "Em trai",
+  "registeredDate": "2026-01-15",
+  "isVerified": true,
   "sponsoredBy": {
     "tenantId": "TEN001",
     "fullName": "Nguyễn Văn A"
@@ -175,7 +265,44 @@ None
 }
 ```
 
-## UI Components
+---
+
+# 8. Error Handling
+
+| HTTP Code | Description | UI Action |
+| --- | --- | --- |
+| 401 | Unauthorized | Redirect Login |
+| 403 | Forbidden | Hiển thị "Bạn không có quyền truy cập." |
+| 404 | Dependent Not Found | Hiển thị màn hình Not Found |
+| 500 | Internal Server Error | Hiển thị thông báo lỗi và Retry |
+
+---
+
+# 9. Acceptance Criteria
+
+- Tenant chỉ xem được người phụ thuộc thuộc phòng của mình.
+
+- Danh sách hiển thị đúng họ tên, mối quan hệ, số điện thoại và trạng thái xác thực.
+
+- Danh sách được sắp xếp theo họ tên tăng dần.
+
+- Có thể xem đầy đủ thông tin chi tiết của người phụ thuộc.
+
+- CCCD/CMND được che (mask) đúng chuẩn.
+
+- Không hiển thị các bản ghi đã Soft Delete.
+
+- Empty State hiển thị khi chưa có người phụ thuộc.
+
+- Truy cập dữ liệu của Tenant khác trả về HTTP 403.
+
+- dependentId không tồn tại trả về HTTP 404.
+
+- Hệ thống hiển thị Error State và Retry khi API lỗi.
+
+---
+
+# 10. UI Components
 
 - Dependent List
 
@@ -183,8 +310,38 @@ None
 
 - Dependent Detail View
 
-- Empty State Message
+- Avatar
 
-- Error Message
+- Verification Badge
 
 - Back Button
+
+- Empty State
+
+- Loading State
+
+- Error State
+
+- Retry Button
+
+---
+
+# 11. Out of Scope
+
+Không nằm trong phạm vi feature này:
+
+- Thêm người phụ thuộc.
+
+- Chỉnh sửa thông tin người phụ thuộc.
+
+- Xóa người phụ thuộc.
+
+- Gửi yêu cầu phê duyệt người phụ thuộc.
+
+- Phê duyệt người phụ thuộc bởi Ban quản lý.
+
+- Nhận diện khuôn mặt (Facial Recognition).
+
+- Đồng bộ dữ liệu với Cơ sở dữ liệu quốc gia về dân cư.
+
+- Xuất danh sách người phụ thuộc ra Excel hoặc PDF.

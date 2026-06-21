@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"  %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
@@ -107,20 +107,32 @@
                 </div>
             </div>
 
-            <%-- Hướng dẫn thanh toán --%>
+            <%-- Hướng dẫn thanh toán & VNPAY --%>
             <c:if test="${invoice.status == 'UNPAID' or invoice.status == 'OVERDUE'}">
                 <div class="tenant-card"
-                     style="border-color:var(--hms-accent);background:var(--hms-accent-bg)">
+                     style="border-color:var(--hms-accent);background:var(--hms-accent-bg);margin-bottom:1rem">
                     <div style="font-weight:700;margin-bottom:0.5rem;color:var(--hms-ink)">
-                        💳 Hướng dẫn thanh toán
+                        💳 Hướng dẫn thanh toán chuyển khoản
                     </div>
-                    <div style="font-size:0.8125rem;color:var(--hms-slate);line-height:1.7">
+                    <div style="font-size:0.8125rem;color:var(--hms-slate);line-height:1.7;margin-bottom:1rem">
                         <div>Ngân hàng: <strong>Vietcombank</strong></div>
                         <div>Số tài khoản: <strong style="font-family:var(--hms-font-mono)">1234567890</strong></div>
                         <div>Chủ tài khoản: <strong>Công ty Quản lý Nhà trọ</strong></div>
                         <div>Nội dung CK: <strong style="font-family:var(--hms-font-mono)">
                             <c:out value="${invoice.code}"/>
                         </strong></div>
+                    </div>
+                    
+                    <hr/>
+                    <div class="d-flex justify-content-end">
+                        <form method="post" action="${ctx}/tenant/payment/create">
+                            <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                            <input type="hidden" name="invoiceId" value="${invoice.id}"/>
+                            <input type="hidden" name="amount" value="${invoice.totalAmount}"/>
+                            <button type="submit" class="btn btn-mintlify-primary" style="width: auto;">
+                                Thanh toán qua VNPAY
+                            </button>
+                        </form>
                     </div>
                 </div>
             </c:if>

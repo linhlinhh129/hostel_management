@@ -1,13 +1,15 @@
 package com.quanlyphongtro.model;
 
-import java.sql.Timestamp;
+import com.quanlyphongtro.constant.StatusConstant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Request {
-    private int requestId;
+    private Integer id;
     private String code;
-    private int senderId;
+    private Integer senderId;
     private String category;
     private String title;
     private String content;
@@ -16,25 +18,35 @@ public class Request {
     private String attachmentUrls2;
     private Integer assignedStaffId;
     private String rejectionReason;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
-    private Timestamp deletedAt;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     // View-specific additional fields (for JOINs)
     private String senderName;
     private String roomCode;
     private String facilityName;
 
+    // Transient fields
+    private String assignedTo; // Staff name
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
     public Request() {}
 
-    public int getRequestId() { return requestId; }
-    public void setRequestId(int requestId) { this.requestId = requestId; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+    
+    // Backward compatibility for JSP
+    public Integer getRequestId() { return id; }
+    public void setRequestId(Integer requestId) { this.id = requestId; }
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
 
-    public int getSenderId() { return senderId; }
-    public void setSenderId(int senderId) { this.senderId = senderId; }
+    public Integer getSenderId() { return senderId; }
+    public void setSenderId(Integer senderId) { this.senderId = senderId; }
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
@@ -60,14 +72,20 @@ public class Request {
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Timestamp getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+    // Backward compatibility for JSP fmt:formatDate
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return java.sql.Timestamp.valueOf(createdAt);
+    }
 
-    public Timestamp getDeletedAt() { return deletedAt; }
-    public void setDeletedAt(Timestamp deletedAt) { this.deletedAt = deletedAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
     public String getSenderName() { return senderName; }
     public void setSenderName(String senderName) { this.senderName = senderName; }
@@ -77,6 +95,9 @@ public class Request {
 
     public String getFacilityName() { return facilityName; }
     public void setFacilityName(String facilityName) { this.facilityName = facilityName; }
+
+    public String getAssignedTo() { return assignedTo; }
+    public void setAssignedTo(String assignedTo) { this.assignedTo = assignedTo; }
 
     // Helper method to get all images as list
     public List<String> getImages() {
@@ -113,5 +134,42 @@ public class Request {
             }
         }
         return "<span style=\"font-weight: 500; color: var(--color-steel);\">Không xác định</span>";
+    }
+
+    // Helpers for View
+    public String getCreatedDateLabel() {
+        return createdAt != null ? createdAt.format(DATE_TIME_FORMATTER) : "N/A";
+    }
+
+    public String getTypeLabel() {
+        if (category == null) return "Khác";
+        return switch (category) {
+            case "ELECTRIC" -> "⚡ Điện";
+            case "WATER" -> "💧 Nước";
+            case "INTERNET" -> "🌐 Internet";
+            case "INFRASTRUCTURE" -> "🏗 Cơ sở vật chất";
+            default -> "📌 Khác";
+        };
+    }
+
+    public String getStatusBadgeClass() {
+        if (StatusConstant.REQUEST_DONE.equals(status)) return "badge-success";
+        if (StatusConstant.REQUEST_REJECTED.equals(status) || StatusConstant.REQUEST_CANCELLED.equals(status)) return "badge-danger";
+        if (StatusConstant.REQUEST_IN_PROGRESS.equals(status)) return "badge-warning";
+        if (StatusConstant.REQUEST_ASSIGNED.equals(status)) return "badge-info";
+        return "badge-info"; // Pending
+    }
+
+    public String getStatusLabel() {
+        if (status == null) return "Mới tạo";
+        return switch (status) {
+            case StatusConstant.REQUEST_PENDING -> "Mới tạo";
+            case StatusConstant.REQUEST_ASSIGNED -> "Đã tiếp nhận";
+            case StatusConstant.REQUEST_IN_PROGRESS -> "Đang xử lý";
+            case StatusConstant.REQUEST_DONE -> "Hoàn thành";
+            case StatusConstant.REQUEST_REJECTED -> "Từ chối";
+            case StatusConstant.REQUEST_CANCELLED -> "Đã hủy";
+            default -> status;
+        };
     }
 }

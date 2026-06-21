@@ -9,8 +9,54 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-public class RequestDAO {
+public class RequestDAO extends BaseDAO {
+
+    private Request mapRow(ResultSet rs) throws SQLException {
+        Request r = new Request();
+        r.setId(rs.getInt("request_id"));
+        r.setCode(rs.getString("code"));
+        r.setSenderId(rs.getInt("sender_id"));
+        r.setCategory(rs.getString("category"));
+        r.setTitle(rs.getString("title"));
+        r.setContent(rs.getString("content"));
+        r.setStatus(rs.getString("status"));
+        r.setAttachmentUrls1(rs.getString("attachment_urls1"));
+        r.setAttachmentUrls2(rs.getString("attachment_urls2"));
+        r.setAssignedStaffId(getInteger(rs, "assigned_staff_id"));
+        r.setRejectionReason(rs.getString("rejection_reason"));
+        r.setCreatedAt(toLocalDateTime(rs, "created_at"));
+        r.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
+        r.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
+
+        if (hasColumn(rs, "assigned_to")) {
+            r.setAssignedTo(rs.getString("assigned_to"));
+        }
+        if (hasColumn(rs, "sender_name")) {
+            r.setSenderName(rs.getString("sender_name"));
+        }
+        if (hasColumn(rs, "room_code")) {
+            r.setRoomCode(rs.getString("room_code"));
+        }
+        if (hasColumn(rs, "facility_name")) {
+            r.setFacilityName(rs.getString("facility_name"));
+        }
+        return r;
+    }
+
+    private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
+        java.sql.ResultSetMetaData rsmd = rs.getMetaData();
+        int columns = rsmd.getColumnCount();
+        for (int x = 1; x <= columns; x++) {
+            if (columnName.equalsIgnoreCase(rsmd.getColumnName(x))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ==================== HEAD (OPERATOR) METHODS ====================
 
     public Request getRequestById(int requestId) {
         String sql = "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
@@ -25,41 +71,15 @@ public class RequestDAO {
             ps.setInt(1, requestId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Request req = new Request();
-                    req.setRequestId(rs.getInt("request_id"));
-                    req.setCode(rs.getString("code"));
-                    req.setSenderId(rs.getInt("sender_id"));
-                    req.setCategory(rs.getString("category"));
-                    req.setTitle(rs.getString("title"));
-                    req.setContent(rs.getString("content"));
-                    req.setStatus(rs.getString("status"));
-                    req.setAttachmentUrls1(rs.getString("attachment_urls1"));
-                    req.setAttachmentUrls2(rs.getString("attachment_urls2"));
-                    
-                    int assignedStaffId = rs.getInt("assigned_staff_id");
-                    if (!rs.wasNull()) req.setAssignedStaffId(assignedStaffId);
-                    
-                    req.setRejectionReason(rs.getString("rejection_reason"));
-                    req.setCreatedAt(rs.getTimestamp("created_at"));
-                    req.setUpdatedAt(rs.getTimestamp("updated_at"));
-                    req.setDeletedAt(rs.getTimestamp("deleted_at"));
-                    
-                    req.setSenderName(rs.getString("sender_name"));
-                    req.setRoomCode(rs.getString("room_code"));
-                    req.setFacilityName(rs.getString("facility_name"));
-                    return req;
+                    return mapRow(rs);
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("getRequestById failed", e);
         }
         return null;
     }
 
-    /**
-     * Updates the request status with optimistic locking (concurrency control).
-     * @return true if successful (rows affected > 0), false otherwise
-     */
     public boolean updateRequestStatus(int requestId, String newStatus, String expectedOldStatus, Integer staffId, String rejectReason) {
         String sql = "UPDATE requests SET status = ?, assigned_staff_id = ?, rejection_reason = ?, updated_at = GETDATE() " +
                      "WHERE request_id = ? AND status = ?";
@@ -81,7 +101,7 @@ public class RequestDAO {
             return affectedRows > 0;
             
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("updateRequestStatus failed", e);
             return false;
         }
     }
@@ -116,7 +136,7 @@ public class RequestDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("countRequests failed", e);
         }
         return 0;
     }
@@ -133,7 +153,7 @@ public class RequestDAO {
         );
 
         if (assigneeId != null) {
-            sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(" OR (rq.status = 'PENDING' AND u.role = 'TENANT'))");
+            sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(" OR (rq.status = 'PENDING' AND EXISTS(SELECT 1 FROM users uu WHERE uu.user_id = rq.sender_id AND uu.role = 'TENANT')))");
         }
         if (status != null && !status.isEmpty()) {
             sql.append(" AND rq.status = ?");
@@ -160,33 +180,11 @@ public class RequestDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Request req = new Request();
-                    req.setRequestId(rs.getInt("request_id"));
-                    req.setCode(rs.getString("code"));
-                    req.setSenderId(rs.getInt("sender_id"));
-                    req.setCategory(rs.getString("category"));
-                    req.setTitle(rs.getString("title"));
-                    req.setContent(rs.getString("content"));
-                    req.setStatus(rs.getString("status"));
-                    req.setAttachmentUrls1(rs.getString("attachment_urls1"));
-                    req.setAttachmentUrls2(rs.getString("attachment_urls2"));
-                    
-                    int assignedStaffId = rs.getInt("assigned_staff_id");
-                    if (!rs.wasNull()) req.setAssignedStaffId(assignedStaffId);
-                    
-                    req.setRejectionReason(rs.getString("rejection_reason"));
-                    req.setCreatedAt(rs.getTimestamp("created_at"));
-                    req.setUpdatedAt(rs.getTimestamp("updated_at"));
-                    req.setDeletedAt(rs.getTimestamp("deleted_at"));
-                    
-                    req.setSenderName(rs.getString("sender_name"));
-                    req.setRoomCode(rs.getString("room_code"));
-                    req.setFacilityName(rs.getString("facility_name"));
-                    list.add(req);
+                    list.add(mapRow(rs));
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("getRequests failed", e);
         }
         return list;
     }
@@ -200,7 +198,7 @@ public class RequestDAO {
             ps.setInt(3, requestId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("completeRequest failed", e);
         }
         return false;
     }
@@ -213,7 +211,7 @@ public class RequestDAO {
             ps.setInt(2, requestId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("updateAppointmentDateText failed", e);
         }
         return false;
     }
@@ -230,7 +228,7 @@ public class RequestDAO {
             ps.setString(6, req.getAttachmentUrls1());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("insertIncidentReport failed", e);
         }
         return false;
     }
@@ -243,11 +241,11 @@ public class RequestDAO {
             ps.setString(2, req.getTitle());
             ps.setString(3, req.getContent());
             ps.setString(4, req.getAttachmentUrls1());
-            ps.setInt(5, req.getRequestId());
+            ps.setInt(5, req.getId());
             ps.setInt(6, req.getSenderId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("updateIncidentReport failed", e);
         }
         return false;
     }
@@ -261,7 +259,7 @@ public class RequestDAO {
                 if (rs.next()) return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("countIncidentsBySender failed", e);
         }
         return 0;
     }
@@ -283,34 +281,88 @@ public class RequestDAO {
             ps.setInt(3, limit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Request req = new Request();
-                    req.setRequestId(rs.getInt("request_id"));
-                    req.setCode(rs.getString("code"));
-                    req.setSenderId(rs.getInt("sender_id"));
-                    req.setCategory(rs.getString("category"));
-                    req.setTitle(rs.getString("title"));
-                    req.setContent(rs.getString("content"));
-                    req.setStatus(rs.getString("status"));
-                    req.setAttachmentUrls1(rs.getString("attachment_urls1"));
-                    req.setAttachmentUrls2(rs.getString("attachment_urls2"));
-                    
-                    int assignedStaffId = rs.getInt("assigned_staff_id");
-                    if (!rs.wasNull()) req.setAssignedStaffId(assignedStaffId);
-                    
-                    req.setRejectionReason(rs.getString("rejection_reason"));
-                    req.setCreatedAt(rs.getTimestamp("created_at"));
-                    req.setUpdatedAt(rs.getTimestamp("updated_at"));
-                    req.setDeletedAt(rs.getTimestamp("deleted_at"));
-                    
-                    req.setSenderName(rs.getString("sender_name"));
-                    req.setRoomCode(rs.getString("room_code"));
-                    req.setFacilityName(rs.getString("facility_name"));
-                    list.add(req);
+                    list.add(mapRow(rs));
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("getIncidentsBySender failed", e);
         }
         return list;
+    }
+
+    // ==================== FEATURE/TENANT-LINH METHODS ====================
+
+    public List<Request> findBySenderId(int senderId) {
+        List<Request> list = new ArrayList<>();
+        String sql = "SELECT r.*, u.full_name as assigned_to " +
+                     "FROM dbo.requests r " +
+                     "LEFT JOIN dbo.users u ON r.assigned_staff_id = u.user_id " +
+                     "WHERE r.sender_id = ? AND r.deleted_at IS NULL " +
+                     "ORDER BY r.created_at DESC";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, senderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("findBySenderId failed for senderId={}", senderId, e);
+        }
+        return list;
+    }
+
+    public Optional<Request> findByIdAndSenderId(int id, int senderId) {
+        String sql = "SELECT r.*, u.full_name as assigned_to " +
+                     "FROM dbo.requests r " +
+                     "LEFT JOIN dbo.users u ON r.assigned_staff_id = u.user_id " +
+                     "WHERE r.request_id = ? AND r.sender_id = ? AND r.deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.setInt(2, senderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("findByIdAndSenderId failed for id={}, senderId={}", id, senderId, e);
+        }
+        return Optional.empty();
+    }
+
+    public boolean insert(Request r) {
+        String code = "REQ" + System.currentTimeMillis();
+        String sql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, attachment_urls1) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            ps.setInt(2, r.getSenderId());
+            ps.setString(3, r.getCategory());
+            ps.setString(4, r.getTitle());
+            ps.setString(5, r.getContent());
+            ps.setString(6, r.getAttachmentUrls1());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("insert failed for Request", e);
+            return false;
+        }
+    }
+
+    public int countPendingBySenderId(int senderId) {
+        String sql = "SELECT COUNT(*) FROM dbo.requests WHERE sender_id = ? AND status IN ('PENDING', 'ASSIGNED', 'IN_PROGRESS') AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, senderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            logger.error("countPendingBySenderId failed for senderId={}", senderId, e);
+        }
+        return 0;
     }
 }

@@ -1,33 +1,29 @@
-# [CONTEXT.md](http://CONTEXT.md) \[Dependent Management\]
+# [CONTEXT.md](http://CONTEXT.md) - Dependent Management
 
 **Người viết:** Business Analyst\
-**Ngày:** 2026-06-10
-
-## 1. PROBLEM STATEMENT
-
-Trong quá trình thuê phòng, một người thuê có thể sinh sống cùng các thành viên khác như vợ/chồng, con cái, cha mẹ hoặc người thân. Ban quản lý cần lưu trữ và quản lý thông tin cư trú của các cá nhân này để phục vụ công tác quản lý nhân khẩu, an ninh, kiểm tra cư trú và xử lý các vấn đề phát sinh liên quan đến hợp đồng thuê.
-
-Hiện tại người thuê chưa có khả năng tự xem danh sách và thông tin chi tiết của các người phụ thuộc đã được đăng ký trong hệ thống. Điều này gây khó khăn trong việc:
-
-- Kiểm tra tính chính xác của thông tin cư trú đã khai báo.
-
-- Theo dõi các thành viên đang được đăng ký theo hợp đồng thuê hiện tại.
-
-- Xác minh thông tin khi có yêu cầu từ Ban quản lý.
-
-- Đảm bảo dữ liệu người phụ thuộc luôn đồng bộ với thực tế cư trú.
-
-Hệ thống cần cung cấp khả năng tra cứu danh sách người phụ thuộc và xem chi tiết thông tin của từng người phụ thuộc thuộc quyền quản lý của người thuê.
+**Ngày:** 2026-06-21
 
 ---
 
-## 2. DOMAIN KNOWLEDGE
+# 1. PROBLEM STATEMENT
 
-### Dependent (Người phụ thuộc)
+Trong quá trình thuê nhà, một phòng có thể có nhiều người cùng sinh sống như vợ/chồng, con cái, cha mẹ hoặc người thân. Tuy nhiên, người thuê chính thường không có một nơi tập trung để kiểm tra thông tin của các thành viên đã được đăng ký cư trú.
 
-Là cá nhân được đăng ký cư trú cùng người thuê chính trong một hợp đồng thuê phòng.
+Đối với Ban quản lý, việc thiếu thông tin nhân khẩu chính xác gây khó khăn trong công tác quản lý cư dân, xác minh người ra vào, xử lý các tình huống khẩn cấp và thống kê số lượng người đang sinh sống thực tế tại từng phòng.
 
-Người phụ thuộc có thể là:
+Ngoài ra, thông tin người phụ thuộc chứa nhiều dữ liệu cá nhân nhạy cảm (PII) như CCCD, ngày sinh, số điện thoại và email. Nếu không kiểm soát tốt quyền truy cập hoặc hiển thị không đúng cách sẽ dẫn đến nguy cơ rò rỉ dữ liệu cá nhân.
+
+Vì vậy, hệ thống cần cung cấp chức năng giúp người thuê xem danh sách và thông tin chi tiết của người phụ thuộc thuộc phòng mình, đồng thời đảm bảo dữ liệu được bảo vệ và chỉ những người có quyền mới được truy cập.
+
+---
+
+# 2. DOMAIN KNOWLEDGE
+
+### Dependent
+
+Là người cùng cư trú với người thuê chính nhưng không phải là chủ hợp đồng thuê.
+
+Ví dụ:
 
 - Vợ/Chồng
 
@@ -39,176 +35,216 @@ Người phụ thuộc có thể là:
 
 - Người thân khác
 
-### Tenant (Người thuê)
+---
 
-Là người đứng tên hợp đồng thuê và chịu trách nhiệm bảo trợ thông tin cư trú của các người phụ thuộc liên quan.
+### Primary Tenant
 
-### Sponsored By
+Là người đại diện ký hợp đồng thuê phòng và chịu trách nhiệm quản lý thông tin của các người phụ thuộc.
 
-Thông tin xác định người thuê đang bảo trợ hoặc quản lý người phụ thuộc.
+---
 
 ### Relationship
 
 Mối quan hệ giữa người phụ thuộc và người thuê chính.
 
-Ví dụ:
+Các giá trị phổ biến:
 
-- Cha
+- SPOUSE
 
-- Mẹ
+- CHILD
 
-- Con
+- PARENT
 
-- Anh trai
+- SIBLING
 
-- Chị gái
+- RELATIVE
 
-- Em trai
-
-- Em gái
-
-- Vợ
-
-- Chồng
-
-### Quy tắc nghiệp vụ
-
-- Mỗi người phụ thuộc phải thuộc về đúng một Tenant.
-
-- Tenant chỉ được xem người phụ thuộc thuộc quyền quản lý của mình.
-
-- Tenant không được xem hoặc truy cập người phụ thuộc của Tenant khác.
-
-- Người phụ thuộc không được đăng nhập hệ thống bằng chức năng Tenant.
-
-- Dữ liệu người phụ thuộc được sử dụng cho mục đích quản lý cư trú và hành chính.
+- OTHER
 
 ---
 
-## 3. STAKEHOLDERS
+### Verification Status
+
+Trạng thái xác minh của người phụ thuộc bởi Ban quản lý.
+
+Ví dụ:
+
+- VERIFIED
+
+- UNVERIFIED
+
+---
+
+### PII (Personally Identifiable Information)
+
+Là các thông tin cá nhân cần được bảo vệ, bao gồm:
+
+- CCCD/CMND
+
+- Ngày sinh
+
+- Email
+
+- Số điện thoại
+
+- Ảnh đại diện
+
+Các dữ liệu này phải tuân thủ chính sách bảo mật của hệ thống.
+
+---
+
+### Soft Delete
+
+Người phụ thuộc không bị xóa vật lý khỏi cơ sở dữ liệu mà được đánh dấu bằng trường `deleted_at`.
+
+Các bản ghi đã Soft Delete sẽ không hiển thị trên giao diện người dùng.
+
+---
+
+### Business Rules
+
+- Người thuê chỉ được xem người phụ thuộc thuộc phòng hoặc hợp đồng thuê của mình.
+
+- Người phụ thuộc đã Soft Delete không được hiển thị.
+
+- CCCD/CMND phải được che (mask) khi hiển thị trên giao diện.
+
+- Người thuê không được chỉnh sửa hoặc xóa người phụ thuộc trong phạm vi tính năng này.
+
+- Ban quản lý có thể xem thông tin của tất cả người phụ thuộc để phục vụ công tác quản lý cư dân.
+
+---
+
+# 3. STAKEHOLDERS
 
 ### Primary Stakeholders
 
-- Tenant (Người thuê)
+- **Tenant (Người thuê chính)**
 
-- Property Manager (Ban quản lý)
+  - Xem danh sách người phụ thuộc.
 
-- System Administrator
+  - Xem chi tiết người phụ thuộc.
+
+---
 
 ### Secondary Stakeholders
 
-- Chủ nhà
+- **Ban Quản Lý**
 
-- Bộ phận quản lý cư trú
+  - Quản lý thông tin nhân khẩu.
 
-- Bộ phận hỗ trợ khách hàng
+  - Xác minh người phụ thuộc.
 
-### Decision Makers
+  - Hỗ trợ kiểm tra cư trú và an ninh.
+
+- **Chủ nhà**
+
+  - Theo dõi số lượng người đang cư trú trong phòng (nếu được phân quyền).
+
+---
+
+### Technical Stakeholders
 
 - Product Owner
 
 - Business Analyst
 
-- Property Manager
+- Backend Developer
+
+- Frontend Developer
+
+- QA/Tester
+
+- DevOps
 
 ---
 
-## 4. CONSTRAINTS (ràng buộc không thể thay đổi)
+# 4. CONSTRAINTS (Ràng buộc)
 
-### Business Constraints
+## Business Constraints
 
-- Tenant chỉ được truy cập dữ liệu của chính mình.
+- Chỉ người dùng đã đăng nhập với vai trò Tenant hoặc Admin mới được truy cập.
 
-- Không cho phép xem thông tin người phụ thuộc thuộc Tenant khác.
+- Tenant chỉ được xem dữ liệu thuộc phòng hoặc hợp đồng thuê của mình.
 
-- Thông tin người phụ thuộc phải được quản lý theo hợp đồng thuê hiện hành.
+- Không cho phép chỉnh sửa, thêm mới hoặc xóa người phụ thuộc trong phạm vi feature này.
 
-- Hệ thống phải tuân thủ quy định bảo vệ dữ liệu cá nhân.
-
-### Security Constraints
-
-- Người dùng phải đăng nhập hợp lệ.
-
-- Người dùng phải có vai trò Tenant.
-
-- Mọi truy cập trái phép phải bị từ chối với HTTP 403 Forbidden.
-
-- Các truy cập chưa xác thực phải được chuyển hướng đến màn hình đăng nhập hoặc trả về HTTP 401.
-
-### Technical Constraints
-
-- Không thay đổi cấu trúc cơ sở dữ liệu hiện tại.
-
-- Chỉ sử dụng dữ liệu người phụ thuộc đã tồn tại trong hệ thống.
-
-- API phải hỗ trợ truy xuất danh sách và thông tin chi tiết người phụ thuộc.
-
-- dependentId phải là mã hợp lệ theo quy định hệ thống.
+- Chỉ hiển thị các người phụ thuộc đang hoạt động (deleted_at IS NULL).
 
 ---
 
-## 5. ASSUMPTIONS (giả định cần confirm)
+## Technical Constraints
 
-### A01
+- Sử dụng REST API hiện có.
 
-Mỗi người phụ thuộc chỉ được liên kết với một Tenant tại cùng một thời điểm.
+- Không thay đổi cấu trúc cơ sở dữ liệu trong phạm vi tính năng này.
 
-### A02
+- Áp dụng cơ chế Soft Delete khi truy vấn dữ liệu.
 
-Thông tin người phụ thuộc đã được tạo và phê duyệt bởi Ban quản lý trước khi Tenant truy cập.
-
-### A03
-
-Tenant không được phép thêm, sửa hoặc xóa người phụ thuộc trong phạm vi tính năng này.
-
-### A04
-
-Danh sách người phụ thuộc chỉ bao gồm các cá nhân đang còn hiệu lực cư trú theo hợp đồng hiện tại.
-
-### A05
-
-Thông tin CCCD, Email và Số điện thoại của người phụ thuộc luôn tồn tại trong hệ thống.
-
-### A06
-
-Số lượng người phụ thuộc của mỗi Tenant đủ nhỏ để không cần phân trang trong phiên bản đầu tiên.
+- Tất cả API phải kiểm tra quyền truy cập trước khi trả dữ liệu.
 
 ---
 
-## 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời)
+## Security Constraints
 
-### Q01
+- Bắt buộc xác thực bằng Access Token.
 
-Tenant có được phép tìm kiếm người phụ thuộc theo tên hoặc mã người phụ thuộc không?
+- Kiểm tra quyền truy cập trước khi lấy dữ liệu.
 
-**Owner:** Product Owner
+- CCCD/CMND phải được che theo quy định SEC-01.
 
-### Q02
+- Không trả về dữ liệu của người phụ thuộc thuộc phòng khác.
 
-Tenant có được phép cập nhật thông tin người phụ thuộc hay chỉ được xem?
+- Không hiển thị dữ liệu đã Soft Delete.
 
-**Owner:** Business Analyst
+---
 
-### Q03
+## Performance Constraints
 
-Có cần hỗ trợ phân trang khi Tenant có số lượng người phụ thuộc lớn không?
+- API danh sách phản hồi dưới **200ms (P95)**.
 
-**Owner:** Tech Lead
+- API chi tiết phản hồi dưới **200ms (P95)**.
 
-### Q04
+- Hệ thống phải đảm bảo truy vấn nhanh ngay cả khi số lượng người phụ thuộc lớn.
 
-Thông tin người phụ thuộc đã rời khỏi nơi cư trú có cần hiển thị trong lịch sử hay không?
+---
 
-**Owner:** Product Owner
+# 5. ASSUMPTIONS (Giả định cần xác nhận)
 
-### Q05
+- Mỗi người phụ thuộc có một `dependentId` duy nhất.
 
-Có cần lưu nhật ký (Audit Log) mỗi lần Tenant truy cập thông tin chi tiết người phụ thuộc không?
+- Một người phụ thuộc chỉ thuộc về một người thuê chính hoặc một hợp đồng thuê tại một thời điểm.
 
-**Owner:** Security Team
+- Quan hệ giữa Tenant và Dependent đã được thiết lập đầy đủ trong cơ sở dữ liệu.
 
-### Q06
+- Ảnh đại diện là tùy chọn và có thể không tồn tại.
 
-Thông tin CCCD của người phụ thuộc có cần được che bớt (masking) khi hiển thị trên giao diện không?
+- Trạng thái xác minh được cập nhật bởi Ban quản lý.
 
-**Owner:** Security Team
+- Dữ liệu người phụ thuộc không thay đổi trong quá trình người dùng đang xem.
+
+- API chỉ trả về các bản ghi chưa bị Soft Delete.
+
+---
+
+# 6. OPEN QUESTIONS (Câu hỏi cần làm rõ)
+
+ 1. Người phụ thuộc có thể thuộc nhiều hợp đồng thuê hoặc nhiều phòng trong các thời điểm khác nhau không?
+
+ 2. Có cần hiển thị ảnh đại diện mặc định nếu người phụ thuộc chưa có ảnh không?
+
+ 3. Ban quản lý có được phép xem đầy đủ CCCD/CMND hay cũng phải áp dụng cơ chế che thông tin (masking)?
+
+ 4. Có cần ghi nhận lịch sử truy cập (Audit Log) khi người dùng xem thông tin người phụ thuộc để phục vụ kiểm tra bảo mật không?
+
+ 5. Sau khi người phụ thuộc chuyển đi hoặc không còn cư trú, hệ thống sẽ Soft Delete hay lưu thêm trạng thái "Inactive"?
+
+ 6. Có cần hỗ trợ tìm kiếm hoặc lọc người phụ thuộc theo tên hoặc mối quan hệ trong các phiên bản tiếp theo không?
+
+ 7. Có cần cho phép tải hoặc in thông tin người phụ thuộc dưới dạng PDF hoặc Excel không?
+
+ 8. Người phụ thuộc chưa được Ban quản lý xác minh có được hiển thị cho Tenant hay không, hay chỉ hiển thị sau khi được phê duyệt?
+
+ 9. Có cần gửi thông báo cho Tenant khi thông tin người phụ thuộc được Ban quản lý xác minh hoặc từ chối không?
+
+10. Trong tương lai có cần tích hợp nhận diện khuôn mặt hoặc mã QR để hỗ trợ kiểm soát ra vào cho người phụ thuộc hay không?

@@ -1,259 +1,579 @@
-# Feature: Invoice Management
+# Feature: Invoice Management & VNPAY Payment (Quản lý Hóa đơn & Thanh toán VNPAY)
 
 **Status:** Draft\
 **Author:** Business Analyst\
-**Date:** 2026-06-10
+**Date:** 2026-06-21\
+**Priority:** High\
+**Risk Level:** High (Financial Transaction)
 
-## User Story
+---
 
-As a Tenant (Người thuê),
+# 1. Business Context & Goal
 
-I want to xem danh sách hóa đơn, chi tiết hóa đơn và lịch sử thanh toán,
+Tính năng Invoice Management cho phép người thuê xem danh sách hóa đơn, xem chi tiết từng hóa đơn, theo dõi lịch sử thanh toán và thanh toán trực tuyến thông qua cổng VNPAY.
 
-so that tôi có thể theo dõi các khoản phí phát sinh và tình trạng thanh toán của mình.
+Sau khi VNPAY xác nhận giao dịch thành công, hệ thống sẽ tự động cập nhật trạng thái hóa đơn, đồng thời lưu toàn bộ thông tin giao dịch vào bảng `payments` phục vụ đối soát.
 
-## Acceptance Criteria (EARS notation)
+---
 
-### AC01 - Hiển thị danh sách hóa đơn
+# 2. User Story
 
-WHEN người thuê truy cập chức năng Quản lý hóa đơn
+**As a** Tenant
 
-THE SYSTEM SHALL hiển thị danh sách các hóa đơn thuộc người thuê hiện tại.
+**I want to**
 
-### AC02 - Hiển thị thông tin tóm tắt hóa đơn
+- xem danh sách hóa đơn
 
-WHEN danh sách hóa đơn được tải thành công
+- xem chi tiết hóa đơn
 
-THE SYSTEM SHALL hiển thị các thông tin sau:
+- thanh toán trực tuyến bằng VNPAY
 
-- Kỳ hóa đơn
+- xem lịch sử thanh toán
 
-- Tổng tiền phải thanh toán
+**So that**
 
-- Hạn thanh toán
+tôi có thể theo dõi và thanh toán các khoản phí của mình.
 
-- Trạng thái thanh toán
+---
 
-### AC03 - Sắp xếp hóa đơn theo kỳ gần nhất
+# 3. Actors & Roles
 
-WHEN danh sách hóa đơn được hiển thị
+### Tenant
 
-THE SYSTEM SHALL sắp xếp hóa đơn theo kỳ hóa đơn giảm dần.
+- Xem hóa đơn
 
-### AC04 - Xem chi tiết hóa đơn
+- Thanh toán VNPAY
 
-WHEN người thuê chọn một hóa đơn trong danh sách
+- Xem lịch sử thanh toán
 
-THE SYSTEM SHALL hiển thị đầy đủ thông tin chi tiết của hóa đơn.
+### System
 
-### AC05 - Hiển thị chi tiết tiền phòng
+- Lấy dữ liệu hóa đơn
 
-WHEN màn hình Chi tiết hóa đơn được tải thành công
+- Sinh URL thanh toán
 
-THE SYSTEM SHALL hiển thị tiền phòng cố định của kỳ hóa đơn.
+- Xử lý callback/IPN
 
-### AC06 - Hiển thị chi tiết điện
+- Cập nhật hóa đơn
 
-WHEN màn hình Chi tiết hóa đơn được tải thành công
+- Lưu giao dịch thanh toán
 
-THE SYSTEM SHALL hiển thị:
+### VNPAY
+
+- Xử lý thanh toán
+
+- Trả kết quả giao dịch
+
+- Gửi IPN/Webhook
+
+---
+
+# 4. Invoice State Diagram
+
+```text
+UNPAID
+   │
+   │ Click Thanh toán
+   ▼
+PROCESSING
+   │
+   ├──────────────► PAID
+   │                  ▲
+   │                  │
+   │                  │ IPN Success
+   │
+   └──────────────► FAILED
+                      │
+                      │ Thanh toán lại
+                      ▼
+                  PROCESSING
+```
+
+---
+
+# 5. Functional Requirements (EARS)
+
+## AC04 - Thanh toán trực tuyến VNPay Sandbox
+
+WHEN người thuê thanh toán hóa đơn
+THE SYSTEM SHALL tính toán tổng tiền bao gồm tiền gốc và phí phạt trễ hạn (0.05% mỗi ngày nếu có).
+AND tạo phiên giao dịch VNPay Sandbox với mã tham chiếu (TxnRef) định dạng `INV{id}T{timestamp}`.
+AND chuyển hướng người thuê sang cổng thanh toán.
+
+---
+
+## AC05 - Xử lý Return từ VNPay (Tự động cập nhật Database)
+
+WHEN VNPay trả về kết quả thanh toán cho hệ thống
+THE SYSTEM SHALL xác thực chữ ký bảo mật (SecureHash).
+AND nếu giao dịch thành công (Mã 00), hệ thống thực thi Transaction Database:
+1. Thêm một bản ghi vào bảng `payments` (Lưu lịch sử thanh toán thành công).
+2. Cập nhật `status = PAID` cho hóa đơn trong bảng `invoices`.
+AND đảm bảo tính toàn vẹn dữ liệu (Không thêm bản ghi rác nếu bị lỗi giữa chừng - Rollback).
+
+---
+
+### FR03
+
+**WHEN** danh sách được tải
+
+**THE SYSTEM SHALL**
+
+Sắp xếp theo kỳ hóa đơn giảm dần.
+
+---
+
+## Invoice Detail
+
+### FR04
+
+**WHEN** Tenant chọn một hóa đơn
+
+**THE SYSTEM SHALL**
+
+Hiển thị:
+
+- Mã hóa đơn
+
+- Phòng
+
+- Tiền phòng
 
 - Chỉ số điện cũ
 
 - Chỉ số điện mới
 
+- Đơn giá điện
+
 - Thành tiền điện
-
-### AC07 - Hiển thị chi tiết nước
-
-WHEN màn hình Chi tiết hóa đơn được tải thành công
-
-THE SYSTEM SHALL hiển thị:
 
 - Chỉ số nước cũ
 
 - Chỉ số nước mới
 
+- Đơn giá nước
+
 - Thành tiền nước
 
-### AC08 - Hiển thị các khoản phí khác
+- Internet
 
-WHEN màn hình Chi tiết hóa đơn được tải thành công
+- Phí dịch vụ
 
-THE SYSTEM SHALL hiển thị phí dịch vụ và các khoản phụ phí (nếu có).
+- Thuế
 
-### AC09 - Hiển thị tổng tiền phải thanh toán
+- Phụ phí
 
-WHEN màn hình Chi tiết hóa đơn được tải thành công
+- Tổng tiền
 
-THE SYSTEM SHALL hiển thị tổng tiền phải thanh toán của hóa đơn.
+- Hạn thanh toán
 
-### AC10 - Hiển thị trạng thái thanh toán
+- Trạng thái
 
-WHEN hóa đơn được hiển thị
+---
 
-THE SYSTEM SHALL hiển thị một trong các trạng thái sau:
+## Thanh toán VNPAY
 
-- Chưa thanh toán
+### FR05
 
-- Đã thanh toán
+**WHEN** Tenant chọn **Thanh toán VNPAY**
 
-- Quá hạn
+**AND** hóa đơn có trạng thái UNPAID
 
-### AC11 - Hiển thị lịch sử thanh toán
+**THE SYSTEM SHALL**
 
-WHEN người thuê truy cập chức năng Lịch sử thanh toán
+- tạo URL thanh toán VNPAY
 
-THE SYSTEM SHALL hiển thị danh sách các giao dịch thanh toán đã hoàn thành.
+- cập nhật trạng thái invoice thành PROCESSING
 
-### AC12 - Hiển thị chi tiết giao dịch thanh toán
+- redirect sang VNPAY
 
-WHEN lịch sử thanh toán được tải thành công
+---
 
-THE SYSTEM SHALL hiển thị các thông tin sau:
+### FR06
 
-- Mã giao dịch
+URL thanh toán SHALL bao gồm
 
-- Kỳ hóa đơn
+- invoiceId
 
-- Số tiền thanh toán
+- amount
 
-- Thời gian thanh toán
+- createDate
 
-- Phương thức thanh toán
+- expireDate
 
-- Trạng thái giao dịch
+- orderInfo
 
-### AC13 - Không có dữ liệu hóa đơn
+- returnUrl
 
-WHEN hệ thống không tìm thấy hóa đơn nào
+- ipAddr
 
-THE SYSTEM SHALL hiển thị thông báo "Hiện chưa có hóa đơn nào".
+- secureHash
 
-### AC14 - Không có lịch sử thanh toán
+---
 
-WHEN hệ thống không tìm thấy giao dịch thanh toán nào
+### FR07
 
-THE SYSTEM SHALL hiển thị thông báo "Chưa có lịch sử thanh toán".
+**WHEN** VNPAY trả kết quả thành công
 
-### AC15 - Truy cập trái phép dữ liệu hóa đơn
+(vnp_ResponseCode = 00)
 
-WHEN người thuê cố gắng truy cập hóa đơn không thuộc quyền sở hữu của mình
+**THE SYSTEM SHALL**
 
-THE SYSTEM SHALL từ chối truy cập
+- Verify Secure Hash
 
-AND return HTTP 403 Forbidden.
+- Verify Amount
 
-### AC16 - Người dùng chưa xác thực
+- Verify Invoice
 
-WHEN người dùng truy cập chức năng Quản lý hóa đơn mà chưa đăng nhập
+- Verify Transaction chưa xử lý
 
-THE SYSTEM SHALL chuyển hướng người dùng đến màn hình Đăng nhập.
+Sau đó
 
-### AC17 - Hóa đơn không tồn tại
+- lưu transaction vào bảng payments
 
-WHEN người thuê truy cập một hóa đơn không tồn tại
+- cập nhật invoice.status = PAID
 
-THE SYSTEM SHALL return HTTP 404 Not Found.
+---
 
-## Technical Notes
+### FR08
 
-### API Endpoint
+Thông tin lưu vào payments
 
-#### Danh sách hóa đơn
+- invoice_id
 
-`GET /api/v1/tenant/invoices`
+- payment_amount
 
-#### Chi tiết hóa đơn
+- payment_date
 
-`GET /api/v1/tenant/invoices/{invoiceId}`
+- payment_method = VNPAY
 
-#### Lịch sử thanh toán
+- status = SUCCESS
 
-`GET /api/v1/tenant/payments/history`
+- vnp_transaction_no
 
-### DB Changes
+- vnp_bank_code
 
-None
+- vnp_bank_tran_no
 
-### Validation
+- vnp_response_code
 
-#### Quyền truy cập
+- raw_vnpay_response
 
-- Người dùng phải đăng nhập hợp lệ.
+---
 
-- Người dùng phải có vai trò Tenant.
+### FR09
 
-- Chỉ được xem hóa đơn thuộc tài khoản hiện tại.
+**WHEN**
 
-- Chỉ được xem lịch sử thanh toán của chính mình.
+VNPAY trả về giao dịch thất bại
 
-#### invoiceId
+**THE SYSTEM SHALL**
 
-- Phải tồn tại trong hệ thống.
+- cập nhật invoice.status = FAILED
 
-- Phải thuộc người thuê hiện tại.
+- ghi log lỗi
 
-- Là số nguyên dương hợp lệ.
+- hiển thị thông báo thanh toán thất bại
 
-#### paymentId
+---
 
-- Phải tồn tại trong hệ thống.
+### FR10
 
-- Phải thuộc người thuê hiện tại.
+**WHEN**
 
-## Response Data - Invoice List
+Tenant thanh toán lại hóa đơn FAILED
 
-```json
-[
-  {
-    "invoiceId": 101,
-    "billingPeriod": "06/2026",
-    "totalAmount": 4500000,
-    "dueDate": "2026-06-15",
-    "paymentStatus": "UNPAID"
-  }
-]
+**THE SYSTEM SHALL**
+
+cho phép tạo giao dịch VNPAY mới.
+
+---
+
+## Payment History
+
+### FR11
+
+**WHEN**
+
+Tenant truy cập Payment History
+
+**THE SYSTEM SHALL**
+
+Hiển thị danh sách các giao dịch thành công.
+
+---
+
+### FR12
+
+Thông tin hiển thị
+
+- Payment Code
+
+- Invoice Code
+
+- Billing Period
+
+- Amount
+
+- Payment Date
+
+- Payment Method
+
+- VNPAY Transaction No
+
+- Status
+
+---
+
+# 6. Error Handling
+
+### ER01
+
+Invoice không tồn tại
+
+→ HTTP 404
+
+---
+
+### ER02
+
+Invoice không thuộc Tenant
+
+→ HTTP 403
+
+---
+
+### ER03
+
+Invoice đã thanh toán
+
+→ HTTP 409
+
+---
+
+### ER04
+
+Invoice đang PROCESSING
+
+→ HTTP 409
+
+---
+
+### ER05
+
+Secure Hash sai
+
+→ Reject IPN
+
+→ ghi Security Log
+
+---
+
+### ER06
+
+Amount từ VNPAY khác Invoice
+
+→ Reject
+
+→ Không cập nhật DB
+
+---
+
+### ER07
+
+IPN gửi nhiều lần
+
+→ áp dụng Idempotency
+
+→ bỏ qua
+
+→ trả HTTP 200
+
+---
+
+### ER08
+
+DB update lỗi
+
+→ Rollback toàn bộ Transaction
+
+---
+
+# 7. Technical Notes
+
+## APIs
+
+### Invoice List
+
+GET /api/v1/tenant/invoices
+
+---
+
+### Invoice Detail
+
+GET /api/v1/tenant/invoices/{invoiceId}
+
+---
+
+### Payment History
+
+GET /api/v1/tenant/payments/history
+
+---
+
+### Create Payment URL
+
+POST /api/v1/tenant/invoices/{invoiceId}/payment/vnpay
+
+---
+
+### VNPAY Return URL
+
+GET /api/v1/payment/vnpay/return
+
+---
+
+### VNPAY IPN
+
+POST /api/v1/payment/vnpay/ipn
+
+---
+
+# 8. Validation
+
+- User đã đăng nhập
+
+- Role = Tenant
+
+- invoiceId tồn tại
+
+- invoice thuộc Tenant
+
+- invoice.status = UNPAID
+
+- Amount &gt; 0
+
+- Verify Secure Hash
+
+- Verify Amount
+
+- Verify Transaction
+
+---
+
+# 9. Database
+
+## invoices
+
+Sử dụng bảng hiện tại.
+
+Thay đổi trạng thái
+
+- UNPAID
+
+- PROCESSING
+
+- PAID
+
+- FAILED
+
+---
+
+## payments
+
+Bổ sung các cột
+
+```sql
+vnp_transaction_no NVARCHAR(100)
+
+vnp_bank_code NVARCHAR(20)
+
+vnp_bank_tran_no NVARCHAR(100)
+
+vnp_response_code NVARCHAR(10)
+
+vnp_transaction_status NVARCHAR(10)
+
+raw_vnpay_response NVARCHAR(MAX)
 ```
 
-## Response Data - Invoice Detail
+---
 
-```json
-{
-  "invoiceId": 101,
-  "roomCode": "A101",
-  "billingPeriod": "06/2026",
-  "roomFee": 3500000,
-  "electricityOld": 120,
-  "electricityNew": 180,
-  "electricityAmount": 300000,
-  "waterOld": 50,
-  "waterNew": 65,
-  "waterAmount": 150000,
-  "serviceFee": 550000,
-  "totalAmount": 4500000,
-  "dueDate": "2026-06-15",
-  "paymentStatus": "UNPAID"
-}
-```
+# 10. Non-functional Requirements
 
-## Response Data - Payment History
+### Performance
 
-```json
-[
-  {
-    "paymentId": "PAY001",
-    "invoiceId": 95,
-    "billingPeriod": "05/2026",
-    "amount": 4300000,
-    "paymentMethod": "BANK_TRANSFER",
-    "paymentDate": "2026-05-12T10:30:00",
-    "status": "SUCCESS"
-  }
-]
-```
+Danh sách hóa đơn
 
-## UI Components
+&lt;300ms
+
+---
+
+Chi tiết hóa đơn
+
+&lt;300ms
+
+---
+
+Tạo URL VNPAY
+
+&lt;500ms
+
+---
+
+### Security
+
+- Verify Secure Hash
+
+- Secret Key lưu trong .env
+
+- HTTPS bắt buộc
+
+- Không log Secret Key
+
+---
+
+### Transaction
+
+Lưu payment
+
+- 
+
+Update invoice
+
+phải nằm trong cùng một Database Transaction.
+
+Nếu một bước lỗi
+
+Rollback toàn bộ.
+
+---
+
+# 11. Acceptance Criteria
+
+- Hiển thị đúng danh sách hóa đơn.
+
+- Hiển thị đúng chi tiết hóa đơn.
+
+- Chỉ hóa đơn UNPAID có nút Thanh toán VNPAY.
+
+- Click Thanh toán tạo đúng URL và chuyển hướng sang VNPAY.
+
+- Thanh toán thành công cập nhật invoice = PAID.
+
+- Lưu đầy đủ thông tin giao dịch vào bảng payments.
+
+- Thanh toán thất bại cập nhật invoice = FAILED.
+
+- Reject IPN có Secure Hash không hợp lệ.
+
+- Không thể thanh toán cùng một hóa đơn nhiều lần đồng thời.
+
+- Payment History hiển thị đầy đủ các giao dịch thành công.
+
+---
+
+# 12. UI Components
 
 - Invoice List
 
@@ -261,10 +581,38 @@ None
 
 - Invoice Detail View
 
-- Payment History List
+- Payment Button (VNPAY)
 
-- Empty State Message
+- Payment Success Screen
 
-- Error Message
+- Payment Failed Screen
 
-- Back Button
+- Payment History
+
+- Loading State
+
+- Empty State
+
+- Error State
+
+- Retry Button
+
+---
+
+# 13. Out of Scope
+
+- Thanh toán Momo.
+
+- Thanh toán ZaloPay.
+
+- Thanh toán Stripe.
+
+- Hoàn tiền (Refund).
+
+- Thanh toán một phần hóa đơn.
+
+- Thanh toán nhiều hóa đơn trong một giao dịch.
+
+- Lưu thông tin thẻ ngân hàng trên hệ thống.
+
+- Thanh toán ngoại tệ.
