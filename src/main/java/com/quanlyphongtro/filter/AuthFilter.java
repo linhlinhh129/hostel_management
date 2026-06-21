@@ -43,6 +43,11 @@ public class AuthFilter implements Filter {
             return;
         }
 
+        if (currentUser.isFirstLogin() && !path.equals("/first-login") && !path.startsWith("/logout") && !path.startsWith("/assets")) {
+            resp.sendRedirect(req.getContextPath() + "/first-login");
+            return;
+        }
+
         chain.doFilter(request, response);
     }
 

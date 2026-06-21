@@ -1,9 +1,9 @@
 # Feature: Cập nhật trạng thái sửa chữa
 
-**Status:** Draft  
+**Status:** Approved (Revised for DB constraints)  
 **Author:** Phạm Anh Tú  
 **Reviewer:** [Tên Reviewer]  
-**Date:** 2026-06-10  
+**Date:** 2026-06-19  
 **Priority:** High
 
 ---
@@ -21,17 +21,13 @@ Sau khi hoàn thành công việc tại hiện trường, nhân viên vận hàn
 ### Story 1 (Happy Path - Lưu kết quả thành công)
 
 **As a** nhân viên vận hành,
-
-**I want to** nhập ghi chú kết quả, đính kèm ảnh sau sửa chữa và chọn ngày hoàn thành,
-
+**I want to** nhập ghi chú kết quả, đính kèm ảnh sau sửa chữa,
 **so that** tôi có thể xác nhận công việc đã hoàn tất và cập nhật trạng thái yêu cầu sang "Hoàn thành".
 
 ### Story 2 (Edge Case - Thiếu minh chứng hình ảnh)
 
 **As a** manager,
-
 **I want to** bắt buộc nhân viên vận hành phải đính kèm ít nhất 1 hình ảnh sau sửa chữa,
-
 **so that** đảm bảo tính minh bạch và xác thực của kết quả xử lý.
 
 ---
@@ -40,173 +36,71 @@ Sau khi hoàn thành công việc tại hiện trường, nhân viên vận hàn
 
 ### AC01 – Hiển thị form cập nhật trạng thái
 
-**WHEN** user truy cập màn hình "Cập nhật trạng thái sửa chữa"
-
-**THE SYSTEM SHALL** hiển thị form gồm:
-
+**WHEN** user đang ở giao diện Chi tiết yêu cầu sửa chữa (trạng thái Đang xử lý)
+**THE SYSTEM SHALL** hiển thị nút "Báo cáo hoàn thành", khi click mở ra form gồm:
 - Ghi chú kết quả (Textarea)
-- Đính kèm ảnh sau sửa chữa (File Upload)
-- Ngày hoàn thành (Date Picker)
+- Đính kèm ảnh minh chứng (File Upload)
 
-### AC02 – Ngày hoàn thành mặc định
+### AC02 – Tự động cập nhật thời gian
 
-**WHEN** user mở trường "Ngày hoàn thành"
-
-**THE SYSTEM SHALL**
-
-- Tự động chọn ngày hiện tại
-- Không cho phép chọn ngày trong tương lai
+**WHEN** user báo cáo hoàn thành
+**THE SYSTEM SHALL** tự động lấy thời gian hiện tại (`GETDATE()`) làm thời gian hoàn thành (không yêu cầu Vận hành chọn thủ công để tránh gian lận).
 
 ### AC03 – Cập nhật thành công
 
 **WHEN** user nhấn nút **[Xác nhận lưu]** với đầy đủ dữ liệu hợp lệ
-
 **THE SYSTEM SHALL**
-
-- Gọi API cập nhật trạng thái
-- Lưu ghi chú kết quả
-- Lưu ảnh minh chứng
-- Lưu ngày hoàn thành
-- Cập nhật trạng thái yêu cầu thành `COMPLETED`
-- Hiển thị thông báo thành công
-- Điều hướng người dùng về màn hình "Danh sách yêu cầu sửa chữa"
+- Gọi Form Submit lên máy chủ.
+- Lưu file vật lý vào ổ cứng server.
+- Lưu đường dẫn ảnh vào database.
+- Cập nhật trạng thái yêu cầu thành `COMPLETED`.
+- Điều hướng người dùng lại màn hình Chi tiết kèm thông báo thành công.
 
 ### AC04 – Thiếu dữ liệu bắt buộc
 
 **WHEN** user nhấn nút **[Xác nhận lưu]** nhưng chưa nhập ghi chú kết quả hoặc chưa đính kèm ảnh
-
 **THE SYSTEM SHALL**
-
-- Hiển thị lỗi validation tại trường tương ứng
-- Không gửi dữ liệu lên server
-
-### AC05 – Không có quyền cập nhật
-
-**WHEN** user không có quyền cập nhật yêu cầu sửa chữa
-
-**THE SYSTEM SHALL**
-
-- Trả về HTTP 403
-- Hiển thị thông báo từ chối truy cập
+- Hiển thị lỗi validation (trên giao diện HTML5 hoặc báo lỗi từ Servlet).
+- Không gửi hoặc không lưu dữ liệu.
 
 ---
 
-## 4. API Contract
+## 4. Technical Integration (Servlet & Form)
 
-### Endpoint
+Thay vì thiết kế REST API, hệ thống sử dụng kiến trúc MVC thuần túy (JSP & Servlet).
 
-```http
-PUT /api/v1/repair-requests/:id/complete
-```
+### Request Flow
+- **URL**: `POST /operator/requests/detail`
+- **Encoding**: `multipart/form-data`
+- **Parameters**:
+  - `action`: "complete"
+  - `id`: Mã ID yêu cầu
+  - `notes`: Ghi chú hoàn thành
+  - `after_images`: Danh sách file ảnh upload.
 
-### Request Headers
+### Database Mapping Workaround
+Vì ràng buộc tuyệt đối **không được chỉnh sửa cấu trúc CSDL hiện tại**, dữ liệu sẽ được ánh xạ vào bảng `requests` như sau:
+1. `notes` -> Ghi vào cột `rejection_reason` (khi status = COMPLETED, cột này đóng vai trò là ghi chú).
+2. `after_images` -> Ghi danh sách tên file vào cột `attachment_urls2` (phân cách bởi dấu phẩy).
+3. `completed_at` -> Dựa vào cột `updated_at` (do lệnh UPDATE GETDATE() thiết lập).
+4. `status` -> Ghi nhận `COMPLETED`.
 
-```http
-Content-Type: multipart/form-data
-```
-
-### Request Body (Form Data)
-
-| Field | Type | Required | Description |
-|---------|---------|----------|-------------|
-| notes | string | Yes | Ghi chú kết quả sửa chữa |
-| completed_at | string (YYYY-MM-DD) | Yes | Ngày hoàn thành thực tế |
-| after_images | file[] | Yes | Ảnh sau sửa chữa |
-
-### Validation
-
-| Field | Rule |
-|---------|------|
-| notes | Không được để trống |
-| completed_at | ≤ ngày hiện tại |
-| after_images | Tối thiểu 1 ảnh, tối đa 5 ảnh |
-
-### Response 200
-
-```json
-{
-  "success": true,
-  "message": "Cập nhật trạng thái hoàn thành thành công.",
-  "data": {
-    "id": 123,
-    "status": "COMPLETED",
-    "completed_at": "2026-06-10"
-  }
-}
-```
-
-### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_FAILED",
-    "message": "Vui lòng đính kèm ít nhất 1 hình ảnh sau sửa chữa hoặc ngày hoàn thành không hợp lệ."
-  }
-}
-```
-
-### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền cập nhật yêu cầu này."
-  }
-}
-```
+### Validation Rules
+- `notes`: Không được để trống.
+- `after_images`: Giới hạn các file `.jpg, .jpeg, .png`, dung lượng tối đa 5MB/file, nhiều nhất 5 file. Tối thiểu 1 file.
 
 ---
 
 ## 5. Technical Constraints
 
-### File Validation (Client & Server)
-
-- Chỉ chấp nhận định dạng:
-  - JPG
-  - JPEG
-  - PNG
-
-- Dung lượng tối đa mỗi ảnh: 5MB
-
-- Số lượng ảnh:
-  - Tối thiểu: 1
-  - Tối đa: 5
-
-### Date Constraint
-
-```text
-completed_at <= current_date
-```
-
-Không cho phép nhập ngày hoàn thành trong tương lai.
-
-### Database Changes
-
-Lưu dữ liệu vào bảng:
-
-```text
-repair_requests
-repair_details
-```
-
-Các trường cần cập nhật:
-
-| Field |
-|--------|
-| notes |
-| completed_at |
-| status |
-| image_url |
+- Cần bổ sung `@MultipartConfig` vào `DetailRequestServlet.java` để hỗ trợ Servlet đọc File Upload.
+- File sẽ được lưu tạm ở một thư mục trên ổ đĩa máy chủ (ví dụ `uploads/requests/`). 
+- Tên file lưu xuống DB phải được ghép chuỗi bằng dấu phẩy (vd: `image1.jpg,image2.png`).
 
 ---
 
 ## 6. Out of Scope
 
 - Ký xác nhận điện tử (Digital Signature)
-- Đánh giá sao cho nhân viên vận hành
-- Gửi khảo sát mức độ hài lòng
-- Thông báo tự động qua Email/SMS sau khi hoàn thành
+- Khảo sát sự hài lòng
+- Gửi thông báo Email/SMS tự động

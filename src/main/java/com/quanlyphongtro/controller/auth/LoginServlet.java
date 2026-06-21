@@ -55,17 +55,27 @@ public class LoginServlet extends BaseServlet {
             return;
         }
 
-        Optional<UserSessionDTO> userOpt = userService.login(username, password);
+        try {
+            Optional<UserSessionDTO> userOpt = userService.login(username, password);
 
-        if (userOpt.isPresent()) {
-            UserSessionDTO user = userOpt.get();
-            HttpSession session = req.getSession(true);
-            session.setAttribute("currentUser", user);
-            session.setMaxInactiveInterval(30 * 60);
+            if (userOpt.isPresent()) {
+                UserSessionDTO user = userOpt.get();
+                HttpSession session = req.getSession(true);
+                session.setAttribute("currentUser", user);
+                session.setMaxInactiveInterval(30 * 60);
 
-            redirectToDashboard(user, req, resp);
-        } else {
-            req.setAttribute("errorMessage", ErrorMessageConstant.INVALID_CREDENTIALS);
+                if (user.isFirstLogin()) {
+                    resp.sendRedirect(req.getContextPath() + "/first-login");
+                } else {
+                    redirectToDashboard(user, req, resp);
+                }
+            } else {
+                req.setAttribute("errorMessage", ErrorMessageConstant.INVALID_CREDENTIALS);
+                req.setAttribute("username", username);
+                req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+            }
+        } catch (com.quanlyphongtro.exception.ForbiddenException e) {
+            req.setAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
             req.setAttribute("username", username);
             req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
         }

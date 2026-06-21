@@ -71,6 +71,22 @@ public class UserDAO extends BaseDAO {
         return Optional.empty();
     }
 
+    public Optional<User> findByEmail(String email) {
+        String sql = "SELECT * FROM dbo.users WHERE email = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("findByEmail failed for email={}", email, e);
+        }
+        return Optional.empty();
+    }
+
     /**
      * Cập nhật trạng thái tài khoản (ACTIVE / LOCKED / INACTIVE).
      */
@@ -112,6 +128,31 @@ public class UserDAO extends BaseDAO {
             ps.executeUpdate();
         } catch (Exception e) {
             logger.error("updatePassword failed for userId={}", userId, e);
+        }
+    }
+
+    /**
+     * Cập nhật thông tin hồ sơ người dùng.
+     */
+    public void updateProfile(User user) {
+        String sql = "UPDATE dbo.users SET full_name = ?, phone = ?, avatar_url = ?, identity_number = ?, dob = ?, gender = ?, permanent_address = ?, updated_at = GETDATE() WHERE user_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getPhone());
+            ps.setString(3, user.getAvatarUrl());
+            ps.setString(4, user.getIdentityNumber());
+            if (user.getDob() != null) {
+                ps.setDate(5, java.sql.Date.valueOf(user.getDob()));
+            } else {
+                ps.setNull(5, java.sql.Types.DATE);
+            }
+            ps.setString(6, user.getGender());
+            ps.setString(7, user.getPermanentAddress());
+            ps.setInt(8, user.getId());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            logger.error("updateProfile failed for userId={}", user.getId(), e);
         }
     }
 }
