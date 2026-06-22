@@ -1,56 +1,50 @@
-# PLAN.md
+# Kế hoạch Triển khai (Implementation Plan) - Payment Management
 
-## Mục tiêu
-- Xây dựng chức năng quản lý giao dịch thanh toán để Ban quản lý kiểm tra, đối soát và duyệt giao dịch.
-- Hỗ trợ xem danh sách giao dịch, xem ảnh xác nhận thanh toán, duyệt giao dịch và đồng bộ trạng thái công nợ.
+Dựa trên tài liệu `CONTEXT.md` và `SPEC.md`, đây là kế hoạch chi tiết để triển khai module Quản lý Thanh toán mà không làm ảnh hưởng đến các module khác. Kế hoạch này áp dụng cấu trúc Java Servlet kết hợp JSP truyền thống đang dùng (tương tự module Hóa đơn).
 
-## Phạm vi
-- Danh sách giao dịch thanh toán với các trường: transactionId, transactionCode, tenantName, roomCode, amount, paymentDate, paymentMethod, status.
-- Chi tiết giao dịch hiển thị ảnh xác nhận thanh toán.
-- Duyệt giao dịch thành công và cập nhật trạng thái công nợ liên quan.
-- Xử lý giao dịch không tồn tại, proof không tồn tại, giao dịch đã duyệt.
-- Phân quyền cho role Management Board.
+## 1. Cấu trúc Database và DAO
+Bảng dữ liệu `payments` đã tồn tại trong `schema.sql` (chứa các trường `payment_id`, `code`, `invoice_id`, `room_id`, `status`, `payment_date`, `payment_method`, `payment_amount`, `created_by`, v.v.). Do đó:
+- **KHÔNG SỬA ĐỔI DATABASE**.
+- Khởi tạo Data Access Object: `PaymentDAO.java` kế thừa `BaseDAO.java`.
+- Trong `PaymentDAO`, sẽ viết các truy vấn SQL thuần sử dụng `PreparedStatement` thay vi dùng ORM để bám sát kiến trúc cũ.
+- Các hàm SQL cần viết:
+  - Lấy danh sách giao dịch có phân trang: `findPayments(keyword, status, offset, limit)`.
+  - Đếm tổng số giao dịch để phân trang: `countPayments(keyword, status)`.
+  - Lấy chi tiết một giao dịch: `findById(paymentId)`.
+  - Cập nhật trạng thái `payments`: `updatePaymentStatus()`.
+  - Thiết lập hàm phụ cập nhật trạng thái hóa đơn `invoices` liên quan sang 'PAID' thông qua một câu Query UPDATE an toàn, bảo đảm gọi kèm Audit Log theo quy định của SPEC. (Note: Không thay đổi `InvoiceDAO.java` để tránh đứt gãy hệ thống cũ).
 
-## Giải pháp kỹ thuật
-### Dữ liệu
-- `PaymentTransaction`: id, transactionCode, tenantId, roomId, debtId, amount, paymentDate, paymentMethod, paymentProofUrl, status, approvedAt, approvedBy.
-- `PaymentStatus`: PENDING, PAID.
+## 2. API & Servlets Controller
+Tuân thủ Servlet API Contract đã lên trong SPEC, nhưng ánh xạ vào Controller hiện hành `BaseServlet`.
+Sẽ tách thành 2 Servlet riêng biệt để tránh đụng độ wild-card mapping như đã từng bị:
 
-### Luồng xử lý
-1. Lấy danh sách giao dịch với tìm kiếm keyword, lọc status, phân trang.
-2. Lấy chi tiết giao dịch hiển thị đầy đủ, bao gồm `paymentProofUrl`.
-3. Duyệt giao dịch: chỉ chấp nhận `PENDING`, chuyển trạng thái sang `PAID`, ghi `approvedAt` và `approvedBy`.
-4. Đồng bộ `Debt.status` của khoản nợ liên quan sang `PAID` khi giao dịch được duyệt.
+- **1. PaymentServlet.java (`GET /manager/payments`)**
+  - Nhận Params: `keyword`, `status`, `page`.
+  - Gọi Service lấy DTO list và số liệu Pagination.
+  - Forward attribute trang tới view: `WEB-INF/views/manager/payments/list.jsp`.
 
-### API đề xuất
-- `GET /api/v1/payments`
-- `GET /api/v1/payments/{transactionId}`
-- `POST /api/v1/payments/{transactionId}/approve`
+- **2. PaymentDetailServlet.java (`GET /manager/payments/*` và `POST /manager/payments/*/approve`)**
+  - HTTP `GET`: Parse ID từ URL, kiểm tra điều kiện NotFound. Lấy DTO detail, forward trả về view `detail.jsp` kèm url ảnh chứng từ.
+  - HTTP `POST` cho Approve:
+    - Bắt Error: Nếu ID sai `404`, nếu user chưa auth báo `401`/`403`.
+    - Handle IllegalStateException (`PAYMENT_ALREADY_APPROVED`).
+    - Gọi DAO Update payment status sang `PAID`, sau đó gọi DAO update invoice thành `PAID`.
+    - Trả về Flash Message và redirect lại màn Chi tiết.
 
-### Quy tắc nghiệp vụ
-- `paymentProofUrl` phải tồn tại; nếu không, trả về 404 `PAYMENT_PROOF_NOT_FOUND`.
-- Giao dịch đã duyệt không được duyệt lại; trả về 400 `PAYMENT_ALREADY_APPROVED`.
-- Giao dịch không tồn tại trả về 404 `TRANSACTION_NOT_FOUND`.
-- Khi duyệt thành công, cập nhật `Debt` tương ứng.
+## 3. Các tầng Service và Model DTO
+- **Models**: Tạo file `PaymentTransaction.java` ánh xạ table.
+- **DTOs**:
+  - `PaymentListItemDTO.java` (cho màn List).
+  - `PaymentDetailDTO.java` (cho màn Detail).
+- **Service**: Tạo Interface `PaymentService` và Implement `PaymentServiceImpl`. Ở đây đặt Logic catch lỗi, kiểm tra transaction tồn tại mớ cho duyệt, phân trang.
 
-### Bảo mật
-- Chỉ người dùng role `Management Board` được phép xem và duyệt giao dịch.
-- Trả về 401 khi chưa xác thực và 403 khi sai role.
+## 4. JSP Views & Security
+- Tạo các file trong thư mục: `src/main/webapp/WEB-INF/views/manager/payments/`
+  1. `list.jsp`: Hiển thị Table các Payments từ DTO có Select Filter.
+  2. `detail.jsp`: Hiển thị form duyệt và `<img>` URL Proof. Form chứa CSRF Token: `<input type="hidden" name="csrfToken" value="${csrfToken}" />`.
+- Phân quyền (Security): 2 Servlet trên sẽ được tự động chặn bởi `RoleFilter` và `AuthFilter` được quy ước sẵn với pattern `/manager/*`.
 
-### Hiệu năng
-- API danh sách và duyệt giao dịch phải phản hồi < 1 giây.
-- API chi tiết giao dịch phải phản hồi < 500ms.
+---
 
-## Rủi ro
-- Đồng bộ trạng thái công nợ thất bại nếu không kiểm soát transaction/rollback.
-- Proof bị mất hoặc đường dẫn ảnh không hợp lệ.
-- Duyệt nhầm giao dịch do thiếu xác thực role.
-
-## Giả định
-- Ảnh proof đã được tải lên và chỉ cần hiển thị URL.
-- Số tiền giao dịch khớp với giá trị công nợ liên quan.
-- Giao dịch thanh toán không hỗ trợ tách nhỏ nhiều phần.
-
-## Tài liệu tham khảo
-- `SPEC.md`
-- `CONTEXT.md`
+> [!IMPORTANT]
+> **Không được dùng `/*` kết hợp với gốc cho một Servlet duy nhất.** Chúng ta đã học bài học lỗi `404/500`, phải tách rõ 2 Servlet cho `List` và `Detail`. Cấm sửa Database schema. Không dùng ORM phức tạp. Không thay đổi các DAO cũ. Tất cả mã nguồn chỉ sinh ra Class/File mới.

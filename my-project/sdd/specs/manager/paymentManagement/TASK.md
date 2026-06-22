@@ -1,0 +1,35 @@
+# Checklist Task Quản lý Thanh toán
+
+Dưới đây là các đầu mục cần code theo thứ tự từ dưới lên trên (Bottom-Up) để đảm bảo không gặp lỗi phụ thuộc trong Java:
+
+## 1. Init Database Models & DTOs
+- [ ] Task 1.1: Tạo class `PaymentTransaction.java` trong thư mục model ánh xạ bảng `payments`.
+- [ ] Task 1.2: Tạo class `PaymentListItemDTO.java` (các trường hiển thị ở list.jsp).
+- [ ] Task 1.3: Tạo class `PaymentDetailDTO.java` (cho màn hình xem ảnh và duyệt).
+
+## 2. Xây dựng Data Access Object (DAO)
+- [ ] Task 2.1: Khởi tạo `PaymentDAO.java` kế thừa `BaseDAO`.
+- [ ] Task 2.2: Viết Query SQL cho `findPayments` & `countPayments` bao gồm cả filter từ khoá và logic Parameter.
+- [ ] Task 2.3: Viết Query SQL cho `findById`.
+- [ ] Task 2.4: Viết Query UPDATE trạng thái `payments` và Insert vào `audit_logs`.
+- [ ] Task 2.5: Viết Query UPDATE trạng thái `invoices` thành PAID (cô lập độc lập, không xài `InvoiceDAO`).
+
+## 3. Tầng Business Service
+- [ ] Task 3.1: Định nghĩa Interface `PaymentService.java`.
+- [ ] Task 3.2: Triển khai `PaymentServiceImpl.java`. Xử lý phân trang Pagination logic.
+- [ ] Task 3.3: Triển khai luồng Check "Transaction Not Found" và bắt "PAYMENT_ALREADY_APPROVED" trước khi gọi DAO approve.
+
+## 4. Tầng Servlet/Controllers
+- [ ] Task 4.1: Xây dựng `PaymentServlet.java` (`GET /manager/payments`). Xử lý Exception gọn gàng.
+- [ ] Task 4.2: Xây dựng `PaymentDetailServlet.java` (`GET /manager/payments/*`).
+- [ ] Task 4.3: Tích hợp method `POST` trong `PaymentDetailServlet` (`/approve`). Bọc `try-catch` chuyển hướng lỗi phù hợp.
+
+## 5. UI/UX Views (JSP)
+- [ ] Task 5.1: Xây dựng `list.jsp` bám sát template Dashboard cũ. Hiển thị thông báo, nút Xem, table UI.
+- [ ] Task 5.2: Xây dựng `detail.jsp` hiển thị 2 cột, 1 bên text, 1 bên `paymentProofUrl`. Có Form duyệt CSRF hidden.
+- [ ] Task 5.3: Mở file `sidebar.jsp`, chèn mục `Giao dịch` trỏ tới `/manager/payments` ngay bên dưới mục Hóa đơn.
+
+## 6. Review & Testing
+- [ ] Thử Build chạy Clean Compile không bắt Error Java.
+- [ ] Kiểm tra Linter lỗi Cú pháp HTML/Java.
+- [ ] Trigger POST /approve để xác minh việc Update Status cho cả bảng Payments & Invoices hoạt động như ý trên UI.

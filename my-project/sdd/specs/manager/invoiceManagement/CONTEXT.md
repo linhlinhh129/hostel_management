@@ -1,51 +1,177 @@
-# Người viết: Bùi Đỉnh | Ngày: 2026-06-13
+# Quản lý hóa đơn
+
+# Người viết: @BuiDinh | Ngày: 2026-06-21
 
 ## 1. PROBLEM STATEMENT
 
-Trong quá trình vận hành chuỗi nhà trọ hoặc chung cư, Ban quản lý liên tục đối mặt với các "nỗi đau" lớn về quản lý tài chính và hóa đơn nếu chỉ thực hiện thủ công:
+Trong hệ thống quản lý nhà trọ, Ban quản lý cần theo dõi và thu các khoản tiền định kỳ từ người thuê như tiền phòng, tiền điện, tiền nước, phí dịch vụ, phí phát sinh và thuế. Nếu quy trình lập hóa đơn phụ thuộc nhiều vào nhập liệu thủ công, dữ liệu dễ bị sai do nhập nhầm chỉ số điện nước, sai đơn giá, thiếu phí hoặc tính nhầm tổng tiền.
 
-- **Sai sót dữ liệu trước phát hành:** Việc nhập sai chỉ số điện, nước, tính nhầm tiền phòng cố định hoặc phí dịch vụ phát sinh rất dễ xảy ra\[cite: 7\]. Nếu không có cơ chế điều chỉnh linh hoạt và cảnh báo logic trước khi gửi cho cư dân, hóa đơn sai sẽ gây mất uy tín và minh bạch\[cite: 7\].
-- **Mất kiểm soát trạng thái công nợ và thu tiền:** Ban quản lý không có một giao diện tổng hợp để theo dõi xem khoản nào chưa thanh toán (`UNPAID`), khoản nào đã thanh toán (`PAID`), và đặc biệt là khoản nào đã chuyển sang nợ xấu quá hạn (`OVERDUE`) để kịp thời thu hồi dòng tiền\[cite: 7\].
-- **Khó khăn trong tra cứu và cung cấp chứng từ:** Khi cư dân thắc mắc về thông tin tính phí hoặc yêu cầu cung cấp hóa đơn, Ban quản lý mất nhiều thời gian tìm kiếm, không thể xuất file lưu trữ nhanh chóng để gửi cho các bên liên quan\[cite: 7\].
+Nỗi đau chính của Ban quản lý là khó đảm bảo hóa đơn chính xác, nhất quán và có thể kiểm tra lại khi dữ liệu liên quan nằm rải rác ở nhiều nơi như thông tin phòng, cơ sở, bảng giá dịch vụ, chỉ số điện nước và hợp đồng/cấu hình giá phòng.
+
+Người thuê cũng bị ảnh hưởng nếu hóa đơn thiếu minh bạch hoặc sai số tiền, vì họ cần hóa đơn làm căn cứ thanh toán và đối chiếu các khoản phải nộp trong từng kỳ.
+
+Ngoài ra, Ban quản lý cần theo dõi trạng thái thu tiền của từng hóa đơn. Nếu không quản lý tốt danh sách hóa đơn, hạn thanh toán và trạng thái thanh toán, hệ thống sẽ khó kiểm soát công nợ, khó phát hiện hóa đơn quá hạn và khó tra cứu lại lịch sử thu tiền.
 
 ## 2. DOMAIN KNOWLEDGE
 
-- **Hóa đơn (Invoice):** Tài liệu tài chính dùng để ghi nhận tổng hợp tất cả các khoản phí phát sinh của một phòng thuê trong một kỳ cụ thể (gồm tiền phòng, điện, nước, phí dịch vụ, thuế...) làm căn cứ thu tiền\[cite: 7\].
-- **Kỳ hóa đơn (Billing Period):** Được xác định định kỳ theo định dạng Tháng/Năm (Ví dụ: `06/2026`)\[cite: 7\].
-- **Nguyên tắc khóa hóa đơn:** Một quy tắc nghiệp vụ bất thành văn quan trọng: Tuyệt đối không được chỉnh sửa bất kỳ thông tin nào đối với các hóa đơn đã ghi nhận trạng thái thanh toán thành công (`PAID`)\[cite: 7\].
-- **Công thức tính toán tự động hệ thống:**
-  - `Tạm tính (Subtotal)` = Tiền phòng + Tiền điện + Tiền nước + Phí dịch vụ\[cite: 7\].
-  - `Tiền thuế` = Tạm tính × Thuế (%)\[cite: 7\].
-  - `Tổng tiền phải nộp` = Tạm tính + Tiền thuế\[cite: 7\].
+- `invoice` / hóa đơn: tài liệu tài chính ghi nhận các khoản phí người thuê phải thanh toán trong một kỳ hóa đơn.
+
+- `invoice_id`: mã định danh nội bộ của hóa đơn, do hệ thống hoặc database tự sinh tăng dần.
+
+- `invoice_code`: mã hóa đơn hiển thị cho người dùng, có định dạng `INV-{roomCode}-{billingPeriod}`.
+
+- `roomCode`: mã phòng được dùng để xác định phòng cần tạo hóa đơn.
+
+- `billingPeriod`: kỳ hóa đơn theo tháng/năm, lưu theo định dạng `YYYYMM`, ví dụ `202606`.
+
+- `dueDate`: hạn thanh toán của hóa đơn.
+
+- `roomFee`: tiền phòng cố định của kỳ hóa đơn, lấy từ phòng, hợp đồng thuê hoặc cấu hình giá phòng.
+
+- `facilities`: bảng/cấu hình lưu đơn giá hiện tại của cơ sở, gồm đơn giá điện, đơn giá nước và phí dịch vụ.
+
+- `meter_readings`: bảng ghi nhận chỉ số điện nước theo phòng và kỳ hạn.
+
+- Snapshot giá: hóa đơn phải lưu lại đơn giá điện, đơn giá nước, phí dịch vụ và tiền phòng tại thời điểm tạo để hóa đơn cũ không bị thay đổi khi bảng giá thay đổi sau này.
+
+- Trạng thái hóa đơn:
+
+  - `UNPAID`: chưa thanh toán.
+
+  - `PAID`: đã thanh toán.
+
+  - `OVERDUE`: chưa thanh toán và đã quá hạn.
+
+- Hóa đơn đã thanh toán không được điều chỉnh.
+
+- Mỗi phòng chỉ được có một hóa đơn trong một kỳ hóa đơn.
 
 ## 3. STAKEHOLDERS
 
-- **Ban quản lý (Management Board):** Người vận hành trực tiếp hệ thống, được lợi từ việc kiểm soát dòng tiền, tra cứu thông tin nhanh và điều chỉnh sai sót hóa đơn\[cite: 7\].
-- **Người thuê phòng (Tenants):** Người chịu ảnh hưởng trực tiếp (nhận hóa đơn, kiểm tra tính đúng đắn của chỉ số tiêu thụ và thực hiện thanh toán)\[cite: 7\].
-- **Chủ nhà trọ / Nhà đầu tư:** Người có quyền quyết định cao nhất, gián tiếp giám sát hiệu quả thu tiền thông qua hệ thống dữ liệu hóa đơn chuẩn hóa\[cite: 7\].
+- Ban quản lý / Management Board:
+
+  - Người sử dụng chính của feature.
+
+  - Cần tạo, kiểm tra, điều chỉnh, tra cứu và xuất hóa đơn.
+
+  - Chịu trách nhiệm theo dõi công nợ và tình trạng thanh toán.
+
+- Người thuê:
+
+  - Người chịu ảnh hưởng trực tiếp bởi số tiền trên hóa đơn.
+
+  - Cần hóa đơn rõ ràng để biết các khoản phải trả và đối chiếu khi có sai sót.
+
+- Quản trị hệ thống / Admin kỹ thuật:
+
+  - Đảm bảo dữ liệu phòng, cơ sở, chỉ số điện nước, phân quyền và audit log hoạt động đúng.
+
+- Kế toán / bộ phận tài chính nếu có:
+
+  - Cần dữ liệu hóa đơn chính xác để đối soát thu tiền và công nợ.
+
+  - Có thể cần file PDF hóa đơn để lưu trữ hoặc cung cấp cho bên liên quan.
+
+- Người có quyền quyết định nghiệp vụ:
+
+  - Ban quản lý hoặc chủ nhà trọ.
+
+  - Cần xác nhận các quy tắc như cách tính thuế, phí dịch vụ, phí khác, thời điểm chuyển quá hạn và quy trình xác nhận thanh toán.
 
 ## 4. CONSTRAINTS (ràng buộc không thể thay đổi)
 
-- **Ràng buộc phân quyền (Role-based):** Chỉ người dùng có vai trò `Management Board` mới có quyền truy cập và thao tác trên tính năng này\[cite: 7\]. Hệ thống trả về `401` nếu chưa đăng nhập và `403` nếu sai role\[cite: 7\].
-- **Ràng buộc nghiệp vụ nhập liệu (Business Logic Constraints):**
-  - Chỉ số điện mới phải $\\ge$ chỉ số điện cũ\[cite: 7\].
-  - Chỉ số nước mới phải $\\ge$ chỉ số nước cũ\[cite: 7\].
-  - Thuế phải $\\ge 0%$\[cite: 7\]. Người dùng không được phép nhập trực tiếp số tiền thuế mà hệ thống phải tự tính\[cite: 7\].
-  - Hạn thanh toán của hóa đơn không được nhỏ hơn ngày hiện tại khi điều chỉnh (`INVALID_DUE_DATE`)\[cite: 7\].
-- **Định dạng file xuất:** Bắt buộc phải tạo và xuất ra file ở định dạng `PDF`\[cite: 7\].
-- **Hiệu năng hệ thống (Performance Constraints - p95):**
-  - Xem danh sách và điều chỉnh hóa đơn: &lt; 1000ms\[cite: 7\].
-  - Xem chi tiết hóa đơn: &lt; 500ms\[cite: 7\].
-  - Xuất file PDF hóa đơn: &lt; 2000ms\[cite: 7\].
+- Chỉ người dùng có vai trò `Management Board` được truy cập chức năng quản lý hóa đơn.
+
+- Mỗi hóa đơn phải liên kết với một phòng hợp lệ.
+
+- `invoice_id` phải duy nhất và được sinh tự động theo thứ tự tăng dần.
+
+- `invoice_code` phải duy nhất và sinh theo format `INV-{roomCode}-{billingPeriod}`.
+
+- Kỳ hóa đơn được xác định theo tháng và năm, lưu theo định dạng `YYYYMM`.
+
+- Mỗi phòng chỉ được có một hóa đơn trong một kỳ hạn.
+
+- Khi tạo hóa đơn, hệ thống phải lấy đơn giá điện, đơn giá nước và phí dịch vụ từ bảng `facilities`.
+
+- Khi tạo hóa đơn, hệ thống phải lấy chỉ số điện nước từ bảng ghi nhận chỉ số điện nước.
+
+- Hóa đơn phải lưu snapshot đơn giá điện, đơn giá nước, phí dịch vụ và tiền phòng tại thời điểm tạo.
+
+- Không được tự động cập nhật hóa đơn cũ khi giá trong bảng `facilities` thay đổi.
+
+- Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số điện cũ.
+
+- Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số nước cũ.
+
+- Phí khác phải lớn hơn hoặc bằng 0.
+
+- Thuế phải lớn hơn hoặc bằng 0 và lưu dưới dạng phần trăm `%`.
+
+- Tiền điện, tiền nước, tiền thuế và tổng tiền phải nộp phải được hệ thống tính tự động.
+
+- Người dùng không được nhập trực tiếp tiền điện, tiền nước, tiền thuế và tổng tiền phải nộp.
+
+- Không được chỉnh sửa hóa đơn đã thanh toán.
+
+- Hóa đơn xuất ra phải ở định dạng PDF.
+
+- Tất cả thao tác tạo và điều chỉnh hóa đơn phải được ghi Audit Log.
 
 ## 5. ASSUMPTIONS (giả định cần confirm)
 
-- **Giả định 1:** Hệ thống đã có một module/chức năng chạy ngầm (Cronjob) tự động quét hàng ngày, nếu hóa đơn có trạng thái `UNPAID` và `ngày hiện tại > hạn thanh toán` thì tự động chuyển sang trạng thái `OVERDUE`\[cite: 7\].
-- **Giả định 2:** Đơn giá của 1 số điện và 1 khối nước được cấu hình ở một module quản lý giá dịch vụ khác, module Hóa đơn này chỉ lấy đơn giá đó nhân với số lượng tiêu thụ (mới trừ cũ)\[cite: 7\].
-- **Giả định 3:** Việc cập nhật trạng thái hóa đơn từ `UNPAID` sang `PAID` sẽ do module Quản lý thanh toán kích hoạt sau khi đối soát thành công, không thực hiện đổi trạng thái thủ công tại module này\[cite: 7\].
+- Giả định `Management Board` là vai trò nghiệp vụ chính thức trong hệ thống và đã tồn tại trong cơ chế phân quyền.
+
+- Giả định mỗi phòng chỉ thuộc về một cơ sở tại thời điểm tạo hóa đơn.
+
+- Giả định bảng `facilities` đang lưu giá điện, giá nước và phí dịch vụ theo từng cơ sở.
+
+- Giả định tiền phòng cố định có thể lấy từ phòng, hợp đồng thuê hoặc cấu hình giá phòng, nhưng nguồn ưu tiên chưa được xác nhận.
+
+- Giả định bảng `meter_readings` đã có dữ liệu chỉ số điện nước trước khi Ban quản lý tạo hóa đơn.
+
+- Giả định kỳ hóa đơn `YYYYMM` là đủ, không cần lưu ngày bắt đầu/kết thúc kỳ hóa đơn.
+
+- Giả định thuế luôn tính trên tạm tính và theo phần trăm.
+
+- Giả định `otherFee` là tổng phí phát sinh khác, không cần tách thành nhiều dòng chi tiết.
+
+- Giả định trạng thái `OVERDUE` có thể được hệ thống tự xác định dựa trên `dueDate` và trạng thái chưa thanh toán.
+
+- Giả định hóa đơn chỉ được điều chỉnh trước khi thanh toán, không có quy trình duyệt điều chỉnh.
+
+- Giả định file PDF xuất ra chỉ phục vụ lưu trữ/cung cấp thông tin, chưa phải hóa đơn điện tử hợp pháp theo chuẩn thuế.
+
+- Giả định người thuê không trực tiếp tạo hoặc chỉnh sửa hóa đơn.
 
 ## 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời)
 
-- **Câu hỏi 1:** Khi điều chỉnh chỉ số điện/nước mới hoặc tiền phòng, hệ thống có cần lưu lại lịch sử thay đổi (Giá trị cũ, Giá trị mới) để phục vụ việc giải trình với cư dân sau này hay chỉ ghi nhận log chỉnh sửa chung (`updatedBy`, `updatedAt`)\[cite: 7\]?
-- **Câu hỏi 2:** Hóa đơn sau khi được xuất file PDF thành công, URL tải về (`downloadUrl`) sẽ được lưu trữ công khai trên cloud storage (như S3) hay cần một cơ chế bảo mật (Presigned URL) để tránh việc người ngoài mò ra link tải hóa đơn của phòng khác\[cite: 7\]?
-- **Câu hỏi 3:** Có quy định giới hạn số lần Ban quản lý được phép điều chỉnh một hóa đơn trước khi phát hành hay không\[cite: 7\]?
+- Vai trò `Management Board` trong hệ thống tương ứng với role nào ở database: `ADMIN`, `MANAGER`, `OPERATOR` hay một role riêng?
+
+- Nguồn lấy tiền phòng cố định ưu tiên theo thứ tự nào: hợp đồng thuê, bảng phòng hay cấu hình giá phòng?
+
+- Nếu phòng đổi giá giữa kỳ thì hóa đơn dùng giá cũ, giá mới hay cần tính theo số ngày áp dụng từng mức giá?
+
+- Nếu người thuê chuyển phòng giữa kỳ thì hóa đơn tính theo phòng cũ, phòng mới hay tách thành nhiều hóa đơn?
+
+- Kỳ hóa đơn có luôn theo tháng dương lịch không, hay có thể theo ngày bắt đầu hợp đồng?
+
+- Hạn thanh toán mặc định là ngày nào nếu Ban quản lý không nhập?
+
+- Thuế có bắt buộc áp dụng cho mọi hóa đơn không, hay có trường hợp thuế bằng 0?
+
+- Phí dịch vụ là phí cố định theo phòng, theo người thuê, theo cơ sở hay theo số lượng người trong phòng?
+
+- `otherFee` có cần nhập lý do/loại phí chi tiết hay chỉ cần một tổng số tiền và ghi chú?
+
+- Hệ thống có cần lưu lịch sử các lần điều chỉnh hóa đơn không, ngoài `updatedAt` và Audit Log?
+
+- Ai có quyền xác nhận hóa đơn đã thanh toán?
+
+- Khi hóa đơn quá hạn, trạng thái `OVERDUE` được cập nhật tự động theo lịch hằng ngày hay chỉ tính động khi xem danh sách?
+
+- Có cho phép xóa hóa đơn chưa thanh toán không, hay chỉ cho phép điều chỉnh?
+
+- Nếu thiếu dữ liệu chỉ số điện nước, Ban quản lý có được nhập bổ sung ngay trong luồng tạo hóa đơn không?
+
+- PDF hóa đơn cần theo mẫu thiết kế nào, có cần logo, chữ ký, thông tin chủ trọ hoặc thông tin người thuê không?

@@ -197,7 +197,7 @@ BEGIN
         code                NVARCHAR(50)        NOT NULL UNIQUE,
         invoice_id          INT                 NULL,
         room_id             INT                 NOT NULL,
-        status              NVARCHAR(20)        NULL DEFAULT 'SUCCESS',
+        status              NVARCHAR(20)        NULL DEFAULT 'SUCCESS', -- PENDING, SUCCESS, REJECTED  
         payment_date        DATE                NOT NULL,
         payment_method      NVARCHAR(50)        NOT NULL DEFAULT 'BANK_TRANSFER',
         payment_amount		DECIMAL(18,2)		NOT NULL,
@@ -316,6 +316,51 @@ BEGIN
         CONSTRAINT FK_audit_logs_users_creator
             FOREIGN KEY (created_by) REFERENCES dbo.users(user_id)
     );
+END
+GO
+
+-- ============================================================
+-- 11. CONTRACTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.contracts', N'U') IS NULL
+BEGIN
+	CREATE TABLE dbo.contracts (
+		contract_id                INT IDENTITY(1,1) PRIMARY KEY,
+		code                       NVARCHAR(50) NOT NULL UNIQUE,
+
+		room_id                    INT NOT NULL,
+		tenant_id                  INT NOT NULL,
+
+		tenant_full_name           NVARCHAR(100) NOT NULL,
+		tenant_dob                 DATE NULL,
+		tenant_permanent_address   NVARCHAR(500) NULL,
+		tenant_identity_number     NVARCHAR(50) NOT NULL,
+		tenant_identity_issue_date DATE NULL,
+		tenant_identity_issue_place NVARCHAR(200) NULL,
+		tenant_phone               NVARCHAR(20) NULL,
+
+		amount_in_words            NVARCHAR(500) NULL,
+
+		signed_date                DATE NOT NULL,
+		start_date                 DATE NOT NULL,
+		end_date                   DATE NOT NULL,
+
+		status                     NVARCHAR(20) NOT NULL DEFAULT 'ACTIVE',--'ACTIVE','INACTIVE'
+
+		created_by                 INT NULL,
+		created_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),
+		updated_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),
+		deleted_at                 DATETIME2 NULL,
+
+		CONSTRAINT FK_contracts_rooms
+			FOREIGN KEY (room_id) REFERENCES dbo.rooms(room_id),
+
+		CONSTRAINT FK_contracts_users_tenant
+			FOREIGN KEY (tenant_id) REFERENCES dbo.users(user_id),
+
+		CONSTRAINT FK_contracts_users_creator
+			FOREIGN KEY (created_by) REFERENCES dbo.users(user_id)
+	);
 END
 GO
 
