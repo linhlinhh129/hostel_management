@@ -1,34 +1,21 @@
 package com.quanlyphongtro.dao;
 
-<<<<<<< HEAD
 import com.quanlyphongtro.model.Facility;
-=======
->>>>>>> feature/invoiceManagement-buidinh
 import com.quanlyphongtro.model.Room;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-<<<<<<< HEAD
 import java.sql.SQLException;
-=======
->>>>>>> feature/invoiceManagement-buidinh
 import java.util.Optional;
 
 public class RoomDAO extends BaseDAO {
 
-<<<<<<< HEAD
     private Room mapRoom(ResultSet rs) throws SQLException {
         Room room = new Room();
         room.setId(rs.getInt("room_id"));
         room.setFacilityId(rs.getInt("facility_id"));
-=======
-    private Room mapRow(ResultSet rs) throws Exception {
-        Room room = new Room();
-        room.setRoomId(rs.getInt("room_id"));
-        room.setFacilityId(getInteger(rs, "facility_id"));
->>>>>>> feature/invoiceManagement-buidinh
         room.setCode(rs.getString("code"));
         room.setArea(rs.getBigDecimal("area"));
         room.setStatus(rs.getString("status"));
@@ -36,7 +23,6 @@ public class RoomDAO extends BaseDAO {
         room.setDepositAmount(rs.getBigDecimal("deposit_amount"));
         room.setContractStartDate(toLocalDate(rs, "contract_start_date"));
         room.setContractEndDate(toLocalDate(rs, "contract_end_date"));
-<<<<<<< HEAD
         room.setRoomFee(rs.getBigDecimal("room_fee"));
         room.setCreatedAt(toLocalDateTime(rs, "created_at"));
         room.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
@@ -59,7 +45,19 @@ public class RoomDAO extends BaseDAO {
         f.setInternetFee(rs.getBigDecimal("f_internet_fee"));
         f.setServiceFee(rs.getBigDecimal("f_service_fee"));
         return f;
-=======
+    }
+
+    private Room mapRow(ResultSet rs) throws Exception {
+        Room room = new Room();
+        room.setRoomId(rs.getInt("room_id"));
+        room.setFacilityId(getInteger(rs, "facility_id"));
+        room.setCode(rs.getString("code"));
+        room.setArea(rs.getBigDecimal("area"));
+        room.setStatus(rs.getString("status"));
+        room.setTenantId(getInteger(rs, "tenant_id"));
+        room.setDepositAmount(rs.getBigDecimal("deposit_amount"));
+        room.setContractStartDate(toLocalDate(rs, "contract_start_date"));
+        room.setContractEndDate(toLocalDate(rs, "contract_end_date"));
         room.setCreatedAt(toLocalDateTime(rs, "created_at"));
         room.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
         room.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
@@ -97,7 +95,6 @@ public class RoomDAO extends BaseDAO {
             logger.error("RoomDAO.findByCode failed for code={}", code, e);
         }
         return Optional.empty();
->>>>>>> feature/invoiceManagement-buidinh
     }
 
     public Optional<Room> findByTenantId(int tenantId) {
@@ -107,7 +104,6 @@ public class RoomDAO extends BaseDAO {
             ps.setInt(1, tenantId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-<<<<<<< HEAD
                     return Optional.of(mapRoom(rs));
                 }
             }
@@ -136,14 +132,47 @@ public class RoomDAO extends BaseDAO {
             }
         } catch (Exception e) {
             logger.error("findFacilityByRoomId failed for roomId={}", roomId, e);
-=======
-                    return Optional.of(mapRow(rs));
-                }
-            }
-        } catch (Exception e) {
-            logger.error("RoomDAO.findByTenantId failed for tenantId={}", tenantId, e);
->>>>>>> feature/invoiceManagement-buidinh
         }
         return Optional.empty();
+    }
+
+    public boolean update(Room room) {
+        String sql = "UPDATE dbo.rooms SET facility_id = ?, code = ?, area = ?, status = ?, tenant_id = ?, " +
+                     "deposit_amount = ?, contract_start_date = ?, contract_end_date = ?, room_fee = ?, " +
+                     "updated_at = GETDATE() WHERE room_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, room.getFacilityId());
+            ps.setString(2, room.getCode());
+            if (room.getArea() != null) {
+                ps.setBigDecimal(3, room.getArea());
+            } else {
+                ps.setNull(3, java.sql.Types.DECIMAL);
+            }
+            ps.setString(4, room.getStatus());
+            if (room.getTenantId() != null) {
+                ps.setInt(5, room.getTenantId());
+            } else {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            }
+            ps.setBigDecimal(6, room.getDepositAmount() != null ? room.getDepositAmount() : java.math.BigDecimal.ZERO);
+            if (room.getContractStartDate() != null) {
+                ps.setDate(7, java.sql.Date.valueOf(room.getContractStartDate()));
+            } else {
+                ps.setNull(7, java.sql.Types.DATE);
+            }
+            if (room.getContractEndDate() != null) {
+                ps.setDate(8, java.sql.Date.valueOf(room.getContractEndDate()));
+            } else {
+                ps.setNull(8, java.sql.Types.DATE);
+            }
+            ps.setBigDecimal(9, room.getRoomFee());
+            ps.setInt(10, room.getId() != null && room.getId() > 0 ? room.getId() : room.getRoomId());
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("update failed for roomId={}", room.getId(), e);
+        }
+        return false;
     }
 }

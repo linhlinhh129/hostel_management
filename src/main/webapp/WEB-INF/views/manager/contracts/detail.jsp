@@ -2,10 +2,82 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Chi tiết Hợp đồng - BQL"/>
+<c:set var="pageTitle" value="Chi tiết Hợp đồng ${contract.code} - BQL"/>
 <c:set var="pageRole" value="MANAGER"/>
 <c:set var="activeMenu" value="contracts"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
+
+<style>
+  /* Styling cho container hiển thị hợp đồng trên màn hình */
+  .document-viewer-wrapper {
+    background-color: #f1f5f9;
+    padding: 30px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+  }
+
+  .a4-container {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm 25mm; /* Tăng lề trái phải lên 25mm */
+    background: white;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    font-family: 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+  }
+  .a4-container h1, .a4-container h2, .a4-container h3, .a4-container h4, .a4-container h5, .a4-container h6 {
+    font-family: 'Times New Roman', serif;
+    font-weight: bold;
+    text-align: center;
+    color: #000;
+  }
+  .a4-container .text-center { text-align: center; }
+  .a4-container .text-right { text-align: right; }
+  .a4-container .text-bold { font-weight: bold; }
+  .a4-container .mt-4 { margin-top: 1.5rem; }
+  .a4-container .mb-4 { margin-bottom: 1.5rem; }
+  .a4-container p { margin-bottom: 0.5rem; }
+  .a4-container ul { list-style-type: none; padding-left: 0; }
+  .a4-container ul li::before { content: "- "; }
+  
+  @media print {
+    @page {
+      margin: 15mm;
+    }
+    body {
+      background: white !important;
+    }
+    /* Hide layout elements completely */
+    .sidebar, .topbar, .page-header, .sidebar-overlay, .main-footer, .no-print {
+      display: none !important;
+    }
+    /* Reset wrappers to allow natural flow for print */
+    .app-shell, .main-wrapper, .page-content, .document-viewer-wrapper {
+      display: block !important;
+      position: static !important;
+      height: auto !important;
+      width: auto !important;
+      overflow: visible !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+    }
+    /* Expand A4 container to fit print page naturally */
+    .a4-container {
+      position: static !important;
+      box-shadow: none !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      min-height: auto !important;
+    }
+  }
+</style>
+
 <body>
 <div class="app-shell">
   <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
@@ -15,133 +87,134 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header">
+      <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div>
-          <h1>Chi tiết Hợp đồng</h1>
-          <p>Phòng <strong><c:out value="${contract.roomCode}"/></strong> — <c:out value="${contract.facilityName}"/></p>
+          <a href="${ctx}/manager/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
+          <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
+          <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
         </div>
-        <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary">← Quay lại</a>
-      </div>
-
-      <div class="row g-4">
-        <!-- Thông tin hợp đồng -->
-        <div class="col-md-6">
-          <div class="data-surface">
-            <h5 class="mb-3">Thông tin hợp đồng</h5>
-            <dl class="detail-list">
-              <dt>Phòng</dt>           <dd><c:out value="${contract.roomCode}"/></dd>
-              <dt>Cơ sở</dt>           <dd><c:out value="${contract.facilityName}"/></dd>
-              <dt>Người thuê</dt>      <dd><c:out value="${contract.tenantName}"/></dd>
-              <dt>Giá thuê</dt>
-              <dd><fmt:formatNumber value="${contract.rentPrice}" type="number" groupingUsed="true"/>đ/tháng</dd>
-              <dt>Ngày vào</dt>        <dd><c:out value="${contract.moveInDate}"/></dd>
-              <dt>Ngày hết hạn</dt>   <dd><c:out value="${contract.expiryDate}"/></dd>
-              <dt>Chu kỳ TT</dt>      <dd><c:out value="${contract.billingCycle}"/> tháng</dd>
-              <dt>Trạng thái</dt>
-              <dd>
-                <span class="badge-hms
-                  <c:choose>
-                    <c:when test="${contract.status == 'ACTIVE'}">success</c:when>
-                    <c:when test="${contract.status == 'EXPIRING_SOON'}">warning</c:when>
-                    <c:when test="${contract.status == 'OVERDUE'}">danger</c:when>
-                    <c:otherwise>secondary</c:otherwise>
-                  </c:choose>">
-                  <c:choose>
-                    <c:when test="${contract.status == 'ACTIVE'}">Đang hiệu lực</c:when>
-                    <c:when test="${contract.status == 'EXPIRING_SOON'}">Sắp hết hạn</c:when>
-                    <c:when test="${contract.status == 'OVERDUE'}">Quá hạn</c:when>
-                    <c:otherwise>Đã thanh lý</c:otherwise>
-                  </c:choose>
-                </span>
-              </dd>
-              <dt>Ngày tạo</dt>       <dd><c:out value="${contract.createdAt}"/></dd>
-              <dt>Người tạo</dt>      <dd><c:out value="${contract.createdByName}"/></dd>
-            </dl>
-          </div>
-        </div>
-
-        <!-- Tiền cọc + Tài liệu -->
-        <div class="col-md-6">
-          <div class="data-surface mb-4">
-            <h5 class="mb-3">Tiền cọc</h5>
-            <dl class="detail-list">
-              <dt>Số tiền cọc</dt>
-              <dd><fmt:formatNumber value="${contract.depositAmount}" type="number" groupingUsed="true"/>đ</dd>
-              <dt>Trạng thái</dt>
-              <dd>
-                <span class="badge-hms
-                  <c:choose>
-                    <c:when test="${contract.depositStatus == 'PAID'}">success</c:when>
-                    <c:when test="${contract.depositStatus == 'PARTIAL'}">warning</c:when>
-                    <c:otherwise>danger</c:otherwise>
-                  </c:choose>">
-                  <c:choose>
-                    <c:when test="${contract.depositStatus == 'PAID'}">Đã đóng đủ</c:when>
-                    <c:when test="${contract.depositStatus == 'PARTIAL'}">Đóng 1 phần</c:when>
-                    <c:otherwise>Chưa đóng</c:otherwise>
-                  </c:choose>
-                </span>
-              </dd>
-            </dl>
-
-            <!-- Cập nhật tiền cọc (chỉ hiện khi hợp đồng chưa thanh lý) -->
-            <c:if test="${contract.status != 'TERMINATED'}">
-              <form method="post" action="${ctx}/manager/contracts/deposit" class="mt-3 d-flex gap-2 align-items-end">
-                <input type="hidden" name="contractId" value="${contract.id}"/>
-                <div>
-                  <label class="form-label small">Cập nhật trạng thái cọc</label>
-                  <select name="depositStatus" class="form-select form-select-sm">
-                    <option value="UNPAID"  ${contract.depositStatus == 'UNPAID'  ? 'selected' : ''}>Chưa đóng</option>
-                    <option value="PARTIAL" ${contract.depositStatus == 'PARTIAL' ? 'selected' : ''}>Đóng 1 phần</option>
-                    <option value="PAID"    ${contract.depositStatus == 'PAID'    ? 'selected' : ''}>Đã đóng đủ</option>
-                  </select>
-                </div>
-                <button type="submit" class="btn-mintlify-secondary btn-sm">Lưu</button>
-              </form>
-            </c:if>
-          </div>
-
-          <!-- Tài liệu -->
-          <div class="data-surface">
-            <h5 class="mb-3">Tài liệu hợp đồng</h5>
-            <c:choose>
-              <c:when test="${not empty contract.documentPath}">
-                <p><a href="${ctx}${contract.documentPath}" target="_blank">📄 Xem tài liệu</a></p>
-              </c:when>
-              <c:otherwise>
-                <p class="text-muted small">Chưa có tài liệu đính kèm.</p>
-              </c:otherwise>
-            </c:choose>
-            <c:if test="${contract.status != 'TERMINATED'}">
-              <form method="post" action="${ctx}/manager/contracts/${contract.id}/upload"
-                    enctype="multipart/form-data" class="mt-2 d-flex gap-2 align-items-end">
-                <div>
-                  <label class="form-label small">Upload file (PDF/JPG/PNG, max 5MB)</label>
-                  <input type="file" name="contractFile" class="form-control form-control-sm"
-                         accept=".pdf,.jpg,.jpeg,.png"/>
-                </div>
-                <button type="submit" class="btn-mintlify-secondary btn-sm">Tải lên</button>
-              </form>
-            </c:if>
-          </div>
+        <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+          <button onclick="window.print()" class="btn-mintlify-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            In Hợp Đồng / Lưu PDF
+          </button>
         </div>
       </div>
 
-      <!-- Thanh lý hợp đồng -->
-      <c:if test="${contract.status != 'TERMINATED'}">
-        <div class="data-surface mt-4">
-          <h5 class="text-danger mb-2">⚠ Thanh lý hợp đồng</h5>
-          <p class="text-muted small">Thanh lý sẽ giải phóng phòng và vô hiệu hóa tài khoản người thuê. Thao tác này <strong>không thể hoàn tác</strong>.</p>
-          <form method="post" action="${ctx}/manager/contracts/${contract.id}/terminate"
-                onsubmit="return confirm('Bạn có chắc muốn thanh lý hợp đồng này?')">
-            <button type="submit" class="btn btn-danger btn-sm">Thanh lý hợp đồng</button>
-          </form>
+      <div class="document-viewer-wrapper mt-4">
+        <!-- A4 Document embedded visually inside the dashboard -->
+        <div class="a4-container">
+          <div class="text-center mb-4">
+            <h4 class="mb-1">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
+            <h5 class="mb-2"><u>Độc lập - Tự do - Hạnh phúc</u></h5>
+          </div>
+
+          <h3 class="text-center mt-4 mb-4">HỢP ĐỒNG THUÊ PHÒNG TRỌ</h3>
+          
+          <p>Hôm nay, ngày <strong><c:out value="${contract.signedDay}"/>/<c:out value="${contract.signedMonth}"/>/<c:out value="${contract.signedYear}"/></strong>, tại địa chỉ: <strong><c:out value="${contract.facility.address}"/></strong></p>
+          <p>Chúng tôi gồm:</p>
+          
+          <div class="mt-3 mb-3">
+            <p class="text-bold">1. Đại diện bên cho thuê phòng trọ (Bên A)</p>
+            <p>Ông/Bà: <strong><c:out value="${contract.manager.fullName}"/></strong></p>
+            <p>Sinh ngày: <strong><c:out value="${contract.manager.dob}"/></strong></p>
+            <p>CMND/CCCD số: <strong><c:out value="${contract.manager.identityNumber}"/></strong>, cấp tại: <strong>Cục Cảnh sát quản lý hành chính về trật tự xã hội</strong></p>
+            <p>Số điện thoại: <strong><c:out value="${contract.manager.phone}"/></strong></p>
+          </div>
+
+          <div class="mb-3">
+            <p class="text-bold">2. Bên thuê phòng trọ (Bên B)</p>
+            <p>Ông/Bà: <strong><c:out value="${contract.tenantFullName}"/></strong></p>
+            <p>Sinh ngày: <strong><c:out value="${contract.tenantDob}"/></strong></p>
+            <p>Nơi đăng ký hộ khẩu thường trú: <strong><c:out value="${contract.tenantPermanentAddress}"/></strong></p>
+            <p>Số CMND/CCCD: <strong><c:out value="${contract.tenantIdentityNumber}"/></strong>, cấp ngày <strong><c:out value="${contract.tenantIdentityIssueDate}"/></strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
+            <p>Số điện thoại: <strong><c:out value="${contract.tenantPhone}"/></strong></p>
+          </div>
+
+          <p>Sau khi bàn bạc trên tinh thần dân chủ, hai bên cùng có lợi, cùng thống nhất như sau:</p>
+
+          <p class="text-bold mt-4" style="text-decoration: underline">Điều 1: Nội dung thuê phòng</p>
+          <p>Bên A đồng ý cho bên B thuê 01 phòng ở tại địa chỉ: <strong><c:out value="${contract.facility.address}"/></strong></p>
+          <p>Trong phòng gồm có:</p>
+          <ul>
+            <li>01 bình nóng lạnh</li>
+            <li>01 máy điều hòa và 01 điều khiển</li>
+            <li>01 tủ quần áo</li>
+            <li>01 tủ bếp</li>
+            <li>01 giường ngủ</li>
+            <li>01 bàn học và ghế tựa</li>
+            <li>Thiết bị vệ sinh</li>
+            <li>Đèn chiếu sáng đầy đủ</li>
+          </ul>
+          
+          <p class="text-bold mt-4" style="text-decoration: underline">Điều 2: Giá thuê và hình thức thanh toán</p>
+          <p>Giá thuê: <strong><fmt:formatNumber value="${contract.room.roomFee}" pattern="#,##0"/> đ/tháng</strong></p>
+          <p>Bằng chữ: <strong><c:out value="${contract.amountInWords}"/></strong></p>
+          <p>Phòng số: <strong><c:out value="${contract.room.code}"/></strong></p>
+          <p>Tầng: <strong><c:out value="${contract.room.code}"/></strong></p>
+          <p>Hình thức thanh toán: Tiền mặt hoặc chuyển khoản vào đầu tháng, từ ngày 01 đến ngày 05 hàng tháng.</p>
+          <p>Hợp đồng có giá trị kể từ <strong><c:out value="${contract.startDate}"/></strong> đến <strong><c:out value="${contract.endDate}"/></strong></p>
+          <p>Tiền điện: <strong><fmt:formatNumber value="${contract.facility.electricityPrice}" pattern="#,##0"/> đ/số</strong>, tính theo chỉ số công tơ, thanh toán vào cuối các tháng.</p>
+          <p>Tiền Internet: <strong><fmt:formatNumber value="${contract.facility.internetFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
+          <p>Tiền dịch vụ: <strong><fmt:formatNumber value="${contract.facility.serviceFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
+          <p>Bên B đặt cọc cho bên A số tiền là: <strong>3.000.000 đ</strong></p>
+          <p>Bằng chữ: <strong>Ba triệu đồng chẵn</strong></p>
+          <ul>
+            <li>Tiền cọc sẽ được hoàn trả đầy đủ cho bên thuê khi hợp đồng này kết thúc và bên thuê hoàn trả đầy đủ chi phí thuê, bao gồm tiền phòng, điện, nước, phí dịch vụ và các chi phí khác liên quan.</li>
+            <li>Trường hợp bên B hủy hợp đồng trước thời hạn, bên B sẽ không được hoàn trả số tiền đã đặt cọc.</li>
+          </ul>
+          
+          <p class="text-bold mt-4" style="text-decoration: underline">Điều 3: Trách nhiệm của các bên</p>
+          <p class="text-bold">Trách nhiệm của bên A</p>
+          <ul>
+            <li>Tạo mọi điều kiện thuận lợi để bên B thực hiện theo hợp đồng.</li>
+            <li>Cung cấp nguồn điện, nước, wifi cho bên B sử dụng.</li>
+            <li>Hướng dẫn bên B chấp hành đúng các quy định của địa phương.</li>
+          </ul>
+          <p class="text-bold mt-2">Trách nhiệm của bên B</p>
+          <ul>
+            <li>Thanh toán đầy đủ các khoản tiền theo đúng thỏa thuận, đúng thời hạn từ ngày 01 đến ngày 05 hàng tháng. Nếu nộp muộn quá 03 ngày kể từ ngày đến hạn, mỗi ngày muộn sẽ tính bằng 1% giá trị tiền phòng/tháng, mọi trường hợp khác cần sự đồng ý của bên A.</li>
+            <li>Bảo quản các trang thiết bị và cơ sở vật chất của bên A trang bị ban đầu. Nếu làm hỏng phải sửa chữa, nếu mất mát phải đền bù.</li>
+            <li>Không được tự ý sửa chữa, cải tạo cơ sở vật chất, tuyệt đối không khoan đục tường khi chưa được sự đồng ý của bên A. Nếu phát hiện tự ý khoan đục sẽ phạt <strong>500.000 đ/lần</strong>. Trường hợp tự ý khoan đục vào đường điện gây cháy nổ thì bên B phải hoàn toàn chịu trách nhiệm với những thiệt hại do việc khoan đục gây ra.</li>
+            <li>Giữ gìn vệ sinh trong và ngoài khuôn viên của phòng trọ.</li>
+            <li>Tự bảo quản đồ đạc và phương tiện đi lại của mình.</li>
+            <li>Bên B phải chấp hành mọi quy định của pháp luật Nhà nước và quy định của địa phương.</li>
+            <li>Nếu bên B cho khách ở qua đêm thì phải báo và được sự đồng ý của chủ nhà, đồng thời phải chịu trách nhiệm về các hành vi vi phạm pháp luật của khách trong thời gian ở lại.</li>
+            <li>Bên B không được cờ bạc, buôn bán, tàng trữ ma túy, các chất cấm mà Nhà nước quy định. Bên B phải tuân thủ các quy định về phòng cháy, chữa cháy, giữ gìn vệ sinh chung. Không được đánh nhau, cãi nhau, chửi nhau hoặc gây mất trật tự an ninh trong khu vực cư trú.</li>
+            <li>Chỉ được sử dụng bếp điện đun nấu trong khuôn viên phòng ở.</li>
+          </ul>
+
+          <p class="text-bold mt-4" style="text-decoration: underline">Điều 4: Trách nhiệm chung</p>
+          <ul>
+            <li>Hai bên phải tạo điều kiện cho nhau thực hiện hợp đồng.</li>
+            <li>Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất.</li>
+            <li>Trường hợp xảy ra tranh chấp hoặc một bên vi phạm hợp đồng thì hai bên cùng nhau giải quyết tranh chấp. Nếu không giải quyết được thì yêu cầu cơ quan có thẩm quyền giải quyết.</li>
+            <li>Hợp đồng được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản.</li>
+          </ul>
+
+          <div class="d-flex justify-content-between" style="display: flex; justify-content: space-around; margin-top: 80px; padding-bottom: 50px;">
+            <div class="text-center">
+              <p class="text-bold">ĐẠI DIỆN BÊN B</p>
+              <p><em>(Ký, ghi rõ họ tên)</em></p>
+              <br/><br/><br/><br/>
+              <p><strong><c:out value="${contract.tenantFullName}"/></strong></p>
+            </div>
+            <div class="text-center">
+              <p class="text-bold">ĐẠI DIỆN BÊN A</p>
+              <p><em>(Ký, ghi rõ họ tên)</em></p>
+              <br/><br/><br/><br/>
+              <p><strong><c:out value="${contract.manager.fullName}"/></strong></p>
+            </div>
+          </div>
         </div>
-      </c:if>
+      </div>
 
     </main>
   </div>
 </div>
+
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 </body>
 </html>

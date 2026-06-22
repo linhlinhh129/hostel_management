@@ -1,13 +1,18 @@
 package com.quanlyphongtro.dao;
 
-<<<<<<< HEAD
 import com.quanlyphongtro.util.DatabaseUtil;
+import com.quanlyphongtro.dto.PaymentListItemDTO;
+import com.quanlyphongtro.dto.PaymentDetailDTO;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaymentDAO extends BaseDAO {
 
@@ -28,19 +33,8 @@ public class PaymentDAO extends BaseDAO {
         } catch (Exception e) {
             logger.error("insertPayment failed for code={}", code, e);
             return false;
-=======
-import com.quanlyphongtro.dto.PaymentListItemDTO;
-import com.quanlyphongtro.dto.PaymentDetailDTO;
-import com.quanlyphongtro.util.DatabaseUtil;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-public class PaymentDAO {
+        }
+    }
 
     public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, int offset, int limit) {
         List<PaymentListItemDTO> list = new ArrayList<>();
@@ -199,7 +193,6 @@ public class PaymentDAO {
     }
     
     public void approvePayment(int paymentId, int approvedBy) throws SQLException {
-        // 1. Update payment status to SUCCESS
         String updatePaymentSql = "UPDATE payments SET status = 'SUCCESS', updated_at = GETDATE() " +
                                   "WHERE payment_id = ? AND status = 'PENDING' AND " +
                                   "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
@@ -209,7 +202,6 @@ public class PaymentDAO {
             ps.setInt(2, approvedBy);
             int rows = ps.executeUpdate();
             if (rows > 0) {
-                // 2. Update related invoice to PAID
                 String updateInvoiceSql = "UPDATE invoices SET status = 'PAID', updated_at = GETDATE() WHERE invoice_id = (SELECT invoice_id FROM payments WHERE payment_id = ?)";
                 try (PreparedStatement psInv = conn.prepareStatement(updateInvoiceSql)) {
                     psInv.setInt(1, paymentId);
@@ -228,7 +220,6 @@ public class PaymentDAO {
             ps.setInt(1, paymentId);
             ps.setInt(2, rejectedBy);
             ps.executeUpdate();
->>>>>>> feature/invoiceManagement-buidinh
         }
     }
 }

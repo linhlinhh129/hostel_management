@@ -1,39 +1,8 @@
 package com.quanlyphongtro.service.impl;
 
 import com.quanlyphongtro.dao.InvoiceDAO;
-<<<<<<< HEAD
-import com.quanlyphongtro.model.Invoice;
-import com.quanlyphongtro.service.InvoiceService;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-public class InvoiceServiceImpl implements InvoiceService {
-
-    private final InvoiceDAO invoiceDAO = new InvoiceDAO();
-
-    @Override
-    public List<Invoice> getInvoicesByRoomId(int roomId) {
-        return invoiceDAO.findByRoomId(roomId);
-    }
-
-    @Override
-    public Optional<Invoice> getInvoiceById(int id, int roomId) {
-        return invoiceDAO.findByIdAndRoomId(id, roomId);
-    }
-
-    @Override
-    public BigDecimal getUnpaidTotal(int roomId) {
-        return invoiceDAO.getUnpaidTotalByRoomId(roomId);
-    }
-
-    @Override
-    public Optional<Invoice> getCurrentInvoice(int roomId) {
-        return invoiceDAO.getCurrentInvoiceByRoomId(roomId);
-=======
-import com.quanlyphongtro.dto.InvoiceListItemDTO;
 import com.quanlyphongtro.dto.InvoiceDetailDTO;
+import com.quanlyphongtro.dto.InvoiceListItemDTO;
 import com.quanlyphongtro.model.Invoice;
 import com.quanlyphongtro.service.InvoiceService;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -44,14 +13,35 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public class InvoiceServiceImpl implements InvoiceService {
     private InvoiceDAO invoiceDAO = new InvoiceDAO();
 
     @Override
-    public List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod, int page, int size) {
-        int offset = (page - 1) * size;
-        return invoiceDAO.findInvoices(managerId, keyword, status, billingPeriod, offset, size);
+    public List<Invoice> getInvoicesByRoomId(int roomId) {
+        return invoiceDAO.findByRoomId(roomId);
+    }
+
+    @Override
+    public Optional<Invoice> getInvoiceById(int invoiceId, int roomId) {
+        return invoiceDAO.findByIdAndRoomId(invoiceId, roomId);
+    }
+
+    @Override
+    public BigDecimal getUnpaidTotal(int roomId) {
+        return invoiceDAO.getUnpaidTotalByRoomId(roomId);
+    }
+
+    @Override
+    public Optional<Invoice> getCurrentInvoice(int roomId) {
+        return invoiceDAO.getCurrentInvoiceByRoomId(roomId);
+    }
+
+    @Override
+    public List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod, int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        return invoiceDAO.findInvoices(managerId, keyword, status, billingPeriod, offset, pageSize);
     }
 
     @Override
@@ -60,27 +50,21 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public InvoiceDetailDTO getInvoiceDetail(int managerId, int invoiceId) {
+    public InvoiceDetailDTO getInvoiceDetail(int managerId, int invoiceId) throws Exception {
         InvoiceDetailDTO dto = invoiceDAO.findById(managerId, invoiceId);
         if (dto == null) {
-            throw new IllegalArgumentException("Hóa đơn không tồn tại hoặc bạn không có quyền xem.");
+            throw new Exception("Không tìm thấy hóa đơn hoặc bạn không có quyền xem.");
         }
         return dto;
     }
 
     @Override
     public void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDateStr, String taxRateStr, String otherFeeStr, String note, int createdBy) throws Exception {
-        if (roomCode == null || roomCode.isEmpty()) throw new IllegalArgumentException("Mã phòng không được để trống.");
-        if (billingPeriod == null || billingPeriod.length() != 6) throw new IllegalArgumentException("Kỳ hóa đơn không hợp lệ. Format YYYYMM.");
-        
         LocalDate dueDate;
         try {
             dueDate = LocalDate.parse(dueDateStr);
         } catch (Exception e) {
             throw new IllegalArgumentException("Hạn thanh toán không hợp lệ.");
-        }
-        if (dueDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Hạn thanh toán không được nhỏ hơn ngày hiện tại.");
         }
 
         BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
@@ -93,15 +77,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal roomFee = BigDecimal.ZERO;
         BigDecimal electricityPrice = BigDecimal.ZERO;
         BigDecimal waterPrice = BigDecimal.ZERO;
-        BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal internetFee = BigDecimal.ZERO;
-        
-        String roomSql = "SELECT r.room_id, r.room_fee, f.electricity_price, f.water_price, f.service_fee, f.internet_fee " +
-                         "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                         "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL";
-        
+        BigDecimal serviceFee = BigDecimal.ZERO;
+
+        String checkRoomSql = "SELECT r.room_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee " +
+                              "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                              "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(roomSql)) {
+             PreparedStatement ps = conn.prepareStatement(checkRoomSql)) {
             ps.setString(1, roomCode);
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -110,8 +93,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                     roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
                     electricityPrice = rs.getBigDecimal("electricity_price") != null ? rs.getBigDecimal("electricity_price") : BigDecimal.ZERO;
                     waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price") : BigDecimal.ZERO;
-                    serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
                     internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
+                    serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
                 } else {
                     throw new IllegalArgumentException("Phòng không tồn tại hoặc bạn không có quyền quản lý phòng này.");
                 }
@@ -225,7 +208,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
         if (otherFee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
 
-        // Re-query original values to calculate precise total
         String snapshotSql = "SELECT room_fee, electricity_price, water_price, internet_fee, service_fee FROM invoices WHERE invoice_id = ?";
         BigDecimal snapRoom = BigDecimal.ZERO, snapElec = BigDecimal.ZERO, snapWater = BigDecimal.ZERO, snapInt = BigDecimal.ZERO, snapSvc = BigDecimal.ZERO;
         try (Connection conn = DatabaseUtil.getConnection();
@@ -262,15 +244,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void updateStatus(int managerId, int invoiceId, String status) throws Exception {
-        // Verify existence and authorization
         InvoiceDetailDTO dto = getInvoiceDetail(managerId, invoiceId);
-        
-        // Allowed statuses: UNPAID, PAID, OVERDUE
         if (!"UNPAID".equals(status) && !"PAID".equals(status) && !"OVERDUE".equals(status)) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ.");
         }
-
         invoiceDAO.updateStatus(invoiceId, status);
->>>>>>> feature/invoiceManagement-buidinh
     }
 }

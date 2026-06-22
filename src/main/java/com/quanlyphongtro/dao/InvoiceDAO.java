@@ -1,15 +1,21 @@
 package com.quanlyphongtro.dao;
 
-<<<<<<< HEAD
 import com.quanlyphongtro.constant.StatusConstant;
+import com.quanlyphongtro.dto.InvoiceListItemDTO;
+import com.quanlyphongtro.dto.InvoiceDetailDTO;
 import com.quanlyphongtro.model.Invoice;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,15 +45,12 @@ public class InvoiceDAO extends BaseDAO {
         i.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
         i.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
 
-        // Join columns (meters)
         if (hasColumn(rs, "old_electric")) {
             i.setOldElectricReading(getInteger(rs, "old_electric"));
             i.setNewElectricReading(getInteger(rs, "new_electric"));
             i.setOldWaterReading(getInteger(rs, "old_water"));
             i.setNewWaterReading(getInteger(rs, "new_water"));
             
-            // Calculate usage amounts if possible, or read from a view if existed.
-            // Since schema doesn't store computed amount, we can compute here for convenience
             if (i.getNewElectricReading() != null && i.getOldElectricReading() != null && i.getElectricityPrice() != null) {
                 int used = i.getNewElectricReading() - i.getOldElectricReading();
                 i.setElectricAmount(i.getElectricityPrice().multiply(new BigDecimal(used)));
@@ -61,7 +64,6 @@ public class InvoiceDAO extends BaseDAO {
                 i.setWaterAmount(BigDecimal.ZERO);
             }
 
-            // Derive billing period from meter reading date or due date
             if (hasColumn(rs, "reading_date") && rs.getDate("reading_date") != null) {
                 LocalDate rd = toLocalDate(rs, "reading_date");
                 i.setBillingPeriod("Tháng " + String.format("%02d/%d", rd.getMonthValue(), rd.getYear()));
@@ -181,18 +183,56 @@ public class InvoiceDAO extends BaseDAO {
 
     public boolean updateStatus(int invoiceId, String status) {
         String sql = "UPDATE dbo.invoices SET status = ?, updated_at = GETDATE() WHERE invoice_id = ? AND deleted_at IS NULL";
-=======
-import com.quanlyphongtro.dto.InvoiceListItemDTO;
-import com.quanlyphongtro.dto.InvoiceDetailDTO;
-import com.quanlyphongtro.model.Invoice;
-import com.quanlyphongtro.util.DatabaseUtil;
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, invoiceId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("updateStatus failed for invoiceId={}", invoiceId, e);
+        }
+        return false;
+    }
 
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+    public boolean verifyInvoiceOwnership(int invoiceId, int tenantId) {
+        String sql = "SELECT 1 FROM dbo.invoices i " +
+                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                     "WHERE i.invoice_id = ? AND r.tenant_id = ? AND i.deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ps.setInt(2, tenantId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            logger.error("verifyInvoiceOwnership failed for invoiceId={}, tenantId={}", invoiceId, tenantId, e);
+        }
+        return false;
+    }
 
-public class InvoiceDAO {
+    public BigDecimal calculateRealtimeLatePenalty(int invoiceId) {
+        String sql = "SELECT total_amount, due_date FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal totalAmount = rs.getBigDecimal("total_amount");
+                    LocalDate dueDate = rs.getDate("due_date").toLocalDate();
+                    LocalDate today = LocalDate.now();
+                    if (dueDate != null && totalAmount != null && today.isAfter(dueDate)) {
+                        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
+                        BigDecimal penaltyRate = new BigDecimal("0.0005").multiply(new BigDecimal(daysLate));
+                        return totalAmount.multiply(penaltyRate).setScale(0, java.math.RoundingMode.HALF_UP);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("calculateRealtimeLatePenalty failed for invoiceId={}", invoiceId, e);
+        }
+        return BigDecimal.ZERO;
+    }
 
     public List<InvoiceListItemDTO> findInvoices(int managerId, String keyword, String status, String billingPeriod, int offset, int limit) {
         List<InvoiceListItemDTO> list = new ArrayList<>();
@@ -210,7 +250,6 @@ public class InvoiceDAO {
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (i.code LIKE ? OR r.code LIKE ?) ");
         }
-        // Billing period is roughly Year-Month of due_date
         if (billingPeriod != null && !billingPeriod.trim().isEmpty()) {
             if (billingPeriod.length() == 6) {
                 String year = billingPeriod.substring(0, 4);
@@ -351,7 +390,6 @@ public class InvoiceDAO {
                      dto.setRoomFee(rs.getBigDecimal("room_fee"));
                      dto.setMeterId(rs.getObject("meter_id") != null ? rs.getInt("meter_id") : null);
                      
-                     // Readings
                      dto.setNewElectricReading(rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0);
                      dto.setOldElectricReading(rs.getObject("old_electric") != null ? rs.getInt("old_electric") : 0);
                      dto.setElectricUsage(Math.max(0, dto.getNewElectricReading() - dto.getOldElectricReading()));
@@ -376,7 +414,6 @@ public class InvoiceDAO {
                      dto.setInternetFee(rs.getBigDecimal("internet_fee"));
                      dto.setOtherFee(rs.getBigDecimal("other_fee"));
                      
-                     // Subtotal
                      java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
                      if (dto.getRoomFee() != null) subtotal = subtotal.add(dto.getRoomFee());
                      if (dto.getElectricAmount() != null) subtotal = subtotal.add(dto.getElectricAmount());
@@ -403,7 +440,7 @@ public class InvoiceDAO {
                      
                      Timestamp updated = rs.getTimestamp("updated_at");
                      if (updated != null) dto.setUpdatedAt(updated.toString());
-                     dto.setUpdatedByName(""); // Not available in schema
+                     dto.setUpdatedByName(""); 
                      
                      return dto;
                  }
@@ -467,65 +504,5 @@ public class InvoiceDAO {
             ps.setInt(6, invoice.getInvoiceId());
             ps.executeUpdate();
         }
-    }
-
-    public void updateStatus(int invoiceId, String status) throws SQLException {
-        String sql = "UPDATE invoices SET status = ?, updated_at = GETDATE() WHERE invoice_id = ?";
->>>>>>> feature/invoiceManagement-buidinh
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, invoiceId);
-<<<<<<< HEAD
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            logger.error("updateStatus failed for invoiceId={}", invoiceId, e);
-        }
-        return false;
-    }
-
-    public boolean verifyInvoiceOwnership(int invoiceId, int tenantId) {
-        String sql = "SELECT 1 FROM dbo.invoices i " +
-                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
-                     "WHERE i.invoice_id = ? AND r.tenant_id = ? AND i.deleted_at IS NULL";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, invoiceId);
-            ps.setInt(2, tenantId);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-        } catch (Exception e) {
-            logger.error("verifyInvoiceOwnership failed for invoiceId={}, tenantId={}", invoiceId, tenantId, e);
-        }
-        return false;
-    }
-
-    public BigDecimal calculateRealtimeLatePenalty(int invoiceId) {
-        String sql = "SELECT total_amount, due_date FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, invoiceId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    BigDecimal totalAmount = rs.getBigDecimal("total_amount");
-                    LocalDate dueDate = rs.getDate("due_date").toLocalDate();
-                    LocalDate today = LocalDate.now();
-                    if (dueDate != null && totalAmount != null && today.isAfter(dueDate)) {
-                        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
-                        // 0.05% penalty per day
-                        BigDecimal penaltyRate = new BigDecimal("0.0005").multiply(new BigDecimal(daysLate));
-                        return totalAmount.multiply(penaltyRate).setScale(0, java.math.RoundingMode.HALF_UP);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error("calculateRealtimeLatePenalty failed for invoiceId={}", invoiceId, e);
-        }
-        return BigDecimal.ZERO;
-=======
-            ps.executeUpdate();
-        }
->>>>>>> feature/invoiceManagement-buidinh
     }
 }
