@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (user.isLocked()) {
-            return Optional.empty();
+            throw new com.quanlyphongtro.exception.ForbiddenException("LOCKED");
         }
 
         if (!user.isActive()) {

@@ -1,6 +1,9 @@
 package com.quanlyphongtro.controller.operator;
 
 import com.quanlyphongtro.controller.BaseServlet;
+import com.quanlyphongtro.dao.OperatorDashboardDAO;
+import com.quanlyphongtro.dto.MeterStatusDTO;
+import com.quanlyphongtro.service.MeterReadingService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,10 +12,22 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "OperatorDashboardServlet", urlPatterns = "/operator/dashboard")
 public class OperatorDashboardServlet extends BaseServlet {
+
+    private OperatorDashboardDAO dashboardDAO;
+    private MeterReadingService meterReadingService;
+
+    @Override
+    public void init() throws ServletException {
+        this.dashboardDAO = new OperatorDashboardDAO();
+        this.meterReadingService = new MeterReadingService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -24,19 +39,51 @@ public class OperatorDashboardServlet extends BaseServlet {
         req.setAttribute("facilityCode", "—");
         req.setAttribute("facilityName", "Cơ sở được phân công");
 
-        // KPI — placeholder
-        req.setAttribute("totalRooms",         8);
-        req.setAttribute("updatedMeterRooms",   6);
-        req.setAttribute("pendingMeterRooms",   2);
-        req.setAttribute("pendingTickets",      1);
-        req.setAttribute("meterUpdateProgress", 75);
+        // 1. Lấy dữ liệu Điện nước (Meters)
+        List<MeterStatusDTO> allMeterStatus = meterReadingService.getMeterStatusForCurrentMonth(null, null);
+        int totalRooms = allMeterStatus.size();
+        
+        List<MeterStatusDTO> pendingMeters = allMeterStatus.stream()
+            .filter(m -> "CHUA_CAP_NHAT".equals(m.getStatus()))
+            .collect(Collectors.toList());
+            
+        int pendingMeterRooms = pendingMeters.size();
+        int updatedMeterRooms = totalRooms - pendingMeterRooms;
+        int meterUpdateProgress = totalRooms == 0 ? 0 : (updatedMeterRooms * 100) / totalRooms;
+        
+        // Cắt lấy tối đa 5 phòng chưa cập nhật
+        List<MeterStatusDTO> topPendingMeters = pendingMeters.stream()
+            .limit(5)
+            .collect(Collectors.toList());
 
-        // Ticket stats
-        req.setAttribute("ticketCountNew",        1);
-        req.setAttribute("ticketCountInProgress", 1);
-        req.setAttribute("ticketCountDone",       1);
+        req.setAttribute("totalRooms", totalRooms);
+        req.setAttribute("updatedMeterRooms", updatedMeterRooms);
+        req.setAttribute("pendingMeterRooms", pendingMeterRooms);
+        req.setAttribute("meterUpdateProgress", meterUpdateProgress);
+        req.setAttribute("pendingMeterRoomList", topPendingMeters);
 
-        req.setAttribute("pendingMeterRoomList", java.util.Collections.emptyList());
+        // Get operatorId from session
+        int operatorId = 1;
+        if (req.getSession(false) != null && req.getSession(false).getAttribute("currentUser") != null) {
+            com.quanlyphongtro.dto.UserSessionDTO currentUser = (com.quanlyphongtro.dto.UserSessionDTO) req.getSession(false).getAttribute("currentUser");
+            operatorId = currentUser.getId();
+        }
+
+        // 2. Lấy dữ liệu Yêu cầu (Tickets)
+        Map<String, Integer> ticketStats = dashboardDAO.getTicketStats();
+        int ticketCountNew = ticketStats.getOrDefault("PENDING", 0);
+        int ticketCountInProgress = ticketStats.getOrDefault("IN_PROGRESS", 0);
+        int ticketCountDone = ticketStats.getOrDefault("COMPLETED", 0);
+        int totalPendingTickets = ticketCountNew + ticketCountInProgress;
+
+        req.setAttribute("pendingTickets", totalPendingTickets);
+        req.setAttribute("ticketCountNew", ticketCountNew);
+        req.setAttribute("ticketCountInProgress", ticketCountInProgress);
+        req.setAttribute("ticketCountDone", ticketCountDone);
+
+        // 3. Lấy Lịch hẹn hôm nay
+        List<com.quanlyphongtro.model.Request> todaysAppointments = dashboardDAO.getTodaysAppointments(operatorId);
+        req.setAttribute("todaysAppointments", todaysAppointments);
 
         req.getRequestDispatcher("/WEB-INF/views/operator/dashboard.jsp").forward(req, resp);
     }

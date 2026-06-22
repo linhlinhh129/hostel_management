@@ -1,105 +1,23 @@
-# PLAN: Kế hoạch Thực thi Danh sách yêu cầu sửa chữa
+# Kế hoạch Thực hiện - Danh sách Yêu cầu (ListRequest)
 
-**Status:** Planning  
-**Date:** 2026-06-11  
-**Priority:** High  
-**Estimated Duration:** 5-6 weeks
+## 1. Mục tiêu
+Thiết kế trang Danh sách yêu cầu sửa chữa cho nhân viên Vận hành, cho phép xem, lọc và phân trang (Server-side) theo đúng chuẩn Mintlify và cấu trúc layout `app-shell`. Lấy dữ liệu thực từ bảng `requests` trong DB mà KHÔNG chỉnh sửa bất kỳ cấu trúc DB nào.
 
----
+## 2. Kiến trúc Backend (Java Servlet & DAO)
+- **DAO (`RequestDAO.java`):** Bổ sung 2 hàm mới:
+  - `List<Request> getRequests(String status, String category, int offset, int limit)`: Truy vấn danh sách có lọc và phân trang, JOIN với bảng `users`, `rooms`, `facilities` để lấy tên phòng và người gửi. Sắp xếp theo `created_at DESC` (do DB không có cột `appointment_date` như trong Spec giả định).
+  - `int countRequests(String status, String category)`: Đếm tổng số bản ghi thỏa mãn bộ lọc để tính số trang.
+- **Servlet (`ListRequestServlet.java`):**
+  - Mapped URL: `/operator/requests`
+  - Đọc các tham số `status`, `category`, `page` từ URL.
+  - Gọi DAO, tính toán phân trang (`limit = 20`).
+  - Set attributes và forward tới `list.jsp`.
 
-## 1. Tổng quan Giải pháp
-
-Feature Danh sách yêu cầu sửa chữa cho phép nhân viên vận hành xem nhanh ticket được giao, lọc theo trạng thái, thể loại, cơ sở và phòng, đồng thời điều hướng sang chi tiết khi cần.
-
-**Kiến trúc:**
-- Backend API: `GET /api/v1/requests`
-- Server-side pagination
-- Filters: status, category_id, facility_id, room_id
-- Frontend UI: table/list, filters, empty state
-
----
-
-## 2. Giai đoạn Thực thi
-
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Tuần 1)
-
-**Mục tiêu:** xác định bộ lọc, cấu trúc payload và paging.
-
-**Công việc:**
-- Thiết kế API contract
-- Xác định index DB: `assignee_id`, `status`, `facility_id`
-- Xác định default page size và sort order
-
----
-
-### Giai đoạn 2: Backend Development (Tuần 2)
-
-**Mục tiêu:** triển khai API list request với pagination và filter.
-
-**Công việc:**
-- Implement list service
-- Implement filter logic
-- Implement server-side pagination
-- Ensure response < 500ms
-
----
-
-### Giai đoạn 3: Frontend Development (Tuần 3-4)
-
-**Mục tiêu:** xây dựng UI list request và filter.
-
-**Công việc:**
-- Render request rows
-- Implement filter controls
-- Implement empty state
-- Support navigation to detail
-
----
-
-### Giai đoạn 4: Testing & Deployment (Tuần 5-6)
-
-**Mục tiêu:** tối ưu performance và validate filter behaviour.
-
-**Công việc:**
-- Unit tests service logic
-- Integration tests API with filters
-- UI tests for no-data state
-
----
-
-## 3. Key Technical Challenges
-
-### Pagination & Performance
-- Server-side pagination required
-- Response under 500ms with filters
-- Proper DB indexing
-
-### Filter Logic
-- Support filter combinations cleanly
-- Maintain stable sort order by appointment_date
-
-### Assignment Scope
-- Only requests assigned to current user
-- Filter by assignee by authorization
-
----
-
-## 4. Success Criteria
-
-- ✓ List loads with server-side pagination
-- ✓ Filters work correctly
-- ✓ Response time < 500ms
-- ✓ Empty state shown when no data
-- ✓ Access only own assigned requests
-- ✓ >= 80% code coverage
-
----
-
-## 5. Timeline
-
-- **Week 1:** Design & preparation
-- **Week 2:** Backend implementation
-- **Week 3-4:** Frontend implementation
-- **Week 5-6:** Testing & deployment
-
-**Total:** 6 weeks
+## 3. Kiến trúc Frontend (JSP)
+- **File:** `list.jsp` trong thư mục `/WEB-INF/views/operator/requests/`
+- **Layout:** Sử dụng `.app-shell` và `.main-wrapper`.
+- **Thành phần giao diện:**
+  - **Header & Filter Bar:** Khối tiêu đề có thanh công cụ lọc dữ liệu. Form lọc GET trực tiếp lên `/operator/requests`.
+  - **Table:** Bảng danh sách hiển thị các cột: Mã YC, Tiêu đề, Phòng, Thể loại, Ngày tạo, Trạng thái, Hành động. Sử dụng class `custom-table` và `table-hover` đồng bộ với trang Điên nước.
+  - **Pagination:** Khối phân trang bên dưới bảng.
+  - **Empty State:** Hiển thị thông báo "Không có yêu cầu nào phù hợp" nếu danh sách rỗng.

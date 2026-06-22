@@ -1,102 +1,26 @@
-# PLAN: Kế hoạch Thực thi Cập nhật đồng hồ điện nước
+# Kế hoạch Thực hiện - Cập nhật Điện Nước (WaterElectricUpdate)
 
-**Status:** Planning  
-**Date:** 2026-06-11  
-**Priority:** High  
-**Estimated Duration:** 5-6 weeks
+## 1. Mục tiêu
+Thiết kế trang Cập nhật chỉ số điện nước cho nhân viên Vận hành, cho phép nhập mã phòng, điền số mới và tải ảnh minh chứng lên. Dữ liệu sẽ được tự động lookup số điện/nước kỳ trước từ CSDL (thông qua mã phòng) để đối chiếu trực tiếp nhằm ngăn chặn lỗi nhập liệu.
 
----
+## 2. Kiến trúc Backend (Java Servlet & DAO)
+- **DAO (`MeterReadingDAO.java`):** Bổ sung hàm:
+  - `MeterStatusDTO getPreviousReadingByRoomCode(String roomCode)`: Lấy thông tin phòng, ID phòng và các số điện nước của kỳ khai báo gần nhất.
+- **Service (`MeterReadingService.java`):** Tích hợp việc gọi DAO để xử lý nghiệp vụ lookup.
+- **Servlet (`UpdateMeterReadingServlet.java`):**
+  - Mapped URL: `/operator/meter-readings/update`
+  - Xử lý **GET**: Render giao diện form `update.jsp`.
+  - Xử lý **POST**: Đón nhận `multipart/form-data`, lookup `roomCode` trong Database.
+  - Xử lý Validate chặt chẽ:
+    - **AC06**: Mã phòng không hợp lệ -> Báo lỗi không tồn tại phòng.
+    - **AC02, AC03**: Số điện/nước mới nhỏ hơn số cũ -> Báo lỗi.
+    - **AC04, AC05**: Xử lý lưu ảnh công tơ thực tế vào thư mục dự án và lưu đường dẫn.
 
-## 1. Tổng quan Giải pháp
-
-Feature Cập nhật đồng hồ điện nước cho phép nhân viên vận hành ghi nhận số liệu tiêu thụ mới vào hệ thống, với kiểm tra dữ liệu hợp lệ và đảm bảo dữ liệu không bị ghi đè sai.
-
-**Kiến trúc:**
-- Backend API: `POST /api/v1/meter-readings` hoặc `PUT /api/v1/meter-readings/{id}`
-- Input validation: positive readings, valid reading date, room/facility scope
-- Audit trail: log who cập nhật và thời điểm
-
----
-
-## 2. Giai đoạn Thực thi
-
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Tuần 1)
-
-**Mục tiêu:** xác định schema cập nhật và business rules.
-
-**Công việc:**
-- Thiết kế payload input
-- Xác định validation rules
-- Xác định audit columns và constraints
-
----
-
-### Giai đoạn 2: Backend Development (Tuần 2)
-
-**Mục tiêu:** triển khai API tạo/cập nhật reading.
-
-**Công việc:**
-- Implement create/update service
-- Enforce positive/monotonic readings
-- Ensure current operator scope
-
----
-
-### Giai đoạn 3: Frontend Development (Tuần 3-4)
-
-**Mục tiêu:** xây dựng form nhập liệu meter readings.
-
-**Công việc:**
-- Build update form
-- Add inline validation
-- Provide success/failure feedback
-
----
-
-### Giai đoạn 4: Testing & Deployment (Tuần 5-6)
-
-**Mục tiêu:** validate input and audit.
-
-**Công việc:**
-- Unit tests validation rules
-- Integration tests for create/update
-- UI tests for form submission
-
----
-
-## 3. Key Technical Challenges
-
-### Data Validation
-- Ensure reading > 0
-- Ensure reading date valid and not future
-- Prevent regressive or duplicate entries
-
-### Scoped Access
-- Only allow updates for assigned rooms/facilities
-- Protect against unauthorized meter changes
-
-### Audit and Integrity
-- Persist who updated reading and when
-- Avoid data loss by checking existing values
-
----
-
-## 4. Success Criteria
-
-- ✓ Update form loads correctly
-- ✓ Validation rejects invalid readings
-- ✓ Audit metadata stored
-- ✓ Response latency < 500ms
-- ✓ Scope restricted to assigned operator
-- ✓ Coverage >= 80%
-
----
-
-## 5. Timeline
-
-- **Week 1:** Design
-- **Week 2:** Backend implementation
-- **Week 3-4:** Frontend implementation
-- **Week 5-6:** Testing & deployment
-
-**Total:** 6 weeks
+## 3. Kiến trúc Frontend (JSP)
+- **File:** `update.jsp` trong thư mục `/WEB-INF/views/operator/meter_readings/`
+- **Layout:** Tuân thủ `.app-shell` và `.main-wrapper`.
+- **Thành phần giao diện:**
+  - Ô nhập `Mã phòng` (Có ghi chú giải thích hệ thống sẽ tự lookup).
+  - Khối khai báo Chỉ số Điện (Ô nhập số điện mới, Nút tải ảnh minh chứng công tơ điện).
+  - Khối khai báo Chỉ số Nước (Ô nhập số nước mới, Nút tải ảnh minh chứng công tơ nước).
+  - Thanh Alert thông báo lỗi (Validation error từ Backend trả về).

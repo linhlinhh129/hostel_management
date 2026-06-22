@@ -1,101 +1,28 @@
-# PLAN: Kế hoạch Thực thi Danh sách điện nước
+# Kế hoạch phát triển tính năng Danh sách chỉ số điện nước (ListElectric)
 
-**Status:** Planning  
-**Date:** 2026-06-11  
-**Priority:** Medium  
-**Estimated Duration:** 5-6 weeks
+## 1. Mục tiêu
+Xây dựng trang xem danh sách tình trạng chốt số điện nước của tất cả các phòng trong tháng hiện tại. Giúp Operator biết được phòng nào đã chốt số (có dữ liệu tháng này) và phòng nào chưa (CHUA_CAP_NHAT). Màn hình chỉ đọc (Read-only), không cho phép chỉnh sửa.
 
----
+## 2. Thiết kế Giao diện (Frontend)
+- **File:** `src/main/webapp/WEB-INF/views/operator/meter_readings/list.jsp`
+- **Phong cách:** Mintlify `DESIGN.md`.
+  - Hiển thị dưới dạng Bảng (Table) gọn gàng.
+  - Các cột: Mã phòng, Số điện kỳ trước, Số nước kỳ trước, Thời gian cập nhật (tháng này), Trạng thái.
+  - Cột Trạng thái sử dụng thẻ badge màu sắc: Xanh lá (Đã cập nhật), Vàng/Cam (Chưa cập nhật).
+  - Không có nút thêm/sửa/xóa, không có input text.
 
-## 1. Tổng quan Giải pháp
+## 3. Thiết kế Hệ thống (Backend)
+- **DTO:** `com.quanlyphongtro.dto.MeterStatusDTO`
+  - Chứa: `roomCode`, `previousElectricReading`, `previousWaterReading`, `updatedAt`, `status`.
+- **DAO:** `com.quanlyphongtro.dao.MeterReadingDAO`
+  - Hàm `getMeterStatusList(int currentMonth, int currentYear)`: Sử dụng câu truy vấn kết hợp (LEFT JOIN và OUTER APPLY hoặc subqueries) để lấy ra tất cả phòng ĐANG HOẠT ĐỘNG, và tìm bản ghi điện nước kỳ trước + kiểm tra bản ghi kỳ này.
+- **Service:** `com.quanlyphongtro.service.MeterReadingService`
+  - Gọi DAO và trả về List DTO.
+- **Servlet:** `com.quanlyphongtro.controller.operator.ListElectricServlet`
+  - Ánh xạ URL: `/operator/meter-readings`
+  - Gọi Service để lấy List, chuyển attribute `meterList` sang `list.jsp`.
 
-Feature Danh sách điện nước giúp nhân viên vận hành kiểm tra số liệu tiêu thụ nước và điện cho các phòng hoặc cơ sở, với phân trang, bộ lọc và tổng hợp giá trị.
-
-**Kiến trúc:**
-- Backend API: `GET /api/v1/meter-readings`
-- Server-side pagination
-- Filters: facility_id, room_id, meter_type, date range
-- Frontend UI: table with summary row, filter inputs
-
----
-
-## 2. Giai đoạn Thực thi
-
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Tuần 1)
-
-**Mục tiêu:** xác định dữ liệu meter reading và yêu cầu filter.
-
-**Công việc:**
-- Thiết kế API contract
-- Xác định trường cần hiển thị
-- Xác định chỉ số DB cho filter và ngày tháng
-
----
-
-### Giai đoạn 2: Backend Development (Tuần 2)
-
-**Mục tiêu:** triển khai API list meter data.
-
-**Công việc:**
-- Implement list service
-- Implement filters and pagination
-- Add summary totals if cần
-
----
-
-### Giai đoạn 3: Frontend Development (Tuần 3-4)
-
-**Mục tiêu:** xây dựng UI và filter controls.
-
-**Công việc:**
-- Render reading rows
-- Add filter controls
-- Show summary values
-
----
-
-### Giai đoạn 4: Testing & Deployment (Tuần 5-6)
-
-**Mục tiêu:** kiểm tra performance và chính xác số liệu.
-
-**Công việc:**
-- Unit tests service logic
-- Integration tests API filter
-- Frontend validation
-
----
-
-## 3. Key Technical Challenges
-
-### Performance
-- Response < 500ms p95
-- Efficient aggregate queries
-
-### Data Accuracy
-- Correct range filtering by date
-- Show correct totals for electricity/water
-
-### User Scoping
-- Only show readings for assigned facility/room
-
----
-
-## 4. Success Criteria
-
-- ✓ Meter list loads with pagination
-- ✓ Filters work correctly by date/type/location
-- ✓ Summary totals display accurately
-- ✓ Response time < 500ms
-- ✓ Access limited to operator scope
-- ✓ Test coverage >= 80%
-
----
-
-## 5. Timeline
-
-- **Week 1:** Design
-- **Week 2:** Backend implementation
-- **Week 3-4:** Frontend implementation
-- **Week 5-6:** Testing & deployment
-
-**Total:** 6 weeks
+## 4. Xử lý logic kỳ trước / kỳ này
+Sử dụng SQL Server Query để map:
+- Nếu tồn tại bản ghi trong `meter_readings` có `MONTH(reading_date) == currentMonth` thì `status = DA_CAP_NHAT`, ngược lại là `CHUA_CAP_NHAT`.
+- Số điện/nước kỳ trước được lấy bằng cách tìm bản ghi có `reading_date` lớn nhất nhưng nhỏ hơn tháng hiện tại.
