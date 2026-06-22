@@ -62,7 +62,7 @@
                 </thead>
                 <tbody>
                   <c:forEach var="c" items="${page.items}">
-                    <tr>
+                    <tr data-href="${ctx}/manager/contracts/${c.id}">
                       <td><strong><c:out value="${c.roomCode}"/></strong></td>
                       <td><c:out value="${c.facilityName}"/></td>
                       <td><c:out value="${c.tenantName}"/></td>

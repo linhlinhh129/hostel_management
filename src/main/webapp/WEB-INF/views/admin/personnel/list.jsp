@@ -66,7 +66,7 @@
                                 </thead>
                                 <tbody>
                                 <c:forEach var="emp" items="${page.items}">
-                                    <tr>
+                                    <tr data-href="${ctx}/admin/personnel/${emp.id}">
                                         <td><a href="${ctx}/admin/personnel/${emp.id}">#<c:out value="${emp.id}"/></a></td>
                                         <td><c:out value="${emp.fullName}"/></td>
                                         <td><c:out value="${emp.email}"/></td>

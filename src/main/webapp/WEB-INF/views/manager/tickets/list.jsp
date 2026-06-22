@@ -57,7 +57,7 @@
                 </thead>
                 <tbody>
                   <c:forEach var="ticket" items="${page.items}">
-                    <tr>
+                    <tr data-href="${ctx}/manager/tickets/${ticket.id}">
                       <td>
                         <a href="${ctx}/manager/tickets/${ticket.id}" style="font-family:monospace;font-size:0.8125rem">
                           <c:out value="${ticket.code}"/>

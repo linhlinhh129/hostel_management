@@ -42,7 +42,7 @@
                                 </tr></thead>
                                 <tbody>
                                 <c:forEach var="ticket" items="${tickets}">
-                                    <tr>
+                                    <tr data-href="${ctx}/operator/tickets/${ticket.id}">
                                         <td><a href="${ctx}/operator/tickets/${ticket.id}"
                                                style="font-family:var(--hms-font-mono);font-weight:700">
                                             <c:out value="${ticket.code}"/></a></td>

@@ -56,7 +56,7 @@
                                 </thead>
                                 <tbody>
                                 <c:forEach var="notif" items="${page.items}">
-                                    <tr>
+                                    <tr data-href="${ctx}/admin/notifications/${notif.id}">
                                         <td><a href="${ctx}/admin/notifications/${notif.id}"><c:out value="${notif.code}"/></a></td>
                                         <td style="max-width:300px"><c:out value="${notif.title}"/></td>
                                         <td><c:out value="${notif.createdByName}"/></td>

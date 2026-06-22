@@ -12,7 +12,7 @@
 <select class="form-select" name="status"><option value="">Trạng thái</option><option value="PENDING" ${filterStatus == 'PENDING' ? 'selected' : ''}>Chưa cập nhật</option><option value="DONE" ${filterStatus == 'DONE' ? 'selected' : ''}>Đã cập nhật</option></select>
 <button type="submit" class="btn-mintlify-secondary">Lọc</button><a href="${ctx}/operator/meter-readings" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a></form>
 <c:choose><c:when test="${not empty readings}"><div class="table-responsive"><table class="table-mintlify"><thead><tr><th>Phòng</th><th>Điện kỳ trước</th><th>Nước kỳ trước</th><th>Trạng thái</th><th>Cập nhật</th><th>Thao tác</th></tr></thead>
-<tbody><c:forEach var="r" items="${readings}"><tr><td><c:out value="${r.roomCode}"/></td><td><c:out value="${r.previousElectric}"/> kWh</td><td><c:out value="${r.previousWater}"/> m³</td>
+<tbody><c:forEach var="r" items="${readings}"><tr data-href="${ctx}/operator/meter-readings/${r.roomId}/edit"><td><c:out value="${r.roomCode}"/></td><td><c:out value="${r.previousElectric}"/> kWh</td><td><c:out value="${r.previousWater}"/> m³</td>
 <td><span class="badge-hms ${r.statusBadgeClass}"><c:out value="${r.statusLabel}"/></span></td><td><c:out value="${r.updatedAtLabel}"/></td>
 <td><a href="${ctx}/operator/meter-readings/${r.roomId}/edit">Cập nhật</a></td></tr>
 </c:forEach></tbody></table></div></c:when>

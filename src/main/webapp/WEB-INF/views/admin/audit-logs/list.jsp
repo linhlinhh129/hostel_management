@@ -83,7 +83,7 @@
                                 </thead>
                                 <tbody>
                                 <c:forEach var="log" items="${auditLogs}">
-                                    <tr>
+                                    <tr data-href="${ctx}/admin/audit-logs/${log.id}">
                                         <td>
                                             <a href="${ctx}/admin/audit-logs/${log.id}"
                                                style="font-family:var(--hms-font-mono);font-size:0.75rem;font-weight:700">
