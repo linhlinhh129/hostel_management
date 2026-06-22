@@ -1,4 +1,7 @@
+# Chặn thư mục target ở bất kỳ cấp độ nào
+**/target/
 target/
-*.class
-.idea/
-*.iml
+
+# Chặn thư mục rác của hệ điều hành Mac
+__MACOSX/
+.DS_Store
