@@ -90,8 +90,37 @@ public class UserServiceImpl implements UserService {
         dto.setRole(user.getRole());
         dto.setAvatarUrl(user.getAvatarUrl());
         dto.setInitials(UserSessionDTO.extractInitials(user.getFullName()));
-        // force_change_pass → firstLogin flag trong session
         dto.setFirstLogin(user.isForceChangePass());
+
+        // Set facilityCode/roomCode vào session để dùng trong sidebar và filter
+        String role = user.getRole();
+        if ("MANAGER".equals(role) || "OPERATOR".equals(role)) {
+            // Lấy facilityCode từ facilities.manager_id hoặc user_facilities nếu có
+            // Dùng FacilityDAO inline để tránh circular dependency
+            try {
+                com.quanlyphongtro.dao.FacilityDAO facilityDAO =
+                        new com.quanlyphongtro.dao.FacilityDAO();
+                facilityDAO.findByManagerId(user.getId())
+                        .ifPresent(f -> {
+                            dto.setFacilityCode(f.getCode());
+                            // Lưu facilityId vào session qua facilityCode (code là unique key hiển thị)
+                            // facilityId thực sẽ được resolve lại khi cần từ DAO
+                        });
+            } catch (Exception ex) {
+                logger.warn("Could not resolve facilityCode for userId={}", user.getId(), ex);
+            }
+        } else if ("TENANT".equals(role)) {
+            // Lấy roomCode từ rooms.tenant_id
+            try {
+                com.quanlyphongtro.dao.RoomDAO roomDAO =
+                        new com.quanlyphongtro.dao.RoomDAO();
+                roomDAO.findByTenantId(user.getId())
+                        .ifPresent(r -> dto.setRoomCode(r.getCode()));
+            } catch (Exception ex) {
+                logger.warn("Could not resolve roomCode for userId={}", user.getId(), ex);
+            }
+        }
+
         return dto;
     }
 }

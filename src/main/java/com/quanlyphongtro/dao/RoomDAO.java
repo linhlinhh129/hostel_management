@@ -1,21 +1,34 @@
 package com.quanlyphongtro.dao;
 
+<<<<<<< HEAD
 import com.quanlyphongtro.model.Facility;
+=======
+>>>>>>> feature/invoiceManagement-buidinh
 import com.quanlyphongtro.model.Room;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+<<<<<<< HEAD
 import java.sql.SQLException;
+=======
+>>>>>>> feature/invoiceManagement-buidinh
 import java.util.Optional;
 
 public class RoomDAO extends BaseDAO {
 
+<<<<<<< HEAD
     private Room mapRoom(ResultSet rs) throws SQLException {
         Room room = new Room();
         room.setId(rs.getInt("room_id"));
         room.setFacilityId(rs.getInt("facility_id"));
+=======
+    private Room mapRow(ResultSet rs) throws Exception {
+        Room room = new Room();
+        room.setRoomId(rs.getInt("room_id"));
+        room.setFacilityId(getInteger(rs, "facility_id"));
+>>>>>>> feature/invoiceManagement-buidinh
         room.setCode(rs.getString("code"));
         room.setArea(rs.getBigDecimal("area"));
         room.setStatus(rs.getString("status"));
@@ -23,6 +36,7 @@ public class RoomDAO extends BaseDAO {
         room.setDepositAmount(rs.getBigDecimal("deposit_amount"));
         room.setContractStartDate(toLocalDate(rs, "contract_start_date"));
         room.setContractEndDate(toLocalDate(rs, "contract_end_date"));
+<<<<<<< HEAD
         room.setRoomFee(rs.getBigDecimal("room_fee"));
         room.setCreatedAt(toLocalDateTime(rs, "created_at"));
         room.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
@@ -45,6 +59,45 @@ public class RoomDAO extends BaseDAO {
         f.setInternetFee(rs.getBigDecimal("f_internet_fee"));
         f.setServiceFee(rs.getBigDecimal("f_service_fee"));
         return f;
+=======
+        room.setCreatedAt(toLocalDateTime(rs, "created_at"));
+        room.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
+        room.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
+        room.setRoomFee(rs.getBigDecimal("room_fee"));
+        return room;
+    }
+
+    public Optional<Room> findById(int roomId) {
+        String sql = "SELECT * FROM dbo.rooms WHERE room_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("RoomDAO.findById failed for roomId={}", roomId, e);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Room> findByCode(String code) {
+        String sql = "SELECT * FROM dbo.rooms WHERE code = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("RoomDAO.findByCode failed for code={}", code, e);
+        }
+        return Optional.empty();
+>>>>>>> feature/invoiceManagement-buidinh
     }
 
     public Optional<Room> findByTenantId(int tenantId) {
@@ -54,6 +107,7 @@ public class RoomDAO extends BaseDAO {
             ps.setInt(1, tenantId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+<<<<<<< HEAD
                     return Optional.of(mapRoom(rs));
                 }
             }
@@ -82,6 +136,13 @@ public class RoomDAO extends BaseDAO {
             }
         } catch (Exception e) {
             logger.error("findFacilityByRoomId failed for roomId={}", roomId, e);
+=======
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("RoomDAO.findByTenantId failed for tenantId={}", tenantId, e);
+>>>>>>> feature/invoiceManagement-buidinh
         }
         return Optional.empty();
     }

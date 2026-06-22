@@ -1,13 +1,18 @@
 package com.quanlyphongtro.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 public final class DatabaseUtil {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseUtil.class);
     private static final String JNDI_NAME = "java:comp/env/jdbc/HostelManagement";
 
     private DatabaseUtil() {}
@@ -24,8 +29,19 @@ public final class DatabaseUtil {
         }
     }
 
+    /**
+     * Lấy connection từ pool và tự động bật QUOTED_IDENTIFIER để tránh lỗi
+     * với SQL Server filtered index (WHERE deleted_at IS NULL).
+     * JDBC driver mặc định SET QUOTED_IDENTIFIER OFF — phải override lại.
+     */
     public static Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        Connection conn = dataSource.getConnection();
+        try (Statement st = conn.createStatement()) {
+            st.execute("SET QUOTED_IDENTIFIER ON");
+        } catch (SQLException e) {
+            logger.warn("Could not SET QUOTED_IDENTIFIER ON: {}", e.getMessage());
+        }
+        return conn;
     }
 
     public static void closeQuietly(AutoCloseable... resources) {

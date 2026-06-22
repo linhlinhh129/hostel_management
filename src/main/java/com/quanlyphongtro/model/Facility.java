@@ -4,7 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class Facility {
+<<<<<<< HEAD
     private Integer id;
+=======
+    private Integer facilityId;
+>>>>>>> feature/invoiceManagement-buidinh
     private String code;
     private String name;
     private String address;
@@ -16,15 +20,23 @@ public class Facility {
     private BigDecimal waterPrice;
     private BigDecimal internetFee;
     private BigDecimal serviceFee;
+<<<<<<< HEAD
 
+=======
+>>>>>>> feature/invoiceManagement-buidinh
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
     public Facility() {}
 
+<<<<<<< HEAD
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
+=======
+    public Integer getFacilityId() { return facilityId; }
+    public void setFacilityId(Integer facilityId) { this.facilityId = facilityId; }
+>>>>>>> feature/invoiceManagement-buidinh
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
@@ -67,4 +79,9 @@ public class Facility {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+<<<<<<< HEAD
+=======
+
+    public boolean isDeleted() { return deletedAt != null; }
+>>>>>>> feature/invoiceManagement-buidinh
 }

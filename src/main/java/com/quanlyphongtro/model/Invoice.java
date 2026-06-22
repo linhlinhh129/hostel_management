@@ -1,5 +1,6 @@
 package com.quanlyphongtro.model;
 
+<<<<<<< HEAD
 import com.quanlyphongtro.constant.StatusConstant;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -8,6 +9,14 @@ import java.time.format.DateTimeFormatter;
 
 public class Invoice {
     private Integer id;
+=======
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+public class Invoice {
+    private Integer invoiceId;
+>>>>>>> feature/invoiceManagement-buidinh
     private String code;
     private Integer roomId;
     private Integer meterId;
@@ -23,11 +32,15 @@ public class Invoice {
     private BigDecimal totalAmount;
     private String note;
     private Integer createdBy;
+<<<<<<< HEAD
 
+=======
+>>>>>>> feature/invoiceManagement-buidinh
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
+<<<<<<< HEAD
     // Transient fields for View
     private Integer oldElectricReading;
     private Integer newElectricReading;
@@ -43,6 +56,15 @@ public class Invoice {
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
+=======
+    // Transient — lấy từ JOIN, không có cột này trong DB
+    private String roomCodeCache;
+
+    public Invoice() {}
+
+    public Integer getInvoiceId() { return invoiceId; }
+    public void setInvoiceId(Integer invoiceId) { this.invoiceId = invoiceId; }
+>>>>>>> feature/invoiceManagement-buidinh
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
@@ -98,6 +120,7 @@ public class Invoice {
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
+<<<<<<< HEAD
     public Integer getOldElectricReading() { return oldElectricReading; }
     public void setOldElectricReading(Integer oldElectricReading) { this.oldElectricReading = oldElectricReading; }
 
@@ -143,4 +166,10 @@ public class Invoice {
         if (StatusConstant.INVOICE_OVERDUE.equals(status)) return "Quá hạn";
         return "Chưa thanh toán";
     }
+=======
+    public boolean isDeleted() { return deletedAt != null; }
+
+    public String getRoomCodeCache() { return roomCodeCache; }
+    public void setRoomCodeCache(String roomCodeCache) { this.roomCodeCache = roomCodeCache; }
+>>>>>>> feature/invoiceManagement-buidinh
 }
