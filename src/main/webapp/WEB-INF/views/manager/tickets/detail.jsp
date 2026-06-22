@@ -1,6 +1,7 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Chi tiết yêu cầu - BQL"/>
 <c:set var="pageRole" value="MANAGER"/>
@@ -65,6 +66,73 @@
             </div>
           </div>
 
+          <%-- Hình ảnh minh chứng (trước & sau) --%>
+          <c:if test="${not empty ticket.attachmentUrls1 or not empty ticket.attachmentUrls2}">
+            <div class="widget-surface mb-3">
+              <div class="widget-surface-header">
+                <h3>Hình ảnh minh chứng</h3>
+              </div>
+              <div class="widget-surface-body">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                      <h6 class="text-danger mb-2" style="font-weight:600">Ảnh sự cố (Trước khi sửa)</h6>
+                      <c:choose>
+                        <c:when test="${not empty ticket.attachmentUrls1}">
+                          <div class="d-flex flex-wrap gap-2">
+                            <c:forEach var="url" items="${fn:split(ticket.attachmentUrls1, ',')}">
+                              <c:set var="trimmedUrl" value="${fn:trim(url)}"/>
+                              <c:if test="${not empty trimmedUrl}">
+                                <c:choose>
+                                  <c:when test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
+                                    <img src="${trimmedUrl}" class="img-thumbnail rounded" style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer" onclick="window.open(this.src)"/>
+                                  </c:when>
+                                  <c:otherwise>
+                                    <img src="${ctx}/uploads/${trimmedUrl}" class="img-thumbnail rounded" style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer" onclick="window.open(this.src)"/>
+                                  </c:otherwise>
+                                </c:choose>
+                              </c:if>
+                            </c:forEach>
+                          </div>
+                        </c:when>
+                        <c:otherwise>
+                          <p class="text-muted small mb-0">Không có hình ảnh trước khi sửa.</p>
+                        </c:otherwise>
+                      </c:choose>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                      <h6 class="text-success mb-2" style="font-weight:600">Ảnh kết quả (Sau khi sửa)</h6>
+                      <c:choose>
+                        <c:when test="${not empty ticket.attachmentUrls2}">
+                          <div class="d-flex flex-wrap gap-2">
+                            <c:forEach var="url" items="${fn:split(ticket.attachmentUrls2, ',')}">
+                              <c:set var="trimmedUrl" value="${fn:trim(url)}"/>
+                              <c:if test="${not empty trimmedUrl}">
+                                <c:choose>
+                                  <c:when test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
+                                    <img src="${trimmedUrl}" class="img-thumbnail rounded" style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer" onclick="window.open(this.src)"/>
+                                  </c:when>
+                                  <c:otherwise>
+                                    <img src="${ctx}/uploads/${trimmedUrl}" class="img-thumbnail rounded" style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer" onclick="window.open(this.src)"/>
+                                  </c:otherwise>
+                                </c:choose>
+                              </c:if>
+                            </c:forEach>
+                          </div>
+                        </c:when>
+                        <c:otherwise>
+                          <p class="text-muted small mb-0">Chưa có ảnh khắc phục / sau khi sửa.</p>
+                        </c:otherwise>
+                      </c:choose>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </c:if>
+
           <%-- Lịch sử xử lý --%>
           <div class="widget-surface">
             <div class="widget-surface-header"><h3>Lịch sử xử lý</h3></div>
@@ -115,9 +183,16 @@
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:9px 14px;color:var(--hms-text-muted);white-space:nowrap">Người gửi</td>
                   <td style="padding:9px 14px">
-                    <a href="${ctx}/manager/tenants/${ticket.senderId}">
-                      <c:out value="${ticket.senderName}"/>
-                    </a>
+                    <c:choose>
+                      <c:when test="${ticket.senderRole == 'OPERATOR'}">
+                        <c:out value="${ticket.senderName}"/> <span class="badge bg-secondary">Nhân viên</span>
+                      </c:when>
+                      <c:otherwise>
+                        <a href="${ctx}/manager/tenants/${ticket.senderId}">
+                          <c:out value="${ticket.senderName}"/>
+                        </a>
+                      </c:otherwise>
+                    </c:choose>
                   </td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">

@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -28,7 +28,35 @@
         <!-- Cột trái: Thông tin cá nhân -->
         <div class="col-lg-5">
           <div class="widget-surface">
-            <div class="widget-surface-header"><h3>Thông tin cá nhân</h3></div>
+            <div class="widget-surface-header d-flex justify-content-between align-items-center">
+              <h3>Thông tin cá nhân</h3>
+              <div class="d-flex gap-2">
+                <c:if test="${tenant.status == 'ACTIVE'}">
+                  <button type="button" class="btn-mintlify-secondary"
+                          data-bs-toggle="modal" data-bs-target="#editTenantModal"
+                          style="padding:4px 12px;font-size:0.8125rem">
+                    Sửa
+                  </button>
+                  <form method="post" action="${ctx}/manager/tenants/${tenant.id}/lock" style="display:inline; margin:0;">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                    <button type="submit" class="btn btn-outline-warning" style="padding:4px 12px; font-size:0.8125rem;">Khóa</button>
+                  </form>
+                </c:if>
+                <c:if test="${tenant.status == 'LOCKED'}">
+                  <form method="post" action="${ctx}/manager/tenants/${tenant.id}/unlock" style="display:inline; margin:0;">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                    <button type="submit" class="btn btn-outline-success" style="padding:4px 12px; font-size:0.8125rem;">Mở khóa</button>
+                  </form>
+                </c:if>
+                <c:if test="${tenant.status == 'INACTIVE'}">
+                  <form method="post" action="${ctx}/manager/tenants/${tenant.id}/delete" style="display:inline; margin:0;"
+                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn người thuê này khỏi danh sách quản lý?');">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                    <button type="submit" class="btn btn-outline-danger" style="padding:4px 12px; font-size:0.8125rem;">Xóa</button>
+                  </form>
+                </c:if>
+              </div>
+            </div>
             <div class="widget-surface-body">
               <table style="width:100%;font-size:0.875rem;border-collapse:collapse">
                 <tr><td style="padding:6px 0;color:var(--hms-text-muted);width:44%">Họ tên</td>
@@ -56,6 +84,9 @@
                       <c:choose>
                         <c:when test="${tenant.status == 'ACTIVE'}">
                           <span class="badge-hms badge-success">Đang thuê</span>
+                        </c:when>
+                        <c:when test="${tenant.status == 'LOCKED'}">
+                          <span class="badge-hms badge-danger">Đã khóa</span>
                         </c:when>
                         <c:otherwise>
                           <span class="badge-hms badge-neutral">Ngừng thuê</span>
@@ -93,6 +124,9 @@
                       <c:choose>
                         <c:when test="${tenant.status == 'ACTIVE'}">
                           <span class="badge-hms badge-success">Đang thuê</span>
+                        </c:when>
+                        <c:when test="${tenant.status == 'LOCKED'}">
+                          <span class="badge-hms badge-danger">Đã khóa</span>
                         </c:when>
                         <c:otherwise>
                           <span class="badge-hms badge-neutral">Ngừng thuê</span>
@@ -161,6 +195,8 @@
                                 <button type="button"
                                         class="btn-mintlify-secondary ms-1"
                                         style="padding:3px 10px;font-size:0.8125rem"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editDependentModal"
                                         onclick="openEditDependent(${dep.id}, '${dep.fullName}', '${dep.relationship}', '${dep.phone}', '${dep.gender}', '${dep.dob}')">
                                   Sửa
                                 </button>
@@ -341,6 +377,132 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Sửa thông tin Tenant -->
+<div class="modal fade" id="editTenantModal" tabindex="-1"
+     aria-labelledby="editTenantLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTenantLabel">Sửa thông tin cá nhân</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <form method="post" action="${ctx}/manager/tenants/${tenant.id}/edit">
+        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="tenant_fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="tenant_fullName" name="fullName"
+                   required maxlength="100" value="<c:out value='${tenant.fullName}'/>">
+          </div>
+          <div class="mb-3">
+            <label for="tenant_email" class="form-label">Email (Tên đăng nhập) <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="tenant_email" name="email"
+                   required maxlength="100" value="<c:out value='${tenant.email}'/>">
+          </div>
+          <div class="mb-3">
+            <label for="tenant_phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+            <input type="tel" class="form-control" id="tenant_phone" name="phone"
+                   required maxlength="20" value="<c:out value='${tenant.phone}'/>">
+          </div>
+          <div class="mb-3">
+            <label for="tenant_identityNumber" class="form-label">CCCD/CMND <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="tenant_identityNumber" name="identityNumber"
+                   required maxlength="50" value="<c:out value='${tenant.identityNumber}'/>">
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="tenant_gender" class="form-label">Giới tính</label>
+              <select class="form-select" id="tenant_gender" name="gender">
+                <option value="">-- Chọn --</option>
+                <option value="MALE" <c:if test="${tenant.gender == 'MALE'}">selected</c:if>>Nam</option>
+                <option value="FEMALE" <c:if test="${tenant.gender == 'FEMALE'}">selected</c:if>>Nữ</option>
+                <option value="OTHER" <c:if test="${tenant.gender == 'OTHER'}">selected</c:if>>Khác</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label for="tenant_dob" class="form-label">Ngày sinh</label>
+              <input type="date" class="form-control" id="tenant_dob" name="dob" value="<c:out value='${tenant.dob}'/>">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="tenant_permanentAddress" class="form-label">Địa chỉ thường trú</label>
+            <input type="text" class="form-control" id="tenant_permanentAddress" name="permanentAddress"
+                   maxlength="500" value="<c:out value='${tenant.permanentAddress}'/>">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-mintlify-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="quick-action-btn primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Sửa người phụ thuộc -->
+<div class="modal fade" id="editDependentModal" tabindex="-1"
+     aria-labelledby="editDependentLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDependentLabel">Sửa thông tin người phụ thuộc</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <form id="editDependentForm" method="post" action="">
+        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="edit_dep_fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit_dep_fullName" name="fullName"
+                   required maxlength="200">
+          </div>
+          <div class="mb-3">
+            <label for="edit_dep_relationship" class="form-label">Quan hệ <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="edit_dep_relationship" name="relationship"
+                   required maxlength="100" placeholder="VD: Con, Vợ/Chồng, Cha/Mẹ...">
+          </div>
+          <div class="mb-3">
+            <label for="edit_dep_phone" class="form-label">Số điện thoại</label>
+            <input type="tel" class="form-control" id="edit_dep_phone" name="phone" maxlength="20">
+          </div>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label for="edit_dep_gender" class="form-label">Giới tính</label>
+              <select class="form-select" id="edit_dep_gender" name="gender">
+                <option value="">-- Chọn --</option>
+                <option value="MALE">Nam</option>
+                <option value="FEMALE">Nữ</option>
+                <option value="OTHER">Khác</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label for="edit_dep_dob" class="form-label">Ngày sinh</label>
+              <input type="date" class="form-control" id="edit_dep_dob" name="dob">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-mintlify-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="quick-action-btn primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function openEditDependent(id, fullName, relationship, phone, gender, dob) {
+    document.getElementById('edit_dep_fullName').value = fullName;
+    document.getElementById('edit_dep_relationship').value = relationship;
+    document.getElementById('edit_dep_phone').value = phone;
+    document.getElementById('edit_dep_gender').value = gender;
+    document.getElementById('edit_dep_dob').value = dob;
+    
+    // Set form action dynamically
+    document.getElementById('editDependentForm').action = '${ctx}/manager/dependents/' + id + '/edit?tenantId=${tenant.id}';
+}
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 </body>
