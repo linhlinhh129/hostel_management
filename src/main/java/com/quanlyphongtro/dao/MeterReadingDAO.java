@@ -13,10 +13,6 @@ import java.util.List;
 
 public class MeterReadingDAO extends BaseDAO {
 
-    /**
-     * Lấy danh sách trạng thái chốt sổ điện nước của các phòng đang có người thuê.
-     * TUYỆT ĐỐI CHỈ SỬ DỤNG LỆNH SELECT, KHÔNG CHỈNH SỬA DATABASE.
-     */
     public List<MeterStatusDTO> getMeterStatusList(int currentMonth, int currentYear, String facility, String roomCode) {
         List<MeterStatusDTO> list = new ArrayList<>();
         
@@ -158,7 +154,7 @@ public class MeterReadingDAO extends BaseDAO {
         return null;
     }
 
-    private MeterReading mapRow(ResultSet rs) throws SQLException {
+    private MeterReading mapRow(ResultSet rs) throws Exception {
         MeterReading m = new MeterReading();
         m.setMeterId(rs.getInt("meter_id"));
         m.setRoomId(getInteger(rs, "room_id"));
@@ -175,15 +171,8 @@ public class MeterReadingDAO extends BaseDAO {
         return m;
     }
 
-    /**
-     * Lấy 2 bản ghi chỉ số điện nước mới nhất theo reading_date DESC cho một phòng.
-     * Index 0 = mới nhất (new), index 1 = cũ hơn (old).
-     */
     public List<MeterReading> findLatestTwoByRoomId(int roomId) {
-        String sql = "SELECT TOP 2 * " +
-                     "FROM dbo.meter_readings " +
-                     "WHERE room_id = ? AND deleted_at IS NULL " +
-                     "ORDER BY reading_date DESC, meter_id DESC";
+        String sql = "SELECT TOP 2 * FROM dbo.meter_readings WHERE room_id = ? AND deleted_at IS NULL ORDER BY reading_date DESC, meter_id DESC";
         List<MeterReading> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -217,8 +206,8 @@ public class MeterReadingDAO extends BaseDAO {
         MeterReading prev    = findLatestInRange(roomId, prevStart, prevEnd);
 
         List<MeterReading> result = new ArrayList<>();
-        result.add(current); 
-        result.add(prev);    
+        result.add(current);
+        result.add(prev);
         return result;
     }
 

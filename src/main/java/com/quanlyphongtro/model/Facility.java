@@ -19,6 +19,7 @@ public class Facility {
     private BigDecimal waterPrice;
     private BigDecimal internetFee;
     private BigDecimal serviceFee;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;

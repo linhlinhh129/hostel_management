@@ -45,6 +45,7 @@ public class RoomDAO extends BaseDAO {
         f.setInternetFee(rs.getBigDecimal("f_internet_fee"));
         f.setServiceFee(rs.getBigDecimal("f_service_fee"));
         return f;
+
     }
 
     public Optional<Room> findById(int roomId) {
@@ -116,5 +117,45 @@ public class RoomDAO extends BaseDAO {
             logger.error("findFacilityByRoomId failed for roomId={}", roomId, e);
         }
         return Optional.empty();
+    }
+
+    public boolean update(Room room) {
+        String sql = "UPDATE dbo.rooms SET facility_id = ?, code = ?, area = ?, status = ?, tenant_id = ?, " +
+                     "deposit_amount = ?, contract_start_date = ?, contract_end_date = ?, room_fee = ?, " +
+                     "updated_at = GETDATE() WHERE room_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, room.getFacilityId());
+            ps.setString(2, room.getCode());
+            if (room.getArea() != null) {
+                ps.setBigDecimal(3, room.getArea());
+            } else {
+                ps.setNull(3, java.sql.Types.DECIMAL);
+            }
+            ps.setString(4, room.getStatus());
+            if (room.getTenantId() != null) {
+                ps.setInt(5, room.getTenantId());
+            } else {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            }
+            ps.setBigDecimal(6, room.getDepositAmount() != null ? room.getDepositAmount() : java.math.BigDecimal.ZERO);
+            if (room.getContractStartDate() != null) {
+                ps.setDate(7, java.sql.Date.valueOf(room.getContractStartDate()));
+            } else {
+                ps.setNull(7, java.sql.Types.DATE);
+            }
+            if (room.getContractEndDate() != null) {
+                ps.setDate(8, java.sql.Date.valueOf(room.getContractEndDate()));
+            } else {
+                ps.setNull(8, java.sql.Types.DATE);
+            }
+            ps.setBigDecimal(9, room.getRoomFee());
+            ps.setInt(10, room.getId() != null && room.getId() > 0 ? room.getId() : room.getRoomId());
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("update failed for roomId={}", room.getId(), e);
+        }
+        return false;
     }
 }

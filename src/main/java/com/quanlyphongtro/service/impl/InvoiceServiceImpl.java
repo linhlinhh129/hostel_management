@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class InvoiceServiceImpl implements InvoiceService {
-
     private final InvoiceDAO invoiceDAO = new InvoiceDAO();
 
     @Override
@@ -25,8 +24,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public Optional<Invoice> getInvoiceById(int id, int roomId) {
-        return invoiceDAO.findByIdAndRoomId(id, roomId);
+    public Optional<Invoice> getInvoiceById(int invoiceId, int roomId) {
+        return invoiceDAO.findByIdAndRoomId(invoiceId, roomId);
     }
 
     @Override
@@ -40,9 +39,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod, int page, int size) {
-        int offset = (page - 1) * size;
-        return invoiceDAO.findInvoices(managerId, keyword, status, billingPeriod, offset, size);
+    public List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod, int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        return invoiceDAO.findInvoices(managerId, keyword, status, billingPeriod, offset, pageSize);
     }
 
     @Override
@@ -51,27 +50,21 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public InvoiceDetailDTO getInvoiceDetail(int managerId, int invoiceId) {
+    public InvoiceDetailDTO getInvoiceDetail(int managerId, int invoiceId) throws Exception {
         InvoiceDetailDTO dto = invoiceDAO.findById(managerId, invoiceId);
         if (dto == null) {
-            throw new IllegalArgumentException("Hóa đơn không tồn tại hoặc bạn không có quyền xem.");
+            throw new Exception("Không tìm thấy hóa đơn hoặc bạn không có quyền xem.");
         }
         return dto;
     }
 
     @Override
     public void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDateStr, String taxRateStr, String otherFeeStr, String note, int createdBy) throws Exception {
-        if (roomCode == null || roomCode.isEmpty()) throw new IllegalArgumentException("Mã phòng không được để trống.");
-        if (billingPeriod == null || billingPeriod.length() != 6) throw new IllegalArgumentException("Kỳ hóa đơn không hợp lệ. Format YYYYMM.");
-        
         LocalDate dueDate;
         try {
             dueDate = LocalDate.parse(dueDateStr);
         } catch (Exception e) {
             throw new IllegalArgumentException("Hạn thanh toán không hợp lệ.");
-        }
-        if (dueDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Hạn thanh toán không được nhỏ hơn ngày hiện tại.");
         }
 
         BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
@@ -84,15 +77,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal roomFee = BigDecimal.ZERO;
         BigDecimal electricityPrice = BigDecimal.ZERO;
         BigDecimal waterPrice = BigDecimal.ZERO;
-        BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal internetFee = BigDecimal.ZERO;
-        
-        String roomSql = "SELECT r.room_id, r.room_fee, f.electricity_price, f.water_price, f.service_fee, f.internet_fee " +
-                         "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                         "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL";
-        
+        BigDecimal serviceFee = BigDecimal.ZERO;
+
+        String checkRoomSql = "SELECT r.room_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee " +
+                              "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                              "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(roomSql)) {
+             PreparedStatement ps = conn.prepareStatement(checkRoomSql)) {
             ps.setString(1, roomCode);
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -101,8 +93,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                     roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
                     electricityPrice = rs.getBigDecimal("electricity_price") != null ? rs.getBigDecimal("electricity_price") : BigDecimal.ZERO;
                     waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price") : BigDecimal.ZERO;
-                    serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
                     internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
+                    serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
                 } else {
                     throw new IllegalArgumentException("Phòng không tồn tại hoặc bạn không có quyền quản lý phòng này.");
                 }

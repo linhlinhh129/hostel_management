@@ -3,6 +3,8 @@ package com.quanlyphongtro.dao;
 import com.quanlyphongtro.dto.PaymentListItemDTO;
 import com.quanlyphongtro.dto.PaymentDetailDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
+import com.quanlyphongtro.dto.PaymentListItemDTO;
+import com.quanlyphongtro.dto.PaymentDetailDTO;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -193,7 +195,6 @@ public class PaymentDAO extends BaseDAO {
     }
     
     public void approvePayment(int paymentId, int approvedBy) throws SQLException {
-        // 1. Update payment status to SUCCESS
         String updatePaymentSql = "UPDATE payments SET status = 'SUCCESS', updated_at = GETDATE() " +
                                   "WHERE payment_id = ? AND status = 'PENDING' AND " +
                                   "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
@@ -203,7 +204,6 @@ public class PaymentDAO extends BaseDAO {
             ps.setInt(2, approvedBy);
             int rows = ps.executeUpdate();
             if (rows > 0) {
-                // 2. Update related invoice to PAID
                 String updateInvoiceSql = "UPDATE invoices SET status = 'PAID', updated_at = GETDATE() WHERE invoice_id = (SELECT invoice_id FROM payments WHERE payment_id = ?)";
                 try (PreparedStatement psInv = conn.prepareStatement(updateInvoiceSql)) {
                     psInv.setInt(1, paymentId);
