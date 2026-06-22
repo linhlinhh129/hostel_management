@@ -3,11 +3,14 @@ com\quanlyphongtro\constant\ErrorMessageConstant.class
 com\quanlyphongtro\controller\tenant\TenantDashboardServlet.class
 com\quanlyphongtro\controller\manager\ManagerDashboardServlet.class
 com\quanlyphongtro\util\PasswordUtil.class
+com\quanlyphongtro\controller\manager\ManagerRoomsServlet.class
 com\quanlyphongtro\service\impl\UserServiceImpl.class
 com\quanlyphongtro\util\LoginAttemptTracker$AttemptRecord.class
 com\quanlyphongtro\exception\AppException.class
 com\quanlyphongtro\controller\auth\LoginServlet.class
+com\quanlyphongtro\controller\manager\ManagerContractsServlet.class
 com\quanlyphongtro\exception\NotFoundException.class
+com\quanlyphongtro\controller\manager\ManagerNotificationsServlet.class
 com\quanlyphongtro\controller\admin\AdminDashboardServlet.class
 com\quanlyphongtro\exception\ForbiddenException.class
 com\quanlyphongtro\filter\CsrfFilter.class
@@ -19,10 +22,12 @@ com\quanlyphongtro\filter\RoleFilter.class
 com\quanlyphongtro\filter\AuthFilter.class
 com\quanlyphongtro\constant\StatusConstant.class
 com\quanlyphongtro\constant\RoleConstant.class
+com\quanlyphongtro\controller\manager\ManagerTenantsServlet.class
 com\quanlyphongtro\filter\EncodingFilter.class
 com\quanlyphongtro\exception\ValidationException.class
 com\quanlyphongtro\controller\auth\LogoutServlet.class
 com\quanlyphongtro\util\LoginAttemptTracker.class
 com\quanlyphongtro\dao\BaseDAO.class
+com\quanlyphongtro\controller\manager\ManagerTicketsServlet.class
 com\quanlyphongtro\dto\UserSessionDTO.class
 com\quanlyphongtro\dao\UserDAO.class

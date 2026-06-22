@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -46,8 +46,16 @@
         </div>
 
         <form class="filter-bar" method="get" action="${ctx}/manager/notifications">
+          <select class="form-select" name="facilityId" style="max-width:240px">
+            <option value="">Tất cả cơ sở</option>
+            <c:forEach var="facility" items="${assignedFacilities}">
+              <option value="${facility.id}" ${filterFacilityId == facility.id ? 'selected' : ''}>
+                <c:out value="${facility.name}"/> (<c:out value="${facility.code}"/>)
+              </option>
+            </c:forEach>
+          </select>
           <input type="text" class="form-control" name="keyword"
-                 placeholder="Tiêu đề thông báo..."
+                 placeholder="Tiêu đề / nội dung..."
                  value="<c:out value='${keyword}'/>">
           <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
           <a href="${ctx}/manager/notifications" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
@@ -121,11 +129,11 @@
               </span>
               <div class="d-flex gap-1">
                 <c:if test="${page.page > 1}">
-                  <a href="${ctx}/manager/notifications?page=${page.page - 1}&keyword=${keyword}"
+                  <a href="${ctx}/manager/notifications?page=${page.page - 1}&keyword=${keyword}&facilityId=${filterFacilityId}"
                      class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Trước</a>
                 </c:if>
                 <c:if test="${page.page < page.totalPages}">
-                  <a href="${ctx}/manager/notifications?page=${page.page + 1}&keyword=${keyword}"
+                  <a href="${ctx}/manager/notifications?page=${page.page + 1}&keyword=${keyword}&facilityId=${filterFacilityId}"
                      class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau</a>
                 </c:if>
               </div>
