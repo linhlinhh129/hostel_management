@@ -20,19 +20,30 @@
                 <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
                     <div>
                         <h1>Báo cáo doanh thu</h1>
-                        <p>Tổng quan doanh thu toàn hệ thống — kỳ <c:out value="${selectedPeriod}"/></p>
+                        <p>Tổng quan doanh thu toàn hệ thống — tháng <c:out value="${selectedPeriod}"/></p>
                     </div>
                     <!-- Chọn kỳ -->
                     <form method="get" action="${ctx}/admin/revenue"
                           style="display:flex;gap:8px;align-items:center;position:relative;z-index:1">
-                        <input type="month" class="form-control" name="period"
+                        <input type="month" class="form-control" name="period" id="periodPicker"
                                style="max-width:160px;padding:7px 12px;font-size:0.875rem"
-                               value="${not empty selectedPeriod ? '20'.concat(selectedPeriod.substring(3,5)).concat('-').concat(selectedPeriod.substring(0,2)) : ''}">
+                               value="${not empty selectedPeriod ? selectedPeriod.substring(3).concat('-').concat(selectedPeriod.substring(0,2)) : ''}">
+                        <script>
+                            (function(){
+                                var el = document.getElementById('periodPicker');
+                                if (!el.value) {
+                                    var now = new Date();
+                                    var y = now.getFullYear();
+                                    var m = String(now.getMonth() + 1).padStart(2, '0');
+                                    el.value = y + '-' + m;
+                                }
+                            })();
+                        </script>
                         <button type="submit"
-                                style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);
-                                       color:#fff;padding:7px 16px;border-radius:var(--hms-radius-full);
+                                style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35)
+                                       ;padding:7px 16px;border-radius:var(--hms-radius-full);
                                        font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap">
-                            Xem kỳ
+                            Xem tháng
                         </button>
                     </form>
                 </div>
@@ -210,7 +221,7 @@
                                 <c:forEach var="t" items="${revenueTrend}">
                                     <tr>
                                         <td style="font-weight:600;font-family:var(--hms-font-mono)">
-                                            <c:out value="${t.period}"/>
+                                            <c:out value="${t.facilityCode}"/>
                                         </td>
                                         <td style="font-weight:700">
                                             <fmt:formatNumber value="${t.totalRevenue}" pattern="#,##0"/> đ

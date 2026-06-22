@@ -4,6 +4,8 @@ import com.quanlyphongtro.constant.StatusConstant;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User {
     private Integer id;
@@ -26,6 +28,9 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
+
+    /** Names of facilities this user manages (populated on demand). */
+    private List<String> facilityNames = new ArrayList<>();
 
     public User() {}
 
@@ -81,6 +86,11 @@ public class User {
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
     public boolean isDeleted() { return deletedAt != null; }
+
+    public List<String> getFacilityNames() { return facilityNames; }
+    public void setFacilityNames(List<String> facilityNames) {
+        this.facilityNames = facilityNames != null ? facilityNames : new ArrayList<>();
+    }
 
     public boolean isActive() {
         return StatusConstant.ACTIVE.equals(status);

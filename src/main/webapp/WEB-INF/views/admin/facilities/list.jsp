@@ -15,17 +15,19 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <h1>Quản lý cơ sở</h1>
-                    <p>Danh sách tất cả cơ sở nhà trọ trong hệ thống</p>
+            <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Quản lý cơ sở</h1>
+                        <p>Danh sách tất cả cơ sở nhà trọ trong hệ thống</p>
+                    </div>
+                    <a href="${ctx}/admin/facilities/create" class="quick-action-btn primary" style="position:relative;z-index:1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Thêm cơ sở
+                    </a>
                 </div>
-                <a href="${ctx}/admin/facilities/create" class="quick-action-btn primary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Thêm cơ sở
-                </a>
             </div>
 
             <div class="data-surface">
@@ -35,12 +37,11 @@
                            value="<c:out value='${keyword}'/>">
                     <select class="form-select" name="status" style="max-width:160px">
                         <option value="">Tất cả trạng thái</option>
-                        <option value="DRAFT"    ${selectedStatus == 'DRAFT'    ? 'selected' : ''}>Nháp</option>
                         <option value="ACTIVE"   ${selectedStatus == 'ACTIVE'   ? 'selected' : ''}>Hoạt động</option>
                         <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Vô hiệu</option>
                     </select>
-                    <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-                    <a href="${ctx}/admin/facilities" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+                    <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
+                    <a href="${ctx}/admin/facilities" class="btn-mintlify-secondary text-decoration-none">Xóa</a>
                 </form>
 
                 <c:choose>
@@ -74,7 +75,7 @@
                                                     <span class="badge-hms badge-success">Hoạt động</span>
                                                 </c:when>
                                                 <c:when test="${f.status == 'DRAFT'}">
-                                                    <span class="badge-hms badge-warning">Nháp</span>
+                                                    <span class="badge-hms badge-warning">Chưa kích hoạt</span>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <span class="badge-hms badge-neutral">Vô hiệu</span>
@@ -82,8 +83,7 @@
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <a href="${ctx}/admin/facilities/${f.id}" class="me-2">Xem</a>
-                                            <a href="${ctx}/admin/facilities/${f.id}/edit">Sửa</a>
+                                            <a href="${ctx}/admin/facilities/${f.id}" class="me-2">Chi tiết</a>
                                         </td>
                                     </tr>
                                 </c:forEach>

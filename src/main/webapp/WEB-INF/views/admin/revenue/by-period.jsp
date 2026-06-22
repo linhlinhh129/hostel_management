@@ -15,22 +15,29 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <h1>Doanh thu theo kỳ</h1>
-                    <p>Xu hướng tăng trưởng <strong><c:out value="${selectedMonths}"/> kỳ</strong> gần nhất</p>
-                </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <form method="get" action="${ctx}/admin/revenue/by-period"
-                          style="display:flex;gap:8px;align-items:center">
-                        <select class="form-select" name="months" style="max-width:140px">
-                            <option value="3"  ${selectedMonths == 3  ? 'selected' : ''}>3 kỳ</option>
-                            <option value="6"  ${selectedMonths == 6  ? 'selected' : ''}>6 kỳ</option>
-                            <option value="12" ${selectedMonths == 12 ? 'selected' : ''}>12 kỳ</option>
-                        </select>
-                        <button type="submit" class="btn-mintlify-secondary">Xem</button>
-                    </form>
-                    <a href="${ctx}/admin/revenue" class="quick-action-btn">← Tổng quan</a>
+            <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Doanh thu theo kỳ</h1>
+                        <p>Xu hướng tăng trưởng <strong><c:out value="${selectedMonths}"/> kỳ</strong> gần nhất</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap" style="position:relative;z-index:1">
+                        <form method="get" action="${ctx}/admin/revenue/by-period"
+                              style="display:flex;gap:8px;align-items:center">
+                            <select class="form-select" name="months" style="max-width:140px">
+                                <option value="3"  ${selectedMonths == 3  ? 'selected' : ''}>3 kỳ</option>
+                                <option value="6"  ${selectedMonths == 6  ? 'selected' : ''}>6 kỳ</option>
+                                <option value="12" ${selectedMonths == 12 ? 'selected' : ''}>12 kỳ</option>
+                            </select>
+                            <button type="submit"
+                                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);
+                                           padding:7px 16px;border-radius:var(--hms-radius-full);
+                                           font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap">
+                                Xem
+                            </button>
+                        </form>
+                        <a href="${ctx}/admin/revenue" class="quick-action-btn">← Tổng quan</a>
+                    </div>
                 </div>
             </div>
 
@@ -65,7 +72,7 @@
                                 <c:forEach var="p" items="${periodRevenues}" varStatus="st">
                                     <tr style="${st.first ? 'background:var(--hms-accent-bg)' : ''}">
                                         <td style="font-family:var(--hms-font-mono);font-weight:700;font-size:0.9375rem">
-                                            <c:out value="${p.period}"/>
+                                            <c:out value="${p.facilityCode}"/>
                                             <c:if test="${st.first}">
                                                 <span class="badge-hms badge-accent ms-1" style="font-size:0.625rem">Mới nhất</span>
                                             </c:if>
@@ -137,7 +144,7 @@
                                             <c:out value="${g.facilityName}"/>
                                         </div>
                                     </td>
-                                    <td style="font-family:var(--hms-font-mono)"><c:out value="${g.period}"/></td>
+                                    <td style="font-family:var(--hms-font-mono)"><c:out value="${g.facilityCode}"/></td>
                                     <td style="font-weight:700">
                                         <fmt:formatNumber value="${g.totalRevenue}" pattern="#,##0"/> đ
                                     </td>

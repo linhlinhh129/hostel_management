@@ -27,7 +27,7 @@
                         <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
                     </c:if>
 
-                    <h2 class="h6 mb-3">Thông tin nhân sự</h2>
+                    <h2 class="h6 mb-3">Thông tin cá nhân</h2>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
@@ -35,15 +35,42 @@
                                    value="<c:out value='${dto.fullName}'/>">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">Số điện thoại</label>
-                            <input type="tel" class="form-control" id="phone" name="phone"
-                                   placeholder="0901234567" value="<c:out value='${dto.phone}'/>">
+                            <label for="dob" class="form-label">Ngày sinh</label>
+                            <input type="date" class="form-control" id="dob" name="dob"
+                                   value="<c:out value='${dto.dob}'/>">
                         </div>
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="identityNumber" class="form-label">CCCD <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="identityNumber" name="identityNumber"
+                                   placeholder="12 chữ số" maxlength="12"
+                                   value="<c:out value='${dto.identityNumber}'/>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="gender" class="form-label">Giới tính</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="">Chọn giới tính</option>
+                                <option value="MALE"   ${dto.gender == 'MALE'   ? 'selected' : ''}>Nam</option>
+                                <option value="FEMALE" ${dto.gender == 'FEMALE' ? 'selected' : ''}>Nữ</option>
+                                <option value="OTHER"  ${dto.gender == 'OTHER'  ? 'selected' : ''}>Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone"
+                                   placeholder="0901234567" maxlength="10"
+                                   value="<c:out value='${dto.phone}'/>">
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="email" name="email" required
                                    value="<c:out value='${dto.email}'/>">
                             <div class="form-text">Mật khẩu tạm thời sẽ gửi về địa chỉ này</div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="permanentAddress" class="form-label">Địa chỉ thường trú</label>
+                            <input type="text" class="form-control" id="permanentAddress" name="permanentAddress"
+                                   placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                                   value="<c:out value='${dto.permanentAddress}'/>">
                         </div>
                     </div>
 
@@ -61,31 +88,25 @@
 
                     <div id="facilitySection" style="display:none">
                         <div class="mb-3">
-                            <label class="form-label">
-                                Cơ sở phụ trách <span class="text-danger" id="facilityRequired">*</span>
+                            <label for="facilityId" class="form-label">
+                                Cơ sở phụ trách <span class="text-danger">*</span>
                             </label>
-                            <div class="d-flex flex-wrap gap-2" id="facilityCheckboxes">
+                            <select class="form-select" id="facilityId" name="facilityId">
+                                <option value="">— Chọn cơ sở —</option>
                                 <c:forEach var="fac" items="${activeFacilities}">
-                                    <div class="form-check" style="min-width:220px">
-                                        <input class="form-check-input" type="checkbox"
-                                               name="facilityIds" value="${fac.id}"
-                                               id="fac_${fac.id}"
-                                               <c:forEach var="selId" items="${dto.facilityIds}">
-                                                   ${selId == fac.id ? 'checked' : ''}
-                                               </c:forEach>>
-                                        <label class="form-check-label" for="fac_${fac.id}">
-                                            <c:out value="${fac.code}"/> - <c:out value="${fac.name}"/>
-                                        </label>
-                                    </div>
+                                    <option value="${fac.id}"
+                                            ${dto.facilityId == fac.id ? 'selected' : ''}>
+                                        <c:out value="${fac.code}"/> — <c:out value="${fac.name}"/>
+                                    </option>
                                 </c:forEach>
-                                <c:if test="${empty activeFacilities}">
-                                    <p class="text-muted" style="font-size:0.875rem">
-                                        Chưa có cơ sở ACTIVE nào.
-                                        <a href="${ctx}/admin/facilities">Quản lý cơ sở</a>
-                                    </p>
-                                </c:if>
-                            </div>
-                            <div class="form-text">Nhân sự chỉ thấy và thao tác dữ liệu thuộc cơ sở được phân công</div>
+                            </select>
+                            <c:if test="${empty activeFacilities}">
+                                <div class="form-text text-warning">
+                                    Chưa có cơ sở ACTIVE nào.
+                                    <a href="${ctx}/admin/facilities">Quản lý cơ sở →</a>
+                                </div>
+                            </c:if>
+                            <div class="form-text">Mỗi nhân sự chỉ được phân công một cơ sở duy nhất</div>
                         </div>
                     </div>
 

@@ -21,6 +21,7 @@ IF OBJECT_ID(N'dbo.users', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.users (
         user_id             INT IDENTITY(1,1)   PRIMARY KEY,
+        personnel_id        VARCHAR(20)         UNIQUE,
         username            NVARCHAR(50)        NOT NULL UNIQUE,
         password_hash       NVARCHAR(255)       NOT NULL,
         role                NVARCHAR(20)        NOT NULL DEFAULT 'TENANT',  -- ADMIN, MANAGER, OPERATOR, TENANT
@@ -56,7 +57,8 @@ BEGIN
         floor_count         INT                 NOT NULL,
 		rooms_per_floor     INT                 NOT NULL,
         status              NVARCHAR(20)        NOT NULL DEFAULT 'DRAFT', -- DRAFT, ACTIVE, INACTIVE
-        manager_id          INT                 NULL,
+        manager_id          INT                 NULL,   -- Ban Quản Lý (MANAGER)
+        operator_id         INT                 NULL,   -- Nhân viên vận hành (OPERATOR)
         electricity_price   DECIMAL(10,2)       NULL,
         water_price         DECIMAL(10,2)       NULL,
         internet_fee        DECIMAL(10,2)       NULL,
@@ -66,7 +68,9 @@ BEGIN
         deleted_at          DATETIME2           NULL,
 
         CONSTRAINT FK_facilities_users_manager
-            FOREIGN KEY (manager_id) REFERENCES dbo.users(user_id)
+            FOREIGN KEY (manager_id) REFERENCES dbo.users(user_id),
+        CONSTRAINT FK_facilities_users_operator
+            FOREIGN KEY (operator_id) REFERENCES dbo.users(user_id)
     );
 END
 GO
@@ -340,6 +344,10 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_facilities_manager' AND object_id = OBJECT_ID(N'dbo.facilities'))
     CREATE UNIQUE INDEX UX_facilities_manager ON dbo.facilities(manager_id) WHERE manager_id IS NOT NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_facilities_operator'AND object_id = OBJECT_ID(N'dbo.facilities'))
+    CREATE UNIQUE INDEX UX_facilities_operator ON dbo.facilities(operator_id) WHERE operator_id IS NOT NULL;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_rooms_tenant' AND object_id = OBJECT_ID(N'dbo.rooms'))

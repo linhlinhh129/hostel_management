@@ -9,7 +9,7 @@
 
 ## 1. Tổng quan Giải pháp
 
-Feature Quản lý Nhân sự cho phép Admin quản lý toàn bộ tài khoản nhân sự với các vai trò: Manager, Technician, Cost Manager. Đặc biệt quản lý gán cơ sở và kiểm soát số lượng tài khoản Cost Manager (tối đa 1 tài khoản hoạt động).
+Feature Quản lý Nhân sự cho phép Admin quản lý toàn bộ tài khoản nhân sự với các vai trò: Manager, Operator. 
 
 **Kiến trúc:**
 - Backend API: CRUD nhân sự, gán vai trò, gán cơ sở, khóa/mở khóa tài khoản
