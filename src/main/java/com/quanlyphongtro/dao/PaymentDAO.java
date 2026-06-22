@@ -1,13 +1,18 @@
 package com.quanlyphongtro.dao;
 
-<<<<<<< HEAD
+import com.quanlyphongtro.dto.PaymentListItemDTO;
+import com.quanlyphongtro.dto.PaymentDetailDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaymentDAO extends BaseDAO {
 
@@ -28,19 +33,8 @@ public class PaymentDAO extends BaseDAO {
         } catch (Exception e) {
             logger.error("insertPayment failed for code={}", code, e);
             return false;
-=======
-import com.quanlyphongtro.dto.PaymentListItemDTO;
-import com.quanlyphongtro.dto.PaymentDetailDTO;
-import com.quanlyphongtro.util.DatabaseUtil;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-public class PaymentDAO {
+        }
+    }
 
     public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, int offset, int limit) {
         List<PaymentListItemDTO> list = new ArrayList<>();
@@ -228,7 +222,6 @@ public class PaymentDAO {
             ps.setInt(1, paymentId);
             ps.setInt(2, rejectedBy);
             ps.executeUpdate();
->>>>>>> feature/invoiceManagement-buidinh
         }
     }
 }

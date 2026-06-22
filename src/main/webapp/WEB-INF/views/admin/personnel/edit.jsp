@@ -15,12 +15,11 @@
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
             <div class="page-header hero-sky-gradient">
-                <h1>Sửa nhân sự</h1>
-                <p><c:out value="${employee.fullName}"/> · #<c:out value="${employee.id}"/></p>
+                <h1>Chỉnh sửa nhân sự</h1>
             </div>
 
             <div class="data-surface" style="max-width:720px">
-                <form method="post" action="${ctx}/admin/personnel/${employee.id}/edit" class="p-4">
+                <form method="post" action="${ctx}/admin/personnel/${user.id}/edit" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
                     <c:if test="${not empty errorMessage}">
@@ -32,17 +31,44 @@
                         <div class="col-md-6 mb-3">
                             <label for="fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="fullName" name="fullName" required
-                                   value="<c:out value='${employee.fullName}'/>">
+                                   value="<c:out value='${user.fullName}'/>">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">Số điện thoại</label>
-                            <input type="tel" class="form-control" id="phone" name="phone"
-                                   value="<c:out value='${employee.phone}'/>">
+                            <label for="dob" class="form-label">Ngày sinh</label>
+                            <input type="date" class="form-control" id="dob" name="dob"
+                                   value="<c:out value='${user.dob}'/>">
                         </div>
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="identityNumber" class="form-label">CCCD <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="identityNumber" name="identityNumber"
+                                   placeholder="12 chữ số" maxlength="12"
+                                   value="<c:out value='${user.identityNumber}'/>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="gender" class="form-label">Giới tính</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="">Chọn giới tính</option>
+                                <option value="MALE"   ${user.gender == 'MALE'   ? 'selected' : ''}>Nam</option>
+                                <option value="FEMALE" ${user.gender == 'FEMALE' ? 'selected' : ''}>Nữ</option>
+                                <option value="OTHER"  ${user.gender == 'OTHER'  ? 'selected' : ''}>Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone"
+                                   placeholder="0901234567" maxlength="10"
+                                   value="<c:out value='${user.phone}'/>">
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="email" name="email" required
-                                   value="<c:out value='${employee.email}'/>">
+                                   value="<c:out value='${user.email}'/>">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="permanentAddress" class="form-label">Địa chỉ thường trú</label>
+                            <input type="text" class="form-control" id="permanentAddress" name="permanentAddress"
+                                   placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                                   value="<c:out value='${user.permanentAddress}'/>">
                         </div>
                     </div>
 
@@ -51,50 +77,38 @@
                         <label for="role" class="form-label">Vai trò <span class="text-danger">*</span></label>
                         <select class="form-select" id="role" name="role" required
                                 onchange="toggleFacilitySection(this.value)">
-                            <%-- Admin.md §9: chỉ có Ban Quản Lý và Nhân Viên vận hành --%>
-                            <option value="MANAGER"  ${employee.role == 'MANAGER'  ? 'selected' : ''}>Ban Quản lý</option>
-                            <option value="OPERATOR" ${employee.role == 'OPERATOR' ? 'selected' : ''}>Nhân viên vận hành</option>
+                            <option value="MANAGER"  ${user.role == 'MANAGER'  ? 'selected' : ''}>Ban Quản lý</option>
+                            <option value="OPERATOR" ${user.role == 'OPERATOR' ? 'selected' : ''}>Nhân viên vận hành</option>
                         </select>
                     </div>
 
                     <div id="facilitySection">
                         <div class="mb-3">
-                            <label class="form-label">Cơ sở phụ trách</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                <c:forEach var="fac" items="${activeFacilities}">
-                                    <%-- Kiểm tra xem cơ sở này đã được gán chưa --%>
-                                    <c:set var="isAssigned" value="false"/>
-                                    <c:forEach var="assignedId" items="${employee.facilityIds}">
-                                        <c:if test="${assignedId == fac.id}">
-                                            <c:set var="isAssigned" value="true"/>
-                                        </c:if>
-                                    </c:forEach>
-                                    <div class="form-check" style="min-width:220px">
-                                        <input class="form-check-input" type="checkbox"
-                                               name="facilityIds" value="${fac.id}"
-                                               id="fac_${fac.id}"
-                                               ${isAssigned ? 'checked' : ''}>
-                                        <label class="form-check-label" for="fac_${fac.id}">
-                                            <c:out value="${fac.code}"/> - <c:out value="${fac.name}"/>
-                                        </label>
-                                    </div>
+                            <label for="facilityId" class="form-label">
+                                Cơ sở phụ trách <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="facilityId" name="facilityId">
+                                <option value="">— Chọn cơ sở —</option>
+                                <c:forEach var="fac" items="${availableFacilities}">
+                                    <option value="${fac.id}"
+                                            ${fac.id == currentFacilityId ? 'selected' : ''}>
+                                        <c:out value="${fac.code}"/> — <c:out value="${fac.name}"/>
+                                    </option>
                                 </c:forEach>
-                                <c:if test="${empty activeFacilities}">
-                                    <p class="text-muted" style="font-size:0.875rem">
-                                        Chưa có cơ sở ACTIVE nào.
-                                        <a href="${ctx}/admin/facilities">Quản lý cơ sở</a>
-                                    </p>
-                                </c:if>
-                            </div>
-                            <div class="form-text" id="facilityHint">
-                                Bắt buộc với vai trò Ban Quản lý và Nhân viên vận hành
-                            </div>
+                            </select>
+                            <c:if test="${empty availableFacilities}">
+                                <div class="form-text text-warning">
+                                    Không có cơ sở khả dụng cho vai trò này.
+                                    <a href="${ctx}/admin/facilities">Quản lý cơ sở →</a>
+                                </div>
+                            </c:if>
+                            <div class="form-text">Mỗi nhân sự chỉ được phân công một cơ sở. Danh sách chỉ hiển thị các cơ sở ACTIVE chưa có người phụ trách.</div>
                         </div>
                     </div>
 
                     <div class="d-flex gap-2 mt-3">
                         <button type="submit" class="btn btn-mintlify-primary" style="width:auto">Lưu thay đổi</button>
-                        <a href="${ctx}/admin/personnel/${employee.id}" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
+                        <a href="${ctx}/admin/personnel/${user.id}" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
                     </div>
                 </form>
             </div>
@@ -104,10 +118,10 @@
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
 function toggleFacilitySection(role) {
-    var hint = document.getElementById('facilityHint');
-    if (hint) {
-        hint.textContent = 'Bắt buộc với vai trò Ban Quản lý và Nhân viên vận hành';
-    }
+    var show = (role === 'MANAGER' || role === 'OPERATOR');
+    document.getElementById('facilitySection').style.display = show ? 'block' : 'none';
 }
 toggleFacilitySection(document.getElementById('role').value);
 </script>
+</body>
+</html>

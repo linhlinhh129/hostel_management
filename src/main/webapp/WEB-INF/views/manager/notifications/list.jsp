@@ -70,7 +70,7 @@
                 </thead>
                 <tbody>
                   <c:forEach var="notif" items="${page.items}">
-                    <tr>
+                    <tr data-href="${ctx}/manager/notifications/${notif.id}">
                       <td>
                         <a href="${ctx}/manager/notifications/${notif.id}">
                           <c:out value="${notif.code}"/>

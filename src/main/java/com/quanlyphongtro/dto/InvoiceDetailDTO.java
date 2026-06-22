@@ -9,6 +9,8 @@ public class InvoiceDetailDTO {
     private String tenantName;
     private String tenantPhone;
     private String tenantEmail;
+    private String facilityName;
+    private String facilityAddress;
     private String billingPeriod;
     private BigDecimal roomFee;
     
@@ -66,6 +68,12 @@ public class InvoiceDetailDTO {
 
     public String getTenantEmail() { return tenantEmail; }
     public void setTenantEmail(String tenantEmail) { this.tenantEmail = tenantEmail; }
+
+    public String getFacilityName() { return facilityName; }
+    public void setFacilityName(String facilityName) { this.facilityName = facilityName; }
+
+    public String getFacilityAddress() { return facilityAddress; }
+    public void setFacilityAddress(String facilityAddress) { this.facilityAddress = facilityAddress; }
 
     public String getBillingPeriod() { return billingPeriod; }
     public void setBillingPeriod(String billingPeriod) { this.billingPeriod = billingPeriod; }

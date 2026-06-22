@@ -1,30 +1,23 @@
 package com.quanlyphongtro.model;
 
-<<<<<<< HEAD
 import com.quanlyphongtro.constant.StatusConstant;
-=======
->>>>>>> feature/invoiceManagement-buidinh
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Room {
-<<<<<<< HEAD
     private Integer id;
-=======
-    private Integer roomId;
->>>>>>> feature/invoiceManagement-buidinh
     private Integer facilityId;
     private String code;
     private BigDecimal area;
-    private String status;
+    private String status;           // AVAILABLE, OCCUPIED, MAINTENANCE, RESERVED, INACTIVE
     private Integer tenantId;
     private BigDecimal depositAmount;
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;
-<<<<<<< HEAD
     private BigDecimal roomFee;
-
+    private String tenantName;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -33,17 +26,10 @@ public class Room {
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-=======
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
-    private BigDecimal roomFee;
-
-    public Room() {}
-
-    public Integer getRoomId() { return roomId; }
-    public void setRoomId(Integer roomId) { this.roomId = roomId; }
->>>>>>> feature/invoiceManagement-buidinh
+    
+    // Alias for backwards compatibility
+    public Integer getRoomId() { return id; }
+    public void setRoomId(Integer roomId) { this.id = roomId; }
 
     public Integer getFacilityId() { return facilityId; }
     public void setFacilityId(Integer facilityId) { this.facilityId = facilityId; }
@@ -69,12 +55,12 @@ public class Room {
     public LocalDate getContractEndDate() { return contractEndDate; }
     public void setContractEndDate(LocalDate contractEndDate) { this.contractEndDate = contractEndDate; }
 
-<<<<<<< HEAD
     public BigDecimal getRoomFee() { return roomFee; }
     public void setRoomFee(BigDecimal roomFee) { this.roomFee = roomFee; }
 
-=======
->>>>>>> feature/invoiceManagement-buidinh
+    public String getTenantName() { return tenantName; }
+    public void setTenantName(String tenantName) { this.tenantName = tenantName; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -83,12 +69,18 @@ public class Room {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
-<<<<<<< HEAD
-=======
-
-    public BigDecimal getRoomFee() { return roomFee; }
-    public void setRoomFee(BigDecimal roomFee) { this.roomFee = roomFee; }
 
     public boolean isDeleted() { return deletedAt != null; }
->>>>>>> feature/invoiceManagement-buidinh
+
+    /** Trích số tầng từ mã phòng — 2 ký tự trước 2 ký tự cuối. VD: HL0103 → "01" */
+    public String getFloorLabel() {
+        if (code == null || code.length() < 4) return "";
+        return code.substring(code.length() - 4, code.length() - 2);
+    }
+
+    /** Trích số phòng trong tầng từ mã phòng — 2 ký tự cuối. VD: HL0103 → "03" */
+    public String getRoomLabel() {
+        if (code == null || code.length() < 2) return "";
+        return code.substring(code.length() - 2);
+    }
 }

@@ -25,6 +25,35 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.key === 'Escape') closeSidebar();
   });
 
+  // Close sidebar when a nav link is clicked on mobile (< 1024px)
+  if (sidebar) {
+    sidebar.querySelectorAll('.sidebar-link').forEach(function (link) {
+      link.addEventListener('click', function () {
+        if (window.innerWidth < 1024) closeSidebar();
+      });
+    });
+  }
+
+  // ── Swipe-left to close sidebar on touch devices ─────────
+  var touchStartX = 0;
+  var touchStartY = 0;
+  document.addEventListener('touchstart', function (e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    var dx = e.changedTouches[0].screenX - touchStartX;
+    var dy = e.changedTouches[0].screenY - touchStartY;
+    // Swipe left ≥ 60px and mostly horizontal → close
+    if (dx < -60 && Math.abs(dy) < 80 && sidebar && sidebar.classList.contains('open')) {
+      closeSidebar();
+    }
+    // Swipe right ≥ 60px from left edge → open
+    if (dx > 60 && Math.abs(dy) < 80 && touchStartX < 24 && sidebar && !sidebar.classList.contains('open')) {
+      openSidebar();
+    }
+  }, { passive: true });
+
   // ── Flash message auto-dismiss ───────────────────────────
   document.querySelectorAll('.alert.alert-success, .alert.alert-info').forEach(function (el) {
     setTimeout(function () {
@@ -136,3 +165,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+
+
+
+
+
+
+

@@ -4,11 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class Facility {
-<<<<<<< HEAD
     private Integer id;
-=======
-    private Integer facilityId;
->>>>>>> feature/invoiceManagement-buidinh
     private String code;
     private String name;
     private String address;
@@ -16,27 +12,25 @@ public class Facility {
     private Integer roomsPerFloor;
     private String status;
     private Integer managerId;
+    private String managerName;  // joined from users (MANAGER)
+    private Integer operatorId;
+    private String operatorName; // joined from users (OPERATOR)
     private BigDecimal electricityPrice;
     private BigDecimal waterPrice;
     private BigDecimal internetFee;
     private BigDecimal serviceFee;
-<<<<<<< HEAD
-
-=======
->>>>>>> feature/invoiceManagement-buidinh
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
     public Facility() {}
 
-<<<<<<< HEAD
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-=======
-    public Integer getFacilityId() { return facilityId; }
-    public void setFacilityId(Integer facilityId) { this.facilityId = facilityId; }
->>>>>>> feature/invoiceManagement-buidinh
+    
+    // Alias for backwards compatibility
+    public Integer getFacilityId() { return id; }
+    public void setFacilityId(Integer facilityId) { this.id = facilityId; }
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
@@ -59,6 +53,15 @@ public class Facility {
     public Integer getManagerId() { return managerId; }
     public void setManagerId(Integer managerId) { this.managerId = managerId; }
 
+    public String getManagerName() { return managerName; }
+    public void setManagerName(String managerName) { this.managerName = managerName; }
+
+    public Integer getOperatorId() { return operatorId; }
+    public void setOperatorId(Integer operatorId) { this.operatorId = operatorId; }
+
+    public String getOperatorName() { return operatorName; }
+    public void setOperatorName(String operatorName) { this.operatorName = operatorName; }
+
     public BigDecimal getElectricityPrice() { return electricityPrice; }
     public void setElectricityPrice(BigDecimal electricityPrice) { this.electricityPrice = electricityPrice; }
 
@@ -79,9 +82,15 @@ public class Facility {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
-<<<<<<< HEAD
-=======
 
     public boolean isDeleted() { return deletedAt != null; }
->>>>>>> feature/invoiceManagement-buidinh
+
+    /**
+     * Computed: total rooms = floorCount * roomsPerFloor; 0 if status is DRAFT.
+     */
+    public int getTotalRooms() {
+        if ("DRAFT".equals(status)) return 0;
+        if (floorCount == null || roomsPerFloor == null) return 0;
+        return floorCount * roomsPerFloor;
+    }
 }

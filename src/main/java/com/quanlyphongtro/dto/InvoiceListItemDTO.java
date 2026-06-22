@@ -6,6 +6,7 @@ public class InvoiceListItemDTO {
     private Integer invoiceId;
     private String invoiceCode;
     private String roomCode;
+    private String tenantName;
     private String billingPeriod;
     private BigDecimal totalAmount;
     private String dueDate;
@@ -25,6 +26,9 @@ public class InvoiceListItemDTO {
 
     public String getRoomCode() { return roomCode; }
     public void setRoomCode(String roomCode) { this.roomCode = roomCode; }
+
+    public String getTenantName() { return tenantName; }
+    public void setTenantName(String tenantName) { this.tenantName = tenantName; }
 
     public String getBillingPeriod() { return billingPeriod; }
     public void setBillingPeriod(String billingPeriod) { this.billingPeriod = billingPeriod; }

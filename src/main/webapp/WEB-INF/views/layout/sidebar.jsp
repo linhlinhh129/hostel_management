@@ -173,36 +173,6 @@
                     <a href="${ctx}/tenant/profile" class="sidebar-link${menu == 'profile' ? ' active' : ''}">Hồ sơ</a>
                 </c:if>
 
-<<<<<<< HEAD
-        <c:if test="${role == 'OPERATOR'}">
-            <a href="${ctx}/operator/dashboard" class="sidebar-link${menu == 'dashboard' ? ' active' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                Dashboard
-            </a>
-            <div class="sidebar-section">Tác vụ</div>
-            <a href="${ctx}/operator/meter-readings" class="sidebar-link${menu == 'meter-readings' ? ' active' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                Danh sách điện nước
-            </a>
-            <a href="${ctx}/operator/meter-readings/update" class="sidebar-link${menu == 'meter-readings-update' ? ' active' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Cập nhật điện nước
-            </a>
-            <a href="${ctx}/operator/requests" class="sidebar-link${menu == 'tickets' ? ' active' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-                Danh sách yêu cầu
-            </a>
-            <a href="${ctx}/operator/incidents/create" class="sidebar-link${menu == 'incident-report' ? ' active' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Báo cáo sự cố
-            </a>
-            <a href="${ctx}/operator/incidents/my-reports" class="sidebar-link${menu == 'my-incidents' ? ' active' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="14 2 14 8 20 8"/><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg>
-                Lịch sử báo cáo
-            </a>
-        </c:if>
-    </nav>
-=======
                 <c:if test="${role == 'OPERATOR'}">
                     <a href="${ctx}/operator/dashboard" class="sidebar-link${menu == 'dashboard' ? ' active' : ''}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -214,22 +184,28 @@
                         Dashboard
                     </a>
                     <div class="sidebar-section">Tác vụ</div>
-                    <a href="${ctx}/operator/meter-readings"
-                        class="sidebar-link${menu == 'meter-readings' ? ' active' : ''}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                        </svg>
-                        Chỉ số điện nước
+                    <a href="${ctx}/operator/meter-readings" class="sidebar-link${menu == 'meter-readings' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Danh sách điện nước
+                    </a>
+                    <a href="${ctx}/operator/meter-readings/update" class="sidebar-link${menu == 'meter-readings-update' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Cập nhật điện nước
                     </a>
                     <a href="${ctx}/operator/tickets" class="sidebar-link${menu == 'tickets' ? ' active' : ''}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
                         Danh sách yêu cầu
+                    </a>
+                    <a href="${ctx}/operator/incidents/create" class="sidebar-link${menu == 'incident-report' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Báo cáo sự cố
+                    </a>
+                    <a href="${ctx}/operator/incidents/my-reports" class="sidebar-link${menu == 'my-incidents' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="14 2 14 8 20 8"/><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg>
+                        Lịch sử báo cáo
                     </a>
                 </c:if>
             </nav>
->>>>>>> feature/invoiceManagement-buidinh
 
             <div class="sidebar-footer">v1.0 · Hostel Management</div>
         </aside>

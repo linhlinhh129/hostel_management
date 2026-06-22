@@ -1,21 +1,17 @@
 package com.quanlyphongtro.dao;
 
-<<<<<<< HEAD
 import com.quanlyphongtro.dto.MeterStatusDTO;
-=======
 import com.quanlyphongtro.model.MeterReading;
->>>>>>> feature/invoiceManagement-buidinh
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-<<<<<<< HEAD
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeterReadingDAO {
+public class MeterReadingDAO extends BaseDAO {
 
     /**
      * Lấy danh sách trạng thái chốt sổ điện nước của các phòng đang có người thuê.
@@ -158,13 +154,11 @@ public class MeterReadingDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-=======
-import java.util.ArrayList;
-import java.util.List;
+        }
+        return null;
+    }
 
-public class MeterReadingDAO extends BaseDAO {
-
-    private MeterReading mapRow(ResultSet rs) throws Exception {
+    private MeterReading mapRow(ResultSet rs) throws SQLException {
         MeterReading m = new MeterReading();
         m.setMeterId(rs.getInt("meter_id"));
         m.setRoomId(getInteger(rs, "room_id"));
@@ -186,12 +180,10 @@ public class MeterReadingDAO extends BaseDAO {
      * Index 0 = mới nhất (new), index 1 = cũ hơn (old).
      */
     public List<MeterReading> findLatestTwoByRoomId(int roomId) {
-        String sql = """
-                SELECT TOP 2 *
-                FROM dbo.meter_readings
-                WHERE room_id = ? AND deleted_at IS NULL
-                ORDER BY reading_date DESC, meter_id DESC
-                """;
+        String sql = "SELECT TOP 2 * " +
+                     "FROM dbo.meter_readings " +
+                     "WHERE room_id = ? AND deleted_at IS NULL " +
+                     "ORDER BY reading_date DESC, meter_id DESC";
         List<MeterReading> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -210,24 +202,14 @@ public class MeterReadingDAO extends BaseDAO {
     /**
      * Lấy chỉ số điện nước của tháng hiện tại (billing_period dạng YYYYMM)
      * và tháng trước đó để tính tiêu thụ trong kỳ.
-     *
-     * Trả về list đúng 2 phần tử [meterCurrent, meterPrev]:
-     *  - meterCurrent: bản ghi mới nhất trong tháng billingPeriod (YYYYMM)
-     *  - meterPrev:    bản ghi mới nhất trong tháng liền trước
-     * Nếu không có dữ liệu tháng nào thì phần tử tương ứng là null trong list.
-     *
-     * Luôn trả về list 2 phần tử để caller dễ xử lý (null-safe).
      */
     public List<MeterReading> findByRoomAndBillingPeriod(int roomId, String billingPeriod) {
-        // Parse billingPeriod YYYYMM thành năm/tháng
         int year  = Integer.parseInt(billingPeriod.substring(0, 4));
         int month = Integer.parseInt(billingPeriod.substring(4, 6));
 
-        // Tháng hiện tại: từ ngày 1 đến cuối tháng
         java.time.LocalDate periodStart = java.time.LocalDate.of(year, month, 1);
         java.time.LocalDate periodEnd   = periodStart.withDayOfMonth(periodStart.lengthOfMonth());
 
-        // Tháng trước: từ ngày 1 tháng trước đến cuối tháng trước
         java.time.LocalDate prevEnd   = periodStart.minusDays(1);
         java.time.LocalDate prevStart = prevEnd.withDayOfMonth(1);
 
@@ -235,27 +217,16 @@ public class MeterReadingDAO extends BaseDAO {
         MeterReading prev    = findLatestInRange(roomId, prevStart, prevEnd);
 
         List<MeterReading> result = new ArrayList<>();
-        result.add(current); // có thể null
-        result.add(prev);    // có thể null
+        result.add(current); 
+        result.add(prev);    
         return result;
     }
 
-    /**
-     * Lấy bản ghi mới nhất của một phòng trong khoảng ngày [from, to].
-     * Trả về null nếu không có dữ liệu.
-     */
-    public MeterReading findLatestInRange(int roomId,
-                                           java.time.LocalDate from,
-                                           java.time.LocalDate to) {
-        String sql = """
-                SELECT TOP 1 *
-                FROM dbo.meter_readings
-                WHERE room_id = ?
-                  AND reading_date >= ?
-                  AND reading_date <= ?
-                  AND deleted_at IS NULL
-                ORDER BY reading_date DESC, meter_id DESC
-                """;
+    public MeterReading findLatestInRange(int roomId, java.time.LocalDate from, java.time.LocalDate to) {
+        String sql = "SELECT TOP 1 * " +
+                     "FROM dbo.meter_readings " +
+                     "WHERE room_id = ? AND reading_date >= ? AND reading_date <= ? AND deleted_at IS NULL " +
+                     "ORDER BY reading_date DESC, meter_id DESC";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
@@ -268,7 +239,6 @@ public class MeterReadingDAO extends BaseDAO {
             }
         } catch (Exception e) {
             logger.error("MeterReadingDAO.findLatestInRange failed for roomId={}", roomId, e);
->>>>>>> feature/invoiceManagement-buidinh
         }
         return null;
     }

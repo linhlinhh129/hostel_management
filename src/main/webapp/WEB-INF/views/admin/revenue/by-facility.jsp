@@ -15,20 +15,36 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <h1>Doanh thu theo cơ sở</h1>
-                    <p>Kỳ: <strong><c:out value="${selectedPeriod}"/></strong></p>
-                </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <form method="get" action="${ctx}/admin/revenue/by-facility"
-                          style="display:flex;gap:8px;align-items:center">
-                        <input type="text" class="form-control" name="period"
-                               placeholder="MM/YYYY" value="<c:out value='${selectedPeriod}'/>"
-                               style="max-width:120px">
-                        <button type="submit" class="btn-mintlify-secondary">Xem</button>
-                    </form>
-                    <a href="${ctx}/admin/revenue" class="quick-action-btn">← Tổng quan</a>
+            <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Doanh thu theo cơ sở</h1>
+                        <p>Kỳ: <strong><c:out value="${selectedPeriod}"/></strong></p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap" style="position:relative;z-index:1">
+                        <form method="get" action="${ctx}/admin/revenue/by-facility"
+                              class="filter-bar" style="margin:0;padding:0;background:transparent;border:none;box-shadow:none">
+                            <input type="month" class="form-control" name="period" id="byFacilityPicker"
+                                   style="max-width:160px;padding:7px 12px;font-size:0.875rem"
+                                   value="${not empty selectedPeriod ? selectedPeriod.substring(3).concat('-').concat(selectedPeriod.substring(0,2)) : ''}">
+                            <script>
+                                (function(){
+                                    var el = document.getElementById('byFacilityPicker');
+                                    if (!el.value) {
+                                        var now = new Date();
+                                        el.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+                                    }
+                                })();
+                            </script>
+                            <button type="submit"
+                                    style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);
+                                           padding:7px 16px;border-radius:var(--hms-radius-full);
+                                           font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap">
+                                Xem
+                            </button>
+                        </form>
+                        <a href="${ctx}/admin/revenue" class="quick-action-btn">← Tổng quan</a>
+                    </div>
                 </div>
             </div>
 

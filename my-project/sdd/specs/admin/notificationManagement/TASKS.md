@@ -221,7 +221,7 @@
 - Implement multi-select for facility/room IDs
 - Show recipient count
 - Implement client-side validation
-- Character counter for content (max 5000)
+- Character counter for content (max 1000)
 - Show validation errors
 
 **Acceptance Criteria:**

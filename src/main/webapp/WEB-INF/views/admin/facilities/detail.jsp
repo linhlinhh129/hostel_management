@@ -76,7 +76,7 @@
                                                 <span class="badge-hms badge-success">Hoạt động</span>
                                             </c:when>
                                             <c:when test="${facility.status == 'DRAFT'}">
-                                                <span class="badge-hms badge-warning">Nháp</span>
+                                                <span class="badge-hms badge-warning">Chưa kích hoạt</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge-hms badge-neutral">Vô hiệu</span>
@@ -125,18 +125,17 @@
                                             <thead>
                                             <tr>
                                                 <th>Mã phòng</th>
-                                                <th>Tầng</th>
-                                                <th>Số phòng</th>
                                                 <th>Diện tích</th>
+                                                <th>Người thuê</th>
                                                 <th>Trạng thái</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             <c:forEach var="room" items="${rooms}">
                                                 <tr>
-                                                    <td><c:out value="${room.code}"/></td>
-                                                    <td><c:out value="${room.floor}"/></td>
-                                                    <td><c:out value="${room.roomNumber}"/></td>
+                                                    <td style="font-family:var(--hms-font-mono);font-weight:600">
+                                                        <c:out value="${room.code}"/>
+                                                    </td>
                                                     <td>
                                                         <c:choose>
                                                             <c:when test="${not empty room.area}">
@@ -147,14 +146,25 @@
                                                     </td>
                                                     <td>
                                                         <c:choose>
+                                                            <c:when test="${not empty room.tenantName}">
+                                                                <c:out value="${room.tenantName}"/>
+                                                            </c:when>
+                                                            <c:otherwise><em class="text-muted">—</em></c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
                                                             <c:when test="${room.status == 'OCCUPIED'}">
                                                                 <span class="badge-hms badge-info">Đang thuê</span>
                                                             </c:when>
-                                                            <c:when test="${room.status == 'AVAILABLE' or room.status == 'ACTIVE'}">
+                                                            <c:when test="${room.status == 'AVAILABLE'}">
                                                                 <span class="badge-hms badge-success">Trống</span>
                                                             </c:when>
                                                             <c:when test="${room.status == 'MAINTENANCE'}">
                                                                 <span class="badge-hms badge-warning">Bảo trì</span>
+                                                            </c:when>
+                                                            <c:when test="${room.status == 'RESERVED'}">
+                                                                <span class="badge-hms badge-accent">Đặt trước</span>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <span class="badge-hms badge-neutral"><c:out value="${room.status}"/></span>

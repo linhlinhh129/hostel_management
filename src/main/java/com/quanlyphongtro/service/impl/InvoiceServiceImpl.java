@@ -1,11 +1,17 @@
 package com.quanlyphongtro.service.impl;
 
 import com.quanlyphongtro.dao.InvoiceDAO;
-<<<<<<< HEAD
+import com.quanlyphongtro.dto.InvoiceListItemDTO;
+import com.quanlyphongtro.dto.InvoiceDetailDTO;
 import com.quanlyphongtro.model.Invoice;
 import com.quanlyphongtro.service.InvoiceService;
+import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,22 +37,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public Optional<Invoice> getCurrentInvoice(int roomId) {
         return invoiceDAO.getCurrentInvoiceByRoomId(roomId);
-=======
-import com.quanlyphongtro.dto.InvoiceListItemDTO;
-import com.quanlyphongtro.dto.InvoiceDetailDTO;
-import com.quanlyphongtro.model.Invoice;
-import com.quanlyphongtro.service.InvoiceService;
-import com.quanlyphongtro.util.DatabaseUtil;
-
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.time.LocalDate;
-import java.util.List;
-
-public class InvoiceServiceImpl implements InvoiceService {
-    private InvoiceDAO invoiceDAO = new InvoiceDAO();
+    }
 
     @Override
     public List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod, int page, int size) {
@@ -225,7 +216,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
         if (otherFee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
 
-        // Re-query original values to calculate precise total
         String snapshotSql = "SELECT room_fee, electricity_price, water_price, internet_fee, service_fee FROM invoices WHERE invoice_id = ?";
         BigDecimal snapRoom = BigDecimal.ZERO, snapElec = BigDecimal.ZERO, snapWater = BigDecimal.ZERO, snapInt = BigDecimal.ZERO, snapSvc = BigDecimal.ZERO;
         try (Connection conn = DatabaseUtil.getConnection();
@@ -262,15 +252,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void updateStatus(int managerId, int invoiceId, String status) throws Exception {
-        // Verify existence and authorization
         InvoiceDetailDTO dto = getInvoiceDetail(managerId, invoiceId);
-        
-        // Allowed statuses: UNPAID, PAID, OVERDUE
         if (!"UNPAID".equals(status) && !"PAID".equals(status) && !"OVERDUE".equals(status)) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ.");
         }
-
         invoiceDAO.updateStatus(invoiceId, status);
->>>>>>> feature/invoiceManagement-buidinh
     }
 }
