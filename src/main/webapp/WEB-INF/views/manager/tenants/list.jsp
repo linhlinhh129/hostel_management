@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -36,6 +36,7 @@
           <select class="form-select" name="status" style="max-width:160px">
             <option value="">Tất cả trạng thái</option>
             <option value="ACTIVE"   ${selectedStatus == 'ACTIVE'   ? 'selected' : ''}>Đang thuê</option>
+            <option value="LOCKED"   ${selectedStatus == 'LOCKED'   ? 'selected' : ''}>Đã khóa</option>
             <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Ngừng thuê</option>
           </select>
           <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
@@ -87,20 +88,42 @@
                           <c:when test="${tenant.status == 'ACTIVE'}">
                             <span class="badge-hms badge-success">Đang thuê</span>
                           </c:when>
+                          <c:when test="${tenant.status == 'LOCKED'}">
+                            <span class="badge-hms badge-danger">Đã khóa</span>
+                          </c:when>
                           <c:otherwise>
                             <span class="badge-hms badge-neutral">Ngừng thuê</span>
                           </c:otherwise>
                         </c:choose>
                       </td>
                       <td>
-                        <a href="${ctx}/manager/tenants/${tenant.id}"
-                           class="btn-mintlify-secondary text-decoration-none me-1"
-                           style="padding:4px 12px;font-size:0.8125rem">Xem</a>
-                        <c:if test="${tenant.status == 'ACTIVE'}">
-                          <a href="${ctx}/manager/tenants/${tenant.id}#end-rental"
-                             class="text-decoration-none"
-                             style="padding:4px 12px;font-size:0.8125rem;color:var(--hms-danger)">Kết thúc thuê</a>
-                        </c:if>
+                        <div class="d-inline-flex gap-1 align-items-center">
+                          <a href="${ctx}/manager/tenants/${tenant.id}"
+                             class="btn-mintlify-secondary text-decoration-none"
+                             style="padding:4px 12px;font-size:0.8125rem">Xem</a>
+                          <c:if test="${tenant.status == 'ACTIVE'}">
+                            <a href="${ctx}/manager/tenants/${tenant.id}#end-rental"
+                               class="text-decoration-none"
+                               style="padding:4px 12px;font-size:0.8125rem;color:var(--hms-danger)">Kết thúc thuê</a>
+                            <form method="post" action="${ctx}/manager/tenants/${tenant.id}/lock" style="display:inline; margin:0;">
+                              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                              <button type="submit" class="btn btn-sm btn-outline-warning" style="padding:4px 10px; font-size:0.8125rem;">Khóa</button>
+                            </form>
+                          </c:if>
+                          <c:if test="${tenant.status == 'LOCKED'}">
+                            <form method="post" action="${ctx}/manager/tenants/${tenant.id}/unlock" style="display:inline; margin:0;">
+                              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                              <button type="submit" class="btn btn-sm btn-outline-success" style="padding:4px 10px; font-size:0.8125rem;">Mở khóa</button>
+                            </form>
+                          </c:if>
+                          <c:if test="${tenant.status == 'INACTIVE'}">
+                            <form method="post" action="${ctx}/manager/tenants/${tenant.id}/delete" style="display:inline; margin:0;"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn người thuê này khỏi danh sách quản lý?');">
+                              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                              <button type="submit" class="btn btn-sm btn-outline-danger" style="padding:4px 10px; font-size:0.8125rem;">Xóa</button>
+                            </form>
+                          </c:if>
+                        </div>
                       </td>
                     </tr>
                   </c:forEach>

@@ -30,125 +30,235 @@
 
       <div class="data-surface">
 
-        <%-- Info box phạm vi --%>
-        <div style="background:var(--hms-accent-bg);border:1px solid var(--hms-border-accent);
-                    border-radius:var(--hms-radius);padding:0.75rem 1rem;
-                    font-size:0.8125rem;color:var(--hms-ink);margin-bottom:1rem">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="var(--hms-accent-deep)" stroke-width="2"
-               style="margin-right:6px;vertical-align:-2px">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          Manager chỉ gửi thông báo trong phạm vi <strong>cơ sở được phân công</strong>.
-          Không thể gửi thông báo toàn hệ thống.
-        </div>
-
-        <form class="filter-bar" method="get" action="${ctx}/manager/notifications">
-          <select class="form-select" name="facilityId" style="max-width:240px">
-            <option value="">Tất cả cơ sở</option>
-            <c:forEach var="facility" items="${assignedFacilities}">
-              <option value="${facility.id}" ${filterFacilityId == facility.id ? 'selected' : ''}>
-                <c:out value="${facility.name}"/> (<c:out value="${facility.code}"/>)
-              </option>
-            </c:forEach>
-          </select>
-          <input type="text" class="form-control" name="keyword"
-                 placeholder="Tiêu đề / nội dung..."
-                 value="<c:out value='${keyword}'/>">
-          <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
-          <a href="${ctx}/manager/notifications" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
-        </form>
+        <%-- Tabs --%>
+        <ul class="nav nav-tabs mb-3" id="notificationTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a class="nav-link ${empty param.tab or param.tab == 'resident' ? 'active' : ''}" 
+               href="${ctx}/manager/notifications?tab=resident" 
+               style="font-weight: 600; color: ${(empty param.tab or param.tab == 'resident') ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+              Thông báo cư dân
+            </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link ${param.tab == 'incorrect-utility' ? 'active' : ''}" 
+               href="${ctx}/manager/notifications?tab=incorrect-utility" 
+               style="font-weight: 600; color: ${param.tab == 'incorrect-utility' ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+              Báo lỗi điện nước
+            </a>
+          </li>
+        </ul>
 
         <c:choose>
-          <c:when test="${not empty page.items}">
-            <div class="table-responsive">
-              <table class="table-mintlify">
-                <thead>
-                  <tr>
-                    <th>Mã</th>
-                    <th>Tiêu đề</th>
-                    <th>Đối tượng</th>
-                    <th>Người tạo</th>
-                    <th>Trạng thái</th>
-                    <th>Ngày tạo</th>
-                    <th>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <c:forEach var="notif" items="${page.items}">
-                    <tr>
-                      <td>
-                        <a href="${ctx}/manager/notifications/${notif.id}">
-                          <c:out value="${notif.code}"/>
-                        </a>
-                      </td>
-                      <td style="max-width:280px"><c:out value="${notif.title}"/></td>
-                      <td>
-                        <c:choose>
-                          <c:when test="${notif.recipientType == 'FACILITY'}">
-                            <span class="badge-hms badge-info">Cơ sở</span>
-                          </c:when>
-                          <c:when test="${notif.recipientType == 'ROOM'}">
-                            <span class="badge-hms badge-neutral">Phòng</span>
-                          </c:when>
-                          <c:otherwise>
-                            <span class="badge-hms badge-neutral"><c:out value="${notif.recipientType}"/></span>
-                          </c:otherwise>
-                        </c:choose>
-                      </td>
-                      <td><c:out value="${notif.createdByName}"/></td>
-                      <td>
-                        <c:choose>
-                          <c:when test="${notif.status == 'SENT'}">
-                            <span class="badge-hms badge-success">Đã gửi</span>
-                          </c:when>
-                          <c:otherwise>
-                            <span class="badge-hms badge-warning">Nháp</span>
-                          </c:otherwise>
-                        </c:choose>
-                      </td>
-                      <td style="font-size:0.8125rem;color:var(--hms-text-muted)">
-                        <c:out value="${notif.createdAt}"/>
-                      </td>
-                      <td>
-                        <a href="${ctx}/manager/notifications/${notif.id}"
-                           class="btn-mintlify-secondary text-decoration-none"
-                           style="padding:4px 12px;font-size:0.8125rem">Xem</a>
-                      </td>
-                    </tr>
-                  </c:forEach>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
-              <span class="text-muted" style="font-size:0.875rem">
-                Tổng <fmt:formatNumber value="${page.total}" groupingUsed="true"/> thông báo
-                · Trang ${page.page} / ${page.totalPages}
-              </span>
-              <div class="d-flex gap-1">
-                <c:if test="${page.page > 1}">
-                  <a href="${ctx}/manager/notifications?page=${page.page - 1}&keyword=${keyword}&facilityId=${filterFacilityId}"
-                     class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Trước</a>
-                </c:if>
-                <c:if test="${page.page < page.totalPages}">
-                  <a href="${ctx}/manager/notifications?page=${page.page + 1}&keyword=${keyword}&facilityId=${filterFacilityId}"
-                     class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau</a>
-                </c:if>
-              </div>
-            </div>
+          <c:when test="${param.tab == 'incorrect-utility'}">
+            <%-- Tab Báo lỗi điện nước --%>
+            <c:choose>
+              <c:when test="${not empty incorrectInvoices}">
+                <div class="table-responsive">
+                  <table class="table-mintlify">
+                    <thead>
+                      <tr>
+                        <th>Cơ sở</th>
+                        <th>Phòng</th>
+                        <th>Kỳ hạn</th>
+                        <th>Số điện nước báo sai</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái chỉ số</th>
+                        <th>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <c:forEach var="item" items="${incorrectInvoices}">
+                        <tr>
+                          <td><c:out value="${item.facilityName}"/> (<c:out value="${item.facilityCode}"/>)</td>
+                          <td>
+                            <a href="${ctx}/manager/rooms/${item.id}">
+                              <strong><c:out value="${item.roomCode}"/></strong>
+                            </a>
+                          </td>
+                          <td><c:out value="${item.billingPeriod}"/></td>
+                          <td>
+                            <div>Điện: <strong><c:out value="${item.electric}"/></strong> kWh</div>
+                            <div>Nước: <strong><c:out value="${item.water}"/></strong> m³</div>
+                          </td>
+                          <td style="font-weight:600">
+                            <fmt:formatNumber value="${item.totalAmount}" pattern="#,##0"/> đ
+                          </td>
+                          <td>
+                            <c:choose>
+                              <c:when test="${item.meterStatus == 'INCORRECT'}">
+                                <span class="badge-hms badge-danger">Chờ xử lý</span>
+                              </c:when>
+                              <c:when test="${item.meterStatus == 'REPORTED'}">
+                                <span class="badge-hms badge-info">Đã gửi Operator</span>
+                              </c:when>
+                              <c:otherwise>
+                                <span class="badge-hms badge-neutral"><c:out value="${item.meterStatus}"/></span>
+                              </c:otherwise>
+                            </c:choose>
+                          </td>
+                          <td>
+                            <c:choose>
+                              <c:when test="${item.meterStatus == 'INCORRECT'}">
+                                <a href="${ctx}/manager/notifications/send-operator?invoiceId=${item.id}"
+                                   class="quick-action-btn primary"
+                                   style="padding:6px 14px; font-size:0.8125rem; white-space:nowrap; text-decoration:none">
+                                  Gửi Operator
+                                </a>
+                              </c:when>
+                              <c:otherwise>
+                                <a href="${ctx}/manager/notifications/send-operator?invoiceId=${item.id}"
+                                   class="btn-mintlify-secondary text-decoration-none"
+                                   style="padding:6px 14px; font-size:0.8125rem; white-space:nowrap">
+                                  Gửi lại
+                                </a>
+                              </c:otherwise>
+                            </c:choose>
+                          </td>
+                        </tr>
+                      </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="table-footer px-3 py-2 text-muted" style="font-size:0.875rem">
+                  Tổng cộng: <strong>${incorrectInvoices.size()}</strong> hóa đơn lỗi chỉ số.
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="empty-state p-5 text-center">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--hms-text-muted)" stroke-width="1.5" style="margin-bottom:12px">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <h4>Không có hóa đơn báo lỗi</h4>
+                  <p class="text-muted">Tất cả hóa đơn trong các cơ sở của bạn đều có chỉ số điện nước bình thường.</p>
+                </div>
+              </c:otherwise>
+            </c:choose>
           </c:when>
           <c:otherwise>
-            <div class="empty-state p-4 text-center">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--hms-text-muted)" stroke-width="1.5" style="margin-bottom:12px">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            <%-- Info box phạm vi --%>
+            <div style="background:var(--hms-accent-bg);border:1px solid var(--hms-border-accent);
+                        border-radius:var(--hms-radius);padding:0.75rem 1rem;
+                        font-size:0.8125rem;color:var(--hms-ink);margin-bottom:1rem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="var(--hms-accent-deep)" stroke-width="2"
+                   style="margin-right:6px;vertical-align:-2px">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
-              <h4>Chưa có thông báo nào</h4>
-              <p class="text-muted">Tạo thông báo đầu tiên để gửi đến cư dân.</p>
-              <a href="${ctx}/manager/notifications/create" class="quick-action-btn primary mt-2">Tạo thông báo</a>
+              Manager chỉ gửi thông báo trong phạm vi <strong>cơ sở được phân công</strong>.
+              Không thể gửi thông báo toàn hệ thống.
             </div>
+
+            <form class="filter-bar" method="get" action="${ctx}/manager/notifications">
+              <input type="hidden" name="tab" value="resident"/>
+              <select class="form-select" name="facilityId" style="max-width:240px">
+                <option value="">Tất cả cơ sở</option>
+                <c:forEach var="facility" items="${assignedFacilities}">
+                  <option value="${facility.id}" ${filterFacilityId == facility.id ? 'selected' : ''}>
+                    <c:out value="${facility.name}"/> (<c:out value="${facility.code}"/>)
+                  </option>
+                </c:forEach>
+              </select>
+              <input type="text" class="form-control" name="keyword"
+                     placeholder="Tiêu đề / nội dung..."
+                     value="<c:out value='${keyword}'/>">
+              <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
+              <a href="${ctx}/manager/notifications?tab=resident" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+            </form>
+
+            <c:choose>
+              <c:when test="${not empty page.items}">
+                <div class="table-responsive">
+                  <table class="table-mintlify">
+                    <thead>
+                      <tr>
+                        <th>Mã</th>
+                        <th>Tiêu đề</th>
+                        <th>Đối tượng</th>
+                        <th>Người tạo</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <c:forEach var="notif" items="${page.items}">
+                        <tr>
+                          <td>
+                            <a href="${ctx}/manager/notifications/${notif.id}">
+                              <c:out value="${notif.code}"/>
+                            </a>
+                          </td>
+                          <td style="max-width:280px"><c:out value="${notif.title}"/></td>
+                          <td>
+                            <c:choose>
+                              <c:when test="${notif.recipientType == 'FACILITY'}">
+                                <span class="badge-hms badge-info">Cơ sở</span>
+                              </c:when>
+                              <c:when test="${notif.recipientType == 'ROOM'}">
+                                <span class="badge-hms badge-neutral">Phòng</span>
+                              </c:when>
+                              <c:otherwise>
+                                <span class="badge-hms badge-neutral"><c:out value="${notif.recipientType}"/></span>
+                              </c:otherwise>
+                            </c:choose>
+                          </td>
+                          <td><c:out value="${notif.createdByName}"/></td>
+                          <td>
+                            <c:choose>
+                              <c:when test="${notif.status == 'SENT'}">
+                                <span class="badge-hms badge-success">Đã gửi</span>
+                              </c:when>
+                              <c:otherwise>
+                                <span class="badge-hms badge-warning">Nháp</span>
+                              </c:otherwise>
+                            </c:choose>
+                          </td>
+                          <td style="font-size:0.8125rem;color:var(--hms-text-muted)">
+                            <c:out value="${notif.createdAt}"/>
+                          </td>
+                          <td>
+                            <a href="${ctx}/manager/notifications/${notif.id}"
+                               class="btn-mintlify-secondary text-decoration-none"
+                               style="padding:4px 12px;font-size:0.8125rem">Xem</a>
+                          </td>
+                        </tr>
+                      </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
+                  <span class="text-muted" style="font-size:0.875rem">
+                    Tổng <fmt:formatNumber value="${page.total}" groupingUsed="true"/> thông báo
+                    · Trang ${page.page} / ${page.totalPages}
+                  </span>
+                  <div class="d-flex gap-1">
+                    <c:if test="${page.page > 1}">
+                      <a href="${ctx}/manager/notifications?page=${page.page - 1}&keyword=${keyword}&facilityId=${filterFacilityId}&tab=resident"
+                         class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Trước</a>
+                    </c:if>
+                    <c:if test="${page.page < page.totalPages}">
+                      <a href="${ctx}/manager/notifications?page=${page.page + 1}&keyword=${keyword}&facilityId=${filterFacilityId}&tab=resident"
+                         class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau</a>
+                    </c:if>
+                  </div>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="empty-state p-4 text-center">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--hms-text-muted)" stroke-width="1.5" style="margin-bottom:12px">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                  </svg>
+                  <h4>Chưa có thông báo nào</h4>
+                  <p class="text-muted">Tạo thông báo đầu tiên để gửi đến cư dân.</p>
+                  <a href="${ctx}/manager/notifications/create" class="quick-action-btn primary mt-2">Tạo thông báo</a>
+                </div>
+              </c:otherwise>
+            </c:choose>
           </c:otherwise>
         </c:choose>
       </div>

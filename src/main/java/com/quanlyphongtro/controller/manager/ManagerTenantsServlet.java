@@ -130,6 +130,33 @@ public class ManagerTenantsServlet extends BaseServlet {
                     resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
+            } else if (parts.length == 3 && "delete".equals(parts[2])) {
+                try {
+                    int tenantId = Integer.parseInt(parts[1]);
+                    handleSoftDelete(tenantId, req, resp);
+                    return;
+                } catch (NumberFormatException e) {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+            } else if (parts.length == 3 && "lock".equals(parts[2])) {
+                try {
+                    int tenantId = Integer.parseInt(parts[1]);
+                    handleLockAccount(tenantId, req, resp);
+                    return;
+                } catch (NumberFormatException e) {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+            } else if (parts.length == 3 && "unlock".equals(parts[2])) {
+                try {
+                    int tenantId = Integer.parseInt(parts[1]);
+                    handleUnlockAccount(tenantId, req, resp);
+                    return;
+                } catch (NumberFormatException e) {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
             } else if (parts.length == 4 && "dependents".equals(parts[2]) && "add".equals(parts[3])) {
                 try {
                     int tenantId = Integer.parseInt(parts[1]);
@@ -335,14 +362,8 @@ public class ManagerTenantsServlet extends BaseServlet {
 
         String username = email.trim(); // Username will be the email
 
-        // Generate temporary password: last 8 digits of CCCD + @Hostel
-        String plainPassword;
-        if (identityNumber.trim().length() >= 8) {
-            String clean = identityNumber.trim();
-            plainPassword = clean.substring(clean.length() - 8) + "@Hostel";
-        } else {
-            plainPassword = "password123@Hostel";
-        }
+        // Generate temporary password automatically using PasswordUtil
+        String plainPassword = PasswordUtil.generateTempPassword();
         String passwordHash = PasswordUtil.hash(plainPassword);
 
         int roomId = Integer.parseInt(roomIdStr);
@@ -401,7 +422,11 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
 
             conn.commit();
-            setFlashMessage(req, "success", "Tạo người thuê và gán phòng thành công!");
+
+            // Send email to tenant with credentials
+            com.quanlyphongtro.util.EmailUtil.sendTemporaryPasswordEmail(email.trim(), fullName.trim(), username, plainPassword);
+
+            setFlashMessage(req, "success", "Tạo người thuê và gán phòng thành công! Đã gửi tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants");
 
         } catch (Exception e) {
@@ -874,5 +899,86 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
 
         resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+    }
+
+    private void handleSoftDelete(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String sql = "UPDATE dbo.users SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, tenantId);
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                setFlashMessage(req, "success", "Xóa người thuê thành công!");
+            } else {
+                setFlashMessage(req, "danger", "Không tìm thấy người thuê hoặc không có quyền xóa.");
+            }
+        } catch (Exception e) {
+            logger.error("Failed to soft delete tenant={}", tenantId, e);
+            setFlashMessage(req, "danger", "Lỗi xóa người thuê: " + e.getMessage());
+        }
+        resp.sendRedirect(req.getContextPath() + "/manager/tenants");
+    }
+
+    private void handleLockAccount(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String sql = "UPDATE dbo.users SET status = 'LOCKED', updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, tenantId);
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                setFlashMessage(req, "success", "Đã khóa tài khoản người thuê thành công!");
+            } else {
+                setFlashMessage(req, "danger", "Không thể khóa tài khoản người thuê.");
+            }
+        } catch (Exception e) {
+            logger.error("Failed to lock tenant account={}", tenantId, e);
+            setFlashMessage(req, "danger", "Lỗi khóa tài khoản: " + e.getMessage());
+        }
+
+        String referer = req.getHeader("Referer");
+        if (referer != null && referer.contains("/manager/tenants/")) {
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+        } else {
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants");
+        }
+    }
+
+    private void handleUnlockAccount(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String queryUsername = "SELECT username FROM dbo.users WHERE user_id = ? AND role = 'TENANT'";
+        String updateSql = "UPDATE dbo.users SET status = 'ACTIVE', updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            String username = null;
+            try (PreparedStatement ps = conn.prepareStatement(queryUsername)) {
+                ps.setInt(1, tenantId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        username = rs.getString("username");
+                    }
+                }
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                ps.setInt(1, tenantId);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    if (username != null) {
+                        com.quanlyphongtro.util.LoginAttemptTracker.reset(username);
+                    }
+                    setFlashMessage(req, "success", "Đã mở khóa tài khoản người thuê thành công!");
+                } else {
+                    setFlashMessage(req, "danger", "Không thể mở khóa tài khoản người thuê.");
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to unlock tenant account={}", tenantId, e);
+            setFlashMessage(req, "danger", "Lỗi mở khóa tài khoản: " + e.getMessage());
+        }
+
+        String referer = req.getHeader("Referer");
+        if (referer != null && referer.contains("/manager/tenants/")) {
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+        } else {
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants");
+        }
     }
 }

@@ -30,13 +30,32 @@
           <div class="widget-surface">
             <div class="widget-surface-header d-flex justify-content-between align-items-center">
               <h3>Thông tin cá nhân</h3>
-              <c:if test="${tenant.status == 'ACTIVE'}">
-                <button type="button" class="btn-mintlify-secondary"
-                        data-bs-toggle="modal" data-bs-target="#editTenantModal"
-                        style="padding:4px 12px;font-size:0.8125rem">
-                  Sửa
-                </button>
-              </c:if>
+              <div class="d-flex gap-2">
+                <c:if test="${tenant.status == 'ACTIVE'}">
+                  <button type="button" class="btn-mintlify-secondary"
+                          data-bs-toggle="modal" data-bs-target="#editTenantModal"
+                          style="padding:4px 12px;font-size:0.8125rem">
+                    Sửa
+                  </button>
+                  <form method="post" action="${ctx}/manager/tenants/${tenant.id}/lock" style="display:inline; margin:0;">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                    <button type="submit" class="btn btn-outline-warning" style="padding:4px 12px; font-size:0.8125rem;">Khóa</button>
+                  </form>
+                </c:if>
+                <c:if test="${tenant.status == 'LOCKED'}">
+                  <form method="post" action="${ctx}/manager/tenants/${tenant.id}/unlock" style="display:inline; margin:0;">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                    <button type="submit" class="btn btn-outline-success" style="padding:4px 12px; font-size:0.8125rem;">Mở khóa</button>
+                  </form>
+                </c:if>
+                <c:if test="${tenant.status == 'INACTIVE'}">
+                  <form method="post" action="${ctx}/manager/tenants/${tenant.id}/delete" style="display:inline; margin:0;"
+                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn người thuê này khỏi danh sách quản lý?');">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                    <button type="submit" class="btn btn-outline-danger" style="padding:4px 12px; font-size:0.8125rem;">Xóa</button>
+                  </form>
+                </c:if>
+              </div>
             </div>
             <div class="widget-surface-body">
               <table style="width:100%;font-size:0.875rem;border-collapse:collapse">
@@ -65,6 +84,9 @@
                       <c:choose>
                         <c:when test="${tenant.status == 'ACTIVE'}">
                           <span class="badge-hms badge-success">Đang thuê</span>
+                        </c:when>
+                        <c:when test="${tenant.status == 'LOCKED'}">
+                          <span class="badge-hms badge-danger">Đã khóa</span>
                         </c:when>
                         <c:otherwise>
                           <span class="badge-hms badge-neutral">Ngừng thuê</span>
@@ -102,6 +124,9 @@
                       <c:choose>
                         <c:when test="${tenant.status == 'ACTIVE'}">
                           <span class="badge-hms badge-success">Đang thuê</span>
+                        </c:when>
+                        <c:when test="${tenant.status == 'LOCKED'}">
+                          <span class="badge-hms badge-danger">Đã khóa</span>
                         </c:when>
                         <c:otherwise>
                           <span class="badge-hms badge-neutral">Ngừng thuê</span>

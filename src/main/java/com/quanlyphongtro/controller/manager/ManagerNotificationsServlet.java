@@ -31,9 +31,16 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || "/".equals(pathInfo)) {
-            handleList(req, resp);
+            String action = req.getParameter("action");
+            if ("report-incorrect".equals(action)) {
+                handleReportIncorrect(req, resp);
+            } else {
+                handleList(req, resp);
+            }
         } else if ("/create".equals(pathInfo)) {
             handleCreateForm(req, resp);
+        } else if ("/send-operator".equals(pathInfo)) {
+            handleSendOperatorForm(req, resp);
         } else {
             String idStr = pathInfo.substring(1);
             try {
@@ -50,6 +57,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String pathInfo = req.getPathInfo();
         if ("/create".equals(pathInfo)) {
             handleCreateSubmit(req, resp);
+        } else if ("/send-operator".equals(pathInfo)) {
+            handleSendOperatorSubmit(req, resp);
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -169,6 +178,44 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     }
                 }
             }
+
+            // Load reported incorrect invoices
+            List<Map<String, Object>> incorrectInvoices = new ArrayList<>();
+            String incorrectSql = "SELECT i.invoice_id, i.code AS invoice_code, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
+                    "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount " +
+                    "FROM dbo.invoices i " +
+                    "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                    "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                    "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
+                    "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL " +
+                    "ORDER BY mr.reading_date DESC, i.invoice_id DESC";
+            try (PreparedStatement psInc = conn.prepareStatement(incorrectSql)) {
+                psInc.setInt(1, currentUser.getId());
+                try (ResultSet rsInc = psInc.executeQuery()) {
+                    while (rsInc.next()) {
+                        Map<String, Object> item = new HashMap<>();
+                        item.put("id", rsInc.getInt("invoice_id"));
+                        item.put("code", rsInc.getString("invoice_code"));
+                        item.put("roomCode", rsInc.getString("room_code"));
+                        item.put("facilityName", rsInc.getString("facility_name"));
+                        item.put("facilityCode", rsInc.getString("facility_code"));
+                        item.put("electric", rsInc.getInt("electric"));
+                        item.put("water", rsInc.getInt("water"));
+                        item.put("meterStatus", rsInc.getString("meter_status"));
+                        item.put("totalAmount", rsInc.getDouble("total_amount"));
+                        
+                        java.sql.Date rDate = rsInc.getDate("reading_date");
+                        if (rDate != null) {
+                            java.time.LocalDate localDate = rDate.toLocalDate();
+                            item.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                        } else {
+                            item.put("billingPeriod", "—");
+                        }
+                        incorrectInvoices.add(item);
+                    }
+                }
+            }
+            req.setAttribute("incorrectInvoices", incorrectInvoices);
         } catch (Exception e) {
             logger.error("Failed to query notifications list", e);
         }
@@ -471,5 +518,268 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
         req.setAttribute("notification", notification);
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/detail.jsp").forward(req, resp);
+    }
+
+    private void handleReportIncorrect(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String invoiceIdStr = req.getParameter("invoiceId");
+        if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã hóa đơn.");
+            return;
+        }
+
+        try {
+            int invoiceId = Integer.parseInt(invoiceIdStr.trim());
+            
+            // Verify manager owns this invoice
+            boolean isAuthorized = false;
+            int meterId = -1;
+            String invoiceCode = "";
+            String verifySql = "SELECT i.meter_id, i.code, f.manager_id FROM dbo.invoices i " +
+                    "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                    "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                    "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(verifySql)) {
+                ps.setInt(1, invoiceId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        int mId = rs.getInt("manager_id");
+                        if (mId == currentUser.getId()) {
+                            isAuthorized = true;
+                            meterId = rs.getInt("meter_id");
+                            invoiceCode = rs.getString("code");
+                        }
+                    }
+                }
+            }
+
+            if (!isAuthorized) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền báo cáo hóa đơn này.");
+                return;
+            }
+
+            if (meterId <= 0) {
+                setFlashMessage(req, "danger", "Hóa đơn không liên kết với chỉ số điện nước hợp lệ.");
+                resp.sendRedirect(req.getContextPath() + "/manager/notifications");
+                return;
+            }
+
+            // Update meter reading status
+            String updateSql = "UPDATE dbo.meter_readings SET status = 'INCORRECT', updated_at = GETDATE() WHERE meter_id = ?";
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                ps.setInt(1, meterId);
+                ps.executeUpdate();
+            }
+
+            setFlashMessage(req, "success", "Đã báo cáo sai số điện nước cho hóa đơn " + invoiceCode + ". Vui lòng gửi thông báo cho Operator.");
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
+
+        } catch (Exception e) {
+            logger.error("Failed to report incorrect invoice", e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void handleSendOperatorForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String invoiceIdStr = req.getParameter("invoiceId");
+        if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã hóa đơn.");
+            return;
+        }
+
+        try {
+            int invoiceId = Integer.parseInt(invoiceIdStr.trim());
+            Map<String, Object> invoice = null;
+
+            String sql = "SELECT i.*, r.code AS room_code, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
+                    "mr.electric, mr.water, mr.reading_date " +
+                    "FROM dbo.invoices i " +
+                    "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                    "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                    "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
+                    "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND mr.deleted_at IS NULL";
+
+            List<Map<String, Object>> operators = new ArrayList<>();
+
+            try (Connection conn = DatabaseUtil.getConnection()) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, invoiceId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            int managerId = rs.getInt("manager_id");
+                            if (managerId != currentUser.getId()) {
+                                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện thao tác này.");
+                                return;
+                            }
+
+                            invoice = new HashMap<>();
+                            invoice.put("id", rs.getInt("invoice_id"));
+                            invoice.put("code", rs.getString("code"));
+                            invoice.put("roomCode", rs.getString("room_code"));
+                            invoice.put("facilityName", rs.getString("facility_name"));
+                            invoice.put("facilityCode", rs.getString("facility_code"));
+                            invoice.put("electric", rs.getInt("electric"));
+                            invoice.put("water", rs.getInt("water"));
+                            invoice.put("totalAmount", rs.getDouble("total_amount"));
+
+                            java.sql.Date rDate = rs.getDate("reading_date");
+                            if (rDate != null) {
+                                java.time.LocalDate localDate = rDate.toLocalDate();
+                                invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                            } else {
+                                invoice.put("billingPeriod", "—");
+                            }
+                        }
+                    }
+                }
+
+                if (invoice == null) {
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hóa đơn.");
+                    return;
+                }
+
+                // Query active operators
+                String opsSql = "SELECT user_id, full_name FROM dbo.users WHERE role = 'OPERATOR' AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY full_name";
+                try (PreparedStatement psOps = conn.prepareStatement(opsSql)) {
+                    try (ResultSet rsOps = psOps.executeQuery()) {
+                        while (rsOps.next()) {
+                            Map<String, Object> op = new HashMap<>();
+                            op.put("id", rsOps.getInt("user_id"));
+                            op.put("fullName", rsOps.getString("full_name"));
+                            operators.add(op);
+                        }
+                    }
+                }
+            }
+
+            String defaultTitle = "Báo cáo sai số điện nước - Phòng " + invoice.get("roomCode");
+            String defaultContent = "Kính gửi nhân viên vận hành,\n\nHóa đơn kỳ " + invoice.get("billingPeriod") + 
+                    " của phòng " + invoice.get("roomCode") + " thuộc cơ sở " + invoice.get("facilityName") + 
+                    " được phát hiện bị nhập sai chỉ số điện nước.\n\nThông tin hiện tại:\n" +
+                    "- Chỉ số điện: " + invoice.get("electric") + " kWh\n" +
+                    "- Chỉ số nước: " + invoice.get("water") + " m3\n\n" +
+                    "Vui lòng kiểm tra thực tế, xác minh lại hình ảnh và cập nhật chỉ số chính xác.";
+
+            req.setAttribute("invoice", invoice);
+            req.setAttribute("operators", operators);
+            req.setAttribute("defaultTitle", defaultTitle);
+            req.setAttribute("defaultContent", defaultContent);
+
+            req.getRequestDispatcher("/WEB-INF/views/manager/notifications/send_operator.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            logger.error("Failed to prepare send operator form", e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void handleSendOperatorSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String invoiceIdStr = req.getParameter("invoiceId");
+        String operatorIdStr = req.getParameter("operatorId");
+        String title = req.getParameter("title");
+        String content = req.getParameter("content");
+
+        if (invoiceIdStr == null || operatorIdStr == null || title == null || content == null || 
+                invoiceIdStr.trim().isEmpty() || operatorIdStr.trim().isEmpty() || title.trim().isEmpty() || content.trim().isEmpty()) {
+            setFlashMessage(req, "danger", "Vui lòng nhập đầy đủ tất cả các trường.");
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
+            return;
+        }
+
+        try {
+            int invoiceId = Integer.parseInt(invoiceIdStr.trim());
+            int operatorId = Integer.parseInt(operatorIdStr.trim());
+
+            int meterId = -1;
+            String facilityCode = "";
+            boolean isAuthorized = false;
+
+            // Verify manager and get details
+            String checkSql = "SELECT i.meter_id, f.code AS facility_code, f.manager_id FROM dbo.invoices i " +
+                    "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                    "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                    "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setInt(1, invoiceId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        int mId = rs.getInt("manager_id");
+                        if (mId == currentUser.getId()) {
+                            isAuthorized = true;
+                            meterId = rs.getInt("meter_id");
+                            facilityCode = rs.getString("facility_code");
+                        }
+                    }
+                }
+            }
+
+            if (!isAuthorized) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            // Create unique request code: REQ-UTL-XXXX
+            String reqCode = "REQ-UTL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+            // Insert request
+            String insertReqSql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, status, assigned_staff_id, created_at, updated_at) " +
+                    "VALUES (?, ?, 'UTILITY', ?, ?, 'PENDING', ?, GETDATE(), GETDATE())";
+            
+            // Update meter status to REPORTED
+            String updateMeterSql = "UPDATE dbo.meter_readings SET status = 'REPORTED', updated_at = GETDATE() WHERE meter_id = ?";
+
+            try (Connection conn = DatabaseUtil.getConnection()) {
+                conn.setAutoCommit(false);
+                try {
+                    try (PreparedStatement psReq = conn.prepareStatement(insertReqSql)) {
+                        psReq.setString(1, reqCode);
+                        psReq.setInt(2, currentUser.getId());
+                        psReq.setString(3, title.trim());
+                        psReq.setString(4, content.trim());
+                        psReq.setInt(5, operatorId);
+                        psReq.executeUpdate();
+                    }
+
+                    try (PreparedStatement psMeter = conn.prepareStatement(updateMeterSql)) {
+                        psMeter.setInt(1, meterId);
+                        psMeter.executeUpdate();
+                    }
+
+                    conn.commit();
+                    setFlashMessage(req, "success", "Đã gửi thông báo yêu cầu sửa chỉ số điện nước cho Operator thành công!");
+                } catch (Exception ex) {
+                    conn.rollback();
+                    throw ex;
+                } finally {
+                    conn.setAutoCommit(true);
+                }
+            }
+
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
+
+        } catch (Exception e) {
+            logger.error("Failed to send operator request", e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 }
