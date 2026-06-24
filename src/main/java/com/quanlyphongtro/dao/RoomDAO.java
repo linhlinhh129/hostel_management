@@ -119,6 +119,26 @@ public class RoomDAO extends BaseDAO {
         return Optional.empty();
     }
 
+    /**
+     * Chỉ cập nhật diện tích (area) của phòng — dùng cho inline edit trên trang chi tiết cơ sở.
+     */
+    public boolean updateArea(int roomId, java.math.BigDecimal area) {
+        String sql = "UPDATE dbo.rooms SET area = ?, updated_at = GETDATE() WHERE room_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (area != null) {
+                ps.setBigDecimal(1, area);
+            } else {
+                ps.setNull(1, java.sql.Types.DECIMAL);
+            }
+            ps.setInt(2, roomId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("RoomDAO.updateArea failed for roomId={}", roomId, e);
+        }
+        return false;
+    }
+
     public boolean update(Room room) {
         String sql = "UPDATE dbo.rooms SET facility_id = ?, code = ?, area = ?, status = ?, tenant_id = ?, " +
                      "deposit_amount = ?, contract_start_date = ?, contract_end_date = ?, room_fee = ?, " +

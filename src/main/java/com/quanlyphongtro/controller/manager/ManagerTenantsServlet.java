@@ -4,6 +4,8 @@ import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
 import com.quanlyphongtro.util.PasswordUtil;
+import com.quanlyphongtro.dao.AuditLogDAO;
+import com.quanlyphongtro.util.AuditLogHelper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -30,6 +32,8 @@ import java.util.Map;
         "/manager/dependents/*"
 })
 public class ManagerTenantsServlet extends BaseServlet {
+
+    private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -194,12 +198,11 @@ public class ManagerTenantsServlet extends BaseServlet {
         List<Map<String, Object>> tenants = new ArrayList<>();
         int totalCount = 0;
 
-        // Build filtering query
-        StringBuilder whereClause = new StringBuilder(" WHERE u.role = 'TENANT' AND u.deleted_at IS NULL");
+        // Build filtering query — chỉ lấy tenant có phòng trong cơ sở manager phụ trách
+        StringBuilder whereClause = new StringBuilder(
+            " WHERE u.role = 'TENANT' AND u.deleted_at IS NULL" +
+            " AND r.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)");
         List<Object> params = new ArrayList<>();
-
-        // Match only facilities managed by current manager
-        whereClause.append(" AND (r.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ?) OR r.facility_id IS NULL)");
         params.add(currentUser.getId());
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -216,10 +219,15 @@ public class ManagerTenantsServlet extends BaseServlet {
             params.add(status.trim());
         }
 
-        String countSql = "SELECT COUNT(DISTINCT u.user_id) FROM dbo.users u LEFT JOIN dbo.rooms r ON u.user_id = r.tenant_id" + whereClause.toString();
-        String selectSql = "SELECT u.user_id, u.username, u.full_name, u.email, u.phone, u.status, r.room_id, r.code AS room_code, r.contract_start_date " +
-                "FROM dbo.users u LEFT JOIN dbo.rooms r ON u.user_id = r.tenant_id" + whereClause.toString() +
-                " ORDER BY u.user_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String countSql = "SELECT COUNT(DISTINCT u.user_id) FROM dbo.users u" +
+            " INNER JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
+            whereClause.toString();
+        String selectSql = "SELECT u.user_id, u.username, u.full_name, u.email, u.phone, u.status," +
+            " r.room_id, r.code AS room_code, r.contract_start_date" +
+            " FROM dbo.users u" +
+            " INNER JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
+            whereClause.toString() +
+            " ORDER BY u.user_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             // Count query
@@ -344,6 +352,12 @@ public class ManagerTenantsServlet extends BaseServlet {
     }
 
     private void handleCreateSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
         String fullName = req.getParameter("fullName");
         String phone = req.getParameter("phone");
         String email = req.getParameter("email");
@@ -424,7 +438,13 @@ public class ManagerTenantsServlet extends BaseServlet {
             conn.commit();
 
             // Send email to tenant with credentials
-            com.quanlyphongtro.util.EmailUtil.sendTemporaryPasswordEmail(email.trim(), fullName.trim(), username, plainPassword);
+            com.quanlyphongtro.util.EmailService.sendTempPassword(email.trim(), fullName.trim(), username, plainPassword);
+
+            try {
+                AuditLogHelper.log(auditLogDAO, req, "users", newUserId, "CREATE", null, username, currentUser.getId());
+            } catch (Exception ex) {
+                logger.warn("AuditLog failed after tenant create", ex);
+            }
 
             setFlashMessage(req, "success", "Tạo người thuê và gán phòng thành công! Đã gửi tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants");
@@ -508,6 +528,12 @@ public class ManagerTenantsServlet extends BaseServlet {
     }
 
     private void handleAddDependent(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
         String fullName = req.getParameter("fullName");
         String relationship = req.getParameter("relationship");
         String phone = req.getParameter("phone");
@@ -534,6 +560,13 @@ public class ManagerTenantsServlet extends BaseServlet {
             ps.setString(5, gender);
             ps.setDate(6, dob != null ? Date.valueOf(dob) : null);
             ps.executeUpdate();
+            
+            try {
+                AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "UPDATE", "Add Dependent", fullName.trim(), currentUser.getId());
+            } catch (Exception ex) {
+                logger.warn("AuditLog failed after add dependent", ex);
+            }
+            
             setFlashMessage(req, "success", "Thêm người phụ thuộc thành công!");
         } catch (Exception e) {
             logger.error("Failed to add dependent", e);
@@ -544,6 +577,12 @@ public class ManagerTenantsServlet extends BaseServlet {
     }
 
     private void handleRemoveDependent(int dependentId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+        
         // Query tenantId first to redirect back
         int tenantId = 0;
         String findTenantSql = "SELECT tenant_id FROM dbo.dependents WHERE dependent_id = ?";
@@ -569,6 +608,13 @@ public class ManagerTenantsServlet extends BaseServlet {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, dependentId);
             ps.executeUpdate();
+            
+            try {
+                AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "UPDATE", "Remove Dependent", "Dependent ID " + dependentId, currentUser.getId());
+            } catch (Exception ex) {
+                logger.warn("AuditLog failed after remove dependent", ex);
+            }
+            
             setFlashMessage(req, "success", "Xóa người phụ thuộc thành công!");
         } catch (Exception e) {
             logger.error("Failed to remove dependent", e);
@@ -579,6 +625,12 @@ public class ManagerTenantsServlet extends BaseServlet {
     }
 
     private void handleEndRental(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
         Connection conn = null;
         try {
             conn = DatabaseUtil.getConnection();
@@ -599,6 +651,13 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
 
             conn.commit();
+            
+            try {
+                AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "UPDATE", "ACTIVE", "INACTIVE (End Rental)", currentUser.getId());
+            } catch (Exception ex) {
+                logger.warn("AuditLog failed after end rental", ex);
+            }
+            
             setFlashMessage(req, "success", "Kết thúc hợp đồng thuê và giải phóng phòng thành công!");
         } catch (Exception e) {
             if (conn != null) {
@@ -787,6 +846,13 @@ public class ManagerTenantsServlet extends BaseServlet {
             ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
             ps.setInt(6, dependentId);
             ps.executeUpdate();
+            
+            try {
+                AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "UPDATE", "Update Dependent", fullName.trim(), currentUser.getId());
+            } catch (Exception ex) {
+                logger.warn("AuditLog failed after edit dependent", ex);
+            }
+            
             setFlashMessage(req, "success", "Cập nhật người phụ thuộc thành công!");
         } catch (Exception e) {
             logger.error("Failed to update dependent", e);
@@ -892,6 +958,13 @@ public class ManagerTenantsServlet extends BaseServlet {
             ps.setString(8, permanentAddress);
             ps.setInt(9, tenantId);
             ps.executeUpdate();
+            
+            try {
+                AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "UPDATE", "Update Info", fullName.trim(), currentUser.getId());
+            } catch (Exception ex) {
+                logger.warn("AuditLog failed after edit tenant", ex);
+            }
+            
             setFlashMessage(req, "success", "Cập nhật thông tin người thuê thành công!");
         } catch (Exception e) {
             logger.error("Failed to update tenant info", e);
@@ -902,12 +975,23 @@ public class ManagerTenantsServlet extends BaseServlet {
     }
 
     private void handleSoftDelete(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
         String sql = "UPDATE dbo.users SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, tenantId);
             int rows = ps.executeUpdate();
             if (rows > 0) {
+                try {
+                    AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "DELETE", null, "Soft Delete", currentUser.getId());
+                } catch (Exception ex) {
+                    logger.warn("AuditLog failed after soft delete", ex);
+                }
                 setFlashMessage(req, "success", "Xóa người thuê thành công!");
             } else {
                 setFlashMessage(req, "danger", "Không tìm thấy người thuê hoặc không có quyền xóa.");
@@ -920,12 +1004,23 @@ public class ManagerTenantsServlet extends BaseServlet {
     }
 
     private void handleLockAccount(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
         String sql = "UPDATE dbo.users SET status = 'LOCKED', updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, tenantId);
             int rows = ps.executeUpdate();
             if (rows > 0) {
+                try {
+                    AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "LOCK_EMPLOYEE", "ACTIVE", "LOCKED", currentUser.getId());
+                } catch (Exception ex) {
+                    logger.warn("AuditLog failed after lock", ex);
+                }
                 setFlashMessage(req, "success", "Đã khóa tài khoản người thuê thành công!");
             } else {
                 setFlashMessage(req, "danger", "Không thể khóa tài khoản người thuê.");
@@ -944,6 +1039,12 @@ public class ManagerTenantsServlet extends BaseServlet {
     }
 
     private void handleUnlockAccount(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
         String queryUsername = "SELECT username FROM dbo.users WHERE user_id = ? AND role = 'TENANT'";
         String updateSql = "UPDATE dbo.users SET status = 'ACTIVE', updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
         try (Connection conn = DatabaseUtil.getConnection()) {
@@ -963,6 +1064,11 @@ public class ManagerTenantsServlet extends BaseServlet {
                 if (rows > 0) {
                     if (username != null) {
                         com.quanlyphongtro.util.LoginAttemptTracker.reset(username);
+                    }
+                    try {
+                        AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "UNLOCK_EMPLOYEE", "LOCKED", "ACTIVE", currentUser.getId());
+                    } catch (Exception ex) {
+                        logger.warn("AuditLog failed after unlock", ex);
                     }
                     setFlashMessage(req, "success", "Đã mở khóa tài khoản người thuê thành công!");
                 } else {

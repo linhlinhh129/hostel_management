@@ -127,7 +127,7 @@ public class AdminNotificationServlet extends BaseServlet {
         }
 
         UserSessionDTO currentUser = getCurrentUser(req);
-        String code = notificationDAO.generateCode();
+        String code = notificationDAO.generateCode("ALL");
 
         Notification n = new Notification();
         n.setCode(code);

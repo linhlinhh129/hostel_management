@@ -119,7 +119,7 @@
                                                 </td>
                                                 <td class="d-none d-md-table-cell">${req.displayLocation}</td>
                                                 <td class="d-none d-lg-table-cell"><span class="mintlify-badge-type" style="text-transform: uppercase;">${req.category}</span></td>
-                                                <td class="d-none d-md-table-cell"><fmt:formatDate value="${req.createdAt}" pattern="dd/MM/yyyy"/></td>
+                                                <td class="d-none d-md-table-cell"><fmt:formatDate value="${req.createdAtAsDate}" pattern="dd/MM/yyyy"/></td>
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${req.status == 'PENDING'}">

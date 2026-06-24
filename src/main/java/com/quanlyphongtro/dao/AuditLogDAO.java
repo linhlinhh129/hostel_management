@@ -155,19 +155,29 @@ public class AuditLogDAO extends BaseDAO {
     }
 
     private static final String BASE_SELECT =
-        "SELECT al.*, u.username AS created_by_name " +
+        "SELECT al.*, u.full_name AS created_by_name " +
         "FROM dbo.audit_logs al " +
         "LEFT JOIN dbo.users u ON u.user_id = al.created_by";
 
     public List<AuditLog> findAll(String actor, String entityType, String action,
                                    String dateFrom, String dateTo,
                                    int page, int pageSize) {
+        return findAll(actor, null, entityType, action, dateFrom, dateTo, page, pageSize);
+    }
+
+    public List<AuditLog> findAll(String actor, String role, String entityType, String action,
+                                   String dateFrom, String dateTo,
+                                   int page, int pageSize) {
         List<AuditLog> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(BASE_SELECT + " WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
+        if (role != null && !role.isBlank()) {
+            sql.append(" AND u.role = ?");
+            params.add(role.trim());
+        }
         if (actor != null && !actor.isBlank()) {
-            sql.append(" AND u.username LIKE ?");
+            sql.append(" AND u.full_name LIKE ?");
             params.add("%" + actor.trim() + "%");
         }
         if (entityType != null && !entityType.isBlank()) {
@@ -206,13 +216,23 @@ public class AuditLogDAO extends BaseDAO {
 
     public int count(String actor, String entityType, String action,
                      String dateFrom, String dateTo) {
+        return count(actor, null, entityType, action, dateFrom, dateTo);
+    }
+
+    public int count(String actor, String role, String entityType, String action,
+                     String dateFrom, String dateTo) {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) FROM dbo.audit_logs al " +
-            "LEFT JOIN dbo.users u ON u.user_id = al.created_by WHERE 1=1");
+            "LEFT JOIN dbo.users u ON u.user_id = al.created_by " +
+            "WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
+        if (role != null && !role.isBlank()) {
+            sql.append(" AND u.role = ?");
+            params.add(role.trim());
+        }
         if (actor != null && !actor.isBlank()) {
-            sql.append(" AND u.username LIKE ?");
+            sql.append(" AND u.full_name LIKE ?");
             params.add("%" + actor.trim() + "%");
         }
         if (entityType != null && !entityType.isBlank()) {

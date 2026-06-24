@@ -66,10 +66,10 @@
                                                     <span class="badge-hms badge-info">Tất cả</span>
                                                 </c:when>
                                                 <c:when test="${notif.recipientType == 'FACILITY'}">
-                                                    <span class="badge-hms badge-neutral">Cơ sở #<c:out value="${notif.recipientId}"/></span>
+                                                    <span class="badge-hms badge-neutral">Cơ sở </span>
                                                 </c:when>
                                                 <c:when test="${notif.recipientType == 'ROOM'}">
-                                                    <span class="badge-hms badge-neutral">Phòng #<c:out value="${notif.recipientId}"/></span>
+                                                    <span class="badge-hms badge-neutral">Phòng</span>
                                                 </c:when>
                                             </c:choose>
                                         </td>

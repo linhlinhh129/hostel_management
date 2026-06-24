@@ -38,7 +38,7 @@ public class NotificationDAO extends BaseDAO {
         "SELECT n.*, u.full_name AS created_by_name " +
         "FROM dbo.notifications n " +
         "LEFT JOIN dbo.users u ON u.user_id = n.created_by " +
-        "WHERE n.deleted_at IS NULL";
+        "WHERE n.deleted_at IS NULL AND n.target_type = 'ALL'";
 
     public List<Notification> findAll(String keyword, int page, int pageSize) {
         List<Notification> list = new ArrayList<>();
@@ -134,7 +134,7 @@ public class NotificationDAO extends BaseDAO {
 
     public int count(String keyword) {
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) FROM dbo.notifications n WHERE n.deleted_at IS NULL");
+            "SELECT COUNT(*) FROM dbo.notifications n WHERE n.deleted_at IS NULL AND n.target_type = 'ALL'");
         List<Object> params = new ArrayList<>();
 
         if (keyword != null && !keyword.isBlank()) {
@@ -200,20 +200,35 @@ public class NotificationDAO extends BaseDAO {
     }
 
     /**
-     * Generates next notification code in format NOTI + 6 digits.
+     * Generates next notification code in format NTF-{TYPE}-{SEQ}.
+     * TYPE: ALL, FAC, ROOM (mapped from target_type ALL/FACILITY/ROOM)
+     * SEQ: 3-digit sequence scoped per type, e.g. NTF-ALL-001
      */
-    public String generateCode() {
-        String sql = "SELECT COUNT(*) FROM dbo.notifications";
+    public String generateCode(String targetType) {
+        String typeTag;
+        switch (targetType == null ? "ALL" : targetType.toUpperCase()) {
+            case "FACILITY": typeTag = "FAC";  break;
+            case "ROOM":     typeTag = "ROOM"; break;
+            default:         typeTag = "ALL";  break;
+        }
+        // Use MAX to avoid duplicates under concurrent inserts
+        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 2, 3) AS INT)), 0) " +
+                     "FROM dbo.notifications " +
+                     "WHERE code LIKE ? AND deleted_at IS NULL";
+        String prefix = "NTF-" + typeTag + "-";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                int next = rs.getInt(1) + 1;
-                return String.format("NOTI%06d", next);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, prefix);
+            ps.setString(2, prefix + "___");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int next = rs.getInt(1) + 1;
+                    return String.format("NTF-%s-%03d", typeTag, next);
+                }
             }
         } catch (Exception e) {
-            logger.error("NotificationDAO.generateCode failed", e);
+            logger.error("NotificationDAO.generateCode failed for targetType={}", targetType, e);
         }
-        return "NOTI000001";
+        return String.format("NTF-%s-001", typeTag);
     }
 }

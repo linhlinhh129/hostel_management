@@ -3,6 +3,7 @@ package com.quanlyphongtro.controller.admin;
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.dao.FacilityDAO;
+import com.quanlyphongtro.dao.RoomDAO;
 import com.quanlyphongtro.dto.PageDTO;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.exception.NotFoundException;
@@ -25,6 +26,7 @@ public class AdminFacilityServlet extends BaseServlet {
 
     private final FacilityDAO facilityDAO = new FacilityDAO();
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
+    private final RoomDAO roomDAO = new RoomDAO();
 
     private static final int PAGE_SIZE = 10;
     private static final String BASE_PATH = "/admin/facilities";
@@ -67,15 +69,25 @@ public class AdminFacilityServlet extends BaseServlet {
                 doActivate(req, resp, extractIdFromPrefix(path));
             } else if (path.matches("/\\d+/deactivate")) {
                 doDeactivate(req, resp, extractIdFromPrefix(path));
+            } else if (path.matches("/\\d+/rooms/\\d+/area")) {
+                doUpdateRoomArea(req, resp, path);
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         } catch (ValidationException e) {
-            req.setAttribute("errorMessage", e.getMessage());
-            try {
-                req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
-            } catch (Exception ex) {
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            // Nếu lỗi đến từ route update area → redirect về detail
+            if (path.matches("/\\d+/rooms/\\d+/area")) {
+                String[] parts = path.split("/");
+                int facilityId = Integer.parseInt(parts[1]);
+                setFlashMessage(req, "error", e.getMessage());
+                try { resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + facilityId); } catch (Exception ignored) {}
+            } else {
+                req.setAttribute("errorMessage", e.getMessage());
+                try {
+                    req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
+                } catch (Exception ex) {
+                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
             }
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -297,6 +309,35 @@ public class AdminFacilityServlet extends BaseServlet {
 
         setFlashMessage(req, "success", "Đã vô hiệu hóa cơ sở.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
+    }
+
+    private void doUpdateRoomArea(HttpServletRequest req, HttpServletResponse resp, String path)
+            throws Exception {
+        // path: /{facilityId}/rooms/{roomId}/area
+        String[] parts = path.split("/");
+        int facilityId = Integer.parseInt(parts[1]);
+        int roomId     = Integer.parseInt(parts[3]);
+
+        String areaStr = trim(req.getParameter("area"));
+        BigDecimal area = null;
+        if (!areaStr.isEmpty()) {
+            try {
+                area = new BigDecimal(areaStr.replace(",", "."));
+                if (area.compareTo(BigDecimal.ZERO) < 0) {
+                    throw new ValidationException("Diện tích không được âm.");
+                }
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Diện tích không hợp lệ.");
+            }
+        }
+
+        boolean updated = roomDAO.updateArea(roomId, area);
+        if (!updated) {
+            setFlashMessage(req, "error", "Không tìm thấy phòng hoặc cập nhật thất bại.");
+        } else {
+            setFlashMessage(req, "success", "Đã cập nhật diện tích phòng.");
+        }
+        resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + facilityId);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

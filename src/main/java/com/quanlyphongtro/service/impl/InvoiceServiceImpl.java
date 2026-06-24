@@ -6,6 +6,8 @@ import com.quanlyphongtro.dto.InvoiceDetailDTO;
 import com.quanlyphongtro.model.Invoice;
 import com.quanlyphongtro.service.InvoiceService;
 import com.quanlyphongtro.util.DatabaseUtil;
+import com.quanlyphongtro.dao.AuditLogDAO;
+import com.quanlyphongtro.util.AuditLogHelper;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -17,6 +19,7 @@ import java.util.Optional;
 
 public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceDAO invoiceDAO = new InvoiceDAO();
+    private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
     @Override
     public List<Invoice> getInvoicesByRoomId(int roomId) {
@@ -186,6 +189,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setCreatedBy(createdBy);
 
         invoiceDAO.insert(invoice);
+        
+        try {
+            AuditLogHelper.log(auditLogDAO, null, "invoices", invoice.getInvoiceId(), "CREATE", null, invoiceCode, createdBy);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -240,6 +249,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceToUpdate.setNote(note);
 
         invoiceDAO.update(invoiceToUpdate);
+        
+        try {
+            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "UPDATE", "Old Total: " + dto.getTotalAmount(), "New Total: " + newTotal, managerId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -249,5 +264,11 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new IllegalArgumentException("Trạng thái không hợp lệ.");
         }
         invoiceDAO.updateStatus(invoiceId, status);
+        
+        try {
+            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "UPDATE", dto.getStatus(), status, managerId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

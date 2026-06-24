@@ -103,10 +103,10 @@ public class AdminDashboardServlet extends BaseServlet {
         }
         req.setAttribute("facilityRevenueStats", facilityRevenueStats);
 
-        // Recent activities (last 10 audit log entries)
+        // Recent activities (last 5 audit log entries)
         List<RevenueActivityDTO> recentActivities = new ArrayList<>();
         try {
-            List<AuditLog> recentLogs = auditLogDAO.findRecent(10);
+            List<AuditLog> recentLogs = auditLogDAO.findRecent(5);
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
             for (AuditLog log : recentLogs) {
                 String actor = log.getCreatedByName() != null ? log.getCreatedByName() : "Hệ thống";

@@ -48,6 +48,7 @@ public class AdminAuditLogServlet extends BaseServlet {
     private void showList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String filterActor      = nullToEmpty(req.getParameter("actor"));
+        String filterRole       = nullToEmpty(req.getParameter("role"));
         String filterEntityType = nullToEmpty(req.getParameter("entityType"));
         String filterAction     = nullToEmpty(req.getParameter("action"));
         String filterDateFrom   = nullToEmpty(req.getParameter("dateFrom"));
@@ -55,22 +56,23 @@ public class AdminAuditLogServlet extends BaseServlet {
         int page = parseIntOrDefault(req.getParameter("page"), 1);
 
         int total = auditLogDAO.count(
-            filterActor, filterEntityType, filterAction, filterDateFrom, filterDateTo);
+            filterActor, filterRole, filterEntityType, filterAction, filterDateFrom, filterDateTo);
         List<AuditLog> auditLogs = auditLogDAO.findAll(
-            filterActor, filterEntityType, filterAction, filterDateFrom, filterDateTo,
+            filterActor, filterRole, filterEntityType, filterAction, filterDateFrom, filterDateTo,
             page, PAGE_SIZE);
 
         boolean hasNextPage = (long) page * PAGE_SIZE < total;
 
-        req.setAttribute("auditLogs", auditLogs);
-        req.setAttribute("currentPage", page);
-        req.setAttribute("hasNextPage", hasNextPage);
-        req.setAttribute("totalCount", total);
-        req.setAttribute("filterActor", filterActor);
+        req.setAttribute("auditLogs",       auditLogs);
+        req.setAttribute("currentPage",     page);
+        req.setAttribute("hasNextPage",     hasNextPage);
+        req.setAttribute("totalCount",      total);
+        req.setAttribute("filterActor",     filterActor);
+        req.setAttribute("filterRole",      filterRole);
         req.setAttribute("filterEntityType", filterEntityType);
-        req.setAttribute("filterAction", filterAction);
-        req.setAttribute("filterDateFrom", filterDateFrom);
-        req.setAttribute("filterDateTo", filterDateTo);
+        req.setAttribute("filterAction",    filterAction);
+        req.setAttribute("filterDateFrom",  filterDateFrom);
+        req.setAttribute("filterDateTo",    filterDateTo);
         req.getRequestDispatcher(VIEW_BASE + "list.jsp").forward(req, resp);
     }
 

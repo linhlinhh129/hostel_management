@@ -1,6 +1,7 @@
 ﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"  %>
+<%@ taglib prefix="fn"  uri="jakarta.tags.functions" %>
 <c:set var="ctx"       value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Nhật ký kiểm tra - Admin"/>
 <c:set var="pageRole"  value="ADMIN"/>
@@ -19,7 +20,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
                     <div>
                         <h1>Nhật ký kiểm tra</h1>
-                        <p>Toàn bộ hoạt động thao tác trong hệ thống</p>
+                        <p>Hoạt động thao tác của Manager và Operator</p>
                     </div>
                     <a href="${ctx}/admin/audit-logs" class="quick-action-btn" style="position:relative;z-index:1">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -34,9 +35,14 @@
                 <!-- Filter bar -->
                 <form class="filter-bar" method="get" action="${ctx}/admin/audit-logs">
                     <input type="text" class="form-control" name="actor"
-                           placeholder="Người thực hiện..."
+                           placeholder="Tên người thực hiện..."
                            value="<c:out value='${filterActor}'/>"
                            style="max-width:200px">
+                    <select class="form-select" name="role" style="max-width:150px">
+                        <option value="">Vai trò</option>
+                        <option value="MANAGER"  ${filterRole == 'MANAGER'  ? 'selected' : ''}>Manager</option>
+                        <option value="OPERATOR" ${filterRole == 'OPERATOR' ? 'selected' : ''}>Operator</option>
+                    </select>
                     <select class="form-select" name="entityType" style="max-width:160px">
                         <option value="">Chức năng</option>
                         <option value="facilities"     ${filterEntityType == 'facilities'     ? 'selected' : ''}>Cơ sở</option>
@@ -91,7 +97,11 @@
                                             </a>
                                         </td>
                                         <td style="white-space:nowrap;font-size:0.8125rem;color:var(--hms-text-muted)">
-                                            <c:out value="${log.createdAt}"/>
+                                            <c:if test="${not empty log.createdAt}">
+                                                <span>${fn:substring(log.createdAt, 8, 10)}/${fn:substring(log.createdAt, 5, 7)}/${fn:substring(log.createdAt, 0, 4)}</span>
+                                                <br/>
+                                                <span style="font-size:0.75rem">${fn:substring(log.createdAt, 11, 16)}</span>
+                                            </c:if>
                                         </td>
                                         <td>
                                             <div style="display:flex;align-items:center;gap:8px">
@@ -184,11 +194,11 @@
                             <span>Hiển thị <fmt:formatNumber value="${auditLogs.size()}" groupingUsed="true"/> mục</span>
                             <div class="d-flex gap-1">
                                 <c:if test="${currentPage > 1}">
-                                    <a href="${ctx}/admin/audit-logs?page=${currentPage - 1}&actor=${filterActor}&action=${filterAction}"
+                                    <a href="${ctx}/admin/audit-logs?page=${currentPage - 1}&actor=${filterActor}&action=${filterAction}&role=${filterRole}&entityType=${filterEntityType}&dateFrom=${filterDateFrom}&dateTo=${filterDateTo}"
                                        class="btn-mintlify-secondary text-decoration-none" style="padding:5px 12px">Trước</a>
                                 </c:if>
                                 <c:if test="${hasNextPage}">
-                                    <a href="${ctx}/admin/audit-logs?page=${currentPage + 1}&actor=${filterActor}&action=${filterAction}"
+                                    <a href="${ctx}/admin/audit-logs?page=${currentPage + 1}&actor=${filterActor}&action=${filterAction}&role=${filterRole}&entityType=${filterEntityType}&dateFrom=${filterDateFrom}&dateTo=${filterDateTo}"
                                        class="btn-mintlify-secondary text-decoration-none" style="padding:5px 12px">Sau</a>
                                 </c:if>
                             </div>

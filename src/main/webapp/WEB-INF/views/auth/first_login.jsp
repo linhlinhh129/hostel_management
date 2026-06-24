@@ -24,19 +24,26 @@
                     <div class="mb-4">
                         <label for="newPassword" class="form-label-modern">Mật khẩu mới</label>
                         <input type="password" class="form-control" id="newPassword" name="newPassword"
-                               placeholder="Nhập mật khẩu mới" required autocomplete="new-password">
-                        <small class="text-muted" style="font-size: 0.8rem;">Mật khẩu phải có ít nhất 7 ký tự.</small>
+                               placeholder="Nhập mật khẩu mới" required autocomplete="new-password"
+                               style="border-radius: 16px; padding: 0.75rem 1rem;">
+                        <small class="text-muted" style="font-size: 0.8rem; margin-top: 0.5rem; display: block;">Mật khẩu phải có ít nhất 8 ký tự.</small>
                     </div>
                     <div class="mb-4">
                         <label for="confirmPassword" class="form-label-modern">Xác nhận mật khẩu</label>
                         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
-                               placeholder="Nhập lại mật khẩu mới" required autocomplete="new-password">
+                               placeholder="Nhập lại mật khẩu mới" required autocomplete="new-password"
+                               style="border-radius: 16px; padding: 0.75rem 1rem;">
                     </div>
                     
-                    <button type="submit" class="btn btn-mintlify-primary w-100 py-2 mb-3 auth-stagger-4" style="font-size:1rem;">Cập nhật mật khẩu</button>
+                    <div class="text-center auth-stagger-4 mb-3">
+                        <button type="submit" class="btn btn-mintlify-primary py-2 px-5"
+                                style="font-size:1rem; min-width: 220px;">
+                            Cập nhật mật khẩu
+                        </button>
+                    </div>
                     
                     <div class="text-center auth-stagger-4">
-                        <a href="${ctx}/logout" class="text-decoration-none" style="font-size:0.875rem;color:var(--hms-text-muted);">Đăng xuất</a>
+                        <a href="${ctx}/logout" class="text-decoration-none" style="font-size:0.875rem;color:var(--hms-stone);">Đăng xuất</a>
                     </div>
                 </form>
             </div>

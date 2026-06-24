@@ -433,7 +433,7 @@ public class InvoiceDAO extends BaseDAO {
                      "room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, invoice.getCode());
             ps.setInt(2, invoice.getRoomId());
             ps.setInt(3, invoice.getMeterId());
@@ -450,6 +450,11 @@ public class InvoiceDAO extends BaseDAO {
             ps.setString(14, invoice.getNote());
             ps.setInt(15, invoice.getCreatedBy());
             ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    invoice.setInvoiceId(rs.getInt(1));
+                }
+            }
         }
     }
     

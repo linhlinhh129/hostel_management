@@ -1,8 +1,10 @@
 package com.quanlyphongtro.controller.operator;
 
+import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.dto.MeterStatusDTO;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.service.MeterReadingService;
+import com.quanlyphongtro.util.AuditLogHelper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -21,6 +23,7 @@ import java.util.UUID;
 @MultipartConfig(maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 25)
 public class UpdateMeterReadingServlet extends HttpServlet {
     private MeterReadingService meterReadingService;
+    private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
     @Override
     public void init() throws ServletException {
@@ -49,8 +52,9 @@ public class UpdateMeterReadingServlet extends HttpServlet {
         try {
             String roomCode = request.getParameter("roomCode");
             if (roomCode == null || roomCode.trim().isEmpty()) {
-                session.setAttribute("error", "Vui lòng nhập Mã phòng.");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update");
+                session.setAttribute("flashMessage", "Vui lòng nhập Mã phòng.");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                 return;
             }
 
@@ -58,8 +62,9 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             MeterStatusDTO previousReading = meterReadingService.getPreviousReadingByRoomCode(roomCode);
             if (previousReading == null) {
                 // AC06: Mã phòng không tồn tại
-                session.setAttribute("error", "Mã phòng không tồn tại hoặc phòng không ở trạng thái đang thuê.");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode);
+                session.setAttribute("flashMessage", "Mã phòng không tồn tại hoặc phòng không ở trạng thái đang thuê.");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                 return;
             }
 
@@ -73,13 +78,15 @@ public class UpdateMeterReadingServlet extends HttpServlet {
 
             // Validation AC02, AC03
             if (newElectric < prevElectric) {
-                session.setAttribute("error", "Chỉ số điện không hợp lệ. Số mới (" + newElectric + ") không được nhỏ hơn số cũ (" + prevElectric + ").");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode);
+                session.setAttribute("flashMessage", "Chỉ số điện không hợp lệ. Số mới (" + newElectric + ") không được nhỏ hơn số cũ (" + prevElectric + ").");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                 return;
             }
             if (newWater < prevWater) {
-                session.setAttribute("error", "Chỉ số nước không hợp lệ. Số mới (" + newWater + ") không được nhỏ hơn số cũ (" + prevWater + ").");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode);
+                session.setAttribute("flashMessage", "Chỉ số nước không hợp lệ. Số mới (" + newWater + ") không được nhỏ hơn số cũ (" + prevWater + ").");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                 return;
             }
 
@@ -88,13 +95,15 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             Part waterPart = request.getPart("waterMeterImage");
 
             if (electricPart == null || electricPart.getSize() == 0) {
-                session.setAttribute("error", "Vui lòng tải lên ảnh minh chứng công tơ điện.");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode);
+                session.setAttribute("flashMessage", "Vui lòng tải lên ảnh minh chứng công tơ điện.");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                 return;
             }
             if (waterPart == null || waterPart.getSize() == 0) {
-                session.setAttribute("error", "Vui lòng tải lên ảnh minh chứng công tơ nước.");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode);
+                session.setAttribute("flashMessage", "Vui lòng tải lên ảnh minh chứng công tơ nước.");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                 return;
             }
 
@@ -114,20 +123,29 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             boolean success = meterReadingService.insertMeterReading(roomId, newElectric, newWater, electricImgUrl, waterImgUrl, operatorId);
 
             if (success) {
-                // Redirect back to update page for continuous data entry
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update");
+                try {
+                    AuditLogHelper.log(auditLogDAO, request, "rooms", roomId,
+                        "UPDATE", "Điện:" + prevElectric + " Nước:" + prevWater,
+                        "Điện:" + newElectric + " Nước:" + newWater, operatorId);
+                } catch (Exception ex) { /* ignore audit failure */ }
+                session.setAttribute("flashMessage", "Cập nhật chỉ số điện nước cho phòng " + roomCode + " thành công.");
+                session.setAttribute("flashType", "success");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
             } else {
-                session.setAttribute("error", "Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng thử lại.");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode);
+                session.setAttribute("flashMessage", "Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng thử lại.");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
             }
 
         } catch (NumberFormatException e) {
-            session.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.");
-            response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update");
+            session.setAttribute("flashMessage", "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.");
+            session.setAttribute("flashType", "error");
+            response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("error", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update");
+            session.setAttribute("flashMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+            session.setAttribute("flashType", "error");
+            response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
         }
     }
 

@@ -15,6 +15,7 @@ public class Facility {
     private String managerName;  // joined from users (MANAGER)
     private Integer operatorId;
     private String operatorName; // joined from users (OPERATOR)
+    private BigDecimal defaultRoomArea;
     private BigDecimal electricityPrice;
     private BigDecimal waterPrice;
     private BigDecimal internetFee;

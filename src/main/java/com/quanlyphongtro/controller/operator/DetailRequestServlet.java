@@ -1,8 +1,10 @@
 package com.quanlyphongtro.controller.operator;
 
+import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.model.Request;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.service.RequestService;
+import com.quanlyphongtro.util.AuditLogHelper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +19,7 @@ import jakarta.servlet.annotation.MultipartConfig;
 @MultipartConfig(maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 25)
 public class DetailRequestServlet extends HttpServlet {
     private RequestService requestService;
+    private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
     @Override
     public void init() throws ServletException {
@@ -124,6 +127,16 @@ public class DetailRequestServlet extends HttpServlet {
             }
 
             if (success) {
+                try {
+                    String auditAction = action.toUpperCase();
+                    String auditNew = null;
+                    if ("accept".equals(action))   { auditAction = "UPDATE"; auditNew = "IN_PROGRESS"; }
+                    else if ("reject".equals(action))   { auditAction = "UPDATE"; auditNew = "REJECTED"; }
+                    else if ("complete".equals(action)) { auditAction = "UPDATE"; auditNew = "COMPLETED"; }
+                    else if ("schedule".equals(action)) { auditAction = "UPDATE"; auditNew = "SCHEDULED"; }
+                    AuditLogHelper.log(auditLogDAO, request, "requests", requestId,
+                        auditAction, "PENDING", auditNew, operatorId);
+                } catch (Exception ex) { /* ignore audit failure */ }
                 // Redirect on success to prevent form resubmission
                 response.sendRedirect(request.getContextPath() + "/operator/requests/detail?id=" + requestId);
             } else {

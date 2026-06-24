@@ -233,30 +233,25 @@ body {
 .auth-page-wrapper {
   min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
-  padding: 1.5rem;
-  background:
-    radial-gradient(ellipse 60% 50% at 10% 60%, rgba(0,212,164,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 90% 20%, rgba(56,189,248,0.07) 0%, transparent 70%),
-    var(--hms-body-bg);
+  padding: 0;
+  background: var(--hms-canvas);
 }
 
 .auth-split-layout {
-  display: flex; width: 100%; max-width: 1040px; min-height: 600px;
+  display: flex; flex-direction: row-reverse; width: 100%; min-height: 100vh;
   background: var(--hms-canvas);
-  border-radius: var(--hms-radius-xxl);
-  box-shadow: var(--hms-shadow-lg), 0 0 0 1px rgba(0,0,0,0.03);
   overflow: hidden;
-  animation: scaleIn 0.45s var(--hms-ease) both;
+  animation: fadeIn 0.45s var(--hms-ease) both;
 }
 
 .auth-form-side {
   flex: 1; display: flex; flex-direction: column;
   justify-content: center; align-items: center; padding: 3rem 2.5rem;
-  background: var(--hms-canvas);
+  background: var(--hms-surface-soft);
 }
 
 .auth-banner-side {
-  flex: 1.15; display: none; position: relative; overflow: hidden;
+  flex: 1; display: none; position: relative; overflow: hidden;
   background: linear-gradient(135deg,
     var(--hms-hero-sky-from) 0%,
     var(--hms-hero-sky-mid) 45%,
@@ -280,10 +275,16 @@ body {
   .auth-banner-side { display: flex; align-items: center; justify-content: center; }
 }
 
-.auth-card { width: 100%; max-width: 400px; }
+.auth-card { 
+  width: 100%; max-width: 560px; 
+  background: var(--hms-card-bg);
+  padding: 3.5rem 4rem;
+  border-radius: var(--hms-radius-xl);
+  box-shadow: var(--hms-shadow-md), 0 0 0 1px rgba(0,0,0,0.03);
+}
 
 .auth-illustration {
-  width: 78%; max-width: 400px;
+  width: 85%; max-width: 650px;
   animation: float 7s ease-in-out infinite;
   filter: drop-shadow(0 20px 40px rgba(0,212,164,0.15));
   position: relative; z-index: 1;

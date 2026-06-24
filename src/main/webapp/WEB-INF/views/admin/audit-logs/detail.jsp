@@ -101,7 +101,7 @@
                                 <div style="display:flex;align-items:flex-start;padding:12px 20px;
                                             border-bottom:1px solid var(--hms-border-soft);gap:12px">
                                     <dt style="width:44%;flex-shrink:0;font-size:0.8125rem;padding-top:2px;
-                                               color:var(--hms-text-muted);font-weight:500">Chức năng</dt>
+                                               color:var(--hms-text-muted);font-weight:500">Đối tượng</dt>
                                     <dd style="margin:0;display:flex;flex-direction:column;gap:4px">
                                         
                                         <%-- Tên entity (nếu có) --%>
@@ -252,15 +252,29 @@
                                     'MANAGER':  'Ban Quản lý',
                                     'OPERATOR': 'Nhân viên vận hành',
                                     'ACTIVE':   'Hoạt động',
-                                    'INACTIVE': 'Bị khóa',
+                                    'INACTIVE': 'Không hoạt động',
+                                    'INACTIVE (End Rental)': 'Không hoạt động (Kết thúc hợp đồng)',
+                                    'INACTIVE (Manual)':     'Không hoạt động (Thủ công)',
+                                    'INACTIVE (Locked)':     'Không hoạt động (Bị khóa)',
+                                    'LOCKED':   'Bị khóa',
                                     'DRAFT':    'Nháp',
                                     'SENT':     'Đã gửi',
+                                    'PENDING':  'Chờ xử lý',
+                                    'APPROVED': 'Đã duyệt',
+                                    'REJECTED': 'Từ chối',
                                     'null':     '—',
                                     'NA':       '—'
                                 };
 
                                 function fieldLabel(k)  { return FIELD_LABELS[k] || k; }
-                                function valueLabel(v)  { return (!v || v === 'null' || v === 'undefined' || v === 'NA') ? '—' : (VALUE_LABELS[v] || v); }
+                                function valueLabel(v)  {
+                                    if (!v || v === 'null' || v === 'undefined' || v === 'NA') return '—';
+                                    if (VALUE_LABELS[v]) return VALUE_LABELS[v];
+                                    // Dịch dạng "INACTIVE (xxx)" chưa có trong bảng
+                                    var m = v.match(/^INACTIVE\s*\((.+)\)$/);
+                                    if (m) return 'Không hoạt động (' + m[1] + ')';
+                                    return v;
+                                }
 
                                 // ── Parse chuỗi "key=value | key=value" thành map ──────────
                                 function parseKV(str) {

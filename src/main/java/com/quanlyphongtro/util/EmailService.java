@@ -10,30 +10,28 @@ import java.util.Properties;
 
 public final class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+    private static final Properties emailProps = new Properties();
 
-    private EmailService() {}
-
-    private static Properties loadEmailProperties() {
-        Properties props = new Properties();
-        try (InputStream in = EmailService.class
-                .getClassLoader()
-                .getResourceAsStream("email.properties")) {
+    static {
+        try (InputStream in = EmailService.class.getClassLoader().getResourceAsStream("email.properties")) {
             if (in != null) {
-                props.load(in);
+                emailProps.load(in);
+                logger.info("Loaded email.properties successfully");
             } else {
                 logger.warn("email.properties not found on classpath");
             }
         } catch (Exception e) {
-            logger.warn("Failed to load email.properties", e);
+            logger.error("Failed to load email.properties", e);
         }
-        return props;
     }
 
-    private static Session getEmailSession(Properties config) {
-        String host = config.getProperty("email.host");
-        String port = config.getProperty("email.port", "587");
-        String smtpUser = config.getProperty("email.username");
-        String smtpPass = config.getProperty("email.password");
+    private EmailService() {}
+
+    private static Session getEmailSession() {
+        String host = emailProps.getProperty("email.host");
+        String port = emailProps.getProperty("email.port", "587");
+        String smtpUser = emailProps.getProperty("email.username");
+        String smtpPass = emailProps.getProperty("email.password");
 
         if (host == null || smtpUser == null || smtpPass == null) {
             logger.error("[EmailService] Config incomplete — host={}, user={}, pass={}",
@@ -70,19 +68,18 @@ public final class EmailService {
                                         String username, String tempPassword) {
         new Thread(() -> {
             try {
-                Properties config = loadEmailProperties();
-                Session session = getEmailSession(config);
+                Session session = getEmailSession();
                 if (session == null) return;
                 
-                String smtpUser = config.getProperty("email.username");
-                String from = config.getProperty("email.from", smtpUser);
+                String smtpUser = emailProps.getProperty("email.username");
+                String from = emailProps.getProperty("email.from", smtpUser);
 
                 logger.info("Attempting to send temp password email to {}", toEmail);
 
                 Message message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(from, "Hostel Management"));
+                message.setFrom(new InternetAddress(from, "Quản lý Nhà trọ"));
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-                message.setSubject("[Hostel Management] Tài khoản nhân sự của bạn đã được tạo");
+                message.setSubject("Tài khoản đăng nhập hệ thống Quản lý nhà trọ");
 
                 String body = buildTempPasswordBody(fullName, username, tempPassword);
                 message.setContent(body, "text/html; charset=UTF-8");
@@ -98,12 +95,11 @@ public final class EmailService {
     public static void sendResetLink(String toEmail, String resetLink) {
         new Thread(() -> {
             try {
-                Properties config = loadEmailProperties();
-                Session session = getEmailSession(config);
+                Session session = getEmailSession();
                 if (session == null) return;
                 
-                String smtpUser = config.getProperty("email.username");
-                String from = config.getProperty("email.from", smtpUser);
+                String smtpUser = emailProps.getProperty("email.username");
+                String from = emailProps.getProperty("email.from", smtpUser);
 
                 logger.info("Attempting to send reset password email to {}", toEmail);
 
@@ -128,16 +124,20 @@ public final class EmailService {
     }
 
     private static String buildTempPasswordBody(String fullName, String username, String tempPassword) {
-        return "<!DOCTYPE html><html><body style='font-family:Arial,sans-serif;'>" +
-            "<h2>Chào mừng " + escapeHtml(fullName) + "!</h2>" +
-            "<p>Tài khoản nhân sự của bạn đã được tạo trong hệ thống Hostel Management.</p>" +
-            "<table border='1' cellpadding='8' style='border-collapse:collapse;'>" +
-            "<tr><td><b>Tên đăng nhập</b></td><td>" + escapeHtml(username) + "</td></tr>" +
-            "<tr><td><b>Mật khẩu tạm thời</b></td><td>" + escapeHtml(tempPassword) + "</td></tr>" +
-            "</table>" +
-            "<p style='color:red;'><b>Vui lòng đăng nhập và thay đổi mật khẩu ngay sau khi nhận được email này.</b></p>" +
-            "<p>Trân trọng,<br/>Hệ thống Hostel Management</p>" +
-            "</body></html>";
+        return "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;\">"
+                + "<h2 style=\"color: #00d4a4; text-align: center;\">Chào mừng thành viên mới!</h2>"
+                + "<p>Xin chào <strong>" + escapeHtml(fullName) + "</strong>,</p>"
+                + "<p>Tài khoản của bạn đã được tạo thành công trên hệ thống Quản lý nhà trọ bởi Ban Quản Lý.</p>"
+                + "<p>Dưới đây là thông tin đăng nhập tạm thời của bạn để truy cập hệ thống:</p>"
+                + "<div style=\"background-color: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid #00d4a4; margin: 20px 0;\">"
+                + "<p style=\"margin: 5px 0;\"><strong>Trang đăng nhập:</strong> <a href=\"http://localhost:8080/hostel-management/login\" style=\"color: #00b48a;\">http://localhost:8080/hostel-management/login</a></p>"
+                + "<p style=\"margin: 5px 0;\"><strong>Tên đăng nhập (Email):</strong> <span style=\"font-family: monospace; font-weight: bold;\">" + escapeHtml(username) + "</span></p>"
+                + "<p style=\"margin: 5px 0;\"><strong>Mật khẩu tạm thời:</strong> <span style=\"font-family: monospace; font-weight: bold; color: #dc2626;\">" + escapeHtml(tempPassword) + "</span></p>"
+                + "</div>"
+                + "<p style=\"color: #475569; font-size: 0.875rem;\"><em>* Lưu ý: Bạn bắt buộc phải đổi mật khẩu trong lần đăng nhập đầu tiên để bảo mật tài khoản.</em></p>"
+                + "<hr style=\"border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;\"/>"
+                + "<p style=\"font-size: 0.8125rem; color: #94a3b8; text-align: center;\">Đây là email tự động từ hệ thống Quản lý Nhà trọ. Vui lòng không trả lời email này.</p>"
+                + "</div>";
     }
 
     private static String escapeHtml(String input) {

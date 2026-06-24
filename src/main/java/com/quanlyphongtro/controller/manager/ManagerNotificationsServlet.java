@@ -3,6 +3,8 @@ package com.quanlyphongtro.controller.manager;
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
+import com.quanlyphongtro.dao.AuditLogDAO;
+import com.quanlyphongtro.util.AuditLogHelper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +28,8 @@ import java.util.UUID;
         "/manager/notifications/*"
 })
 public class ManagerNotificationsServlet extends BaseServlet {
+
+    private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -409,13 +414,14 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
 
         // Generate unique code
-        String code = "NTF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        com.quanlyphongtro.dao.NotificationDAO notificationDAO = new com.quanlyphongtro.dao.NotificationDAO();
+        String code = notificationDAO.generateCode(recipientType);
 
         String sql = "INSERT INTO dbo.notifications (code, title, content, target_type, facility_id, room_id, status, created_by, created_at, sent_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, 'SENT', ?, GETDATE(), GETDATE())";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, code);
             ps.setString(2, title.trim());
             ps.setString(3, content.trim());
@@ -424,6 +430,22 @@ public class ManagerNotificationsServlet extends BaseServlet {
             if (roomId != null) ps.setInt(6, roomId); else ps.setNull(6, java.sql.Types.INTEGER);
             ps.setInt(7, currentUser.getId());
             ps.executeUpdate();
+            
+            int notifId = -1;
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    notifId = rs.getInt(1);
+                }
+            }
+            
+            if (notifId > 0) {
+                try {
+                    AuditLogHelper.log(auditLogDAO, req, "notifications", notifId, "CREATE", null, title.trim(), currentUser.getId());
+                } catch (Exception ex) {
+                    logger.warn("AuditLog failed after create notification", ex);
+                }
+            }
+            
             setFlashMessage(req, "success", "Gửi thông báo thành công!");
         } catch (Exception e) {
             logger.error("Failed to insert notification", e);
