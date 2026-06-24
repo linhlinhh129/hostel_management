@@ -27,9 +27,8 @@
                     <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
                 </div>
 
-                <form action="${ctx}/reset-password" method="post" class="auth-stagger-3">
-                    <input type="hidden" name="csrfToken"  value="${csrfToken}"/>
-                    <input type="hidden" name="token"      value="<c:out value='${resetToken}'/>"/>
+                <form id="resetPasswordForm" class="auth-stagger-3">
+                    <input type="hidden" id="token" value="<c:out value='${resetToken}'/>"/>
 
                     <div class="mb-3">
                         <label for="newPassword" class="form-label">Mật khẩu mới</label>
@@ -50,7 +49,7 @@
                         <div id="bar" style="height:100%;width:0;border-radius:99px;background:var(--hms-danger);transition:width 0.3s,background 0.3s"></div>
                     </div>
 
-                    <button type="submit" class="btn btn-mintlify-primary w-100"
+                    <button type="submit" id="submitBtn" class="btn btn-mintlify-primary w-100"
                             style="border-radius:var(--hms-radius-full);padding:11px">
                         Đặt lại mật khẩu
                     </button>
@@ -79,5 +78,44 @@ document.getElementById('newPassword').addEventListener('input', function () {
 document.getElementById('confirmPassword').addEventListener('input', function () {
     var match = this.value === document.getElementById('newPassword').value;
     this.style.borderColor = this.value ? (match ? 'var(--hms-accent)' : 'var(--hms-danger)') : '';
+});
+document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const token = document.getElementById('token').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (newPassword !== confirmPassword) {
+        alert("Xác nhận mật khẩu không khớp.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+    fetch('${ctx}/api/v1/auth/reset-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ token: token, newPassword: newPassword })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '${ctx}/login?success=reset';
+        } else {
+            alert(data.error ? data.error.message : 'Có lỗi xảy ra, vui lòng thử lại.');
+            btn.disabled = false;
+            btn.innerHTML = 'Đặt lại mật khẩu';
+        }
+    })
+    .catch(error => {
+        alert('Lỗi kết nối. Vui lòng thử lại sau.');
+        btn.disabled = false;
+        btn.innerHTML = 'Đặt lại mật khẩu';
+    });
 });
 </script>

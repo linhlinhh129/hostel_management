@@ -26,8 +26,11 @@ public class EditIncidentServlet extends BaseServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String idParam = request.getParameter("id");
+        String source = request.getParameter("source");
+        if (source == null || source.trim().isEmpty()) { source = "my-reports"; }
+
         if (idParam == null) {
-            response.sendRedirect(request.getContextPath() + "/operator/incidents/my-reports");
+            response.sendRedirect(request.getContextPath() + ("requests".equals(source) ? "/operator/requests" : "/operator/incidents/my-reports"));
             return;
         }
 
@@ -35,7 +38,7 @@ public class EditIncidentServlet extends BaseServlet {
         Request reqObj = dao.getRequestById(Integer.parseInt(idParam));
 
         if (reqObj == null || !"PENDING".equals(reqObj.getStatus())) {
-            response.sendRedirect(request.getContextPath() + "/operator/incidents/my-reports?error=invalid_status");
+            response.sendRedirect(request.getContextPath() + ("requests".equals(source) ? "/operator/requests?error=invalid_status" : "/operator/incidents/my-reports?error=invalid_status"));
             return;
         }
 
@@ -70,6 +73,7 @@ public class EditIncidentServlet extends BaseServlet {
         request.setAttribute("parsedFacilityName", parsedFacilityName);
         request.setAttribute("parsedRoomCode", parsedRoomCode);
         request.setAttribute("parsedDescription", parsedDescription);
+        request.setAttribute("source", source);
 
         request.getRequestDispatcher("/WEB-INF/views/operator/incidents/edit.jsp").forward(request, response);
     }
@@ -85,8 +89,11 @@ public class EditIncidentServlet extends BaseServlet {
 
             request.setCharacterEncoding("UTF-8");
             String requestIdStr = request.getParameter("requestId");
+            String source = request.getParameter("source");
+            if (source == null || source.trim().isEmpty()) { source = "my-reports"; }
+
             if (requestIdStr == null) {
-                response.sendRedirect(request.getContextPath() + "/operator/incidents/my-reports");
+                response.sendRedirect(request.getContextPath() + ("requests".equals(source) ? "/operator/requests" : "/operator/incidents/my-reports"));
                 return;
             }
             
@@ -100,7 +107,7 @@ public class EditIncidentServlet extends BaseServlet {
             Request existingReq = dao.getRequestById(requestId);
             
             if (existingReq == null || !"PENDING".equals(existingReq.getStatus()) || existingReq.getSenderId() != currentUser.getId()) {
-                response.sendRedirect(request.getContextPath() + "/operator/incidents/my-reports?error=unauthorized");
+                response.sendRedirect(request.getContextPath() + ("requests".equals(source) ? "/operator/requests?error=unauthorized" : "/operator/incidents/my-reports?error=unauthorized"));
                 return;
             }
 
@@ -137,9 +144,9 @@ public class EditIncidentServlet extends BaseServlet {
             boolean success = dao.updateIncidentReport(existingReq);
 
             if (success) {
-                response.sendRedirect(request.getContextPath() + "/operator/incidents/my-reports?success=edit");
+                response.sendRedirect(request.getContextPath() + ("requests".equals(source) ? "/operator/requests?success=edit" : "/operator/incidents/my-reports?success=edit"));
             } else {
-                response.sendRedirect(request.getContextPath() + "/operator/incidents/edit?id=" + requestId + "&error=update_failed");
+                response.sendRedirect(request.getContextPath() + "/operator/incidents/edit?id=" + requestId + "&error=update_failed&source=" + source);
             }
         } catch (Throwable t) {
             try {
