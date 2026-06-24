@@ -21,12 +21,19 @@ import java.util.Map;
 
 @WebServlet(name = "ManagerTicketsServlet", urlPatterns = {
         "/manager/tickets",
-        "/manager/tickets/*"
+        "/manager/tickets/*",
+        "/manager/requests/create"
 })
 public class ManagerTicketsServlet extends BaseServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String servletPath = req.getServletPath();
+        if ("/manager/requests/create".equals(servletPath)) {
+            handleRequestCreate(req, resp);
+            return;
+        }
+
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || "/".equals(pathInfo)) {
@@ -379,5 +386,68 @@ public class ManagerTicketsServlet extends BaseServlet {
             setFlashMessage(req, "danger", "Lỗi từ chối yêu cầu: " + e.getMessage());
         }
         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+    }
+
+    private void handleRequestCreate(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String category = req.getParameter("category");
+        String title = req.getParameter("title");
+        String redirectUrl = req.getContextPath() + "/manager/notifications?tab=incorrect-utility";
+
+        if ("TECHNICAL".equalsIgnoreCase(category) && title != null && title.contains("Phát hiện sai số:")) {
+            int index = title.indexOf("Phát hiện sai số:");
+            String invoiceCode = title.substring(index + "Phát hiện sai số:".length()).trim();
+            if (!invoiceCode.isEmpty()) {
+                String querySql = "SELECT i.invoice_id, i.meter_id, f.manager_id FROM dbo.invoices i " +
+                        "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                        "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                        "WHERE i.code = ? AND i.deleted_at IS NULL";
+                
+                String updateSql = "UPDATE dbo.meter_readings SET status = 'INCORRECT', updated_at = GETDATE() WHERE meter_id = ?";
+
+                try (Connection conn = DatabaseUtil.getConnection()) {
+                    int meterId = -1;
+                    int managerId = -1;
+                    try (PreparedStatement ps = conn.prepareStatement(querySql)) {
+                        ps.setString(1, invoiceCode);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                meterId = rs.getInt("meter_id");
+                                managerId = rs.getInt("manager_id");
+                            }
+                        }
+                    }
+
+                    if (managerId != -1) {
+                        if (managerId != currentUser.getId()) {
+                            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền báo cáo hóa đơn này.");
+                            return;
+                        }
+
+                        if (meterId > 0) {
+                            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                                ps.setInt(1, meterId);
+                                ps.executeUpdate();
+                            }
+                            setFlashMessage(req, "success", "Đã báo cáo sai số điện nước cho hóa đơn " + invoiceCode + "!");
+                            redirectUrl += "&keyword=" + java.net.URLEncoder.encode(invoiceCode, "UTF-8");
+                        } else {
+                            setFlashMessage(req, "danger", "Hóa đơn không liên kết với chỉ số điện nước hợp lệ.");
+                        }
+                    } else {
+                        setFlashMessage(req, "danger", "Không tìm thấy hóa đơn: " + invoiceCode);
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to report incorrect utility via ticket creation", e);
+                    setFlashMessage(req, "danger", "Lỗi hệ thống: " + e.getMessage());
+                }
+            }
+        }
+        resp.sendRedirect(redirectUrl);
     }
 }

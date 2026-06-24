@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -49,7 +49,16 @@
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Người tạo</td>
-                  <td style="padding:10px 16px"><c:out value="${notification.createdByName}"/></td>
+                  <td style="padding:10px 16px">
+                    <c:choose>
+                      <c:when test="${notification.creatorRole == 'ADMIN'}">
+                        <span class="badge-hms badge-danger">Admin</span>
+                      </c:when>
+                      <c:otherwise>
+                        <c:out value="${notification.createdByName}"/>
+                      </c:otherwise>
+                    </c:choose>
+                  </td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Đối tượng</td>
@@ -60,6 +69,9 @@
                       </c:when>
                       <c:when test="${notification.recipientType == 'ROOM'}">
                         <span class="badge-hms badge-neutral">Phòng</span>
+                      </c:when>
+                      <c:when test="${notification.recipientType == 'ALL'}">
+                        <span class="badge-hms badge-success">Hệ thống</span>
                       </c:when>
                       <c:otherwise>
                         <span class="badge-hms badge-neutral"><c:out value="${notification.recipientType}"/></span>

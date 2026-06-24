@@ -98,6 +98,12 @@ public class ManagerRoomsServlet extends BaseServlet {
             logger.error("Failed to load facilities managed by manager={}", currentUser.getId(), e);
         }
 
+        if (facilities.size() > 0) {
+            int firstFacilityId = (Integer) facilities.get(0).get("id");
+            resp.sendRedirect(req.getContextPath() + "/manager/facilities/" + firstFacilityId + "/rooms");
+            return;
+        }
+
         req.setAttribute("facilities", facilities);
         req.setAttribute("facilityId", null); // Set empty to trigger Mode 1 in list.jsp
         req.getRequestDispatcher("/WEB-INF/views/manager/rooms/list.jsp").forward(req, resp);
@@ -112,18 +118,23 @@ public class ManagerRoomsServlet extends BaseServlet {
 
         // Verify manager access to facility
         Map<String, Object> facility = null;
-        String verifySql = "SELECT * FROM dbo.facilities WHERE facility_id = ? AND manager_id = ? AND deleted_at IS NULL";
+        List<Map<String, Object>> facilities = new ArrayList<>();
+        String verifySql = "SELECT * FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(verifySql)) {
-            ps.setInt(1, facilityId);
-            ps.setInt(2, currentUser.getId());
+            ps.setInt(1, currentUser.getId());
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    facility = new HashMap<>();
-                    facility.put("id", rs.getInt("facility_id"));
-                    facility.put("code", rs.getString("code"));
-                    facility.put("name", rs.getString("name"));
-                    facility.put("address", rs.getString("address"));
+                while (rs.next()) {
+                    Map<String, Object> f = new HashMap<>();
+                    f.put("id", rs.getInt("facility_id"));
+                    f.put("code", rs.getString("code"));
+                    f.put("name", rs.getString("name"));
+                    f.put("address", rs.getString("address"));
+                    facilities.add(f);
+                    
+                    if (rs.getInt("facility_id") == facilityId) {
+                        facility = f;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -229,6 +240,7 @@ public class ManagerRoomsServlet extends BaseServlet {
         req.setAttribute("page", pageObj);
         req.setAttribute("facilityId", facilityId);
         req.setAttribute("currentFacility", facility);
+        req.setAttribute("facilities", facilities);
         req.setAttribute("filterStatus", filterStatus);
 
         req.getRequestDispatcher("/WEB-INF/views/manager/rooms/list.jsp").forward(req, resp);

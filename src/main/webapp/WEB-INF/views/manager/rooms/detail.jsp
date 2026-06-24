@@ -38,14 +38,8 @@
               <c:when test="${room.status == 'OCCUPIED'}">
                 <span class="badge-hms badge-info">Đang thuê</span>
               </c:when>
-              <c:when test="${room.status == 'AVAILABLE' or room.status == 'ACTIVE'}">
-                <span class="badge-hms badge-success">Phòng trống</span>
-              </c:when>
-              <c:when test="${room.status == 'MAINTENANCE'}">
-                <span class="badge-hms badge-warning">Bảo trì</span>
-              </c:when>
               <c:otherwise>
-                <span class="badge-hms badge-neutral"><c:out value="${room.status}"/></span>
+                <span class="badge-hms badge-success">Phòng trống</span>
               </c:otherwise>
             </c:choose>
           </div>
@@ -104,14 +98,8 @@
                       <c:when test="${room.status == 'OCCUPIED'}">
                         <span class="badge-hms badge-info">Đang thuê</span>
                       </c:when>
-                      <c:when test="${room.status == 'AVAILABLE' or room.status == 'ACTIVE'}">
-                        <span class="badge-hms badge-success">Trống</span>
-                      </c:when>
-                      <c:when test="${room.status == 'MAINTENANCE'}">
-                        <span class="badge-hms badge-warning">Bảo trì</span>
-                      </c:when>
                       <c:otherwise>
-                        <span class="badge-hms badge-neutral"><c:out value="${room.status}"/></span>
+                        <span class="badge-hms badge-success">Trống</span>
                       </c:otherwise>
                     </c:choose>
                   </td>

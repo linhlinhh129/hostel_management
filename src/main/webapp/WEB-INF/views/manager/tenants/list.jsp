@@ -100,14 +100,7 @@
                         <div class="d-inline-flex gap-1 align-items-center">
                           <a href="${ctx}/manager/tenants/${tenant.id}"
                              class="btn-mintlify-secondary text-decoration-none"
-                             style="padding:4px 12px;font-size:0.8125rem">Chi tiết</a>
-                          <c:if test="${tenant.status == 'INACTIVE'}">
-                            <form method="post" action="${ctx}/manager/tenants/${tenant.id}/delete" style="display:inline; margin:0;"
-                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn người thuê này khỏi danh sách quản lý?');">
-                              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                              <button type="submit" class="btn btn-sm btn-outline-danger" style="padding:4px 10px; font-size:0.8125rem;">Xóa</button>
-                            </form>
-                          </c:if>
+                              style="padding:4px 12px;font-size:0.8125rem">Xem</a>
                         </div>
                       </td>
                     </tr>

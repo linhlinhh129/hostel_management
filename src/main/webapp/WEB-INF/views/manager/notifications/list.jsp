@@ -51,6 +51,23 @@
         <c:choose>
           <c:when test="${param.tab == 'incorrect-utility'}">
             <%-- Tab Báo lỗi điện nước --%>
+            <form class="filter-bar mb-3" method="get" action="${ctx}/manager/notifications">
+              <input type="hidden" name="tab" value="incorrect-utility"/>
+              <select class="form-select" name="facilityId" style="max-width:240px">
+                <option value="">Tất cả cơ sở</option>
+                <c:forEach var="facility" items="${assignedFacilities}">
+                  <option value="${facility.id}" ${filterFacilityId == facility.id ? 'selected' : ''}>
+                    <c:out value="${facility.name}"/> (<c:out value="${facility.code}"/>)
+                  </option>
+                </c:forEach>
+              </select>
+              <input type="text" class="form-control" name="keyword"
+                     placeholder="Mã hóa đơn / phòng / cơ sở..."
+                     value="<c:out value='${keyword}'/>">
+              <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
+              <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+            </form>
+
             <c:choose>
               <c:when test="${not empty incorrectInvoices}">
                 <div class="table-responsive">
