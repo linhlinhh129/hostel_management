@@ -1,7 +1,6 @@
 package com.quanlyphongtro.util;
 
-import de.mkammerer.argon2.Argon2;
-import de.mkammerer.argon2.Argon2Factory;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.security.SecureRandom;
 
@@ -35,24 +34,22 @@ public final class PasswordUtil {
         return new String(pwd);
     }
 
-    // Argon2id configuration (m=65536, t=3, p=4)
-    private static final int MEMORY = 65536;
-    private static final int ITERATIONS = 3;
-    private static final int PARALLELISM = 4;
-    private static final Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
-
     /**
-     * Hash password with Argon2id.
+     * Hash password with BCrypt.
      */
     public static String hash(String plainPassword) {
-        return argon2.hash(ITERATIONS, MEMORY, PARALLELISM, plainPassword.toCharArray());
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(10));
     }
 
     /**
-     * Verify plain password against Argon2id hash.
+     * Verify plain password against BCrypt hash.
      */
     public static boolean verify(String plainPassword, String hashed) {
         if (plainPassword == null || hashed == null) return false;
-        return argon2.verify(hashed, plainPassword.toCharArray());
+        try {
+            return BCrypt.checkpw(plainPassword, hashed);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
