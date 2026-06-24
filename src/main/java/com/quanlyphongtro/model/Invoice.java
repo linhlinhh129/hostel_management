@@ -36,6 +36,8 @@ public class Invoice {
     private BigDecimal electricAmount;
     private BigDecimal waterAmount;
     private String billingPeriod; // Example: "Tháng 05/2026"
+    // Transient from JOIN
+    private String roomCodeCache;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -43,6 +45,10 @@ public class Invoice {
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
+
+
+    public Integer getInvoiceId() { return id; }
+    public void setInvoiceId(Integer invoiceId) { this.id = invoiceId; }
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
@@ -98,6 +104,8 @@ public class Invoice {
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
+    public boolean isDeleted() { return deletedAt != null; }
+
     public Integer getOldElectricReading() { return oldElectricReading; }
     public void setOldElectricReading(Integer oldElectricReading) { this.oldElectricReading = oldElectricReading; }
 
@@ -118,6 +126,9 @@ public class Invoice {
 
     public String getBillingPeriod() { return billingPeriod; }
     public void setBillingPeriod(String billingPeriod) { this.billingPeriod = billingPeriod; }
+
+    public String getRoomCodeCache() { return roomCodeCache; }
+    public void setRoomCodeCache(String roomCodeCache) { this.roomCodeCache = roomCodeCache; }
 
     // Helpers for View
     public String getDueDateLabel() {
@@ -143,4 +154,5 @@ public class Invoice {
         if (StatusConstant.INVOICE_OVERDUE.equals(status)) return "Quá hạn";
         return "Chưa thanh toán";
     }
+
 }

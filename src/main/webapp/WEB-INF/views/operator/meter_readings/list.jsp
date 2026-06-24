@@ -63,11 +63,6 @@
                     </form>
 
                     <!-- Main Content -->
-                    <c:if test="${not empty sessionScope.error}">
-                        <div class="alert alert-danger">${sessionScope.error}</div>
-                        <c:remove var="error" scope="session" />
-                    </c:if>
-
                     <div class="data-surface mb-4">
                         <div class="table-responsive">
                             <table class="table table-hover custom-table mt-3">
@@ -78,13 +73,14 @@
                                         <th>Số nước</th>
                                         <th class="d-none d-md-table-cell">Cập nhật lúc</th>
                                         <th>Trạng thái</th>
+                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <c:choose>
                                         <c:when test="${empty meterList}">
                                             <tr>
-                                                <td colspan="5" class="text-center py-4">Không có dữ liệu hiển thị.</td>
+                                                <td colspan="6" class="text-center py-4">Không có dữ liệu hiển thị.</td>
                                             </tr>
                                         </c:when>
                                         <c:otherwise>
@@ -125,6 +121,15 @@
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
+                                                    <td>
+                                                        <c:if test="${item.status != 'DA_CAP_NHAT'}">
+                                                            <a href="${pageContext.request.contextPath}/operator/meter-readings/update?roomCode=${item.roomCode}"
+                                                               class="btn-mintlify-primary btn-sm px-3 py-1 text-decoration-none"
+                                                               style="font-size:13px; display:inline-flex; align-items:center;">
+                                                                Cập nhật
+                                                            </a>
+                                                        </c:if>
+                                                    </td>
                                                 </tr>
                                             </c:forEach>
                                         </c:otherwise>
@@ -133,6 +138,7 @@
                             </table>
                         </div>
                     </div>
+
             </main>
             <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
         </div>

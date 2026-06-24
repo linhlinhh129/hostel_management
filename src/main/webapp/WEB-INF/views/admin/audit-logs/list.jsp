@@ -1,6 +1,7 @@
 ﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"  %>
+<%@ taglib prefix="fn"  uri="jakarta.tags.functions" %>
 <c:set var="ctx"       value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Nhật ký kiểm tra - Admin"/>
 <c:set var="pageRole"  value="ADMIN"/>
@@ -16,17 +17,32 @@
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
             <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-                <h1>Nhật ký kiểm tra</h1>
-                <p>Toàn bộ hoạt động thao tác trong hệ thống</p>
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Nhật ký kiểm tra</h1>
+                        <p>Hoạt động thao tác của Manager và Operator</p>
+                    </div>
+                    <a href="${ctx}/admin/audit-logs" class="quick-action-btn" style="position:relative;z-index:1">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        </svg>
+                        Làm mới
+                    </a>
+                </div>
             </div>
 
             <div class="data-surface">
                 <!-- Filter bar -->
                 <form class="filter-bar" method="get" action="${ctx}/admin/audit-logs">
                     <input type="text" class="form-control" name="actor"
-                           placeholder="Người thực hiện..."
+                           placeholder="Tên người thực hiện..."
                            value="<c:out value='${filterActor}'/>"
                            style="max-width:200px">
+                    <select class="form-select" name="role" style="max-width:150px">
+                        <option value="">Vai trò</option>
+                        <option value="MANAGER"  ${filterRole == 'MANAGER'  ? 'selected' : ''}>Manager</option>
+                        <option value="OPERATOR" ${filterRole == 'OPERATOR' ? 'selected' : ''}>Operator</option>
+                    </select>
                     <select class="form-select" name="entityType" style="max-width:160px">
                         <option value="">Chức năng</option>
                         <option value="facilities"     ${filterEntityType == 'facilities'     ? 'selected' : ''}>Cơ sở</option>
@@ -66,15 +82,14 @@
                                     <th>Log ID</th>
                                     <th>Thời gian</th>
                                     <th>Người thực hiện</th>
-                                    <th>Chức năng</th>
-                                    <th>Hành động</th>
                                     <th>Đối tượng</th>
+                                    <th>Hành động</th>
                                     <th>Chi tiết</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <c:forEach var="log" items="${auditLogs}">
-                                    <tr>
+                                    <tr data-href="${ctx}/admin/audit-logs/${log.id}">
                                         <td>
                                             <a href="${ctx}/admin/audit-logs/${log.id}"
                                                style="font-family:var(--hms-font-mono);font-size:0.75rem;font-weight:700">
@@ -82,7 +97,11 @@
                                             </a>
                                         </td>
                                         <td style="white-space:nowrap;font-size:0.8125rem;color:var(--hms-text-muted)">
-                                            <c:out value="${log.createdAt}"/>
+                                            <c:if test="${not empty log.createdAt}">
+                                                <span>${fn:substring(log.createdAt, 8, 10)}/${fn:substring(log.createdAt, 5, 7)}/${fn:substring(log.createdAt, 0, 4)}</span>
+                                                <br/>
+                                                <span style="font-size:0.75rem">${fn:substring(log.createdAt, 11, 16)}</span>
+                                            </c:if>
                                         </td>
                                         <td>
                                             <div style="display:flex;align-items:center;gap:8px">
@@ -91,42 +110,72 @@
                                                             display:flex;align-items:center;justify-content:center;
                                                             color:#fff;font-size:0.625rem;font-weight:700;flex-shrink:0">
                                                     <c:choose>
-                                                        <c:when test="${not empty log.createdBy}">${log.createdBy}</c:when>
+                                                        <c:when test="${not empty log.createdByName}">${log.createdByName.charAt(0)}</c:when>
                                                         <c:otherwise>S</c:otherwise>
                                                     </c:choose>
                                                 </div>
                                                 <span style="font-size:0.8125rem;font-weight:500">
-                                                    <c:out value="${log.createdBy}"/>
+                                                    <c:out value="${log.createdByName}"/>
                                                 </span>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge-hms badge-neutral" style="font-family:var(--hms-font-mono);font-size:0.6875rem">
-                                                <c:out value="${log.entityType}"/>
-                                            </span>
+                                            <c:choose>
+                                                <c:when test="${not empty log.entityName}">
+                                                    <span style="font-size:0.8125rem;font-weight:600;
+                                                                 color:var(--hms-text)">
+                                                        <c:out value="${log.entityName}"/>
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span style="font-size:0.8125rem;color:var(--hms-text-muted)">
+                                                        ID: <c:out value="${log.entityId}"/>
+                                                    </span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                         <td>
                                             <c:choose>
                                                 <c:when test="${log.action == 'CREATE' or log.action == 'CREATE_EMPLOYEE'}">
-                                                    <span class="badge-hms badge-success"><c:out value="${log.action}"/></span>
+                                                    <span class="badge-hms badge-success">
+                                                        <c:choose>
+                                                            <c:when test="${log.action == 'CREATE'}">Tạo mới</c:when>
+                                                            <c:otherwise>Tạo nhân sự</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
                                                 </c:when>
-                                                <c:when test="${log.action == 'DELETE' or log.action == 'LOCK_EMPLOYEE' or log.action == 'DEACTIVATE'}">
-                                                    <span class="badge-hms badge-danger"><c:out value="${log.action}"/></span>
+                                                <c:when test="${log.action == 'DELETE' or log.action == 'LOCK_EMPLOYEE' or log.action == 'DEACTIVATE' or log.action == 'DELETE_EMPLOYEE'}">
+                                                    <span class="badge-hms badge-danger">
+                                                        <c:choose>
+                                                            <c:when test="${log.action == 'DELETE'}">Xóa</c:when>
+                                                            <c:when test="${log.action == 'DELETE_EMPLOYEE'}">Xóa nhân sự</c:when>
+                                                            <c:when test="${log.action == 'LOCK_EMPLOYEE'}">Khóa tài khoản</c:when>
+                                                            <c:otherwise>Vô hiệu hóa</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
                                                 </c:when>
-                                                <c:when test="${log.action == 'UPDATE' or log.action == 'UPDATE_STATUS' or log.action == 'UPDATE_AREA'}">
-                                                    <span class="badge-hms badge-info"><c:out value="${log.action}"/></span>
+                                                <c:when test="${log.action == 'UPDATE' or log.action == 'UPDATE_STATUS' or log.action == 'UPDATE_AREA' or log.action == 'UPDATE_EMPLOYEE'}">
+                                                    <span class="badge-hms badge-info">
+                                                        <c:choose>
+                                                            <c:when test="${log.action == 'UPDATE'}">Cập nhật</c:when>
+                                                            <c:when test="${log.action == 'UPDATE_STATUS'}">Đổi trạng thái</c:when>
+                                                            <c:when test="${log.action == 'UPDATE_AREA'}">Cập nhật diện tích</c:when>
+                                                            <c:otherwise>Sửa nhân sự</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
                                                 </c:when>
                                                 <c:when test="${log.action == 'ACTIVATE' or log.action == 'UNLOCK_EMPLOYEE'}">
-                                                    <span class="badge-hms badge-accent"><c:out value="${log.action}"/></span>
+                                                    <span class="badge-hms badge-accent">
+                                                        <c:choose>
+                                                            <c:when test="${log.action == 'ACTIVATE'}">Kích hoạt</c:when>
+                                                            <c:otherwise>Mở khóa</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <span class="badge-hms badge-neutral"><c:out value="${log.action}"/></span>
                                                 </c:otherwise>
                                             </c:choose>
-                                        </td>
-                                        <td style="font-size:0.8125rem;max-width:180px;
-                                                   overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                                            <c:out value="${log.newValue}"/>
                                         </td>
                                         <td>
                                             <a href="${ctx}/admin/audit-logs/${log.id}"
@@ -145,11 +194,11 @@
                             <span>Hiển thị <fmt:formatNumber value="${auditLogs.size()}" groupingUsed="true"/> mục</span>
                             <div class="d-flex gap-1">
                                 <c:if test="${currentPage > 1}">
-                                    <a href="${ctx}/admin/audit-logs?page=${currentPage - 1}&actor=${filterActor}&action=${filterAction}"
+                                    <a href="${ctx}/admin/audit-logs?page=${currentPage - 1}&actor=${filterActor}&action=${filterAction}&role=${filterRole}&entityType=${filterEntityType}&dateFrom=${filterDateFrom}&dateTo=${filterDateTo}"
                                        class="btn-mintlify-secondary text-decoration-none" style="padding:5px 12px">Trước</a>
                                 </c:if>
                                 <c:if test="${hasNextPage}">
-                                    <a href="${ctx}/admin/audit-logs?page=${currentPage + 1}&actor=${filterActor}&action=${filterAction}"
+                                    <a href="${ctx}/admin/audit-logs?page=${currentPage + 1}&actor=${filterActor}&action=${filterAction}&role=${filterRole}&entityType=${filterEntityType}&dateFrom=${filterDateFrom}&dateTo=${filterDateTo}"
                                        class="btn-mintlify-secondary text-decoration-none" style="padding:5px 12px">Sau</a>
                                 </c:if>
                             </div>

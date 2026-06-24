@@ -7,13 +7,14 @@
 ### 3.2 Tạo thông báo
 
 * `BR-NM-02` Tiêu đề là bắt buộc.
-* `BR-NM-03` Nội dung là bắt buộc, tối đa 5000 ký tự.
+* `BR-NM-03` Nội dung là bắt buộc, tối đa 1000 ký tự.
 * `BR-NM-04` Đối tượng nhận là bắt buộc → lỗi `RECIPIENT_REQUIRED`.
 * `BR-NM-05` Hỗ trợ 1 loại người nhận: `ALL`
 
 ### 3.3 Gửi thông báo
 
 * `BR-NM-06` ALL → gửi toàn bộ cư dân.
+* `BR-NM-07` User nhận thông báo phải có status = ACTIVE.
 
 ### 3.4 Tính bất biến
 

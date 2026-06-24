@@ -14,23 +14,23 @@ Tính năng này giúp ban quản lý truyền tải thông tin nhanh chóng, đ
 
 ### Story 1 (Happy Path)
 
-As an Admin, I want to create a notification so that I can send information to users.
+Là Admin, tôi muốn tạo thông báo để gửi thông tin đến người dùng.
 
 ### Story 2 (Happy Path)
 
-As an Admin, I want to view the notification list so that I can track previously created notifications.
+Là Admin, tôi muốn xem danh sách thông báo để theo dõi các thông báo đã tạo trước đó.
 
 ### Story 3 (Happy Path)
 
-As an Admin, I want to view notification details so that I can review the content and recipient information.
+Là Admin, tôi muốn xem chi tiết thông báo để xem lại nội dung và thông tin người nhận.
 
 ### Story 4 (Edge Case)
 
-As an Admin, when no notification matches the search criteria, I want the system to return an empty result.
+Là Admin, khi không có thông báo nào khớp với tiêu chí tìm kiếm, tôi muốn hệ thống trả về kết quả rỗng.
 
 ### Story 5 (Edge Case)
 
-As an Admin, when creating a notification with missing required information, I want the system to display validation errors.
+Là Admin, khi tạo thông báo thiếu thông tin bắt buộc, tôi muốn hệ thống hiển thị lỗi xác thực.
 
 ## 3. Acceptance Criteria (EARS)
 
@@ -48,8 +48,14 @@ THE SYSTEM SHALL trả về lỗi VALIDATION_ERROR.
 WHEN Admin chọn đối tượng nhận khác "ALL" 
 THE SYSTEM SHALL trả về lỗi VALIDATION_ERROR.
 
-WHEN hệ thống không có cư dân đang hoạt động 
+WHEN hệ thống không có user đang hoạt động 
 THE SYSTEM SHALL trả về lỗi NO_RECIPIENT_FOUND.
+
+WHEN tiêu đề vượt quá 255 ký tự
+THE SYSTEM SHALL trả về lỗi TITLE_TOO_LONG.
+
+WHEN nội dung thông báo vượt quá 1000 ký tự
+THE SYSTEM SHALL trả về lỗi CONTENT_TOO_LONG.
 
 ### 3.2 Danh sách thông báo
 
@@ -82,16 +88,21 @@ THE SYSTEM SHALL hiển thị tối thiểu các thông tin sau:
 WHEN Admin truy cập thông báo không tồn tại
 THE SYSTEM SHALL trả về lỗi NOTIFICATION_NOT_FOUND.
 
-### 3.4 Phân quyền
+### 3.4 Tìm kiếm thông báo
+
+WHEN Admin tìm kiếm theo từ khóa tiêu đề thông báo
+THE SYSTEM SHALL trả về danh sách thông báo có tiêu đề chứa từ khóa được nhập.
+
+### 3.5 Phân quyền
 
 WHILE người dùng không có quyền quản lý thông báo
 THE SYSTEM SHALL từ chối truy cập chức năng quản lý thông báo.
 
-WHILE người dùng không có quyền tạo thông báo
-THE SYSTEM SHALL không cho phép thực hiện thao tác tạo thông báo.
+WHILE người dùng chưa được xác thực
+THE SYSTEM SHALL trả về lỗi UNAUTHORIZED.
 
-WHILE người dùng không có quyền xem thông báo
-THE SYSTEM SHALL không cho phép truy cập danh sách và chi tiết thông báo.
+WHILE người dùng đã được xác thực nhưng không có quyền quản lý thông báo
+THE SYSTEM SHALL trả về lỗi FORBIDDEN.
 
 ## 4. API Contract
 
@@ -109,7 +120,7 @@ Request
 {
   "title": "Thông báo bảo trì thang máy",
   "content": "Thang máy A sẽ bảo trì từ 08:00 đến 12:00 ngày 01/01/2026.",
-  "recipientType": "ALL",
+  "recipientType": "ALL"
 }
 ```
 
@@ -120,6 +131,7 @@ Response 201
   "success": true,
   "data": {
     "id": 1,
+    "code": "NOTI000001",
     "title": "Thông báo bảo trì thang máy"
   }
 }
@@ -137,6 +149,36 @@ Response 400
 }
 ```
 
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TITLE_TOO_LONG",
+    "message": "Tiêu đề không được vượt quá 255 ký tự"
+  }
+}
+```
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "CONTENT_TOO_LONG",
+    "message": "Nội dung không được vượt quá 1000 ký tự"
+  }
+}
+```
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NO_RECIPIENT_FOUND",
+    "message": "Không có người nhận hợp lệ"
+  }
+}
+```
+
 Response 401
 
 ```json
@@ -144,7 +186,19 @@ Response 401
   "success": false,
   "error": {
     "code": "UNAUTHORIZED",
-    "message": "Không có quyền truy cập"
+    "message": "Vui lòng đăng nhập để tiếp tục"
+  }
+}
+```
+
+Response 403
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Bạn không có quyền truy cập chức năng này"
   }
 }
 ```
@@ -159,13 +213,11 @@ GET /api/v1/notifications
 
 Query Parameters
 
-```json
-{
-  "keyword": "bảo trì",
-  "page": 1,
-  "size": 10
-}
-```
+| Tham số | Kiểu | Bắt buộc | Mô tả |
+|---------|------|----------|-------|
+| keyword | string | Không | Tìm kiếm theo tiêu đề |
+| page | number | Không | Số trang (0-based, mặc định 0) |
+| size | number | Không | Số bản ghi/trang (mặc định 10) |
 
 Response 200
 
@@ -173,10 +225,35 @@ Response 200
 {
   "success": true,
   "data": {
-    "items": [],
-    "page": 1,
+    "items": [
+      {
+        "id": 1,
+        "code": "NOTI000001",
+        "title": "Thông báo bảo trì thang máy",
+        "recipientType": "ALL",
+        "createdAt": "2026-01-01T08:00:00",
+        "createdBy": "Admin"
+      }
+    ],
+    "page": 0,
     "size": 10,
-    "total": 0
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
+Response 200 (không có dữ liệu)
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [],
+    "page": 0,
+    "size": 10,
+    "totalElements": 0,
+    "totalPages": 0
   }
 }
 ```
@@ -196,10 +273,35 @@ Response 200
   "success": true,
   "data": {
     "id": 1,
+    "code": "NOTI000001",
     "title": "Thông báo bảo trì thang máy",
     "content": "Nội dung thông báo",
     "createdAt": "2026-01-01T08:00:00",
-    "createdBy": "Admin"
+    "createdBy": "Admin",
+    "recipientType": "ALL"
+  }
+}
+```
+Response 401
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Vui lòng đăng nhập để tiếp tục"
+  }
+}
+```
+
+Response 403
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Bạn không có quyền truy cập chức năng này"
   }
 }
 ```
@@ -228,15 +330,9 @@ Ghi nhận Audit Log cho thao tác tạo và xem thông báo
 
 Chỉ người dùng được phân quyền mới được truy cập API
 
-Nội dung thông báo hỗ trợ tối đa 5000 ký tự
+Nội dung thông báo hỗ trợ tối đa 1000 ký tự
 
-## 6. Dependencies
-
-### Quản lý Cơ sở
-
-Dùng để xác định danh sách cư dân theo cơ sở nhận thông báo.
-
-## 7. Out of Scope
+## 6. Out of Scope
 
 * Chỉnh sửa thông báo sau khi tạo
 * Hủy hoặc xóa thông báo

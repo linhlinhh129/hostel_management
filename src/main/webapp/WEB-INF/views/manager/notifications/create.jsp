@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -78,7 +78,7 @@
             <select class="form-select" id="facilityRecipient" name="recipientId_facility">
               <option value="">-- Chọn cơ sở --</option>
               <c:forEach var="facility" items="${assignedFacilities}">
-                <option value="${facility.id}" ${dto.recipientId == facility.id ? 'selected' : ''}>
+                <option value="${facility.id}" ${dto.recipientId == facility.id or dto.facilityId == facility.id ? 'selected' : ''}>
                   <c:out value="${facility.code}"/> — <c:out value="${facility.name}"/>
                 </option>
               </c:forEach>
@@ -86,10 +86,25 @@
           </div>
 
           <div class="mb-3" id="roomGroup" style="display:none">
-            <label for="roomRecipient" class="form-label">ID Phòng <span class="text-danger">*</span></label>
-            <input type="number" class="form-control" id="roomRecipient" name="recipientId_room"
-                   min="1" placeholder="Nhập ID phòng"
-                   value="${dto.recipientType == 'ROOM' ? dto.recipientId : ''}">
+            <label for="facilityForRoom" class="form-label">Chọn cơ sở của phòng <span class="text-danger">*</span></label>
+            <select class="form-select mb-2" id="facilityForRoom" name="facilityId_for_room" onchange="filterRoomsByFacility(this.value)">
+              <option value="">-- Chọn cơ sở --</option>
+              <c:forEach var="facility" items="${assignedFacilities}">
+                <option value="${facility.id}" ${dto.facilityId == facility.id ? 'selected' : ''}>
+                  <c:out value="${facility.code}"/> — <c:out value="${facility.name}"/>
+                </option>
+              </c:forEach>
+            </select>
+
+            <label for="roomRecipient" class="form-label">Chọn phòng <span class="text-danger">*</span></label>
+            <select class="form-select" id="roomRecipient" name="recipientId_room">
+              <option value="">-- Chọn phòng --</option>
+              <c:forEach var="room" items="${assignedRooms}">
+                <option value="${room.id}" data-facility="${room.facilityId}" ${dto.recipientId == room.id ? 'selected' : ''}>
+                  <c:out value="${room.code}"/>
+                </option>
+              </c:forEach>
+            </select>
           </div>
 
           <%-- Hidden field để submit recipientId đúng giá trị --%>
@@ -115,17 +130,53 @@
 
 <script>
   (function () {
+    var originalRoomOptions = [];
+    var roomSelect = document.getElementById('roomRecipient');
+    if (roomSelect) {
+      for (var i = 0; i < roomSelect.options.length; i++) {
+        var opt = roomSelect.options[i];
+        if (opt.value !== "") {
+          originalRoomOptions.push({
+            value: opt.value,
+            text: opt.text,
+            facilityId: opt.getAttribute('data-facility'),
+            selected: opt.selected
+          });
+        }
+      }
+    }
+
+    function filterRoomsByFacility(facilityId) {
+      var roomSelect = document.getElementById('roomRecipient');
+      if (!roomSelect) return;
+      
+      // Clear all except first option
+      roomSelect.options.length = 1;
+      document.getElementById('recipientIdField').value = "";
+
+      for (var i = 0; i < originalRoomOptions.length; i++) {
+        var optData = originalRoomOptions[i];
+        if (optData.facilityId == facilityId) {
+          var newOpt = new Option(optData.text, optData.value);
+          newOpt.setAttribute('data-facility', optData.facilityId);
+          roomSelect.add(newOpt);
+        }
+      }
+    }
+
     function toggleRecipientInput(type) {
       var facilityGroup = document.getElementById('facilityGroup');
       var roomGroup = document.getElementById('roomGroup');
       var facilitySelect = document.getElementById('facilityRecipient');
-      var roomInput = document.getElementById('roomRecipient');
+      var facilityForRoom = document.getElementById('facilityForRoom');
+      var roomSelect = document.getElementById('roomRecipient');
       var hiddenField = document.getElementById('recipientIdField');
 
       facilityGroup.style.display = 'none';
       roomGroup.style.display = 'none';
       facilitySelect.removeAttribute('required');
-      roomInput.removeAttribute('required');
+      facilityForRoom.removeAttribute('required');
+      roomSelect.removeAttribute('required');
 
       if (type === 'FACILITY') {
         facilityGroup.style.display = '';
@@ -133,8 +184,9 @@
         hiddenField.value = facilitySelect.value;
       } else if (type === 'ROOM') {
         roomGroup.style.display = '';
-        roomInput.setAttribute('required', 'required');
-        hiddenField.value = roomInput.value;
+        facilityForRoom.setAttribute('required', 'required');
+        roomSelect.setAttribute('required', 'required');
+        hiddenField.value = roomSelect.value;
       }
     }
 
@@ -142,17 +194,29 @@
     document.getElementById('facilityRecipient').addEventListener('change', function () {
       document.getElementById('recipientIdField').value = this.value;
     });
-    document.getElementById('roomRecipient').addEventListener('input', function () {
+    document.getElementById('roomRecipient').addEventListener('change', function () {
       document.getElementById('recipientIdField').value = this.value;
     });
 
     // Initialize on page load
     var sel = document.getElementById('recipientType');
     toggleRecipientInput(sel.value);
-    sel.addEventListener('change', function () { toggleRecipientInput(this.value); });
+    
+    // Trigger filtering if facility for room was already selected on page load
+    var facForRoom = document.getElementById('facilityForRoom');
+    if (facForRoom && facForRoom.value !== "") {
+      filterRoomsByFacility(facForRoom.value);
+      // Restore selected room value
+      var prevRoomId = "${dto.recipientId}";
+      if (prevRoomId) {
+        roomSelect.value = prevRoomId;
+        document.getElementById('recipientIdField').value = prevRoomId;
+      }
+    }
 
-    // Expose for onchange attribute fallback
+    // Expose functions
     window.toggleRecipientInput = toggleRecipientInput;
+    window.filterRoomsByFacility = filterRoomsByFacility;
   })();
 </script>
 

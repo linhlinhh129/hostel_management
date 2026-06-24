@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -21,7 +21,25 @@
       </div>
 
       <div class="data-surface">
+        <ul class="nav nav-tabs mb-3" id="ticketFlowTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a class="nav-link ${filterType == 'TENANT' ? 'active' : ''}" 
+               href="${ctx}/manager/tickets?type=TENANT&status=${filterStatus}&keyword=${keyword}" 
+               style="font-weight: 600; color: ${filterType == 'TENANT' ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+              Yêu cầu cư dân
+            </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link ${filterType == 'OPERATOR' ? 'active' : ''}" 
+               href="${ctx}/manager/tickets?type=OPERATOR&status=${filterStatus}&keyword=${keyword}" 
+               style="font-weight: 600; color: ${filterType == 'OPERATOR' ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+              Báo cáo sự cố của trọ
+            </a>
+          </li>
+        </ul>
+
         <form class="filter-bar" method="get" action="${ctx}/manager/tickets">
+          <input type="hidden" name="type" value="${filterType}"/>
           <select class="form-select" name="status">
             <option value="">Tất cả trạng thái</option>
             <option value="NEW"         ${filterStatus == 'NEW'         ? 'selected' : ''}>Mới</option>
@@ -35,7 +53,7 @@
                  placeholder="Tiêu đề / mã yêu cầu..."
                  value="<c:out value='${keyword}'/>">
           <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-          <a href="${ctx}/manager/tickets" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+          <a href="${ctx}/manager/tickets?type=${filterType}" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
         </form>
 
         <c:choose>
@@ -57,7 +75,7 @@
                 </thead>
                 <tbody>
                   <c:forEach var="ticket" items="${page.items}">
-                    <tr>
+                    <tr data-href="${ctx}/manager/tickets/${ticket.id}">
                       <td>
                         <a href="${ctx}/manager/tickets/${ticket.id}" style="font-family:monospace;font-size:0.8125rem">
                           <c:out value="${ticket.code}"/>
@@ -123,11 +141,11 @@
               </span>
               <div class="d-flex gap-1">
                 <c:if test="${page.page > 1}">
-                  <a href="${ctx}/manager/tickets?page=${page.page - 1}&status=${filterStatus}&keyword=${keyword}"
+                  <a href="${ctx}/manager/tickets?page=${page.page - 1}&status=${filterStatus}&keyword=${keyword}&type=${filterType}"
                      class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Trước</a>
                 </c:if>
                 <c:if test="${page.page < page.totalPages}">
-                  <a href="${ctx}/manager/tickets?page=${page.page + 1}&status=${filterStatus}&keyword=${keyword}"
+                  <a href="${ctx}/manager/tickets?page=${page.page + 1}&status=${filterStatus}&keyword=${keyword}&type=${filterType}"
                      class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau</a>
                 </c:if>
               </div>

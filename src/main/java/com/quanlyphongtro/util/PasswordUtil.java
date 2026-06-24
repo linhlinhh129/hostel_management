@@ -46,6 +46,10 @@ public final class PasswordUtil {
      */
     public static boolean verify(String plainPassword, String hashed) {
         if (plainPassword == null || hashed == null) return false;
-        return BCrypt.checkpw(plainPassword, hashed);
+        try {
+            return BCrypt.checkpw(plainPassword, hashed);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

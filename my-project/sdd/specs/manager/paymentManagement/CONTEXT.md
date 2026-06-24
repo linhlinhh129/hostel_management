@@ -1,58 +1,197 @@
-# Người viết: Bùi Đỉnh | Ngày: 2026-06-13
+# Quản lý thanh toán
+
+# Người viết: @BuiDinh | Ngày: 2026-06-21
 
 ## 1. PROBLEM STATEMENT
-<!-- Vấn đề thực sự là gì? User đang bị đau ở đâu? -->
-<!-- Tránh solution thinking ở bước này. Chỉ mô tả pain. -->
 
-Trong công tác quản lý tài chính nhà trọ, Ban quản lý gặp nhiều khó khăn và "nỗi đau" lớn trong việc xác thực dòng tiền:
-- **Rủi ro thất thoát tài chính và gian lận:** Người thuê thực hiện chuyển khoản tự do nhưng Ban quản lý không có công cụ tập trung để đối soát[cite: 8]. Nếu không có bằng chứng đối chiếu rõ ràng (ảnh chụp màn hình giao dịch), rất dễ xảy ra tình trạng người thuê báo ảo hoặc nhầm lẫn giữa các phòng[cite: 8].
-- **Cập nhật dữ liệu thủ công, chậm trễ:** Khi người thuê đã đóng tiền, trạng thái công nợ không được cập nhật kịp thời, dẫn đến việc Ban quản lý tiếp tục giục nợ nhầm, gây phiền hà cho cư dân và làm giảm tính chuyên nghiệp[cite: 8].
-- **Thiếu minh bạch và dấu vết kiểm toán:** Quá trình xác nhận thu tiền nội bộ nếu chỉ trao đổi miệng hoặc qua chat group sẽ không lưu lại được ai là người đã duyệt, duyệt vào thời gian nào, gây khó khăn khi xảy ra thất thoát hoặc cần đối chiếu số liệu[cite: 8].
+Trong quá trình thuê phòng, người thuê cần thanh toán nhiều khoản chi phí như tiền thuê phòng, tiền điện, tiền nước, phí dịch vụ và các khoản phát sinh khác. Nếu việc ghi nhận thanh toán không rõ ràng hoặc phụ thuộc vào kiểm tra thủ công, Ban quản lý dễ gặp tình trạng khó xác định giao dịch nào đã thanh toán, giao dịch nào còn chờ duyệt và khoản công nợ nào cần được cập nhật.
+
+Nỗi đau chính của Ban quản lý là cần kiểm tra bằng chứng thanh toán từ người thuê trước khi xác nhận giao dịch. Nếu ảnh xác nhận thanh toán bị thiếu, sai hoặc không được kiểm tra đúng, hệ thống có thể ghi nhận sai trạng thái thanh toán, làm lệch công nợ và ảnh hưởng đến quản lý dòng tiền.
+
+Người thuê cũng bị ảnh hưởng nếu giao dịch đã chuyển khoản nhưng chưa được duyệt kịp thời hoặc bị ghi nhận sai. Điều này có thể dẫn đến việc công nợ vẫn hiển thị chưa thanh toán, gây nhầm lẫn và phát sinh khiếu nại.
+
+Vì vậy, vấn đề cốt lõi của feature này là đảm bảo các giao dịch thanh toán được theo dõi, kiểm tra và xác nhận một cách chính xác, có bằng chứng rõ ràng và có trách nhiệm ghi nhận từ người duyệt.
 
 ## 2. DOMAIN KNOWLEDGE
-<!-- Các thuật ngữ domain-specific mà AI cần biết -->
-<!-- Ví dụ: "invoice" trong hệ thống này nghĩa là gì? -->
-<!-- Các quy tắc nghiệp vụ bất thành văn -->
 
-- **Giao dịch thanh toán (Payment Transaction):** Bản ghi ghi nhận một lần nộp tiền của người thuê phòng cho một hoặc nhiều khoản chi phí trong hệ thống[cite: 8].
-- **Ảnh xác nhận thanh toán (Payment Proof Image):** Bằng chứng chuyển khoản (thường là ảnh chụp màn hình bill ngân hàng) do người thuê tải lên để chứng minh đã thanh toán[cite: 8]. Đây là điều kiện tiên quyết, bắt buộc phải tồn tại để Ban quản lý tiến hành duyệt[cite: 8].
-- **Trạng thái giao dịch:**
-  - `PENDING`: Giao dịch mới được tạo, đang chờ Ban quản lý kiểm tra bill và phê duyệt[cite: 8].
-  - `PAID`: Giao dịch đã được Ban quản lý xác nhận khớp tiền thành công[cite: 8].
-- **Nguyên tắc đồng bộ công nợ:** Một quy tắc nghiệp vụ cốt lõi của module này: Ngay khi giao dịch thanh toán được chuyển sang trạng thái `PAID`, hệ thống bắt buộc phải tự động cập nhật trạng thái của khoản công nợ (Debt) liên quan sang `PAID`[cite: 8].
-- **Tính đóng đóng của giao dịch:** Giao dịch một khi đã được duyệt (`PAID`) thì không được phép chỉnh sửa, hủy bỏ hoặc thay đổi ảnh xác nhận[cite: 8].
+- `payment transaction` / giao dịch thanh toán: bản ghi thể hiện một lần người thuê thực hiện thanh toán cho khoản công nợ hoặc chi phí liên quan.
+
+- `transactionId`: mã định danh duy nhất của giao dịch, có thể dùng dạng UUID.
+
+- `transactionCode`: mã giao dịch hiển thị cho người dùng, ví dụ `PAY001`.
+
+- `tenant`: người thuê phòng, là người thực hiện thanh toán hoặc có khoản công nợ cần thanh toán.
+
+- `roomCode`: mã phòng liên quan đến giao dịch thanh toán.
+
+- `payment amount`: số tiền người thuê đã thanh toán.
+
+- `payment date`: ngày người thuê thực hiện thanh toán hoặc ngày hệ thống ghi nhận giao dịch.
+
+- `payment method`: phương thức thanh toán, ví dụ chuyển khoản.
+
+- `payment proof image` / ảnh xác nhận thanh toán: ảnh bằng chứng người thuê tải lên sau khi chuyển khoản.
+
+- `payment status`: trạng thái giao dịch thanh toán.
+
+  - `PENDING`: giao dịch đang chờ Ban quản lý kiểm tra và duyệt.
+
+  - `PAID`: giao dịch đã được Ban quản lý xác nhận thanh toán thành công.
+
+- `debt` / công nợ: khoản tiền người thuê cần thanh toán. Khi giao dịch được duyệt thành công, công nợ liên quan cần được cập nhật trạng thái tương ứng.
+
+- `approvedAt`: thời điểm Ban quản lý duyệt giao dịch thanh toán.
+
+- `approvedBy`: người duyệt giao dịch thanh toán.
+
+- Audit Log: lịch sử ghi lại thao tác duyệt thanh toán để phục vụ kiểm tra trách nhiệm và đối soát sau này.
 
 ## 3. STAKEHOLDERS
-<!-- Ai được lợi? Ai chịu ảnh hưởng? Ai có quyền quyết định? -->
 
-- **Ban quản lý (Management Board):** Người vận hành và có toàn quyền kiểm tra danh sách, đối chiếu ảnh xác nhận và ra quyết định duyệt giao dịch trên hệ thống[cite: 8].
-- **Người thuê phòng (Tenants):** Người chịu ảnh hưởng trực tiếp (cần tải ảnh chứng minh và chờ Ban quản lý duyệt để được xóa nợ)[cite: 8].
-- **Kế toán / Chủ nhà trọ:** Người được lợi từ luồng dữ liệu minh bạch, có Audit Log rõ ràng để kiểm soát dòng tiền[cite: 8].
+- Ban quản lý / Management Board:
+
+  - Người dùng chính của feature.
+
+  - Cần xem danh sách giao dịch, xem chi tiết giao dịch, kiểm tra ảnh xác nhận và duyệt thanh toán.
+
+  - Chịu trách nhiệm đảm bảo giao dịch được ghi nhận chính xác.
+
+- Người thuê:
+
+  - Người thực hiện thanh toán và tải lên ảnh xác nhận thanh toán.
+
+  - Bị ảnh hưởng trực tiếp nếu giao dịch bị duyệt sai, duyệt chậm hoặc công nợ không được cập nhật.
+
+- Bộ phận tài chính / kế toán nếu có:
+
+  - Cần dữ liệu thanh toán chính xác để theo dõi dòng tiền, công nợ và đối soát.
+
+- Quản trị hệ thống / kỹ thuật:
+
+  - Đảm bảo phân quyền, xác thực, lưu trữ ảnh xác nhận, cập nhật trạng thái và audit log hoạt động đúng.
+
+- Người có quyền quyết định nghiệp vụ:
+
+  - Ban quản lý hoặc chủ nhà trọ.
+
+  - Cần xác nhận quy trình duyệt thanh toán, tiêu chí ảnh hợp lệ và cách cập nhật công nợ.
 
 ## 4. CONSTRAINTS (ràng buộc không thể thay đổi)
-<!-- Tech: "Phải dùng PostgreSQL vì infrastructure hiện tại" -->
-<!-- Business: "Phải comply với Thông tư 06/2023/TT-NHNN" -->
-<!-- Time: "Phải live trước 30/06" -->
 
-- **Ràng buộc phân quyền tài chính:** Chức năng này **chỉ** dành riêng cho vai trò `Management Board`[cite: 8]. Hệ thống bắt buộc từ chối thao tác và trả về `401` (chưa đăng nhập) hoặc `403` (sai role) ở tầng Backend[cite: 8].
-- **Ràng buộc trạng thái duyệt:** Hệ thống chỉ cho phép duyệt (`approve`) đối với các giao dịch đang ở trạng thái `PENDING`[cite: 8]. Nếu giao dịch đã duyệt rồi, bắt buộc phải chặn và trả về lỗi `PAYMENT_ALREADY_APPROVED`[cite: 8].
-- **Ràng buộc toàn vẹn dữ liệu (Data Integrity):** Mỗi giao dịch bắt buộc phải liên kết trực tiếp với một khoản công nợ hợp lệ và một người thuê hợp lệ tồn tại trong hệ thống[cite: 8].
-- **Hiệu năng hệ thống (Performance p95):**
-  - API lấy danh sách giao dịch và API duyệt giao dịch phải phản hồi < 1 giây[cite: 8].
-  - API xem chi tiết giao dịch (chứa link ảnh proof) phải phản hồi < 500ms[cite: 8].
-- **An toàn hệ thống:** Áp dụng Rate limit chặt chẽ ở mức 100 requests/phút/người dùng[cite: 8].
+- Feature này chỉ dành cho `Management Board`.
+
+- Tất cả API phải yêu cầu Authentication Token.
+
+- Chỉ `Management Board` được xem và duyệt giao dịch thanh toán.
+
+- Mỗi giao dịch phải liên kết với một khoản công nợ hợp lệ.
+
+- Mỗi giao dịch phải có một người thuê hợp lệ.
+
+- Ảnh xác nhận thanh toán phải được lưu trữ trước khi giao dịch được duyệt.
+
+- Chỉ các giao dịch ở trạng thái `PENDING` mới được phép duyệt.
+
+- Sau khi duyệt thành công, trạng thái giao dịch phải chuyển sang `PAID`.
+
+- Sau khi duyệt thành công, trạng thái công nợ liên quan phải được cập nhật thành `PAID`.
+
+- Hệ thống phải lưu `createdAt`, `createdBy`, `approvedAt`, `approvedBy`.
+
+- Tất cả thao tác duyệt thanh toán phải được ghi Audit Log.
+
+- API lấy danh sách giao dịch phải phản hồi dưới 1 giây ở p95.
+
+- API xem chi tiết giao dịch phải phản hồi dưới 500ms ở p95.
+
+- API duyệt giao dịch phải phản hồi dưới 1 giây ở p95.
+
+- Rate limit là 100 requests/phút/user.
+
+- Chưa tích hợp cổng thanh toán trực tuyến.
+
+- Chưa có thanh toán tự động qua ngân hàng.
+
+- Chưa hỗ trợ hoàn tiền.
+
+- Chưa hỗ trợ hủy giao dịch đã duyệt.
+
+- Chưa hỗ trợ chỉnh sửa ảnh xác nhận thanh toán.
+
+- Chưa hỗ trợ OCR đọc nội dung ảnh chuyển khoản.
+
+- Chưa hỗ trợ đối soát ngân hàng tự động.
+
+- Chưa gửi email hoặc SMS xác nhận thanh toán.
+
+- Chưa dùng AI để kiểm tra tính hợp lệ của ảnh chuyển khoản.
+
+- Chưa bao gồm báo cáo doanh thu.
 
 ## 5. ASSUMPTIONS (giả định cần confirm)
-<!-- Những điều bạn assume là đúng nhưng chưa confirm -->
-<!-- Mỗi assumption là một rủi ro nếu sai -->
 
-- **Giả định 1:** Giả định rằng luồng tải lên ảnh xác nhận thanh toán (`paymentProofUrl`) đã được xử lý hoàn tất ở phía người thuê phòng, và module này chỉ chịu trách nhiệm đọc/hiển thị url ảnh đó[cite: 8].
-- **Giả định 2:** Giả định rằng số tiền người thuê chuyển khoản (`amount`) luôn luôn khớp 100% với giá trị của khoản công nợ liên quan, vì hệ thống hiện tại chưa đề cập đến luồng xử lý khi số tiền trên bill lệch so với công nợ[cite: 8].
-- **Giả định 3:** Giả định rằng định danh người duyệt (`approvedBy`) là một ID số nguyên (đại diện cho tài khoản Ban quản lý) lấy từ token đăng nhập[cite: 8].
+- Giả định `Management Board` là role đã tồn tại trong hệ thống phân quyền.
+
+- Giả định người thuê đã có cách tải ảnh xác nhận thanh toán lên trước khi Ban quản lý duyệt.
+
+- Giả định mỗi giao dịch thanh toán chỉ liên kết với một khoản công nợ.
+
+- Giả định một khoản công nợ được xem là `PAID` khi giao dịch liên quan được duyệt thành công.
+
+- Giả định hệ thống chỉ cần trạng thái `PENDING` và `PAID` cho phạm vi hiện tại.
+
+- Giả định ảnh xác nhận thanh toán được lưu dưới dạng URL như `paymentProofUrl`.
+
+- Giả định Ban quản lý tự kiểm tra ảnh xác nhận bằng mắt, không có OCR hoặc tự động đối soát ngân hàng.
+
+- Giả định giao dịch đã được duyệt thì không được hủy hoặc hoàn tiền trong phạm vi feature này.
+
+- Giả định `paymentDate` là ngày người thuê thực hiện thanh toán, không nhất thiết là ngày Ban quản lý duyệt.
+
+- Giả định `approvedBy` lưu ID của người dùng đang đăng nhập.
+
+- Giả định hệ thống có sẵn bảng hoặc module quản lý công nợ để cập nhật trạng thái sau khi duyệt thanh toán.
+
+- Giả định note khi duyệt thanh toán là thông tin bổ sung, không bắt buộc.
 
 ## 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời)
-<!-- Những điều cần clarify với stakeholder trước khi viết spec -->
 
-- **Câu hỏi 1:** Trong trường hợp Ban quản lý kiểm tra ảnh xác nhận thanh toán và phát hiện bill giả hoặc sai thông tin, hệ thống có cần chức năng "Từ chối" (`Reject`) giao dịch và yêu cầu người thuê tải lại ảnh khác không? Hiện tại spec mới chỉ có luồng Duyệt thành công (`Approve`)[cite: 8].
-- **Câu hỏi 2:** Một khoản công nợ có thể được thanh toán bằng nhiều giao dịch nhỏ hay không, hay bắt buộc một giao dịch thanh toán phải bao trọn toàn bộ một khoản công nợ[cite: 8]?
-- **Câu hỏi 3:** Định dạng ảnh xác nhận thanh toán được hệ thống chấp nhận là gì (PNG, JPG) và có cần giới hạn dung lượng ảnh hiển thị để đảm bảo tốc độ tải trang detail < 500ms không[cite: 8]?
+- Role `Management Board` trong database tương ứng với role nào: `ADMIN`, `MANAGER`, hay một role riêng?
+
+- Người thuê tải ảnh xác nhận thanh toán ở màn hình/module nào?
+
+- Ảnh xác nhận thanh toán cần giới hạn định dạng và dung lượng như thế nào?
+
+- Nếu ảnh xác nhận thanh toán mờ, sai nội dung hoặc không khớp số tiền thì Ban quản lý xử lý ra sao?
+
+- Có cần trạng thái `REJECTED` cho giao dịch bị từ chối không?
+
+- Nếu giao dịch bị từ chối, người thuê có được tải lại ảnh xác nhận thanh toán không?
+
+- Một khoản công nợ có thể được thanh toán bằng nhiều giao dịch nhỏ không?
+
+- Một giao dịch có thể thanh toán cho nhiều khoản công nợ không?
+
+- Nếu số tiền thanh toán nhỏ hơn công nợ thì hệ thống xử lý thanh toán một phần như thế nào?
+
+- Nếu số tiền thanh toán lớn hơn công nợ thì có ghi nhận dư tiền không?
+
+- Ai là người có quyền duyệt thanh toán cuối cùng?
+
+- Có cần quy trình hai bước, ví dụ một người kiểm tra và một người duyệt không?
+
+- Có cần lưu note duyệt thanh toán vào lịch sử giao dịch không?
+
+- Khi duyệt giao dịch thành công, hệ thống có cần tự động cập nhật hóa đơn liên quan sang `PAID` không?
+
+- Khi công nợ chuyển sang `PAID`, có cần cập nhật cả trạng thái hóa đơn hoặc booking liên quan không?
+
+- Có cần thông báo cho người thuê sau khi giao dịch được duyệt không?
+
+- Có cần lưu lịch sử xem ảnh xác nhận thanh toán không?
+
+- Có cần phân biệt ngày người thuê thanh toán và ngày Ban quản lý duyệt không?
+
+- Nếu người dùng gọi API duyệt nhiều lần cùng lúc cho một giao dịch thì hệ thống xử lý chống double-approve như thế nào?
+
+- Có cần bộ lọc theo ngày thanh toán, mã phòng, tên người thuê hoặc phương thức thanh toán trong danh sách giao dịch không?

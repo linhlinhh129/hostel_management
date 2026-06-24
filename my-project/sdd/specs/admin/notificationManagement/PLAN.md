@@ -103,7 +103,7 @@ Ngoại trừ:
 
 ### Validation
 - Title không được để trống
-- Content không được để trống, tối đa 5000 ký tự
+- Content không được để trống, tối đa 1000 ký tự
 - Nếu không có cư dân đang hoạt động, trả về lỗi `NO_RECIPIENT_FOUND`
 - Chỉ Admin mới được phép truy cập và thao tác
 

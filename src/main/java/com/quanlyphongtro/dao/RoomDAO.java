@@ -12,10 +12,10 @@ import java.util.Optional;
 
 public class RoomDAO extends BaseDAO {
 
-    private Room mapRoom(ResultSet rs) throws SQLException {
+    private Room mapRow(ResultSet rs) throws SQLException {
         Room room = new Room();
-        room.setId(rs.getInt("room_id"));
-        room.setFacilityId(rs.getInt("facility_id"));
+        room.setRoomId(rs.getInt("room_id"));
+        room.setFacilityId(getInteger(rs, "facility_id"));
         room.setCode(rs.getString("code"));
         room.setArea(rs.getBigDecimal("area"));
         room.setStatus(rs.getString("status"));
@@ -45,6 +45,39 @@ public class RoomDAO extends BaseDAO {
         f.setInternetFee(rs.getBigDecimal("f_internet_fee"));
         f.setServiceFee(rs.getBigDecimal("f_service_fee"));
         return f;
+
+    }
+
+    public Optional<Room> findById(int roomId) {
+        String sql = "SELECT * FROM dbo.rooms WHERE room_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("RoomDAO.findById failed for roomId={}", roomId, e);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Room> findByCode(String code) {
+        String sql = "SELECT * FROM dbo.rooms WHERE code = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("RoomDAO.findByCode failed for code={}", code, e);
+        }
+        return Optional.empty();
     }
 
     public Optional<Room> findByTenantId(int tenantId) {
@@ -54,11 +87,11 @@ public class RoomDAO extends BaseDAO {
             ps.setInt(1, tenantId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapRoom(rs));
+                    return Optional.of(mapRow(rs));
                 }
             }
         } catch (Exception e) {
-            logger.error("findByTenantId failed for tenantId={}", tenantId, e);
+            logger.error("RoomDAO.findByTenantId failed for tenantId={}", tenantId, e);
         }
         return Optional.empty();
     }
@@ -84,5 +117,65 @@ public class RoomDAO extends BaseDAO {
             logger.error("findFacilityByRoomId failed for roomId={}", roomId, e);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Chỉ cập nhật diện tích (area) của phòng — dùng cho inline edit trên trang chi tiết cơ sở.
+     */
+    public boolean updateArea(int roomId, java.math.BigDecimal area) {
+        String sql = "UPDATE dbo.rooms SET area = ?, updated_at = GETDATE() WHERE room_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (area != null) {
+                ps.setBigDecimal(1, area);
+            } else {
+                ps.setNull(1, java.sql.Types.DECIMAL);
+            }
+            ps.setInt(2, roomId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("RoomDAO.updateArea failed for roomId={}", roomId, e);
+        }
+        return false;
+    }
+
+    public boolean update(Room room) {
+        String sql = "UPDATE dbo.rooms SET facility_id = ?, code = ?, area = ?, status = ?, tenant_id = ?, " +
+                     "deposit_amount = ?, contract_start_date = ?, contract_end_date = ?, room_fee = ?, " +
+                     "updated_at = GETDATE() WHERE room_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, room.getFacilityId());
+            ps.setString(2, room.getCode());
+            if (room.getArea() != null) {
+                ps.setBigDecimal(3, room.getArea());
+            } else {
+                ps.setNull(3, java.sql.Types.DECIMAL);
+            }
+            ps.setString(4, room.getStatus());
+            if (room.getTenantId() != null) {
+                ps.setInt(5, room.getTenantId());
+            } else {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            }
+            ps.setBigDecimal(6, room.getDepositAmount() != null ? room.getDepositAmount() : java.math.BigDecimal.ZERO);
+            if (room.getContractStartDate() != null) {
+                ps.setDate(7, java.sql.Date.valueOf(room.getContractStartDate()));
+            } else {
+                ps.setNull(7, java.sql.Types.DATE);
+            }
+            if (room.getContractEndDate() != null) {
+                ps.setDate(8, java.sql.Date.valueOf(room.getContractEndDate()));
+            } else {
+                ps.setNull(8, java.sql.Types.DATE);
+            }
+            ps.setBigDecimal(9, room.getRoomFee());
+            ps.setInt(10, room.getId() != null && room.getId() > 0 ? room.getId() : room.getRoomId());
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("update failed for roomId={}", room.getId(), e);
+        }
+        return false;
     }
 }

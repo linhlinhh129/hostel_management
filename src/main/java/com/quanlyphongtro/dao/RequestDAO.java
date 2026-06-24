@@ -45,16 +45,6 @@ public class RequestDAO extends BaseDAO {
         return r;
     }
 
-    private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
-        java.sql.ResultSetMetaData rsmd = rs.getMetaData();
-        int columns = rsmd.getColumnCount();
-        for (int x = 1; x <= columns; x++) {
-            if (columnName.equalsIgnoreCase(rsmd.getColumnName(x))) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     // ==================== HEAD (OPERATOR) METHODS ====================
 

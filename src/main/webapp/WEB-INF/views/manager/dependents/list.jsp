@@ -48,7 +48,7 @@
                 </thead>
                 <tbody>
                   <c:forEach var="dep" items="${dependents}">
-                    <tr>
+                    <tr data-href="${ctx}/manager/dependents/${dep.id}">
                       <td style="font-size:0.8125rem;color:var(--hms-text-muted)">${dep.id}</td>
                       <td><strong><c:out value="${dep.fullName}"/></strong></td>
                       <td style="font-size:0.8125rem"><c:out value="${dep.dob}"/></td>

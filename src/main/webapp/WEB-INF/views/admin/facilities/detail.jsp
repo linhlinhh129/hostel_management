@@ -1,11 +1,17 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Chi tiết cơ sở - Admin"/>
-<c:set var="pageRole" value="ADMIN"/>
+<c:set var="ctx"        value="${pageContext.request.contextPath}"/>
+<c:set var="pageTitle"  value="Chi tiết cơ sở - Admin"/>
+<c:set var="pageRole"   value="ADMIN"/>
 <c:set var="activeMenu" value="hostels"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
+
+<style>
+.room-row-link { cursor: pointer; }
+.room-row-link:hover td { background: #f0f7ff; }
+</style>
+
 <body>
 <div class="app-shell">
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
@@ -33,7 +39,7 @@
                         </form>
                     </c:if>
                     <c:if test="${facility.status == 'ACTIVE'}">
-                        <a href="${ctx}/admin/facilities/${facility.id}/edit" class="quick-action-btn">Sửa tên</a>
+                        <a href="${ctx}/admin/facilities/${facility.id}/edit" class="quick-action-btn">Sửa</a>
                         <form method="post" action="${ctx}/admin/facilities/${facility.id}/deactivate" style="margin:0">
                             <input type="hidden" name="csrfToken" value="${csrfToken}"/>
                             <button type="submit" class="quick-action-btn"
@@ -49,6 +55,7 @@
 
             <!-- Thông tin + Danh sách phòng -->
             <div class="row g-3">
+
                 <!-- Thông tin cơ sở -->
                 <div class="col-lg-4">
                     <div class="widget-surface">
@@ -76,7 +83,7 @@
                                                 <span class="badge-hms badge-success">Hoạt động</span>
                                             </c:when>
                                             <c:when test="${facility.status == 'DRAFT'}">
-                                                <span class="badge-hms badge-warning">Nháp</span>
+                                                <span class="badge-hms badge-warning">Chưa kích hoạt</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge-hms badge-neutral">Vô hiệu</span>
@@ -89,7 +96,6 @@
                                     </td></tr>
                             </table>
 
-                            <!-- Ghi chú trạng thái -->
                             <c:if test="${facility.status == 'DRAFT'}">
                                 <div class="alert alert-warning mt-3" style="font-size:0.8125rem;border-radius:8px">
                                     Cơ sở chưa được kích hoạt. Nhấn <strong>Kích hoạt</strong> để hệ thống sinh phòng tự động.
@@ -104,11 +110,16 @@
                     </div>
                 </div>
 
-                <!-- Danh sách phòng đã sinh -->
+                <!-- Danh sách phòng -->
                 <div class="col-lg-8">
                     <div class="widget-surface">
                         <div class="widget-surface-header">
                             <h3>Danh sách phòng</h3>
+                            <c:if test="${not empty rooms}">
+                                <span style="font-size:0.8rem;color:var(--hms-text-muted);font-weight:400">
+                                    Nhấn vào dòng để xem chi tiết
+                                </span>
+                            </c:if>
                         </div>
                         <div class="widget-surface-body p-0">
                             <c:choose>
@@ -126,17 +137,19 @@
                                             <tr>
                                                 <th>Mã phòng</th>
                                                 <th>Tầng</th>
-                                                <th>Số phòng</th>
                                                 <th>Diện tích</th>
+                                                <th>Người thuê</th>
                                                 <th>Trạng thái</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             <c:forEach var="room" items="${rooms}">
-                                                <tr>
-                                                    <td><c:out value="${room.code}"/></td>
-                                                    <td><c:out value="${room.floor}"/></td>
-                                                    <td><c:out value="${room.roomNumber}"/></td>
+                                                <tr class="room-row-link"
+                                                    onclick="location.href='${ctx}/admin/rooms/${room.id}'">
+                                                    <td style="font-family:var(--hms-font-mono);font-weight:600">
+                                                        <c:out value="${room.code}"/>
+                                                    </td>
+                                                    <td>Tầng ${room.floorLabel}</td>
                                                     <td>
                                                         <c:choose>
                                                             <c:when test="${not empty room.area}">
@@ -147,14 +160,25 @@
                                                     </td>
                                                     <td>
                                                         <c:choose>
+                                                            <c:when test="${not empty room.tenantName}">
+                                                                <c:out value="${room.tenantName}"/>
+                                                            </c:when>
+                                                            <c:otherwise><em class="text-muted">—</em></c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
                                                             <c:when test="${room.status == 'OCCUPIED'}">
                                                                 <span class="badge-hms badge-info">Đang thuê</span>
                                                             </c:when>
-                                                            <c:when test="${room.status == 'AVAILABLE' or room.status == 'ACTIVE'}">
+                                                            <c:when test="${room.status == 'AVAILABLE'}">
                                                                 <span class="badge-hms badge-success">Trống</span>
                                                             </c:when>
                                                             <c:when test="${room.status == 'MAINTENANCE'}">
                                                                 <span class="badge-hms badge-warning">Bảo trì</span>
+                                                            </c:when>
+                                                            <c:when test="${room.status == 'RESERVED'}">
+                                                                <span class="badge-hms badge-accent">Đặt trước</span>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <span class="badge-hms badge-neutral"><c:out value="${room.status}"/></span>
@@ -178,6 +202,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </main>
     </div>

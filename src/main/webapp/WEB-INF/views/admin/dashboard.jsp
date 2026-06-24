@@ -118,12 +118,6 @@
                     </svg>
                     Tạo thông báo
                 </a>
-                <a href="${ctx}/admin/audit-logs"            class="quick-action-btn">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    </svg>
-                    Audit Log
-                </a>
             </div>
 
             <!-- ── Main content 2 cột ───────────────────────────── -->
@@ -140,7 +134,7 @@
                                     <line x1="12" y1="1" x2="12" y2="23"/>
                                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                                 </svg>
-                                Doanh thu theo cơ sở — kỳ <c:out value="${currentPeriodLabel}"/>
+                                Doanh thu theo cơ sở — tháng <c:out value="${currentPeriodLabel}"/>
                             </h3>
                             <a href="${ctx}/admin/revenue"
                                style="font-size:0.8125rem;color:var(--hms-accent-deep);
@@ -158,7 +152,7 @@
                                                 <th>Cơ sở</th>
                                                 <th>Doanh thu đã thu</th>
                                                 <th>Tỷ lệ thu hồi</th>
-                                                <th>Chưa TT</th>
+                                                <th>Chưa thanh toán</th>
                                                 <th>Quá hạn</th>
                                             </tr>
                                             </thead>
@@ -262,7 +256,7 @@
                             <h3>Hoạt động gần đây</h3>
                             <a href="${ctx}/admin/audit-logs"
                                style="font-size:0.8125rem;color:var(--hms-accent-deep);font-weight:600;text-decoration:none">
-                                Xem log →
+                                Xem chi tiết →
                             </a>
                         </div>
                         <div class="widget-surface-body p-0">

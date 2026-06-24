@@ -8,12 +8,13 @@ public class Notification {
     private String code;
     private String title;
     private String content;
-    private String targetType;
+    private String targetType;   // ALL / FACILITY / ROOM
     private Integer facilityId;
     private Integer roomId;
-    private String status;
+    private String status;       // DRAFT / SENT
     private Integer createdBy;
-
+    private String createdByName; // joined from users
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime sentAt;
@@ -54,6 +55,9 @@ public class Notification {
     public Integer getCreatedBy() { return createdBy; }
     public void setCreatedBy(Integer createdBy) { this.createdBy = createdBy; }
 
+    public String getCreatedByName() { return createdByName; }
+    public void setCreatedByName(String createdByName) { this.createdByName = createdByName; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -85,5 +89,20 @@ public class Notification {
         } else {
             this.summary = this.content;
         }
+    }
+
+    /**
+     * Alias for targetType — JSP uses recipientType.
+     */
+    public String getRecipientType() { return targetType; }
+    public void setRecipientType(String recipientType) { this.targetType = recipientType; }
+
+    /**
+     * Returns facilityId or roomId depending on targetType.
+     */
+    public Integer getRecipientId() {
+        if ("FACILITY".equals(targetType)) return facilityId;
+        if ("ROOM".equals(targetType)) return roomId;
+        return null;
     }
 }

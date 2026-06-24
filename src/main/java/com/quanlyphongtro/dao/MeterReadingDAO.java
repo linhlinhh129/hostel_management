@@ -1,6 +1,7 @@
 package com.quanlyphongtro.dao;
 
 import com.quanlyphongtro.dto.MeterStatusDTO;
+import com.quanlyphongtro.model.MeterReading;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.sql.Connection;
@@ -10,12 +11,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeterReadingDAO {
+public class MeterReadingDAO extends BaseDAO {
 
-    /**
-     * Lấy danh sách trạng thái chốt sổ điện nước của các phòng đang có người thuê.
-     * TUYỆT ĐỐI CHỈ SỬ DỤNG LỆNH SELECT, KHÔNG CHỈNH SỬA DATABASE.
-     */
     public List<MeterStatusDTO> getMeterStatusList(int currentMonth, int currentYear, String facility, String roomCode) {
         List<MeterStatusDTO> list = new ArrayList<>();
         
@@ -153,6 +150,84 @@ public class MeterReadingDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    private MeterReading mapRow(ResultSet rs) throws Exception {
+        MeterReading m = new MeterReading();
+        m.setMeterId(rs.getInt("meter_id"));
+        m.setRoomId(getInteger(rs, "room_id"));
+        m.setElectric(getInteger(rs, "electric"));
+        m.setWater(getInteger(rs, "water"));
+        m.setReadingDate(toLocalDate(rs, "reading_date"));
+        m.setStatus(rs.getString("status"));
+        m.setCreatedBy(getInteger(rs, "created_by"));
+        m.setCreatedAt(toLocalDateTime(rs, "created_at"));
+        m.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
+        m.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
+        m.setWaterImg(rs.getString("water_img"));
+        m.setElectricImg(rs.getString("electric_img"));
+        return m;
+    }
+
+    public List<MeterReading> findLatestTwoByRoomId(int roomId) {
+        String sql = "SELECT TOP 2 * FROM dbo.meter_readings WHERE room_id = ? AND deleted_at IS NULL ORDER BY reading_date DESC, meter_id DESC";
+        List<MeterReading> list = new ArrayList<>();
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("MeterReadingDAO.findLatestTwoByRoomId failed for roomId={}", roomId, e);
+        }
+        return list;
+    }
+
+    /**
+     * Lấy chỉ số điện nước của tháng hiện tại (billing_period dạng YYYYMM)
+     * và tháng trước đó để tính tiêu thụ trong kỳ.
+     */
+    public List<MeterReading> findByRoomAndBillingPeriod(int roomId, String billingPeriod) {
+        int year  = Integer.parseInt(billingPeriod.substring(0, 4));
+        int month = Integer.parseInt(billingPeriod.substring(4, 6));
+
+        java.time.LocalDate periodStart = java.time.LocalDate.of(year, month, 1);
+        java.time.LocalDate periodEnd   = periodStart.withDayOfMonth(periodStart.lengthOfMonth());
+
+        java.time.LocalDate prevEnd   = periodStart.minusDays(1);
+        java.time.LocalDate prevStart = prevEnd.withDayOfMonth(1);
+
+        MeterReading current = findLatestInRange(roomId, periodStart, periodEnd);
+        MeterReading prev    = findLatestInRange(roomId, prevStart, prevEnd);
+
+        List<MeterReading> result = new ArrayList<>();
+        result.add(current);
+        result.add(prev);
+        return result;
+    }
+
+    public MeterReading findLatestInRange(int roomId, java.time.LocalDate from, java.time.LocalDate to) {
+        String sql = "SELECT TOP 1 * " +
+                     "FROM dbo.meter_readings " +
+                     "WHERE room_id = ? AND reading_date >= ? AND reading_date <= ? AND deleted_at IS NULL " +
+                     "ORDER BY reading_date DESC, meter_id DESC";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setDate(2, java.sql.Date.valueOf(from));
+            ps.setDate(3, java.sql.Date.valueOf(to));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("MeterReadingDAO.findLatestInRange failed for roomId={}", roomId, e);
         }
         return null;
     }

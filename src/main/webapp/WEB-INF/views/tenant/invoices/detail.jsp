@@ -7,8 +7,9 @@
 <c:set var="activeMenu" value="invoices"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 <body>
-<div class="app-shell tenant-shell">
+<div class="app-shell">
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
+    <div class="sidebar-overlay"></div>
     <div class="main-wrapper">
         <jsp:include page="/WEB-INF/views/layout/topbar.jsp"/>
         <main class="page-content">
@@ -19,7 +20,7 @@
                 <p>Mã: <c:out value="${invoice.code}"/></p>
             </div>
 
-            <%-- Tổng tiền nổi bật --%>
+            <%-- Tổng ti�?n nổi bật --%>
             <div class="tenant-card" style="margin-bottom:1rem;
                  ${invoice.status == 'OVERDUE' ? 'border-color:var(--hms-danger)' : invoice.status == 'PAID' ? 'border-color:var(--hms-success)' : 'border-color:var(--hms-warning)'}">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -27,7 +28,7 @@
                                  letter-spacing:0.05em;color:var(--hms-stone)">Tổng cộng phải trả</span>
                     <c:choose>
                         <c:when test="${invoice.status == 'PAID'}">
-                            <span class="badge-hms badge-success">✓ Đã thanh toán</span>
+                            <span class="badge-hms badge-success">✓ �?ã thanh toán</span>
                         </c:when>
                         <c:when test="${invoice.status == 'OVERDUE'}">
                             <span class="badge-hms badge-danger">⚠ Quá hạn</span>
@@ -53,14 +54,14 @@
                     <table class="table-mintlify" style="font-size:0.875rem">
                         <tbody>
                         <tr>
-                            <td style="padding:10px 1.25rem">Tiền phòng cố định</td>
+                            <td style="padding:10px 1.25rem">Ti�?n phòng cố định</td>
                             <td style="padding:10px 1.25rem;text-align:right;font-weight:600">
                                 <fmt:formatNumber value="${invoice.roomFee}" pattern="#,##0"/> đ
                             </td>
                         </tr>
                         <tr>
                             <td style="padding:10px 1.25rem">
-                                Tiền điện
+                                Ti�?n điện
                                 <span style="color:var(--hms-stone);font-size:0.75rem">
                                     (<c:out value="${invoice.oldElectricReading}"/>
                                      → <c:out value="${invoice.newElectricReading}"/> kWh)
@@ -72,7 +73,7 @@
                         </tr>
                         <tr>
                             <td style="padding:10px 1.25rem">
-                                Tiền nước
+                                Ti�?n nước
                                 <span style="color:var(--hms-stone);font-size:0.75rem">
                                     (<c:out value="${invoice.oldWaterReading}"/>
                                      → <c:out value="${invoice.newWaterReading}"/> m³)
@@ -117,7 +118,7 @@
                     <div style="font-size:0.8125rem;color:var(--hms-slate);line-height:1.7;margin-bottom:1rem">
                         <div>Ngân hàng: <strong>Vietcombank</strong></div>
                         <div>Số tài khoản: <strong style="font-family:var(--hms-font-mono)">1234567890</strong></div>
-                        <div>Chủ tài khoản: <strong>Công ty Quản lý Nhà trọ</strong></div>
+                        <div>Chủ tài khoản: <strong>Công ty Quản lý Nhà tr�?</strong></div>
                         <div>Nội dung CK: <strong style="font-family:var(--hms-font-mono)">
                             <c:out value="${invoice.code}"/>
                         </strong></div>
@@ -147,10 +148,9 @@
 
             <a href="${ctx}/tenant/invoices"
                class="btn-mintlify-secondary text-decoration-none mt-3">
-                ← Danh sách hóa đơn
+                �? Danh sách hóa đơn
             </a>
         </main>
     </div>
-    <jsp:include page="/WEB-INF/views/layout/tenant-bottom-nav.jsp"/>
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

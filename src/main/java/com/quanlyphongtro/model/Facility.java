@@ -12,6 +12,10 @@ public class Facility {
     private Integer roomsPerFloor;
     private String status;
     private Integer managerId;
+    private String managerName;  // joined from users (MANAGER)
+    private Integer operatorId;
+    private String operatorName; // joined from users (OPERATOR)
+    private BigDecimal defaultRoomArea;
     private BigDecimal electricityPrice;
     private BigDecimal waterPrice;
     private BigDecimal internetFee;
@@ -25,6 +29,10 @@ public class Facility {
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
+    
+    // Alias for backwards compatibility
+    public Integer getFacilityId() { return id; }
+    public void setFacilityId(Integer facilityId) { this.id = facilityId; }
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
@@ -47,6 +55,15 @@ public class Facility {
     public Integer getManagerId() { return managerId; }
     public void setManagerId(Integer managerId) { this.managerId = managerId; }
 
+    public String getManagerName() { return managerName; }
+    public void setManagerName(String managerName) { this.managerName = managerName; }
+
+    public Integer getOperatorId() { return operatorId; }
+    public void setOperatorId(Integer operatorId) { this.operatorId = operatorId; }
+
+    public String getOperatorName() { return operatorName; }
+    public void setOperatorName(String operatorName) { this.operatorName = operatorName; }
+
     public BigDecimal getElectricityPrice() { return electricityPrice; }
     public void setElectricityPrice(BigDecimal electricityPrice) { this.electricityPrice = electricityPrice; }
 
@@ -67,4 +84,15 @@ public class Facility {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public boolean isDeleted() { return deletedAt != null; }
+
+    /**
+     * Computed: total rooms = floorCount * roomsPerFloor; 0 if status is DRAFT.
+     */
+    public int getTotalRooms() {
+        if ("DRAFT".equals(status)) return 0;
+        if (floorCount == null || roomsPerFloor == null) return 0;
+        return floorCount * roomsPerFloor;
+    }
 }

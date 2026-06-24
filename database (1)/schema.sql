@@ -57,6 +57,7 @@ BEGIN
 		rooms_per_floor     INT                 NOT NULL,
         status              NVARCHAR(20)        NOT NULL DEFAULT 'DRAFT', -- DRAFT, ACTIVE, INACTIVE
         manager_id          INT                 NULL,
+		operator_id         INT                 NULL,   -- Nhân viên vận hành (OPERATOR)
         electricity_price   DECIMAL(10,2)       NULL,
         water_price         DECIMAL(10,2)       NULL,
         internet_fee        DECIMAL(10,2)       NULL,
@@ -197,7 +198,7 @@ BEGIN
         code                NVARCHAR(50)        NOT NULL UNIQUE,
         invoice_id          INT                 NULL,
         room_id             INT                 NOT NULL,
-        status              NVARCHAR(20)        NULL DEFAULT 'SUCCESS',
+        status              NVARCHAR(20)        NULL DEFAULT 'SUCCESS', -- PENDING, SUCCESS, REJECTED  
         payment_date        DATE                NOT NULL,
         payment_method      NVARCHAR(50)        NOT NULL DEFAULT 'BANK_TRANSFER',
         payment_amount		DECIMAL(18,2)		NOT NULL,
@@ -320,6 +321,51 @@ END
 GO
 
 -- ============================================================
+-- 11. CONTRACTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.contracts', N'U') IS NULL
+BEGIN
+	CREATE TABLE dbo.contracts (
+		contract_id                INT IDENTITY(1,1) PRIMARY KEY,
+		code                       NVARCHAR(50) NOT NULL UNIQUE,
+
+		room_id                    INT NOT NULL,
+		tenant_id                  INT NOT NULL,
+
+		tenant_full_name           NVARCHAR(100) NOT NULL,
+		tenant_dob                 DATE NULL,
+		tenant_permanent_address   NVARCHAR(500) NULL,
+		tenant_identity_number     NVARCHAR(50) NOT NULL,
+		tenant_identity_issue_date DATE NULL,
+		tenant_identity_issue_place NVARCHAR(200) NULL,
+		tenant_phone               NVARCHAR(20) NULL,
+
+		amount_in_words            NVARCHAR(500) NULL,
+
+		signed_date                DATE NOT NULL,
+		start_date                 DATE NOT NULL,
+		end_date                   DATE NOT NULL,
+
+		status                     NVARCHAR(20) NOT NULL DEFAULT 'ACTIVE',--'ACTIVE','INACTIVE'
+
+		created_by                 INT NULL,
+		created_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),
+		updated_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),
+		deleted_at                 DATETIME2 NULL,
+
+		CONSTRAINT FK_contracts_rooms
+			FOREIGN KEY (room_id) REFERENCES dbo.rooms(room_id),
+
+		CONSTRAINT FK_contracts_users_tenant
+			FOREIGN KEY (tenant_id) REFERENCES dbo.users(user_id),
+
+		CONSTRAINT FK_contracts_users_creator
+			FOREIGN KEY (created_by) REFERENCES dbo.users(user_id)
+	);
+END
+GO
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 SET ANSI_NULLS ON;
@@ -340,6 +386,10 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_facilities_manager' AND object_id = OBJECT_ID(N'dbo.facilities'))
     CREATE UNIQUE INDEX UX_facilities_manager ON dbo.facilities(manager_id) WHERE manager_id IS NOT NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_facilities_operator'AND object_id = OBJECT_ID(N'dbo.facilities'))
+    CREATE UNIQUE INDEX UX_facilities_operator ON dbo.facilities(operator_id) WHERE operator_id IS NOT NULL;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_rooms_tenant' AND object_id = OBJECT_ID(N'dbo.rooms'))

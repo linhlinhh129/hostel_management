@@ -15,17 +15,19 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <h1>Thông báo</h1>
-                    <p>Quản lý thông báo gửi đến cư dân</p>
+            <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Thông báo</h1>
+                        <p>Quản lý thông báo gửi đến cư dân</p>
+                    </div>
+                    <a href="${ctx}/admin/notifications/create" class="quick-action-btn primary" style="position:relative;z-index:1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Tạo thông báo
+                    </a>
                 </div>
-                <a href="${ctx}/admin/notifications/create" class="quick-action-btn primary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Tạo thông báo
-                </a>
             </div>
 
             <div class="data-surface">
@@ -54,7 +56,7 @@
                                 </thead>
                                 <tbody>
                                 <c:forEach var="notif" items="${page.items}">
-                                    <tr>
+                                    <tr data-href="${ctx}/admin/notifications/${notif.id}">
                                         <td><a href="${ctx}/admin/notifications/${notif.id}"><c:out value="${notif.code}"/></a></td>
                                         <td style="max-width:300px"><c:out value="${notif.title}"/></td>
                                         <td><c:out value="${notif.createdByName}"/></td>
@@ -64,10 +66,10 @@
                                                     <span class="badge-hms badge-info">Tất cả</span>
                                                 </c:when>
                                                 <c:when test="${notif.recipientType == 'FACILITY'}">
-                                                    <span class="badge-hms badge-neutral">Cơ sở #<c:out value="${notif.recipientId}"/></span>
+                                                    <span class="badge-hms badge-neutral">Cơ sở </span>
                                                 </c:when>
                                                 <c:when test="${notif.recipientType == 'ROOM'}">
-                                                    <span class="badge-hms badge-neutral">Phòng #<c:out value="${notif.recipientId}"/></span>
+                                                    <span class="badge-hms badge-neutral">Phòng</span>
                                                 </c:when>
                                             </c:choose>
                                         </td>

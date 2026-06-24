@@ -37,7 +37,6 @@ Từ Dashboard Admin có thể truy cập:
 - Quản lý thông báo
 - Xem báo cáo doanh thu
 - Quản lý nhân sự
-- Cấu hình hệ thống
 - Nhật ký kiểm tra (Audit Log)
 
 ---
@@ -115,7 +114,6 @@ Hiển thị bảng:
 - Thêm cơ sở
 - Chỉnh sửa cơ sở
 - Xem chi tiết cơ sở
-- Xóa cơ sở
 
 ---
 
@@ -129,8 +127,7 @@ Hiển thị bảng:
 
 Format:
 
-CS001
-CS002
+HN, HL, DN
 
 
 - Tên cơ sở
@@ -154,34 +151,15 @@ Số phòng > 0
 
 ## Thông tin cơ sở
 
-- ID cơ sở
-- Tên cơ sở
-- Địa chỉ
-- Số tầng
-- Ngày tạo
-
----
-
-
-Hiển thị:
-
-- Họ tên
-- Ngày sinh
-- SĐT
-- CCCD
-- Email
-- Mối quan hệ
-- Thuộc người thuê nào
-
----
-
-### Điều hướng
-
-Người thuê chính phải click được.
-
-Chi tiết người phụ thuộc
-→ Click người thuê chính
-→ Chi tiết người thuê
+  * Mã cơ sở
+  * Tên cơ sở
+  * Địa chỉ
+  * Số tầng tối đa
+  * Số phòng tối đa mỗi tầng
+  * Tổng số phòng
+  * Trạng thái
+  * Ngày tạo
+  * Ngày cập nhật
 
 ---
 
@@ -261,33 +239,36 @@ Vai trò:
 
 ## Mục tiêu
 
-Cho phép Admin gán Ban Quản Lý phụ trách một hoặc nhiều cơ sở.
+Cho phép Admin gán nhân sự (MANAGER hoặc OPERATOR) vào **đúng một cơ sở** phụ trách.
+
+Chức năng gán cơ sở **không phải màn hình độc lập** — được tích hợp trực tiếp vào form Thêm nhân sự và form Chỉnh sửa nhân sự dưới dạng dropdown chọn cơ sở.
 
 ---
 
 ## Thông tin hiển thị
 
-### Nhân sự
+### Trong form Thêm / Chỉnh sửa nhân sự
 
-- Mã nhân sự
-- Họ tên
-
----
-
-### Danh sách cơ sở
-
-Checkbox:
-
-□ CS001
-
+- Dropdown: **Cơ sở quản lý** (bắt buộc với vai trò MANAGER và OPERATOR)
+- Chỉ hiển thị các cơ sở đang ở trạng thái `ACTIVE`
+- Mỗi nhân sự chỉ được chọn **một cơ sở**
 
 ---
 
-### Kết quả
+## Ràng buộc
+
+- Nhân sự có vai trò MANAGER hoặc OPERATOR **bắt buộc** phải chọn cơ sở
+- Nếu không chọn → lỗi `FACILITY_REQUIRED`
+- Cơ sở không ở trạng thái ACTIVE → lỗi `FACILITY_NOT_ACTIVE`
+- Một cơ sở chỉ có thể có **một MANAGER** → lỗi `FACILITY_MANAGER_ALREADY_EXISTS`
+
+---
+
+## Kết quả
 
 Sau khi được gán:
 
-Ban Quản Lý chỉ nhìn thấy các cơ sở được phân công.
+MANAGER/OPERATOR chỉ nhìn thấy dữ liệu thuộc cơ sở được phân công.
 
 ---
 
@@ -302,7 +283,6 @@ Hiển thị:
 | Người tạo |
 | Ngày tạo |
 | Đối tượng |
-| Trạng thái |
 
 ---
 
@@ -325,19 +305,6 @@ Thông tin:
 
 - Mã thông báo
 - Ngày tạo
-
----
-
-# 13. Module Cấu Hình Hệ Thống
-
-## Cấu hình hệ thống
-
-Admin được phép:
-
-- Quản lý tham số hệ thống
-- Cấu hình bảo mật
-- Cấu hình thông báo
-- Cấu hình Audit Log
 
 ---
 
@@ -414,7 +381,6 @@ Dashboard
 │   ├── Danh sách thông báo
 │   └── Tạo thông báo
 │
-├── Cấu hình hệ thống
 │
 └── Nhật ký kiểm tra
     ├── Danh sách log

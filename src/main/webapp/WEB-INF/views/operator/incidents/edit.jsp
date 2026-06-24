@@ -38,6 +38,7 @@
                         <form action="${pageContext.request.contextPath}/operator/incidents/edit" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                             <input type="hidden" name="csrfToken" value="${csrfToken}">
                             <input type="hidden" name="requestId" value="${requestObj.requestId}">
+                            <input type="hidden" name="source" value="${source}">
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
@@ -95,7 +96,14 @@
                             </div>
 
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                <a href="${pageContext.request.contextPath}/operator/incidents/my-reports" class="btn-mintlify-secondary text-center text-decoration-none">Hủy</a>
+                                <c:choose>
+                                    <c:when test="${source == 'requests'}">
+                                        <a href="${pageContext.request.contextPath}/operator/requests" class="btn-mintlify-secondary text-center text-decoration-none">Hủy</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="${pageContext.request.contextPath}/operator/incidents/my-reports" class="btn-mintlify-secondary text-center text-decoration-none">Hủy</a>
+                                    </c:otherwise>
+                                </c:choose>
                                 <button type="submit" class="btn-mintlify-primary text-center">Lưu thay đổi</button>
                             </div>
                         </form>

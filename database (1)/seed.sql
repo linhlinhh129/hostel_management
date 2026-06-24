@@ -78,17 +78,17 @@ BEGIN TRY
     -- UX_facilities_manager: mỗi manager chỉ quản lý 1 cơ sở.
     -- ============================================================
     IF NOT EXISTS (SELECT 1 FROM dbo.facilities WHERE code = N'HN01')
-    INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, electricity_price, water_price, internet_fee, service_fee)
-    VALUES (N'HN01', N'Ký túc xá Cầu Giấy', N'Số 10 Trần Thái Tông, Cầu Giấy, Hà Nội', 5, 8, N'ACTIVE', @manager01_id, 4000, 30000, 100000, 50000);
+    INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, electricity_price, water_price, internet_fee, service_fee)
+    VALUES (N'HN01', N'Ký túc xá Cầu Giấy', N'Số 10 Trần Thái Tông, Cầu Giấy, Hà Nội', 5, 8, N'ACTIVE', @manager01_id, NULL, 4000, 30000, 100000, 50000);
 
     IF NOT EXISTS (SELECT 1 FROM dbo.facilities WHERE code = N'HN02')
-    INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, electricity_price, water_price, internet_fee, service_fee)
-    VALUES (N'HN02', N'Nhà trọ Mỹ Đình', N'Số 25 Lê Đức Thọ, Nam Từ Liêm, Hà Nội', 4, 6, N'ACTIVE', @manager02_id, 4200, 32000, 120000, 60000);
+    INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, electricity_price, water_price, internet_fee, service_fee)
+    VALUES (N'HN02', N'Nhà trọ Mỹ Đình', N'Số 25 Lê Đức Thọ, Nam Từ Liêm, Hà Nội', 4, 6, N'ACTIVE', @manager02_id, NULL, 4200, 32000, 120000, 60000);
 
     -- Cơ sở DRAFT để test màn hình Quản lý Cơ sở
     IF NOT EXISTS (SELECT 1 FROM dbo.facilities WHERE code = N'HN03')
-    INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, electricity_price, water_price, internet_fee, service_fee)
-    VALUES (N'HN03', N'Nhà trọ Hoàng Mai', N'Số 5 Giải Phóng, Hoàng Mai, Hà Nội', 3, 5, N'DRAFT', NULL, 4100, 31000, 110000, 55000);
+    INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, electricity_price, water_price, internet_fee, service_fee)
+    VALUES (N'HN03', N'Nhà trọ Hoàng Mai', N'Số 5 Giải Phóng, Hoàng Mai, Hà Nội', 3, 5, N'DRAFT', NULL, NULL, 4100, 31000, 110000, 55000);
 
     DECLARE @facility_hn01 INT = (SELECT facility_id FROM dbo.facilities WHERE code = N'HN01');
     DECLARE @facility_hn02 INT = (SELECT facility_id FROM dbo.facilities WHERE code = N'HN02');
@@ -196,19 +196,19 @@ BEGIN TRY
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-HN0102-202606')
     INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-HN0102-202606', @room_hn0102, @meter_hn0102_0630, '2026-07-05', N'PAID', 0, 20000, 2700000, 4000, 30000, 100000, 50000, 3300000, N'Hóa đơn tháng 06/2026 phòng HN0102', @manager01_id);
+    VALUES (N'INV-HN0102-202606', @room_hn0102, @meter_hn0102_0630, '2026-07-05', N'PAID', 0, 20000, 2700000, 4000, 30000, 100000, 50000, 5510000, N'Hóa đơn tháng 06/2026 phòng HN0102', @manager01_id);
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-HN0201-202606')
     INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-HN0201-202606', @room_hn0201, @meter_hn0201_0630, '2026-07-05', N'PAID', 0, 0, 2400000, 4200, 32000, 120000, 60000, 2920000, N'Hóa đơn tháng 06/2026 phòng HN0201', @manager01_id);
+    VALUES (N'INV-HN0201-202606', @room_hn0201, @meter_hn0201_0630, '2026-07-05', N'PAID', 0, 0, 2400000, 4200, 32000, 120000, 60000, 4437000, N'Hóa đơn tháng 06/2026 phòng HN0201', @manager01_id);
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-HN0202-202606')
     INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-HN0202-202606', @room_hn0202, @meter_hn0202_0630, '2026-07-05', N'OVERDUE', 0, 50000, 2600000, 4200, 32000, 120000, 60000, 3228000, N'Hóa đơn tháng 06/2026 phòng HN0202', @manager01_id);
+    VALUES (N'INV-HN0202-202606', @room_hn0202, @meter_hn0202_0630, '2026-07-05', N'UNPAID', 0, 50000, 2600000, 4200, 32000, 120000, 60000, 5228000, N'Hóa đơn tháng 06/2026 phòng HN0202', @manager01_id);
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-HN0203-202606')
     INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-HN0203-202606', @room_hn0203, @meter_hn0203_0630, '2026-07-05', N'UNPAID', 0, 0, 2800000, 4200, 32000, 120000, 60000, 3370000, N'Hóa đơn tháng 06/2026 phòng HN0203', @manager01_id);
+    VALUES (N'INV-HN0203-202606', @room_hn0203, @meter_hn0203_0630, '2026-07-05', N'UNPAID', 0, 0, 2800000, 4200, 32000, 120000, 60000, 5155000, N'Hóa đơn tháng 06/2026 phòng HN0203', @manager01_id);
 
     DECLARE @inv_hn0101 INT = (SELECT invoice_id FROM dbo.invoices WHERE code = N'INV-HN0101-202606');
     DECLARE @inv_hn0102 INT = (SELECT invoice_id FROM dbo.invoices WHERE code = N'INV-HN0102-202606');
@@ -216,20 +216,23 @@ BEGIN TRY
     DECLARE @inv_hn0202 INT = (SELECT invoice_id FROM dbo.invoices WHERE code = N'INV-HN0202-202606');
     DECLARE @inv_hn0203 INT = (SELECT invoice_id FROM dbo.invoices WHERE code = N'INV-HN0203-202606');
 
+	DECLARE @inv_hn0102_amount INT = (SELECT total_amount FROM dbo.invoices WHERE code = N'INV-HN0102-202606');
+	DECLARE @inv_hn0201_amount INT = (SELECT total_amount FROM dbo.invoices WHERE code = N'INV-HN0201-202606');
+    DECLARE @inv_hn0202_amount INT = (SELECT total_amount FROM dbo.invoices WHERE code = N'INV-HN0202-202606');
     -- ============================================================
     -- 7. PAYMENTS
     -- ============================================================
     IF NOT EXISTS (SELECT 1 FROM dbo.payments WHERE code = N'PAY-HN0102-202606')
     INSERT INTO dbo.payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_by)
-    VALUES (N'PAY-HN0102-202606', @inv_hn0102, @room_hn0102, N'SUCCESS', '2026-07-02', N'BANK_TRANSFER', 3300000, @tenant02_id);
+    VALUES (N'PAY-HN0102-202606', @inv_hn0102, @room_hn0102, N'SUCCESS', '2026-07-02', N'BANK_TRANSFER', @inv_hn0102_amount, @tenant02_id);
 
     IF NOT EXISTS (SELECT 1 FROM dbo.payments WHERE code = N'PAY-HN0201-202606')
     INSERT INTO dbo.payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_by)
-    VALUES (N'PAY-HN0201-202606', @inv_hn0201, @room_hn0201, N'SUCCESS', '2026-07-01', N'CASH', 2920000, @tenant03_id);
+    VALUES (N'PAY-HN0201-202606', @inv_hn0201, @room_hn0201, N'SUCCESS', '2026-07-01', N'CASH', @inv_hn0201_amount, @tenant03_id);
 
     IF NOT EXISTS (SELECT 1 FROM dbo.payments WHERE code = N'PAY-HN0202-PARTIAL')
     INSERT INTO dbo.payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_by)
-    VALUES (N'PAY-HN0202-PARTIAL', @inv_hn0202, @room_hn0202, N'SUCCESS', '2026-07-06', N'BANK_TRANSFER', 1000000, @tenant04_id);
+    VALUES (N'PAY-HN0202-PARTIAL', @inv_hn0202, @room_hn0202, N'PENDING', '2026-07-06', N'BANK_TRANSFER', @inv_hn0202_amount, @tenant04_id);
 
     -- ============================================================
     -- 8. REQUESTS
@@ -335,6 +338,37 @@ END CATCH;
 GO
 
 -- ============================================================
+-- 11. CONTRACTS DATA
+-- Gen hợp đồng cho các phòng đang có tenant
+-- ============================================================
+
+INSERT INTO dbo.contracts (
+    code, room_id, tenant_id, tenant_full_name, tenant_dob, tenant_permanent_address,
+    tenant_identity_number, tenant_identity_issue_date, tenant_identity_issue_place, tenant_phone,
+    amount_in_words, signed_date, start_date, end_date, status, created_by
+)
+SELECT
+    v.contract_code, r.room_id, u.user_id, u.full_name, u.dob, u.permanent_address,
+    u.identity_number, NULL, NULL, u.phone,
+    v.amount_in_words, r.contract_start_date, r.contract_start_date, r.contract_end_date, N'ACTIVE', f.manager_id
+FROM (VALUES
+    (N'HN0101', N'tenant01', N'HD-HN0101-20260101-001', N'Hai triệu năm trăm nghìn đồng'),
+    (N'HN0102', N'tenant02', N'HD-HN0102-20260201-001', N'Hai triệu bảy trăm nghìn đồng'),
+    (N'HN0201', N'tenant03', N'HD-HN0201-20260301-001', N'Hai triệu bốn trăm nghìn đồng'),
+    (N'HN0202', N'tenant04', N'HD-HN0202-20260401-001', N'Hai triệu sáu trăm nghìn đồng'),
+    (N'HN0203', N'tenant05', N'HD-HN0203-20260501-001', N'Hai triệu tám trăm nghìn đồng')
+) AS v(room_code, username, contract_code, amount_in_words)
+JOIN dbo.rooms r ON r.code = v.room_code
+JOIN dbo.users u ON u.username = v.username AND u.user_id = r.tenant_id
+JOIN dbo.facilities f ON f.facility_id = r.facility_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.contracts c
+    WHERE c.code = v.contract_code
+);
+
+
+-- ============================================================
 -- Quick check sau khi insert
 -- ============================================================
 SELECT 'users'         AS table_name, COUNT(*) AS total_rows FROM dbo.users
@@ -346,5 +380,6 @@ UNION ALL SELECT 'invoices',    COUNT(*) FROM dbo.invoices
 UNION ALL SELECT 'payments',    COUNT(*) FROM dbo.payments
 UNION ALL SELECT 'requests',    COUNT(*) FROM dbo.requests
 UNION ALL SELECT 'notifications', COUNT(*) FROM dbo.notifications
-UNION ALL SELECT 'audit_logs',  COUNT(*) FROM dbo.audit_logs;
+UNION ALL SELECT 'audit_logs',  COUNT(*) FROM dbo.audit_logs
+UNION ALL SELECT 'contracts',  COUNT(*) FROM dbo.contracts;
 GO

@@ -38,14 +38,6 @@
         </ol>
     </nav>
     <div class="topbar-actions">
-        <c:if test="${role != 'TENANT'}">
-            <a href="${ctx}/notifications" class="topbar-btn" aria-label="Thông báo">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
-                <c:if test="${not empty unreadNotificationCount and unreadNotificationCount > 0}">
-                    <span class="notification-dot"></span>
-                </c:if>
-            </a>
-        </c:if>
         <div class="user-menu">
             <div class="user-avatar"><c:out value="${initials}"/></div>
             <div class="user-info">
@@ -54,9 +46,9 @@
             </div>
             <!-- Dropdown Menu -->
             <div class="dropdown-menu">
-                <a href="${ctx}/profile" class="dropdown-item">👤 Hồ sơ cá nhân</a>
+                <a href="${ctx}/profile" class="dropdown-item">Hồ sơ cá nhân</a>
                 <div class="dropdown-divider"></div>
-                <a href="${ctx}/logout" class="dropdown-item text-danger">🚪 Đăng xuất</a>
+                <a href="${ctx}/logout" class="dropdown-item text-danger">Đăng xuất</a>
             </div>
         </div>
     </div>

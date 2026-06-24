@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"  %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
@@ -7,8 +7,9 @@
 <c:set var="activeMenu" value="tickets"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 <body>
-<div class="app-shell tenant-shell">
+<div class="app-shell">
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
+    <div class="sidebar-overlay"></div>
     <div class="main-wrapper">
         <jsp:include page="/WEB-INF/views/layout/topbar.jsp"/>
         <main class="page-content">
@@ -81,6 +82,5 @@
             </c:choose>
         </main>
     </div>
-    <jsp:include page="/WEB-INF/views/layout/tenant-bottom-nav.jsp"/>
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

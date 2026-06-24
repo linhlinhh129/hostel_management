@@ -13,6 +13,15 @@ import java.time.LocalDateTime;
 abstract class BaseDAO {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    protected boolean hasColumn(ResultSet rs, String columnName) {
+        try {
+            rs.findColumn(columnName);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
     protected LocalDateTime toLocalDateTime(Timestamp ts) {
         return ts == null ? null : ts.toLocalDateTime();
     }

@@ -167,7 +167,7 @@
                     </thead>
                     <tbody>
                       <c:forEach var="room" items="${page.items}">
-                        <tr>
+                        <tr data-href="${ctx}/manager/rooms/${room.id}">
                           <td>
                             <a href="${ctx}/manager/rooms/${room.id}" style="font-weight:600">
                               <c:out value="${room.code}"/>

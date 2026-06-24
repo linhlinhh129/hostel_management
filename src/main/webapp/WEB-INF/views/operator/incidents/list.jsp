@@ -58,7 +58,7 @@
                         <div style="font-weight: 500; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.title}"><c:out value="${item.title}"/></div>
                       </td>
                       <td class="d-none d-md-table-cell" style="font-size: 0.8125rem; color: var(--hms-text-muted);">
-                        <fmt:formatDate value="${item.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                        <fmt:formatDate value="${item.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm"/>
                       </td>
                       <td>
                         <c:choose>
