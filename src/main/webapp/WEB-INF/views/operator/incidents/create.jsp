@@ -43,11 +43,11 @@
               <div class="row mb-4">
                   <div class="col-md-6 mb-3 mb-md-0">
                       <label for="facility" class="form-label" style="font-weight: 500;">Cơ sở / Tòa nhà <span style="color: #d45656;">*</span></label>
-                      <select class="form-select mintlify-text-input" id="facility" name="facility" required>
+                      <select class="form-select mintlify-text-input" id="facility" name="facility" required onchange="updateRoomDropdown()">
                           <option value="" selected disabled>-- Chọn cơ sở --</option>
-                          <option value="Cơ sở A - Cầu Giấy">Cơ sở A - Cầu Giấy</option>
-                          <option value="Cơ sở B - Đống Đa">Cơ sở B - Đống Đa</option>
-                          <option value="Cơ sở C - Thanh Xuân">Cơ sở C - Thanh Xuân</option>
+                          <c:forEach var="f" items="${facilities}">
+                              <option value="${f.name} (${f.code})" data-id="${f.id}"><c:out value="${f.name}"/> (<c:out value="${f.code}"/>)</option>
+                          </c:forEach>
                       </select>
                       <div class="invalid-feedback" style="font-size: 13px; margin-top: 4px;">Vui lòng chọn cơ sở/tòa nhà.</div>
                   </div>
@@ -90,11 +90,6 @@
                       <!-- Phòng cụ thể -->
                       <select class="form-select mintlify-text-input" id="locationDetailRoom" style="display: none;">
                           <option value="" selected disabled>-- Chọn mã phòng --</option>
-                          <option value="101">Phòng 101</option>
-                          <option value="102">Phòng 102</option>
-                          <option value="201">Phòng 201</option>
-                          <option value="202">Phòng 202</option>
-                          <option value="301">Phòng 301</option>
                       </select>
                       <div class="invalid-feedback" id="feedbackRoom" style="font-size: 13px; margin-top: 4px; display: none;">Vui lòng chọn mã phòng.</div>
                       
@@ -150,6 +145,46 @@
     </main>
   </div>
 </div>
+
+<script>
+    // Inject facilityRoomsMap from server
+    const facilityRooms = {};
+    <c:forEach var="entry" items="${facilityRoomsMap}">
+        facilityRooms[${entry.key}] = [
+            <c:forEach var="r" items="${entry.value}" varStatus="status">
+                { code: '${r.code}' }<c:if test="${!status.last}">,</c:if>
+            </c:forEach>
+        ];
+    </c:forEach>
+
+    function updateRoomDropdown() {
+        const facilitySelect = document.getElementById('facility');
+        const roomSelect = document.getElementById('locationDetailRoom');
+        const selectedOption = facilitySelect.options[facilitySelect.selectedIndex];
+        
+        // Reset room options
+        roomSelect.innerHTML = '<option value="" selected disabled>-- Chọn mã phòng --</option>';
+        
+        if (selectedOption && selectedOption.dataset.id) {
+            const facilityId = selectedOption.dataset.id;
+            const rooms = facilityRooms[facilityId];
+            if (rooms && rooms.length > 0) {
+                rooms.forEach(r => {
+                    const option = document.createElement('option');
+                    option.value = r.code;
+                    option.textContent = 'Phòng ' + r.code;
+                    roomSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Chưa có phòng nào";
+                option.disabled = true;
+                roomSelect.appendChild(option);
+            }
+        }
+    }
+</script>
 
 <script>
     // Xử lý logic chọn Vị trí (Khu vực chung / Phòng)

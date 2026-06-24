@@ -25,6 +25,7 @@
         <div class="col-lg-7">
           <div class="data-surface" style="height:100%">
             <form method="post" action="${ctx}/manager/notifications/send-operator" class="p-4">
+              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
               <input type="hidden" name="invoiceId" value="${invoice.id}"/>
 
               <c:if test="${not empty errorMessage}">

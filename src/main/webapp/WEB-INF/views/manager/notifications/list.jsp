@@ -390,6 +390,8 @@
                   </c:otherwise>
                 </c:choose>
               </c:otherwise>
+            </c:choose>
+          </c:otherwise>
         </c:choose>
       </div>
 
