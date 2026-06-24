@@ -74,7 +74,7 @@ public final class EmailService {
                 String smtpUser = emailProps.getProperty("email.username");
                 String from = emailProps.getProperty("email.from", smtpUser);
 
-                logger.info("Attempting to send temp password email to {}", toEmail);
+                logger.info("Attempting to send temp password email to {}", maskEmail(toEmail));
 
                 Message message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(from, "Quản lý Nhà trọ"));
@@ -85,9 +85,9 @@ public final class EmailService {
                 message.setContent(body, "text/html; charset=UTF-8");
 
                 Transport.send(message);
-                logger.info("Temp password email sent to {}", toEmail);
+                logger.info("Temp password email sent to {}", maskEmail(toEmail));
             } catch (Exception e) {
-                logger.error("[EmailService] Unexpected error sending to {}: {}", toEmail, e.getMessage(), e);
+                logger.error("[EmailService] Unexpected error sending to {}: {}", maskEmail(toEmail), e.getMessage(), e);
             }
         }, "email-sender-temp-pwd").start();
     }
@@ -101,7 +101,7 @@ public final class EmailService {
                 String smtpUser = emailProps.getProperty("email.username");
                 String from = emailProps.getProperty("email.from", smtpUser);
 
-                logger.info("Attempting to send reset password email to {}", toEmail);
+                logger.info("Attempting to send reset password email to {}", maskEmail(toEmail));
 
                 Message message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(from, "Quản lý Nhà trọ"));
@@ -116,9 +116,9 @@ public final class EmailService {
                 message.setContent(htmlContent, "text/html; charset=UTF-8");
 
                 Transport.send(message);
-                logger.info("Reset password email sent to {}", toEmail);
+                logger.info("Reset password email sent to {}", maskEmail(toEmail));
             } catch (Exception e) {
-                logger.error("[EmailService] Unexpected error sending to {}: {}", toEmail, e.getMessage(), e);
+                logger.error("[EmailService] Unexpected error sending to {}: {}", maskEmail(toEmail), e.getMessage(), e);
             }
         }, "email-sender-reset-pwd").start();
     }
@@ -146,5 +146,12 @@ public final class EmailService {
                     .replace("<", "&lt;")
                     .replace(">", "&gt;")
                     .replace("\"", "&quot;");
+    }
+
+    private static String maskEmail(String email) {
+        if (email == null || !email.contains("@")) return email;
+        String[] parts = email.split("@");
+        if (parts[0].length() <= 2) return parts[0] + "****@" + parts[1];
+        return parts[0].charAt(0) + "****" + parts[0].charAt(parts[0].length() - 1) + "@" + parts[1];
     }
 }

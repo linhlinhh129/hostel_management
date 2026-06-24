@@ -141,9 +141,6 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end align-items-center" style="gap: 8px;">
-                                                        <c:if test="${req.status == 'PENDING'}">
-                                                            <a href="${pageContext.request.contextPath}/operator/incident-report/edit?id=${req.requestId}" class="mintlify-btn-secondary text-decoration-none" style="padding: 4px 12px; font-size: 12px;">Sửa</a>
-                                                        </c:if>
                                                         <a href="${pageContext.request.contextPath}/operator/requests/detail?id=${req.requestId}" class="mintlify-btn-secondary text-decoration-none" style="padding: 4px 12px; font-size: 12px;">Chi tiết</a>
                                                     </div>
                                                 </td>
