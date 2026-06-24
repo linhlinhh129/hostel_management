@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"  %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
@@ -7,16 +7,20 @@
 <c:set var="activeMenu" value="invoices"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 <body>
-<div class="app-shell tenant-shell">
-    <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
+<div class="app-shell">
+    <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/><div class="sidebar-overlay"></div>
     <div class="main-wrapper">
         <jsp:include page="/WEB-INF/views/layout/topbar.jsp"/>
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header hero-sky-gradient">
-                <h1>Hóa đơn của bạn</h1>
-                <p>Lịch sử hóa đơn hàng tháng</p>
+            <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Hóa đơn của bạn</h1>
+                        <p>Lịch sử hóa đơn hàng tháng</p>
+                    </div>
+                </div>
             </div>
 
             <%-- Tổng nợ nếu có --%>
@@ -34,45 +38,58 @@
 
             <c:choose>
                 <c:when test="${not empty invoices}">
-                    <c:forEach var="inv" items="${invoices}" varStatus="st">
-                        <a href="${ctx}/tenant/invoices/${inv.id}"
-                           class="tenant-card"
-                           style="animation-delay:${st.index * 0.05}s">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div style="font-size:0.6875rem;font-weight:700;text-transform:uppercase;
-                                                letter-spacing:0.05em;color:var(--hms-stone);margin-bottom:4px">
-                                        Kỳ thanh toán
-                                    </div>
-                                    <div style="font-size:1.0625rem;font-weight:700;color:var(--hms-ink)">
-                                        <c:out value="${inv.billingPeriod}"/>
-                                    </div>
-                                    <div style="font-size:0.75rem;color:var(--hms-stone);margin-top:4px">
-                                        Hạn: <c:out value="${inv.dueDate}"/>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <div style="font-size:1.25rem;font-weight:800;
+                    <div class="widget-surface">
+                        <div class="widget-surface-header">
+                            <h3>Danh sách hóa đơn</h3>
+                        </div>
+                        <div class="widget-surface-body p-0">
+                            <div class="table-responsive">
+                                <table class="table-mintlify table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>Kỳ thanh toán</th>
+                                        <th>Hạn nộp</th>
+                                        <th class="text-end">Số tiền</th>
+                                        <th class="text-center">Trạng thái</th>
+                                        <th class="text-center">Hành động</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach var="inv" items="${invoices}" varStatus="st">
+                                        <tr style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both">
+                                            <td style="font-weight:600;color:var(--hms-ink)">
+                                                <c:out value="${inv.billingPeriod}"/>
+                                            </td>
+                                            <td style="font-size:0.875rem;color:var(--hms-stone)">
+                                                <c:out value="${inv.dueDate}"/>
+                                            </td>
+                                            <td class="text-end" style="font-weight:700;
                                                 color:${inv.status == 'OVERDUE' ? 'var(--hms-danger)' : inv.status == 'PAID' ? 'var(--hms-success)' : 'var(--hms-ink)'}">
-                                        <fmt:formatNumber value="${inv.totalAmount}" pattern="#,##0"/> đ
-                                    </div>
-                                    <div class="mt-1">
-                                        <c:choose>
-                                            <c:when test="${inv.status == 'PAID'}">
-                                                <span class="badge-hms badge-success">✓ Đã thanh toán</span>
-                                            </c:when>
-                                            <c:when test="${inv.status == 'OVERDUE'}">
-                                                <span class="badge-hms badge-danger">⚠ Quá hạn</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge-hms badge-warning">Chưa TT</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
-                                </div>
+                                                <fmt:formatNumber value="${inv.totalAmount}" pattern="#,##0"/> đ
+                                            </td>
+                                            <td class="text-center">
+                                                <c:choose>
+                                                    <c:when test="${inv.status == 'PAID'}">
+                                                        <span class="badge-hms badge-success">✓ Đã thanh toán</span>
+                                                    </c:when>
+                                                    <c:when test="${inv.status == 'OVERDUE'}">
+                                                        <span class="badge-hms badge-danger">⚠ Quá hạn</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge-hms badge-warning">Chưa thanh toán</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="${ctx}/tenant/invoices/${inv.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
                             </div>
-                        </a>
-                    </c:forEach>
+                        </div>
+                    </div>
                 </c:when>
                 <c:otherwise>
                     <jsp:include page="/WEB-INF/views/layout/fragments/empty-state.jsp">
@@ -81,7 +98,5 @@
                 </c:otherwise>
             </c:choose>
         </main>
-    </div>
-    <jsp:include page="/WEB-INF/views/layout/tenant-bottom-nav.jsp"/>
-</div>
+    </div></div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
