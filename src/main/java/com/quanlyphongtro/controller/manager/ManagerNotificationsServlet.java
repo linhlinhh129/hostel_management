@@ -101,14 +101,41 @@ public class ManagerNotificationsServlet extends BaseServlet {
         List<Map<String, Object>> notifications = new ArrayList<>();
         int totalCount = 0;
 
-        StringBuilder whereClause = new StringBuilder(" WHERE n.deleted_at IS NULL AND (n.created_by = ? OR n.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL) OR n.room_id IN (SELECT r.room_id FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL))");
+        String tab = req.getParameter("tab");
+        if (tab == null || tab.trim().isEmpty()) {
+            tab = "general";
+        }
+
+        String type = req.getParameter("type");
+        if (type == null || type.trim().isEmpty()) {
+            type = "received";
+        }
+
+        StringBuilder whereClause = new StringBuilder();
         List<Object> params = new ArrayList<>();
-        params.add(currentUser.getId());
-        params.add(currentUser.getId());
-        params.add(currentUser.getId());
+
+        if ("general".equals(tab)) {
+            if ("received".equals(type)) {
+                whereClause.append(" WHERE n.deleted_at IS NULL AND n.status = 'SENT' AND u.role = 'ADMIN'");
+                whereClause.append(" AND (n.target_type = 'ALL'");
+                whereClause.append(" OR n.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)");
+                whereClause.append(" OR n.room_id IN (SELECT r.room_id FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL))");
+                params.add(currentUser.getId());
+                params.add(currentUser.getId());
+            } else {
+                whereClause.append(" WHERE n.deleted_at IS NULL AND n.created_by = ?");
+                params.add(currentUser.getId());
+            }
+        } else {
+            whereClause.append(" WHERE n.deleted_at IS NULL AND (n.created_by = ? OR n.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL) OR n.room_id IN (SELECT r.room_id FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL))");
+            params.add(currentUser.getId());
+            params.add(currentUser.getId());
+            params.add(currentUser.getId());
+        }
 
         if (filterFacilityId != null) {
-            whereClause.append(" AND (n.facility_id = ? OR n.room_id IN (SELECT room_id FROM dbo.rooms WHERE facility_id = ? AND deleted_at IS NULL))");
+            whereClause.append(
+                    " AND (n.facility_id = ? OR n.room_id IN (SELECT room_id FROM dbo.rooms WHERE facility_id = ? AND deleted_at IS NULL))");
             params.add(filterFacilityId);
             params.add(filterFacilityId);
         }
@@ -122,11 +149,13 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String countSql = "SELECT COUNT(*) FROM dbo.notifications n" +
                 " JOIN dbo.users u ON n.created_by = u.user_id " +
                 " LEFT JOIN dbo.rooms r ON n.room_id = r.room_id AND r.deleted_at IS NULL " +
-                " LEFT JOIN dbo.facilities f ON (n.facility_id = f.facility_id OR r.facility_id = f.facility_id) AND f.deleted_at IS NULL" + whereClause.toString();
-        String selectSql = "SELECT n.*, u.full_name AS creator_name FROM dbo.notifications n " +
+                " LEFT JOIN dbo.facilities f ON (n.facility_id = f.facility_id OR r.facility_id = f.facility_id) AND f.deleted_at IS NULL"
+                + whereClause.toString();
+        String selectSql = "SELECT n.*, u.full_name AS creator_name, u.role AS creator_role FROM dbo.notifications n " +
                 "JOIN dbo.users u ON n.created_by = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON n.room_id = r.room_id AND r.deleted_at IS NULL " +
-                "LEFT JOIN dbo.facilities f ON (n.facility_id = f.facility_id OR r.facility_id = f.facility_id) AND f.deleted_at IS NULL" + whereClause.toString() +
+                "LEFT JOIN dbo.facilities f ON (n.facility_id = f.facility_id OR r.facility_id = f.facility_id) AND f.deleted_at IS NULL"
+                + whereClause.toString() +
                 " ORDER BY n.notification_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         List<Map<String, Object>> assignedFacilities = new ArrayList<>();
@@ -162,6 +191,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                         notif.put("title", rs.getString("title"));
                         notif.put("recipientType", rs.getString("target_type"));
                         notif.put("createdByName", rs.getString("creator_name"));
+                        notif.put("creatorRole", rs.getString("creator_role"));
                         notif.put("status", rs.getString("status"));
                         Timestamp cAt = rs.getTimestamp("created_at");
                         notif.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
@@ -237,6 +267,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.setAttribute("keyword", keyword);
         req.setAttribute("assignedFacilities", assignedFacilities);
         req.setAttribute("filterFacilityId", filterFacilityId);
+        req.setAttribute("tab", tab);
+        req.setAttribute("type", type);
 
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/list.jsp").forward(req, resp);
     }
@@ -455,7 +487,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             return;
         }
 
-        resp.sendRedirect(req.getContextPath() + "/manager/notifications");
+        resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=general&type=sent");
     }
 
     private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId, Integer facilityId) {
