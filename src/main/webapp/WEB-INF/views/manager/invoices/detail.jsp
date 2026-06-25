@@ -25,6 +25,10 @@
             <a href="${ctx}/manager/requests/create?category=TECHNICAL&title=Phát hiện sai số: ${invoice.invoiceCode}" class="btn-mintlify-danger text-decoration-none" style="background-color: var(--hms-danger); color: white; padding: 8px 16px; border-radius: 6px;">Báo cáo sai số</a>
             <c:if test="${invoice.status ne 'PAID'}">
               <a href="${ctx}/manager/invoices/${invoice.invoiceId}/edit" class="btn-mintlify-secondary text-decoration-none">Sửa Hóa Đơn</a>
+              <form action="${ctx}/manager/invoices/${invoice.invoiceId}/delete" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này sẽ giải phóng chỉ số điện nước liên quan (nếu có sai lệch).');">
+                <input type="hidden" name="csrfToken" value="${csrfToken}">
+                <button type="submit" class="btn btn-danger" style="background-color: var(--hms-danger); color: white; border: none; padding: 8px 16.5px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">Xóa Hóa Đơn</button>
+              </form>
             </c:if>
             <button onclick="window.print()" class="btn-mintlify-primary">Xuất PDF / In</button>
           </div>

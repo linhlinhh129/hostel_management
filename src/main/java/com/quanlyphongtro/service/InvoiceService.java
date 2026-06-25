@@ -22,4 +22,5 @@ public interface InvoiceService {
     void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDate, String taxRate, String otherFee, String note, int createdBy) throws Exception;
     void updateInvoice(int managerId, int invoiceId, String dueDateStr, String taxRateStr, String otherFeeStr, String note) throws Exception;
     void updateStatus(int managerId, int invoiceId, String status) throws Exception;
+    void deleteInvoice(int managerId, int invoiceId) throws Exception;
 }
