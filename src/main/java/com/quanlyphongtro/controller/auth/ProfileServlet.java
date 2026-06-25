@@ -123,6 +123,11 @@ public class ProfileServlet extends BaseServlet {
                     return;
                 }
 
+                if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=invalid_policy");
+                    return;
+                }
+
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
                     response.sendRedirect(request.getContextPath() + "/profile?error=invalid_password");
                     return;

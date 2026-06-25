@@ -58,6 +58,12 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </c:if>
+                <c:if test="${param.error == 'invalid_policy'}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Mật khẩu mới không đạt chuẩn bảo mật (cần ít nhất 8 ký tự, có chữ hoa, chữ số và ký tự đặc biệt).
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
 
                 <div class="row">
                     <!-- Column 1: Chỉnh sửa hồ sơ -->
@@ -166,14 +172,18 @@
                                     
                                     <div class="mb-3">
                                         <label class="form-label fw-medium text-dark">Mật khẩu mới <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" name="newPassword" minlength="7" required>
-                                        <div class="invalid-feedback">Mật khẩu mới phải có ít nhất 7 ký tự.</div>
+                                        <input type="password" class="form-control" name="newPassword" 
+                                               pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}" 
+                                               title="Ít nhất 8 ký tự, bao gồm 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt" required>
+                                        <div class="form-text text-muted" style="font-size: 0.8rem;">Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, số và ký tự đặc biệt.</div>
+                                        <div class="invalid-feedback">Mật khẩu mới không đạt chuẩn.</div>
                                     </div>
                                     
                                     <div class="mb-4">
                                         <label class="form-label fw-medium text-dark">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" name="confirmPassword" minlength="7" required>
-                                        <div class="invalid-feedback">Vui lòng xác nhận mật khẩu mới.</div>
+                                        <input type="password" class="form-control" name="confirmPassword" 
+                                               pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}" required>
+                                        <div class="invalid-feedback">Vui lòng xác nhận đúng mật khẩu mới.</div>
                                     </div>
                                     
                                     <div class="d-grid">

@@ -21,6 +21,7 @@ IF OBJECT_ID(N'dbo.users', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.users (
         user_id             INT IDENTITY(1,1)   PRIMARY KEY,
+		personnel_id        VARCHAR(20)         UNIQUE,
         username            NVARCHAR(50)        NOT NULL UNIQUE,
         password_hash       NVARCHAR(255)       NOT NULL,
         role                NVARCHAR(20)        NOT NULL DEFAULT 'TENANT',  -- ADMIN, MANAGER, OPERATOR, TENANT

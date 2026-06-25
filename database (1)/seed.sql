@@ -22,44 +22,44 @@ BEGIN TRY
     DECLARE @pwd NVARCHAR(255) = '$2a$10$IrTJt3qW7TtGHeOvRHYUsehGxBK4fgR.ywsmhP5SEs3RjbRXP3WVy';
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'admin01')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'admin01', @pwd, N'ADMIN', N'Nguyễn Minh Admin', N'admin01@hostel.vn', N'0900000001', N'ACTIVE', NULL, 0, N'001201000201', '2003-01-15', N'MALE', N'Hà Nội');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES (NULL ,N'admin01', @pwd, N'ADMIN', N'Nguyễn Minh Admin', N'admin01@hostel.vn', N'0900000001', N'ACTIVE', NULL, 0, N'001201000201', '2003-01-15', N'MALE', N'Hà Nội');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'manager01')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'manager01', @pwd, N'MANAGER', N'Trần Lan Manager', N'manager01@hostel.vn', N'0900000002', N'ACTIVE', NULL, 1, N'001241000001', '2001-02-15', N'FEMALE', N'Cầu Giấy, Hà Nội');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('EMP002', N'manager01', @pwd, N'MANAGER', N'Trần Lan Manager', N'manager01@hostel.vn', N'0900000002', N'ACTIVE', NULL, 1, N'001241000001', '2001-02-15', N'FEMALE', N'Cầu Giấy, Hà Nội');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'manager02')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'manager02', @pwd, N'MANAGER', N'Phạm Hoàng Manager', N'manager02@hostel.vn', N'0900000003', N'ACTIVE', NULL, 1, N'011201000001', '2001-01-25', N'MALE', N'Hải Dương');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('EMP003', N'manager02', @pwd, N'MANAGER', N'Phạm Hoàng Manager', N'manager02@hostel.vn', N'0900000003', N'ACTIVE', NULL, 1, N'011201000001', '2001-01-25', N'MALE', N'Hải Dương');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'operator01')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'operator01', @pwd, N'OPERATOR', N'Lê Huy Operator', N'operator01@hostel.vn', N'0900000004', N'ACTIVE', NULL, 1, N'001201050001', '2001-01-15', N'MALE', N'Thanh Xuân, Hà Nội');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('EMP004', N'operator01', @pwd, N'OPERATOR', N'Lê Huy Operator', N'operator01@hostel.vn', N'0900000004', N'ACTIVE', NULL, 1, N'001201050001', '2001-01-15', N'MALE', N'Thanh Xuân, Hà Nội');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'operator02')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'operator02', @pwd, N'OPERATOR', N'Vũ Thu Operator', N'operator02@hostel.vn', N'0900000005', N'ACTIVE', NULL, 1, N'001201000301', '2006-01-15', N'FEMALE', N'Đống Đa, Hà Nội');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('EMP005', N'operator02', @pwd, N'OPERATOR', N'Vũ Thu Operator', N'operator02@hostel.vn', N'0900000005', N'ACTIVE', NULL, 1, N'001201000301', '2006-01-15', N'FEMALE', N'Đống Đa, Hà Nội');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant01')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant01', @pwd, N'TENANT', N'Nguyễn Văn An', N'an.nguyen@example.com', N'0911111111', N'ACTIVE', NULL, 0, N'001201000001', '2001-01-15', N'MALE', N'Nam Sách, Hải Dương');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('TEN001', N'tenant01', @pwd, N'TENANT', N'Nguyễn Văn An', N'an.nguyen@example.com', N'0911111111', N'ACTIVE', NULL, 0, N'001201000001', '2001-01-15', N'MALE', N'Nam Sách, Hải Dương');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant02')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant02', @pwd, N'TENANT', N'Trần Thị Bình', N'binh.tran@example.com', N'0922222222', N'ACTIVE', NULL, 0, N'001202000002', '2002-03-20', N'FEMALE', N'Gia Lộc, Hải Dương');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('TEN002', N'tenant02', @pwd, N'TENANT', N'Trần Thị Bình', N'binh.tran@example.com', N'0922222222', N'ACTIVE', NULL, 0, N'001202000002', '2002-03-20', N'FEMALE', N'Gia Lộc, Hải Dương');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant03')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant03', @pwd, N'TENANT', N'Lê Quốc Cường', N'cuong.le@example.com', N'0933333333', N'ACTIVE', NULL, 0, N'001203000003', '2000-07-09', N'MALE', N'Hà Đông, Hà Nội');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('TEN003', N'tenant03', @pwd, N'TENANT', N'Lê Quốc Cường', N'cuong.le@example.com', N'0933333333', N'ACTIVE', NULL, 0, N'001203000003', '2000-07-09', N'MALE', N'Hà Đông, Hà Nội');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant04')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant04', @pwd, N'TENANT', N'Phạm Minh Đức', N'duc.pham@example.com', N'0944444444', N'ACTIVE', NULL, 0, N'001204000004', '1999-11-25', N'MALE', N'Thanh Miện, Hải Dương');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('TEN004', N'tenant04', @pwd, N'TENANT', N'Phạm Minh Đức', N'duc.pham@example.com', N'0944444444', N'ACTIVE', NULL, 0, N'001204000004', '1999-11-25', N'MALE', N'Thanh Miện, Hải Dương');
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant05')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant05', @pwd, N'TENANT', N'Hoàng Thu Hà', N'ha.hoang@example.com', N'0955555555', N'ACTIVE', NULL, 0, N'001205000005', '2003-05-12', N'FEMALE', N'Hoàn Kiếm, Hà Nội');
+    INSERT INTO dbo.users (personnel_id, username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
+    VALUES ('TEN005', N'tenant05', @pwd, N'TENANT', N'Hoàng Thu Hà', N'ha.hoang@example.com', N'0955555555', N'ACTIVE', NULL, 0, N'001205000005', '2003-05-12', N'FEMALE', N'Hoàn Kiếm, Hà Nội');
 
     -- Store user IDs
     DECLARE @admin_id      INT = (SELECT user_id FROM dbo.users WHERE username = N'admin01');

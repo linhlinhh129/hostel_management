@@ -25,8 +25,10 @@
                         <label for="newPassword" class="form-label-modern">Mật khẩu mới</label>
                         <input type="password" class="form-control" id="newPassword" name="newPassword"
                                placeholder="Nhập mật khẩu mới" required autocomplete="new-password"
+                               pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}"
+                               title="Ít nhất 8 ký tự, bao gồm 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt (@#$%^&+=!)"
                                style="border-radius: 16px; padding: 0.75rem 1rem;">
-                        <small class="text-muted" style="font-size: 0.8rem; margin-top: 0.5rem; display: block;">Mật khẩu phải có ít nhất 8 ký tự.</small>
+                        <small class="text-muted" style="font-size: 0.8rem; margin-top: 0.5rem; display: block;">Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt.</small>
                     </div>
                     <div class="mb-4">
                         <label for="confirmPassword" class="form-label-modern">Xác nhận mật khẩu</label>
