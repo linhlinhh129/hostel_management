@@ -66,6 +66,11 @@ public class Notification {
 
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+    
+    public java.util.Date getSentAtAsDate() {
+        if (sentAt == null) return null;
+        return java.util.Date.from(sentAt.atZone(java.time.ZoneId.systemDefault()).toInstant());
+    }
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
