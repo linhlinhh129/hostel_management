@@ -203,7 +203,7 @@ public class ManagerTicketsServlet extends BaseServlet {
         List<Map<String, Object>> operators = new ArrayList<>();
 
         String ticketSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, u.phone AS sender_phone, " +
-                "r.room_id, r.code AS room_code, f.name AS facility_name, f.manager_id, o.full_name AS assigned_operator_name " +
+                "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, o.full_name AS assigned_operator_name " +
                 "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
@@ -235,6 +235,7 @@ public class ManagerTicketsServlet extends BaseServlet {
                         ticket.put("senderPhone", rs.getString("sender_phone"));
                         ticket.put("roomId", rs.getInt("room_id"));
                         ticket.put("roomCode", rs.getString("room_code"));
+                        ticket.put("facilityId", rs.getInt("facility_id"));
                         ticket.put("facilityName", rs.getString("facility_name"));
                         Timestamp cAt = rs.getTimestamp("created_at");
                         Timestamp uAt = rs.getTimestamp("updated_at");
@@ -302,15 +303,35 @@ public class ManagerTicketsServlet extends BaseServlet {
                 return;
             }
 
-            // Query operators lists
-            String opsSql = "SELECT user_id, full_name FROM dbo.users WHERE role = 'OPERATOR' AND status = 'ACTIVE' AND deleted_at IS NULL";
-            try (PreparedStatement ps = conn.prepareStatement(opsSql);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> op = new HashMap<>();
-                    op.put("id", rs.getInt("user_id"));
-                    op.put("fullName", rs.getString("full_name"));
-                    operators.add(op);
+            // Query operators list assigned to the same facility
+            int facilityId = ticket != null && ticket.get("facilityId") != null ? (Integer) ticket.get("facilityId") : -1;
+            String opsSql;
+            if (facilityId > 0) {
+                opsSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
+                        "JOIN dbo.facilities f ON u.user_id = f.operator_id " +
+                        "WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND u.deleted_at IS NULL " +
+                        "AND f.facility_id = ? AND f.deleted_at IS NULL " +
+                        "ORDER BY u.full_name";
+            } else {
+                opsSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
+                        "JOIN dbo.facilities f ON u.user_id = f.operator_id " +
+                        "WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND u.deleted_at IS NULL " +
+                        "AND f.manager_id = ? AND f.deleted_at IS NULL " +
+                        "ORDER BY u.full_name";
+            }
+            try (PreparedStatement ps = conn.prepareStatement(opsSql)) {
+                if (facilityId > 0) {
+                    ps.setInt(1, facilityId);
+                } else {
+                    ps.setInt(1, currentUser.getId());
+                }
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> op = new HashMap<>();
+                        op.put("id", rs.getInt("user_id"));
+                        op.put("fullName", rs.getString("full_name"));
+                        operators.add(op);
+                    }
                 }
             }
         } catch (Exception e) {

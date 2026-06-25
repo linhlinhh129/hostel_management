@@ -216,7 +216,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
             // Load reported incorrect invoices
             List<Map<String, Object>> incorrectInvoices = new ArrayList<>();
-            String incorrectSql = "SELECT i.invoice_id, i.code AS invoice_code, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
+            String incorrectSql = "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
                     "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount " +
                     "FROM dbo.invoices i " +
                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
@@ -231,6 +231,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                         Map<String, Object> item = new HashMap<>();
                         item.put("id", rsInc.getInt("invoice_id"));
                         item.put("code", rsInc.getString("invoice_code"));
+                        item.put("roomId", rsInc.getInt("room_id"));
                         item.put("roomCode", rsInc.getString("room_code"));
                         item.put("facilityName", rsInc.getString("facility_name"));
                         item.put("facilityCode", rsInc.getString("facility_code"));
@@ -594,7 +595,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             boolean isAuthorized = false;
             int meterId = -1;
             String invoiceCode = "";
-            String verifySql = "SELECT i.meter_id, i.code, f.manager_id FROM dbo.invoices i " +
+            String verifySql = "SELECT i.meter_id, i.code, i.status, f.manager_id FROM dbo.invoices i " +
                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                     "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
@@ -608,6 +609,12 @@ public class ManagerNotificationsServlet extends BaseServlet {
                             isAuthorized = true;
                             meterId = rs.getInt("meter_id");
                             invoiceCode = rs.getString("code");
+                            String invoiceStatus = rs.getString("status");
+                            if ("PAID".equals(invoiceStatus)) {
+                                setFlashMessage(req, "danger", "Không thể báo cáo sai số cho hóa đơn đã thanh toán.");
+                                resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + invoiceId);
+                                return;
+                            }
                         }
                     }
                 }
@@ -633,7 +640,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             }
 
             setFlashMessage(req, "success", "Đã báo cáo sai số điện nước cho hóa đơn " + invoiceCode + ". Vui lòng gửi thông báo cho Operator.");
-            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications/send-operator?invoiceId=" + invoiceId);
 
         } catch (Exception e) {
             logger.error("Failed to report incorrect invoice", e);
@@ -658,7 +665,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
             Map<String, Object> invoice = null;
 
-            String sql = "SELECT i.*, r.code AS room_code, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
+            String sql = "SELECT i.*, r.code AS room_code, f.facility_id, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
                     "mr.electric, mr.water, mr.reading_date " +
                     "FROM dbo.invoices i " +
                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
@@ -696,6 +703,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                             } else {
                                 invoice.put("billingPeriod", "—");
                             }
+                    invoice.put("facilityId", rs.getInt("facility_id"));
                         }
                     }
                 }
@@ -705,9 +713,16 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     return;
                 }
 
-                // Query active operators
-                String opsSql = "SELECT user_id, full_name FROM dbo.users WHERE role = 'OPERATOR' AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY full_name";
+                int facilityId = (Integer) invoice.get("facilityId");
+
+                // Query active operators assigned to this facility
+                String opsSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
+                        "JOIN dbo.facilities f ON u.user_id = f.operator_id " +
+                        "WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND u.deleted_at IS NULL " +
+                        "AND f.facility_id = ? AND f.deleted_at IS NULL " +
+                        "ORDER BY u.full_name";
                 try (PreparedStatement psOps = conn.prepareStatement(opsSql)) {
+                    psOps.setInt(1, facilityId);
                     try (ResultSet rsOps = psOps.executeQuery()) {
                         while (rsOps.next()) {
                             Map<String, Object> op = new HashMap<>();
