@@ -65,9 +65,9 @@ public class ResetPasswordApiServlet extends HttpServlet {
             return;
         }
 
-        if (newPassword == null || newPassword.length() < 8) {
+        if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"error\":{\"code\":\"INVALID_PASSWORD\",\"message\":\"Mật khẩu phải từ 8 ký tự trở lên\"}}");
+            out.print("{\"success\":false,\"error\":{\"code\":\"INVALID_PASSWORD\",\"message\":\"" + com.quanlyphongtro.util.PasswordValidator.POLICY_MESSAGE + "\"}}");
             out.flush();
             return;
         }

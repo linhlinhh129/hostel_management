@@ -47,18 +47,6 @@ BEGIN TRY
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
     VALUES (N'dov62995@gmail.com', @pwd, N'TENANT', N'Đỗ Danh Việt', N'dov62995@gmail.com', N'0922222222', N'ACTIVE', NULL, 0, N'001202000002', '2002-03-20', N'FEMALE', N'Gia Lộc, Hải Dương');
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant03')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant03', @pwd, N'TENANT', N'Lê Quốc Cường', N'cuong.le@example.com', N'0933333333', N'ACTIVE', NULL, 0, N'001203000003', '2000-07-09', N'MALE', N'Hà Đông, Hà Nội');
-
-    IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant04')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant04', @pwd, N'TENANT', N'Phạm Minh Đức', N'duc.pham@example.com', N'0944444444', N'ACTIVE', NULL, 0, N'001204000004', '1999-11-25', N'MALE', N'Thanh Miện, Hải Dương');
-
-    IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'tenant05')
-    INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'tenant05', @pwd, N'TENANT', N'Hoàng Thu Hà', N'ha.hoang@example.com', N'0955555555', N'ACTIVE', NULL, 0, N'001205000005', '2003-05-12', N'FEMALE', N'Hoàn Kiếm, Hà Nội');
-
     -- Store user IDs
     DECLARE @admin_id      INT = (SELECT user_id FROM dbo.users WHERE username = N'mquoc1202@gmail.com');
     DECLARE @manager01_id  INT = (SELECT user_id FROM dbo.users WHERE username = N'mn03112005@gmail.com');

@@ -70,6 +70,12 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </c:if>
+                <c:if test="${param.error == 'invalid_policy'}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Mật khẩu mới không đạt chuẩn bảo mật (cần ít nhất 8 ký tự, có chữ hoa, chữ số và ký tự đặc biệt).
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
 
                 <div class="row">
                     <!-- Column 1: Chỉnh sửa hồ sơ -->

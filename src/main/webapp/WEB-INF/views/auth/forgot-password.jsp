@@ -63,7 +63,6 @@
     </div>
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
-
 <script>
 document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
     e.preventDefault();

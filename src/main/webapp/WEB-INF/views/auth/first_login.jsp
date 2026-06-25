@@ -25,6 +25,8 @@
                         <label for="newPassword" class="form-label-modern">Mật khẩu mới</label>
                         <input type="password" class="form-control" id="newPassword" name="newPassword"
                                placeholder="Nhập mật khẩu mới" required autocomplete="new-password"
+                               pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}"
+                               title="Ít nhất 8 ký tự, bao gồm 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt (@#$%^&+=!)"
                                style="border-radius: 16px; padding: 0.75rem 1rem;">
                         <%-- Checklist yêu cầu --%>
                         <ul id="pwChecklist" style="list-style:none;padding:0.5rem 0 0;margin:0;font-size:0.8rem;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px">
