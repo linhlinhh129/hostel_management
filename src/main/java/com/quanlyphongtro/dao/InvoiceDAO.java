@@ -204,19 +204,19 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public BigDecimal calculateRealtimeLatePenalty(int invoiceId) {
-        String sql = "SELECT total_amount, due_date FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
+        String sql = "SELECT room_fee, due_date FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    BigDecimal totalAmount = rs.getBigDecimal("total_amount");
+                    BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     LocalDate dueDate = rs.getDate("due_date").toLocalDate();
                     LocalDate today = LocalDate.now();
-                    if (dueDate != null && totalAmount != null && today.isAfter(dueDate)) {
+                    if (dueDate != null && roomFee != null && today.isAfter(dueDate)) {
                         long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
-                        BigDecimal penaltyRate = new BigDecimal("0.0005").multiply(new BigDecimal(daysLate));
-                        return totalAmount.multiply(penaltyRate).setScale(0, java.math.RoundingMode.HALF_UP);
+                        BigDecimal penaltyRate = new BigDecimal("0.01").multiply(new BigDecimal(daysLate));
+                        return roomFee.multiply(penaltyRate).setScale(0, java.math.RoundingMode.HALF_UP);
                     }
                 }
             }

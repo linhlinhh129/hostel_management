@@ -118,7 +118,7 @@ PROCESSING
 
 WHEN người thuê thanh toán hóa đơn
 
-THE SYSTEM SHALL tính toán tổng tiền bao gồm tiền gốc và phí phạt trễ hạn (0.05% mỗi ngày nếu có).
+THE SYSTEM SHALL tính toán tổng tiền bao gồm tiền gốc và phí phạt trễ hạn (1% tiền phòng mỗi ngày nếu có).
 
 AND tạo phiên giao dịch VNPay Sandbox với mã tham chiếu (TxnRef) định dạng `INV{id}T{timestamp}`.
 
