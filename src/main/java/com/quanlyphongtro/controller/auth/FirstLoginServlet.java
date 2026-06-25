@@ -57,14 +57,34 @@ public class FirstLoginServlet extends BaseServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        if (newPassword == null || newPassword.length() < 7) {
-            request.setAttribute("errorMessage", "Mật khẩu phải có ít nhất 7 ký tự.");
+        // ── Validate độ mạnh mật khẩu ───────────────────────────────────
+        if (newPassword == null || newPassword.length() < 8) {
+            request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u ph\u1EA3i c\u00F3 \u00EDt nh\u1EA5t 8 k\u00FD t\u1EF1.");
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
             return;
         }
-
+        if (!newPassword.matches(".*[A-Z].*")) {
+            request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u ph\u1EA3i c\u00F3 \u00EDt nh\u1EA5t 1 ch\u1EEF in hoa.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
+            return;
+        }
+        if (!newPassword.matches(".*[a-z].*")) {
+            request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u ph\u1EA3i c\u00F3 \u00EDt nh\u1EA5t 1 ch\u1EEF in th\u01B0\u1EDDng.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
+            return;
+        }
+        if (!newPassword.matches(".*[0-9].*")) {
+            request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u ph\u1EA3i c\u00F3 \u00EDt nh\u1EA5t 1 ch\u1EEF s\u1ED1.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
+            return;
+        }
+        if (!newPassword.matches(".*[@#$%!^&*()_+\\-=\\[\\]{};':\"\\\\ |,.<>/?`~].*")) {
+            request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u ph\u1EA3i c\u00F3 \u00EDt nh\u1EA5t 1 k\u00FD t\u1EF1 \u0111\u1EB7c bi\u1EC7t.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
+            return;
+        }
         if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("errorMessage", "Mật khẩu xác nhận không khớp.");
+            request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u x\u00E1c nh\u1EADn kh\u00F4ng kh\u1EDBp.");
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
             return;
         }

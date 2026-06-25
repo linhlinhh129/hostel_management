@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"  %>
 <%@ taglib prefix="fn"  uri="jakarta.tags.functions" %>
@@ -61,6 +61,8 @@
                         <option value="DEACTIVATE"      ${filterAction == 'DEACTIVATE'      ? 'selected' : ''}>Vô hiệu hóa</option>
                         <option value="LOCK_EMPLOYEE"   ${filterAction == 'LOCK_EMPLOYEE'   ? 'selected' : ''}>Khóa tài khoản</option>
                         <option value="UNLOCK_EMPLOYEE" ${filterAction == 'UNLOCK_EMPLOYEE' ? 'selected' : ''}>Mở khóa</option>
+                        <option value="UPDATE_ELECTRICITY" ${filterAction == 'UPDATE_ELECTRICITY' ? 'selected' : ''}>Cập nhật số điện</option>
+                        <option value="UPDATE_WATER"    ${filterAction == 'UPDATE_WATER'    ? 'selected' : ''}>Cập nhật số nước</option>
                         <option value="CREATE_EMPLOYEE" ${filterAction == 'CREATE_EMPLOYEE' ? 'selected' : ''}>Tạo nhân sự</option>
                     </select>
                     <input type="date" class="form-control" name="dateFrom"
@@ -120,19 +122,19 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <c:choose>
-                                                <c:when test="${not empty log.entityName}">
-                                                    <span style="font-size:0.8125rem;font-weight:600;
-                                                                 color:var(--hms-text)">
-                                                        <c:out value="${log.entityName}"/>
-                                                    </span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span style="font-size:0.8125rem;color:var(--hms-text-muted)">
-                                                        ID: <c:out value="${log.entityId}"/>
-                                                    </span>
-                                                </c:otherwise>
-                                            </c:choose>
+                                            <span style="font-size:0.8125rem;font-weight:500">
+                                                <c:choose>
+                                                    <c:when test="${log.entityType == 'facilities'}">Cơ sở</c:when>
+                                                    <c:when test="${log.entityType == 'rooms'}">Phòng</c:when>
+                                                    <c:when test="${log.entityType == 'users'}">Nhân sự</c:when>
+                                                    <c:when test="${log.entityType == 'notifications'}">Thông báo</c:when>
+                                                    <c:when test="${log.entityType == 'invoices'}">Hóa đơn</c:when>
+                                                    <c:when test="${log.entityType == 'payments'}">Thanh toán</c:when>
+                                                    <c:when test="${log.entityType == 'requests'}">Yêu cầu</c:when>
+                                                    <c:when test="${log.entityType == 'meter_readings'}">Số điện nước</c:when>
+                                                    <c:otherwise>Hệ thống</c:otherwise>
+                                                </c:choose>
+                                            </span>
                                         </td>
                                         <td>
                                             <c:choose>
@@ -154,12 +156,14 @@
                                                         </c:choose>
                                                     </span>
                                                 </c:when>
-                                                <c:when test="${log.action == 'UPDATE' or log.action == 'UPDATE_STATUS' or log.action == 'UPDATE_AREA' or log.action == 'UPDATE_EMPLOYEE'}">
+                                                <c:when test="${log.action == 'UPDATE' or log.action == 'UPDATE_STATUS' or log.action == 'UPDATE_AREA' or log.action == 'UPDATE_EMPLOYEE' or log.action == 'UPDATE_ELECTRICITY' or log.action == 'UPDATE_WATER'}">
                                                     <span class="badge-hms badge-info">
                                                         <c:choose>
                                                             <c:when test="${log.action == 'UPDATE'}">Cập nhật</c:when>
                                                             <c:when test="${log.action == 'UPDATE_STATUS'}">Đổi trạng thái</c:when>
                                                             <c:when test="${log.action == 'UPDATE_AREA'}">Cập nhật diện tích</c:when>
+                                                            <c:when test="${log.action == 'UPDATE_ELECTRICITY'}">Cập nhật số điện</c:when>
+                                                            <c:when test="${log.action == 'UPDATE_WATER'}">Cập nhật số nước</c:when>
                                                             <c:otherwise>Sửa nhân sự</c:otherwise>
                                                         </c:choose>
                                                     </span>

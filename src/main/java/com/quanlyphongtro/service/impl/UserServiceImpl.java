@@ -43,6 +43,10 @@ public class UserServiceImpl implements UserService {
 
         Optional<User> userOpt = userDAO.findByUsername(normalizedUsername);
         if (userOpt.isEmpty()) {
+            // Fallback: thử tìm theo email (tenant và nhân sự mới dùng email làm username)
+            userOpt = userDAO.findByEmail(normalizedUsername);
+        }
+        if (userOpt.isEmpty()) {
             logger.warn("LOGIN FAIL [{}]: username not found in DB", normalizedUsername);
             return Optional.empty();
         }

@@ -178,14 +178,24 @@
                                     
                                     <div class="mb-3">
                                         <label class="form-label fw-medium text-dark">Mật khẩu mới <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" name="newPassword" minlength="7" required>
-                                        <div class="invalid-feedback">Mật khẩu mới phải có ít nhất 7 ký tự.</div>
+                                        <input type="password" class="form-control" id="profileNewPw" name="newPassword" minlength="8" required>
+                                        <%-- Checklist yêu cầu --%>
+                                        <ul id="profilePwChecklist" style="list-style:none;padding:0.4rem 0 0;margin:0;font-size:0.78rem;display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+                                            <li id="p-chk-len"     style="color:#6c757d">&#10007; Ít nhất 8 ký tự</li>
+                                            <li id="p-chk-upper"   style="color:#6c757d">&#10007; 1 chữ hoa (A-Z)</li>
+                                            <li id="p-chk-lower"   style="color:#6c757d">&#10007; 1 chữ thường (a-z)</li>
+                                            <li id="p-chk-digit"   style="color:#6c757d">&#10007; 1 chữ số (0-9)</li>
+                                            <li id="p-chk-special" style="color:#6c757d">&#10007; 1 ký tự đặc biệt</li>
+                                        </ul>
+                                        <div style="height:3px;border-radius:99px;background:#e9ecef;margin-top:6px;overflow:hidden">
+                                            <div id="profilePwBar" style="height:100%;width:0;border-radius:99px;background:#dc3545;transition:width 0.3s,background 0.3s"></div>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-4">
                                         <label class="form-label fw-medium text-dark">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" name="confirmPassword" minlength="7" required>
-                                        <div class="invalid-feedback">Vui lòng xác nhận mật khẩu mới.</div>
+                                        <input type="password" class="form-control" id="profileConfirmPw" name="confirmPassword" minlength="8" required>
+                                        <div id="profileConfirmMsg" style="font-size:0.78rem;margin-top:3px;min-height:1rem"></div>
                                     </div>
                                     
                                     <div class="d-grid">
@@ -242,6 +252,60 @@ document.addEventListener("DOMContentLoaded", function() {
             form.classList.add('was-validated')
         }, false)
     });
+
+    // ── Password strength & checklist (profile) ──────────────
+    (function () {
+        var pwInput   = document.getElementById('profileNewPw');
+        var cfInput   = document.getElementById('profileConfirmPw');
+        var bar       = document.getElementById('profilePwBar');
+        var submitBtn = document.querySelector('#profilePwChecklist').closest('form').querySelector('[type="submit"]');
+
+        var checks = {
+            len:     { el: document.getElementById('p-chk-len'),     test: function(v){ return v.length >= 8; } },
+            upper:   { el: document.getElementById('p-chk-upper'),   test: function(v){ return /[A-Z]/.test(v); } },
+            lower:   { el: document.getElementById('p-chk-lower'),   test: function(v){ return /[a-z]/.test(v); } },
+            digit:   { el: document.getElementById('p-chk-digit'),   test: function(v){ return /[0-9]/.test(v); } },
+            special: { el: document.getElementById('p-chk-special'), test: function(v){ return /[^A-Za-z0-9]/.test(v); } }
+        };
+
+        function updateChecklist(pw) {
+            var passed = 0;
+            Object.keys(checks).forEach(function(k) {
+                var c = checks[k]; var ok = c.test(pw);
+                if (ok) { c.el.style.color = '#059669'; c.el.innerHTML = '&#10003; ' + c.el.innerHTML.slice(2); passed++; }
+                else    { c.el.style.color = '#6c757d'; c.el.innerHTML = '&#10007; ' + c.el.innerHTML.slice(2); }
+            });
+            return passed;
+        }
+
+        function allPassed(pw) { return Object.keys(checks).every(function(k){ return checks[k].test(pw); }); }
+
+        pwInput.addEventListener('input', function () {
+            var passed = updateChecklist(this.value);
+            bar.style.width = (passed * 20) + '%';
+            bar.style.background = ['','#dc3545','#fd7e14','#fd7e14','#198754','#198754'][passed] || '#dc3545';
+            updateConfirm();
+        });
+
+        cfInput.addEventListener('input', updateConfirm);
+
+        function updateConfirm() {
+            var msg = document.getElementById('profileConfirmMsg');
+            var match = cfInput.value === pwInput.value;
+            if (!cfInput.value) { msg.textContent = ''; return; }
+            msg.style.color = match ? '#198754' : '#dc3545';
+            msg.textContent = match ? '\u2713 M\u1EADt kh\u1EA9u kh\u1EDBp' : '\u2717 M\u1EADt kh\u1EA9u ch\u01B0a kh\u1EDBp';
+        }
+
+        pwInput.closest('form').addEventListener('submit', function (e) {
+            if (!allPassed(pwInput.value)) {
+                e.preventDefault(); e.stopPropagation(); pwInput.focus(); return false;
+            }
+            if (cfInput.value !== pwInput.value) {
+                e.preventDefault(); e.stopPropagation(); cfInput.focus(); return false;
+            }
+        });
+    })();
 });
 </script>
 </body>

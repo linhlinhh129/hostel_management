@@ -43,20 +43,6 @@
                         <div id="bar" style="height:100%;width:0;border-radius:99px;background:var(--hms-danger);transition:width 0.3s,background 0.3s"></div>
                     </div>
 
-<<<<<<< HEAD
-                    <div class="text-center auth-stagger-4 mb-3">
-                        <button type="submit" class="btn btn-mintlify-primary py-2 px-5"
-                                style="font-size:1rem; min-width: 220px;">
-                            Đặt lại mật khẩu
-                        </button>
-                    </div>
-                    <div class="text-center auth-stagger-4">
-                        <a href="${ctx}/login" class="text-decoration-none"
-                           style="font-size:0.875rem;color:var(--hms-stone);">
-                            ← Quay lại đăng nhập
-                        </a>
-                    </div>
-=======
                     <button type="submit" id="submitBtn" class="btn btn-mintlify-primary w-100"
                             style="border-radius:var(--hms-radius-full);padding:11px">
                         Đặt lại mật khẩu
@@ -65,7 +51,6 @@
                        style="font-size:0.8125rem;color:var(--hms-stone);text-decoration:none">
                         ← Quay lại đăng nhập
                     </a>
->>>>>>> d8470d7e766f743f4de36d68ff1f8dcfb13ad622
                 </form>
             </div>
         </div>

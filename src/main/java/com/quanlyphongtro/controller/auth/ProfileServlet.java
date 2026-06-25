@@ -128,14 +128,34 @@ public class ProfileServlet extends BaseServlet {
                 
             } else if ("change_password".equals(action)) {
                 String currentPassword = request.getParameter("currentPassword");
-                String newPassword = request.getParameter("newPassword");
+                String newPassword     = request.getParameter("newPassword");
                 String confirmPassword = request.getParameter("confirmPassword");
 
+                // ── Validate độ mạnh mật khẩu ───────────────────────────
+                if (newPassword == null || newPassword.length() < 8) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=password_weak");
+                    return;
+                }
+                if (!newPassword.matches(".*[A-Z].*")) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=password_no_upper");
+                    return;
+                }
+                if (!newPassword.matches(".*[a-z].*")) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=password_no_lower");
+                    return;
+                }
+                if (!newPassword.matches(".*[0-9].*")) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=password_no_digit");
+                    return;
+                }
+                if (!newPassword.matches(".*[@#$%!^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?`~].*")) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=password_no_special");
+                    return;
+                }
                 if (!newPassword.equals(confirmPassword)) {
                     response.sendRedirect(request.getContextPath() + "/profile?error=password_mismatch");
                     return;
                 }
-
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
                     response.sendRedirect(request.getContextPath() + "/profile?error=invalid_password");
                     return;

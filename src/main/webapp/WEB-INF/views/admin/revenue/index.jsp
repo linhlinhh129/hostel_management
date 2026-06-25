@@ -220,7 +220,7 @@
                                 <tbody>
                                 <c:forEach var="t" items="${revenueTrend}">
                                     <tr>
-                                        <td style="font-weight:600;font-family:var(--hms-font-mono)">
+                                        <td style="font-weight:600">
                                             <c:out value="${t.facilityCode}"/>
                                         </td>
                                         <td style="font-weight:700">
