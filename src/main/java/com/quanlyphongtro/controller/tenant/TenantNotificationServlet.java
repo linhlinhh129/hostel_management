@@ -37,37 +37,59 @@ public class TenantNotificationServlet extends BaseServlet {
             if (pathInfo == null || pathInfo.equals("/")) {
                 // List
                 String pageParam = req.getParameter("page");
+                String keyword   = req.getParameter("keyword");
+                String status    = req.getParameter("status");  // "read" | "unread" | ""
+                if (keyword != null) keyword = keyword.trim();
+                if (status  != null) status  = status.trim();
+
                 int page = 1;
                 if (pageParam != null && !pageParam.isEmpty()) {
                     try { page = Integer.parseInt(pageParam); } catch (NumberFormatException ignored) {}
                 }
                 int pageSize = 10;
-                
-                int totalItems = notificationService.countNotificationsForTenant(roomId, facilityId);
+
+                int totalItems = notificationService.countNotificationsForTenant(roomId, facilityId, keyword);
                 int totalPages = (int) Math.ceil((double) totalItems / pageSize);
                 if (totalPages == 0) totalPages = 1;
                 if (page > totalPages) page = totalPages;
                 if (page < 1) page = 1;
 
-                List<Notification> notifications = notificationService.getNotificationsForTenant(roomId, facilityId, page, pageSize);
-                
-                java.time.LocalDateTime lastRead = currentUser.getLastReadNotificationTime();
-                if (lastRead == null) lastRead = java.time.LocalDateTime.now().minusDays(7); // default 7 days ago if null
+                List<Notification> notifications = notificationService.getNotificationsForTenant(roomId, facilityId, keyword, page, pageSize);
 
+                java.time.LocalDateTime lastRead = currentUser.getLastReadNotificationTime();
+                if (lastRead == null) lastRead = java.time.LocalDateTime.now().minusDays(7);
+
+                final java.time.LocalDateTime lastReadFinal = lastRead;
                 for (Notification n : notifications) {
-                    n.setUnread(n.getSentAt() != null && n.getSentAt().isAfter(lastRead));
+                    n.setUnread(n.getSentAt() != null && n.getSentAt().isAfter(lastReadFinal));
+                    n.generateSummary();
                 }
-                
+
+                // Filter by read/unread if requested (post-filter after setting unread flags)
+                if ("unread".equals(status)) {
+                    notifications = notifications.stream()
+                            .filter(Notification::isUnread)
+                            .collect(java.util.stream.Collectors.toList());
+                } else if ("read".equals(status)) {
+                    notifications = notifications.stream()
+                            .filter(n -> !n.isUnread())
+                            .collect(java.util.stream.Collectors.toList());
+                }
+
                 if (page == 1) {
                     currentUser.setLastReadNotificationTime(java.time.LocalDateTime.now());
                     req.getSession().setAttribute("currentUser", currentUser);
                 }
-                
+
                 req.setAttribute("notifications", notifications);
                 req.setAttribute("currentPage", page);
                 req.setAttribute("totalPages", totalPages);
-                
+                req.setAttribute("totalNotifications", totalItems);
+                req.setAttribute("keyword", keyword);
+                req.setAttribute("status", status);
+
                 req.getRequestDispatcher("/WEB-INF/views/tenant/notifications/list.jsp").forward(req, resp);
+
             } else {
                 // Detail
                 String idStr = pathInfo.substring(1);
