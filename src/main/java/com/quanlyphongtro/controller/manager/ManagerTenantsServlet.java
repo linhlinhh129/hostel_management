@@ -316,7 +316,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
 
             // Query AVAILABLE rooms under these facilities
-            String roomSql = "SELECT room_id, facility_id, code, area FROM dbo.rooms WHERE status != 'OCCUPIED' AND deleted_at IS NULL";
+            String roomSql = "SELECT room_id, facility_id, code, area FROM dbo.rooms WHERE tenant_id IS NULL AND deleted_at IS NULL";
             try (PreparedStatement ps = conn.prepareStatement(roomSql);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
