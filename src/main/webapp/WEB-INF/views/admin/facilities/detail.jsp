@@ -146,7 +146,7 @@
                                             <c:forEach var="room" items="${rooms}">
                                                 <tr class="room-row-link"
                                                     onclick="location.href='${ctx}/admin/rooms/${room.id}'">
-                                                    <td style="font-family:var(--hms-font-mono);font-weight:600">
+                                                    <td style="font-weight:600">
                                                         <c:out value="${room.code}"/>
                                                     </td>
                                                     <td>Tầng ${room.floorLabel}</td>

@@ -129,37 +129,51 @@
           </div>
 
           <%-- Sửa thông tin (chỉ admin) --%>
-          <div class="widget-surface">
-            <div class="widget-surface-header"><h3>Chỉnh sửa thông tin</h3></div>
-            <div class="widget-surface-body">
-              <form method="post"
-                    action="${ctx}/admin/rooms/${room.id}/update"
-                    class="d-flex flex-column gap-3">
-                <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                
-                <div>
-                  <label class="form-label" style="font-size:0.8125rem">Diện tích (m²)</label>
-                  <input type="number" name="area" class="form-control"
-                         step="0.1" min="0" max="9999" placeholder="VD: 25.5"
-                         value="${not empty room.areaRaw ? room.area : ''}"/>
+          <c:choose>
+            <c:when test="${room.facilityStatus == 'INACTIVE'}">
+              <div class="widget-surface">
+                <div class="widget-surface-header"><h3>Chỉnh sửa thông tin</h3></div>
+                <div class="widget-surface-body">
+                  <div class="alert alert-secondary" style="font-size:0.8125rem">
+                    Cơ sở đã bị vô hiệu hoá. Không thể chỉnh sửa thông tin phòng.
+                  </div>
                 </div>
-                
-                <div>
-                  <label class="form-label" style="font-size:0.8125rem">Giá phòng (VNĐ)</label>
-                  <input type="number" name="roomFee" class="form-control"
-                         min="0" step="1000" placeholder="VD: 3000000"
-                         value="${not empty room.roomFee ? room.roomFee : ''}"/>
-                </div>
-
-                <button type="submit" class="btn btn-mintlify-primary mt-1" style="width:auto">
-                  Lưu thay đổi
-                </button>
-              </form>
-              <div class="form-text text-muted mt-2" style="font-size:0.8rem">
-                Để trống ô nếu muốn xóa giá trị đã lưu.
               </div>
-            </div>
-          </div>
+            </c:when>
+            <c:otherwise>
+              <div class="widget-surface">
+                <div class="widget-surface-header"><h3>Chỉnh sửa thông tin</h3></div>
+                <div class="widget-surface-body">
+                  <form method="post"
+                        action="${ctx}/admin/rooms/${room.id}/update"
+                        class="d-flex flex-column gap-3">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                    
+                    <div>
+                      <label class="form-label" style="font-size:0.8125rem">Diện tích (m²)</label>
+                      <input type="number" name="area" class="form-control"
+                             step="0.1" min="0" max="9999" placeholder="VD: 25.5"
+                             value="${not empty room.areaRaw ? room.area : ''}"/>
+                    </div>
+                    
+                    <div>
+                      <label class="form-label" style="font-size:0.8125rem">Giá phòng (VNĐ)</label>
+                      <input type="number" name="roomFee" class="form-control"
+                             min="0" step="1000" placeholder="VD: 3000000"
+                             value="${not empty room.roomFee ? room.roomFee : ''}"/>
+                    </div>
+
+                    <button type="submit" class="btn btn-mintlify-primary mt-1" style="width:auto">
+                      Lưu thay đổi
+                    </button>
+                  </form>
+                  <div class="form-text text-muted mt-2" style="font-size:0.8rem">
+                    Để trống ô nếu muốn xóa giá trị đã lưu.
+                  </div>
+                </div>
+              </div>
+            </c:otherwise>
+          </c:choose>
 
         </div>
 
