@@ -87,9 +87,12 @@ public class TenantPaymentReturnServlet extends BaseServlet {
                 String invoiceIdStr = txnRef.substring(3, txnRef.indexOf("T"));
                 int invoiceId = Integer.parseInt(invoiceIdStr);
 
+                String vnp_TransactionNo = req.getParameter("vnp_TransactionNo");
+                String paymentCode = (vnp_TransactionNo != null && !vnp_TransactionNo.trim().isEmpty()) ? vnp_TransactionNo.trim() : txnRef;
+
                 if ("00".equals(responseCode)) {
                     // KÍCH HOẠT JDBC TRANSACTION CHỐT SỔ ĐỒNG BỘ
-                    boolean isUpdated = executePaymentTransaction(invoiceId, amount, txnRef);
+                    boolean isUpdated = executePaymentTransaction(invoiceId, amount, paymentCode);
                     if (isUpdated) {
                         setFlashMessage(req, "success", "Thanh toán thành công hóa đơn mã số: " + invoiceId);
                     } else {
