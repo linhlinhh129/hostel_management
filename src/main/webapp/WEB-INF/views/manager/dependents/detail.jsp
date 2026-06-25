@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -57,6 +57,10 @@
                   <td style="padding:6px 0;color:var(--hms-text-muted)">Số điện thoại</td>
                   <td style="padding:6px 0"><c:out value="${dependent.phone}"/></td>
                 </tr>
+                <tr>
+                  <td style="padding:6px 0;color:var(--hms-text-muted)">Số CCCD/CMND</td>
+                  <td style="padding:6px 0;font-family:monospace"><c:out value="${dependent.identityNumber}"/></td>
+                </tr>
               </table>
             </div>
           </div>
@@ -109,6 +113,11 @@
                   <label for="edit_phone" class="form-label">Số điện thoại</label>
                   <input type="tel" class="form-control" id="edit_phone" name="phone"
                          maxlength="20" value="<c:out value='${dependent.phone}'/>">
+                </div>
+                <div class="mb-3">
+                  <label for="edit_identityNumber" class="form-label">Số CCCD/CMND</label>
+                  <input type="text" class="form-control" id="edit_identityNumber" name="identityNumber"
+                         maxlength="50" value="<c:out value='${dependent.identityNumber}'/>" placeholder="Nhập số CCCD/CMND (tùy chọn)">
                 </div>
                 <div class="row g-3 mb-3">
                   <div class="col-sm-6">

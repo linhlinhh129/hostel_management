@@ -306,7 +306,7 @@
 
             <div class="quick-actions">
                 <a href="${ctx}/manager/notifications/create" class="quick-action-btn primary">Tạo thông báo</a>
-                <a href="${ctx}/manager/tenants/create" class="quick-action-btn">Thêm người thuê</a>
+                <a href="${ctx}/manager/contracts/create" class="quick-action-btn">Tạo hợp đồng mới</a>
                 <a href="${ctx}/manager/rooms" class="quick-action-btn">Danh sách căn hộ</a>
                 <a href="${ctx}/manager/tickets?status=IN_PROGRESS" class="quick-action-btn">Yêu cầu đang xử lý</a>
             </div>

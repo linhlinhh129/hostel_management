@@ -14,7 +14,7 @@ public class OperatorDashboardDAO {
     /**
      * Lấy thống kê số lượng Yêu cầu theo từng trạng thái.
      */
-    public Map<String, Integer> getTicketStats() {
+    public Map<String, Integer> getTicketStats(int operatorId) {
         Map<String, Integer> stats = new HashMap<>();
         // Mặc định các trạng thái
         stats.put("PENDING", 0);
@@ -24,19 +24,20 @@ public class OperatorDashboardDAO {
 
         String sql = "SELECT status, COUNT(*) as cnt " +
                      "FROM requests " +
-                     "WHERE deleted_at IS NULL " +
+                     "WHERE deleted_at IS NULL AND assigned_staff_id = ? " +
                      "GROUP BY status";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            
-            while (rs.next()) {
-                String status = rs.getString("status");
-                int count = rs.getInt("cnt");
-                stats.put(status, count);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setInt(1, operatorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String status = rs.getString("status");
+                    int count = rs.getInt("cnt");
+                    stats.put(status, count);
+                }
             }
-            
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -79,6 +79,19 @@ public class ProfileServlet extends BaseServlet {
                 String gender = request.getParameter("gender");
                 String permanentAddress = request.getParameter("permanentAddress");
 
+                if (phone != null && !phone.trim().isEmpty()) {
+                    if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+                        response.sendRedirect(request.getContextPath() + "/profile?error=invalid_phone");
+                        return;
+                    }
+                }
+                if (identityNumber != null && !identityNumber.trim().isEmpty()) {
+                    if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+                        response.sendRedirect(request.getContextPath() + "/profile?error=invalid_identity");
+                        return;
+                    }
+                }
+
                 user.setFullName(fullName);
                 user.setPhone(phone);
                 user.setIdentityNumber(identityNumber);

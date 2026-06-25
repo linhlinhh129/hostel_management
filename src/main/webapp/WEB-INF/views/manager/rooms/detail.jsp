@@ -207,32 +207,54 @@
                   </div>
                 </c:when>
 
-                <%-- Không có người thuê --%>
                 <c:otherwise>
                   <div class="text-center py-4">
-                    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--hms-text-muted)"
-                         stroke-width="1.2" style="margin-bottom:12px">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
-                      <line x1="4" y1="4" x2="20" y2="20" stroke="var(--hms-text-muted)" stroke-width="1.5"/>
-                    </svg>
-                    <div>
-                      <span class="badge-hms badge-neutral" style="font-size:0.9375rem;padding:8px 16px">
-                        Phòng đang trống
-                      </span>
-                    </div>
-                    <p class="text-muted mt-3 mb-3" style="font-size:0.875rem">
-                      Hiện chưa có người thuê nào trong phòng này.
-                    </p>
-                    <a href="${ctx}/manager/tenants/create"
-                       class="quick-action-btn primary" style="display:inline-flex">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                           stroke-width="2" style="margin-right:5px">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                      </svg>
-                      Thêm người thuê vào phòng này
-                    </a>
+                    <c:choose>
+                      <c:when test="${room.status == 'OCCUPIED' && not empty activeContractId}">
+                        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--hms-text-muted)"
+                             stroke-width="1.2" style="margin-bottom:12px">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        <div>
+                          <span class="badge-hms badge-warning" style="font-size:0.9375rem;padding:8px 16px">
+                            Đang chờ tạo tài khoản người thuê
+                          </span>
+                        </div>
+                        <p class="text-muted mt-3 mb-3" style="font-size:0.875rem">
+                          Hợp đồng phòng này đã được ký nhưng chưa được tạo tài khoản người thuê đại diện.
+                        </p>
+                        <a href="${ctx}/manager/contracts/detail?id=${activeContractId}"
+                           class="quick-action-btn primary" style="display:inline-flex">
+                          Xem chi tiết Hợp đồng để tạo tài khoản
+                        </a>
+                      </c:when>
+                      <c:otherwise>
+                        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--hms-text-muted)"
+                             stroke-width="1.2" style="margin-bottom:12px">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                          <circle cx="12" cy="7" r="4"/>
+                          <line x1="4" y1="4" x2="20" y2="20" stroke="var(--hms-text-muted)" stroke-width="1.5"/>
+                        </svg>
+                        <div>
+                          <span class="badge-hms badge-neutral" style="font-size:0.9375rem;padding:8px 16px">
+                            Phòng đang trống
+                          </span>
+                        </div>
+                        <p class="text-muted mt-3 mb-3" style="font-size:0.875rem">
+                          Hiện chưa có người thuê nào trong phòng này.
+                        </p>
+                        <a href="${ctx}/manager/contracts/create?roomId=${room.id}"
+                           class="quick-action-btn primary" style="display:inline-flex">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                               stroke-width="2" style="margin-right:5px">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                          </svg>
+                          Tạo hợp đồng thuê phòng này
+                        </a>
+                      </c:otherwise>
+                    </c:choose>
                   </div>
                 </c:otherwise>
 

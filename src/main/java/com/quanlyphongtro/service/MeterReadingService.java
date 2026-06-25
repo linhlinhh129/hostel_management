@@ -13,12 +13,12 @@ public class MeterReadingService {
         this.meterReadingDAO = new MeterReadingDAO();
     }
 
-    public List<MeterStatusDTO> getMeterStatusForCurrentMonth(String facility, String roomCode) {
+    public List<MeterStatusDTO> getMeterStatusForCurrentMonth(String facility, String roomCode, Integer operatorId) {
         LocalDate currentDate = LocalDate.now();
         int currentMonth = currentDate.getMonthValue();
         int currentYear = currentDate.getYear();
         
-        return meterReadingDAO.getMeterStatusList(currentMonth, currentYear, facility, roomCode);
+        return meterReadingDAO.getMeterStatusList(currentMonth, currentYear, facility, roomCode, operatorId);
     }
 
     public boolean insertMeterReading(int roomId, int electric, int water, String electricImg, String waterImg, int createdBy) {

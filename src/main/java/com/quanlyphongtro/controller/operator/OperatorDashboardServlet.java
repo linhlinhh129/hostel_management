@@ -33,14 +33,31 @@ public class OperatorDashboardServlet extends BaseServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        // Get operatorId from session
+        int operatorId = 1;
+        if (req.getSession(false) != null && req.getSession(false).getAttribute("currentUser") != null) {
+            com.quanlyphongtro.dto.UserSessionDTO currentUser = (com.quanlyphongtro.dto.UserSessionDTO) req.getSession(false).getAttribute("currentUser");
+            operatorId = currentUser.getId();
+        }
+
+        com.quanlyphongtro.dao.FacilityDAO facilityDAO = new com.quanlyphongtro.dao.FacilityDAO();
+        java.util.List<com.quanlyphongtro.model.Facility> allFacilities = facilityDAO.findActiveList();
+        java.util.List<String> myFacilityNames = new java.util.ArrayList<>();
+        for (com.quanlyphongtro.model.Facility f : allFacilities) {
+            if (f.getOperatorId() != null && f.getOperatorId().equals(operatorId)) {
+                myFacilityNames.add(f.getName());
+            }
+        }
+        
+        String facilityNames = myFacilityNames.isEmpty() ? "Chưa phân công" : String.join(", ", myFacilityNames);
+
         String period = LocalDate.now()
                 .format(DateTimeFormatter.ofPattern("MM/yyyy", new Locale("vi")));
         req.setAttribute("billingPeriodLabel", period);
-        req.setAttribute("facilityCode", "—");
-        req.setAttribute("facilityName", "Cơ sở được phân công");
+        req.setAttribute("facilityName", facilityNames);
 
         // 1. Lấy dữ liệu Điện nước (Meters)
-        List<MeterStatusDTO> allMeterStatus = meterReadingService.getMeterStatusForCurrentMonth(null, null);
+        List<MeterStatusDTO> allMeterStatus = meterReadingService.getMeterStatusForCurrentMonth(null, null, operatorId);
         int totalRooms = allMeterStatus.size();
         
         List<MeterStatusDTO> pendingMeters = allMeterStatus.stream()
@@ -62,15 +79,10 @@ public class OperatorDashboardServlet extends BaseServlet {
         req.setAttribute("meterUpdateProgress", meterUpdateProgress);
         req.setAttribute("pendingMeterRoomList", topPendingMeters);
 
-        // Get operatorId from session
-        int operatorId = 1;
-        if (req.getSession(false) != null && req.getSession(false).getAttribute("currentUser") != null) {
-            com.quanlyphongtro.dto.UserSessionDTO currentUser = (com.quanlyphongtro.dto.UserSessionDTO) req.getSession(false).getAttribute("currentUser");
-            operatorId = currentUser.getId();
-        }
+
 
         // 2. Lấy dữ liệu Yêu cầu (Tickets)
-        Map<String, Integer> ticketStats = dashboardDAO.getTicketStats();
+        Map<String, Integer> ticketStats = dashboardDAO.getTicketStats(operatorId);
         int ticketCountNew = ticketStats.getOrDefault("PENDING", 0);
         int ticketCountInProgress = ticketStats.getOrDefault("IN_PROGRESS", 0);
         int ticketCountDone = ticketStats.getOrDefault("COMPLETED", 0);

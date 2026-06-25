@@ -345,88 +345,127 @@ public class InvoiceDAO extends BaseDAO {
         }
         return count;
     }
-    
+
     public InvoiceDetailDTO findById(int managerId, int invoiceId) {
         String sql = "SELECT i.*, r.code AS room_code, u.full_name AS tenant_name, u.phone AS tenant_phone, u.email AS tenant_email, " +
                      "f.name AS facility_name, f.address AS facility_address, " +
                      "mr_curr.electric AS new_electric, mr_curr.water AS new_water, " +
                      "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, " +
-                     "(SELECT TOP 1 water FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_water " +
+                     "(SELECT TOP 1 water FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_water, " +
+                     "(SELECT full_name FROM users WHERE user_id = i.created_by) AS creator_name, " +
+                     "FORMAT(mr_curr.reading_date, 'MM/yyyy') AS billing_period " +
                      "FROM invoices i " +
                      "INNER JOIN rooms r ON i.room_id = r.room_id " +
                      "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                      "LEFT JOIN users u ON r.tenant_id = u.user_id " +
                      "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
                      "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND f.manager_id = ?";
-                     
+                      
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
              ps.setInt(1, invoiceId);
              ps.setInt(2, managerId);
              try (ResultSet rs = ps.executeQuery()) {
-                 if (rs.next()) {
-                     InvoiceDetailDTO dto = new InvoiceDetailDTO();
-                     dto.setInvoiceId(rs.getInt("invoice_id"));
-                     dto.setInvoiceCode(rs.getString("code"));
-                     dto.setStatus(rs.getString("status"));
-                     
-                     java.sql.Date d = rs.getDate("due_date");
-                     if (d != null) dto.setDueDate(d.toString());
-                     
-                     java.sql.Timestamp created = rs.getTimestamp("created_at");
-                     if (created != null) dto.setCreatedAt(created.toString());
-                     
-                     dto.setRoomCode(rs.getString("room_code"));
-                     dto.setTenantName(rs.getString("tenant_name"));
-                     dto.setTenantPhone(rs.getString("tenant_phone"));
-                     dto.setTenantEmail(rs.getString("tenant_email"));
-                     dto.setFacilityName(rs.getString("facility_name"));
-                     dto.setFacilityAddress(rs.getString("facility_address"));
-                     
-                     dto.setRoomFee(rs.getBigDecimal("room_fee"));
-                     dto.setMeterId(rs.getObject("meter_id") != null ? rs.getInt("meter_id") : null);
-                     
-                     dto.setNewElectricReading(rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0);
-                     dto.setOldElectricReading(rs.getObject("old_electric") != null ? rs.getInt("old_electric") : 0);
-                     dto.setElectricUsage(Math.max(0, dto.getNewElectricReading() - dto.getOldElectricReading()));
-                     dto.setElectricUnitPrice(rs.getBigDecimal("electricity_price"));
-                     dto.setWaterUnitPrice(rs.getBigDecimal("water_price"));
-                     dto.setInternetFee(rs.getBigDecimal("internet_fee"));
-                     dto.setServiceFee(rs.getBigDecimal("service_fee"));
-                     dto.setOtherFee(rs.getBigDecimal("other_fee"));
-                     
-                     java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
-                     if (dto.getRoomFee() != null) subtotal = subtotal.add(dto.getRoomFee());
-                     if (dto.getElectricAmount() != null) subtotal = subtotal.add(dto.getElectricAmount());
-                     if (dto.getWaterAmount() != null) subtotal = subtotal.add(dto.getWaterAmount());
-                     if (dto.getServiceFee() != null) subtotal = subtotal.add(dto.getServiceFee());
-                     if (dto.getInternetFee() != null) subtotal = subtotal.add(dto.getInternetFee());
-                     if (dto.getOtherFee() != null) subtotal = subtotal.add(dto.getOtherFee());
-                     dto.setSubtotal(subtotal);
-                     
-                     dto.setTaxRate(rs.getBigDecimal("tax"));
-                     dto.setTotalAmount(rs.getBigDecimal("total_amount"));
-                     dto.setNote(rs.getString("note"));
-                     
-                     int ne = rs.getInt("new_electric");
-                     int oe = rs.getInt("old_electric");
-                     int nw = rs.getInt("new_water");
-                     int ow = rs.getInt("old_water");
-                     
-                     dto.setElectricUsage(ne - oe);
-                     dto.setWaterUsage(nw - ow);
-                     Timestamp updated = rs.getTimestamp("updated_at");
-                     if (updated != null) dto.setUpdatedAt(updated.toString());
-                     dto.setUpdatedByName(""); 
-                     
-                     return dto;
-                 }
-             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+                  if (rs.next()) {
+                      InvoiceDetailDTO dto = new InvoiceDetailDTO();
+                      dto.setInvoiceId(rs.getInt("invoice_id"));
+                      dto.setInvoiceCode(rs.getString("code"));
+                      dto.setStatus(rs.getString("status"));
+                      
+                      java.sql.Date d = rs.getDate("due_date");
+                      if (d != null) dto.setDueDate(d.toString());
+                      
+                      java.sql.Timestamp created = rs.getTimestamp("created_at");
+                      if (created != null) dto.setCreatedAt(created.toString());
+                      
+                      dto.setRoomCode(rs.getString("room_code"));
+                      dto.setTenantName(rs.getString("tenant_name"));
+                      dto.setTenantPhone(rs.getString("tenant_phone"));
+                      dto.setTenantEmail(rs.getString("tenant_email"));
+                      dto.setFacilityName(rs.getString("facility_name"));
+                      dto.setFacilityAddress(rs.getString("facility_address"));
+                      
+                      dto.setRoomFee(rs.getBigDecimal("room_fee"));
+                      dto.setMeterId(rs.getObject("meter_id") != null ? rs.getInt("meter_id") : null);
+                      
+                      int ne = rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0;
+                      int oe = rs.getObject("old_electric") != null ? rs.getInt("old_electric") : 0;
+                      int nw = rs.getObject("new_water") != null ? rs.getInt("new_water") : 0;
+                      int ow = rs.getObject("old_water") != null ? rs.getInt("old_water") : 0;
+                      
+                      dto.setNewElectricReading(ne);
+                      dto.setOldElectricReading(oe);
+                      dto.setNewWaterReading(nw);
+                      dto.setOldWaterReading(ow);
+                      
+                      dto.setElectricUsage(Math.max(0, ne - oe));
+                      dto.setWaterUsage(Math.max(0, nw - ow));
+                      
+                      dto.setElectricUnitPrice(rs.getBigDecimal("electricity_price"));
+                      dto.setWaterUnitPrice(rs.getBigDecimal("water_price"));
+                      
+                      if (dto.getElectricUnitPrice() != null) {
+                          dto.setElectricAmount(dto.getElectricUnitPrice().multiply(new java.math.BigDecimal(dto.getElectricUsage())));
+                      } else {
+                          dto.setElectricAmount(java.math.BigDecimal.ZERO);
+                      }
+                      
+                      if (dto.getWaterUnitPrice() != null) {
+                          dto.setWaterAmount(dto.getWaterUnitPrice().multiply(new java.math.BigDecimal(dto.getWaterUsage())));
+                      } else {
+                          dto.setWaterAmount(java.math.BigDecimal.ZERO);
+                      }
+                      
+                      dto.setInternetFee(rs.getBigDecimal("internet_fee"));
+                      dto.setServiceFee(rs.getBigDecimal("service_fee"));
+                      dto.setOtherFee(rs.getBigDecimal("other_fee"));
+                      
+                      java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
+                      if (dto.getRoomFee() != null) subtotal = subtotal.add(dto.getRoomFee());
+                      if (dto.getElectricAmount() != null) subtotal = subtotal.add(dto.getElectricAmount());
+                      if (dto.getWaterAmount() != null) subtotal = subtotal.add(dto.getWaterAmount());
+                      if (dto.getServiceFee() != null) subtotal = subtotal.add(dto.getServiceFee());
+                      if (dto.getInternetFee() != null) subtotal = subtotal.add(dto.getInternetFee());
+                      if (dto.getOtherFee() != null) subtotal = subtotal.add(dto.getOtherFee());
+                      dto.setSubtotal(subtotal);
+                      
+                      dto.setTaxRate(rs.getBigDecimal("tax"));
+                      if (dto.getTaxRate() != null) {
+                          dto.setTaxAmount(subtotal.multiply(dto.getTaxRate()).divide(new java.math.BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP));
+                      } else {
+                          dto.setTaxAmount(java.math.BigDecimal.ZERO);
+                      }
+                      
+                      dto.setTotalAmount(rs.getBigDecimal("total_amount"));
+                      dto.setNote(rs.getString("note"));
+                      
+                      dto.setCreatedByName(rs.getString("creator_name"));
+                      
+                      String bp = rs.getString("billing_period");
+                      if (bp != null) {
+                          dto.setBillingPeriod(bp);
+                      } else if (dto.getInvoiceCode() != null) {
+                          String[] partsCode = dto.getInvoiceCode().split("-");
+                          if (partsCode.length >= 3) {
+                              String period = partsCode[partsCode.length - 1];
+                              if (period.length() == 6) {
+                                  dto.setBillingPeriod(period.substring(4, 6) + "/" + period.substring(0, 4));
+                              }
+                          }
+                      }
+                      
+                      Timestamp updated = rs.getTimestamp("updated_at");
+                      if (updated != null) dto.setUpdatedAt(updated.toString());
+                      dto.setUpdatedByName(""); 
+                      
+                      return dto;
+                  }
+              }
+         } catch (SQLException e) {
+             e.printStackTrace();
+         }
+         return null;
+     }
     
     public void insert(Invoice invoice) throws SQLException {
         String sql = "INSERT INTO invoices (code, room_id, meter_id, due_date, status, tax, other_fee, " +

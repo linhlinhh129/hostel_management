@@ -98,9 +98,18 @@
                                 </span>
                               </td>
                               <td>
-                                <a href="${ctx}/manager/contracts/detail?id=${c.contractId}"
-                                  class="btn-mintlify-secondary text-decoration-none"
-                                  style="padding:4px 12px;font-size:0.8125rem">Xem</a>
+                                <div class="d-inline-flex gap-1 align-items-center">
+                                  <a href="${ctx}/manager/contracts/detail?id=${c.contractId}"
+                                    class="btn-mintlify-secondary text-decoration-none"
+                                    style="padding:4px 12px;font-size:0.8125rem">Xem</a>
+                                  <c:if test="${c.status == 'INACTIVE'}">
+                                    <form method="post" action="${ctx}/manager/contracts/delete?id=${c.contractId}" style="display:inline; margin:0;"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?');">
+                                      <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                                      <button type="submit" class="btn btn-sm btn-outline-danger" style="padding:4px 10px; font-size:0.8125rem;">Xóa</button>
+                                    </form>
+                                  </c:if>
+                                </div>
                               </td>
                             </tr>
                           </c:forEach>

@@ -189,8 +189,8 @@ public class AdminPersonnelServlet extends BaseServlet {
             throw new ValidationException("Email không đúng định dạng.");
         }
         if (phone.isEmpty())    throw new ValidationException("Số điện thoại không được để trống.");
-        if (!phone.matches("\\d{10}")) {
-            throw new ValidationException("Số điện thoại phải gồm 10 chữ số.");
+        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+            throw new ValidationException("Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
         }
         if (role.isEmpty()) throw new ValidationException("Vai trò không được để trống.");
         if ("ADMIN".equals(role)) {
@@ -202,8 +202,8 @@ public class AdminPersonnelServlet extends BaseServlet {
         if (identityNumber.isEmpty()) {
             throw new ValidationException("Số CMND/CCCD không được để trống.");
         }
-        if (!identityNumber.matches("\\d{12}")) {
-            throw new ValidationException("Số CMND/CCCD phải gồm 12 chữ số.");
+        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+            throw new ValidationException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
         }
 
         // Uniqueness checks
@@ -315,14 +315,17 @@ public class AdminPersonnelServlet extends BaseServlet {
         if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[\\w.]{2,}$")) {
             throw new ValidationException("Email không đúng định dạng.");
         }
-        if (phone.isEmpty() || !phone.matches("\\d{10}")) {
-            throw new ValidationException("Số điện thoại phải gồm 10 chữ số.");
+        if (phone.isEmpty()) {
+            throw new ValidationException("Số điện thoại không được để trống.");
+        }
+        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+            throw new ValidationException("Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
         }
         if (role.isEmpty() || "ADMIN".equals(role)) {
             throw new ValidationException("Vai trò không hợp lệ.");
         }
-        if (!identityNumber.isEmpty() && !identityNumber.matches("\\d{12}")) {
-            throw new ValidationException("Số CMND/CCCD phải gồm 12 chữ số.");
+        if (!identityNumber.isEmpty() && !com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+            throw new ValidationException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
         }
 
         // ── Kiểm tra ngày sinh ───────────────────────────────────────────

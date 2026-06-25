@@ -35,8 +35,30 @@ public class IncidentReportServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Có thể bổ sung việc load danh sách Tòa nhà (Facilities) từ DAO nếu cần.
-        // Tạm thời trên giao diện sẽ để người dùng nhập/chọn tay hoặc dùng static choices
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+
+        com.quanlyphongtro.dao.FacilityDAO facilityDAO = new com.quanlyphongtro.dao.FacilityDAO();
+        java.util.List<com.quanlyphongtro.model.Facility> allFacilities = facilityDAO.findActiveList();
+        java.util.List<com.quanlyphongtro.model.Facility> myFacilities = new java.util.ArrayList<>();
+        for (com.quanlyphongtro.model.Facility f : allFacilities) {
+            if (f.getOperatorId() != null && f.getOperatorId().equals(currentUser.getId())) {
+                myFacilities.add(f);
+            }
+        }
+        
+        java.util.Map<Integer, java.util.List<com.quanlyphongtro.model.Room>> facilityRoomsMap = new java.util.HashMap<>();
+        for (com.quanlyphongtro.model.Facility f : myFacilities) {
+            facilityRoomsMap.put(f.getId(), facilityDAO.findRoomsByFacilityId(f.getId()));
+        }
+
+        request.setAttribute("facilities", myFacilities);
+        request.setAttribute("facilityRoomsMap", facilityRoomsMap);
+
         request.getRequestDispatcher("/WEB-INF/views/operator/incidents/create.jsp").forward(request, response);
     }
 

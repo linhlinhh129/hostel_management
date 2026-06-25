@@ -48,9 +48,10 @@
                             <div class="col-md-4">
                                 <select name="facility" class="mintlify-text-input" style="height: 38px;">
                                     <option value="" ${empty selectedFacility ? 'selected' : ''}>-- Chọn cơ sở --</option>
-                                    <option value="Cơ sở A - Cầu Giấy" ${selectedFacility == 'Cơ sở A - Cầu Giấy' ? 'selected' : ''}>Cơ sở A - Cầu Giấy</option>
-                                    <option value="Cơ sở B - Đống Đa" ${selectedFacility == 'Cơ sở B - Đống Đa' ? 'selected' : ''}>Cơ sở B - Đống Đa</option>
-                                    <option value="Cơ sở C - Thanh Xuân" ${selectedFacility == 'Cơ sở C - Thanh Xuân' ? 'selected' : ''}>Cơ sở C - Thanh Xuân</option>
+                                    <c:forEach var="f" items="${facilities}">
+                                        <c:set var="facVal" value="${f.name} (${f.code})"/>
+                                        <option value="${facVal}" ${selectedFacility == facVal ? 'selected' : ''}><c:out value="${facVal}"/></option>
+                                    </c:forEach>
                                 </select>
                             </div>
                             <div class="col-md-4">

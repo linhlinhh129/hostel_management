@@ -13,7 +13,7 @@ import java.util.List;
 
 public class MeterReadingDAO extends BaseDAO {
 
-    public List<MeterStatusDTO> getMeterStatusList(int currentMonth, int currentYear, String facility, String roomCode) {
+    public List<MeterStatusDTO> getMeterStatusList(int currentMonth, int currentYear, String facility, String roomCode, Integer operatorId) {
         List<MeterStatusDTO> list = new ArrayList<>();
         
         StringBuilder sqlBuilder = new StringBuilder();
@@ -30,6 +30,7 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append("        ELSE 'CHUA_CAP_NHAT' ");
         sqlBuilder.append("    END AS status ");
         sqlBuilder.append("FROM rooms r ");
+        sqlBuilder.append("INNER JOIN facilities f ON r.facility_id = f.facility_id ");
         sqlBuilder.append("LEFT JOIN meter_readings curr_mr ");
         sqlBuilder.append("    ON r.room_id = curr_mr.room_id ");
         sqlBuilder.append("    AND MONTH(curr_mr.reading_date) = ? ");
@@ -45,16 +46,14 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append(") prev_mr ");
         sqlBuilder.append("WHERE r.deleted_at IS NULL ");
         
+        if (operatorId != null) {
+            sqlBuilder.append(" AND f.operator_id = ? ");
+        }
         if (roomCode != null && !roomCode.trim().isEmpty()) {
             sqlBuilder.append(" AND r.code LIKE ? ");
-        } else if (facility != null && !facility.trim().isEmpty()) {
-            if (facility.equals("Cơ sở A - Cầu Giấy")) {
-                sqlBuilder.append(" AND r.code LIKE 'HN01%' ");
-            } else if (facility.equals("Cơ sở B - Đống Đa")) {
-                sqlBuilder.append(" AND r.code LIKE 'HN02%' ");
-            } else if (facility.equals("Cơ sở C - Thanh Xuân")) {
-                sqlBuilder.append(" AND r.code LIKE 'HN03%' ");
-            }
+        }
+        if (facility != null && !facility.trim().isEmpty()) {
+            sqlBuilder.append(" AND (f.name + ' (' + f.code + ')' = ?) ");
         }
         
         sqlBuilder.append("ORDER BY r.code ASC");
@@ -70,8 +69,15 @@ public class MeterReadingDAO extends BaseDAO {
             ps.setInt(4, currentYear);
             ps.setInt(5, currentMonth);
 
+            int paramIndex = 6;
+            if (operatorId != null) {
+                ps.setInt(paramIndex++, operatorId);
+            }
             if (roomCode != null && !roomCode.trim().isEmpty()) {
-                ps.setString(6, "%" + roomCode.trim() + "%");
+                ps.setString(paramIndex++, "%" + roomCode.trim() + "%");
+            }
+            if (facility != null && !facility.trim().isEmpty()) {
+                ps.setString(paramIndex++, facility.trim());
             }
 
             try (ResultSet rs = ps.executeQuery()) {

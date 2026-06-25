@@ -228,7 +228,12 @@ public class ManagerRoomsServlet extends BaseServlet {
                         room.put("code", roomCode);
                         room.put("area", rs.getDouble("area"));
                         room.put("status", rs.getString("status"));
-                        room.put("tenantId", rs.getInt("tenant_id"));
+                        int tenantIdVal = rs.getInt("tenant_id");
+                        if (rs.wasNull()) {
+                            room.put("tenantId", null);
+                        } else {
+                            room.put("tenantId", tenantIdVal);
+                        }
                         room.put("tenantName", rs.getString("tenant_name"));
 
                         // Parse floor and room number from code (e.g. HN0102)
@@ -310,6 +315,17 @@ public class ManagerRoomsServlet extends BaseServlet {
                     room.put("tenantId", rs.getInt("tenant_id"));
                     if (rs.wasNull()) {
                         room.put("tenantId", null);
+                    }
+                    if (room.get("tenantId") == null && "OCCUPIED".equals(room.get("status"))) {
+                        String activeContractSql = "SELECT TOP 1 contract_id FROM dbo.contracts WHERE room_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY contract_id DESC";
+                        try (PreparedStatement psContract = conn.prepareStatement(activeContractSql)) {
+                            psContract.setInt(1, roomId);
+                            try (ResultSet rsContract = psContract.executeQuery()) {
+                                if (rsContract.next()) {
+                                    req.setAttribute("activeContractId", rsContract.getInt("contract_id"));
+                                }
+                            }
+                        }
                     }
                     room.put("tenantName", rs.getString("tenant_name"));
                     room.put("tenantCode", rs.getString("tenant_code"));

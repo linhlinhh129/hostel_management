@@ -71,7 +71,7 @@
                         <tr>
                           <td><c:out value="${item.facilityName}"/> (<c:out value="${item.facilityCode}"/>)</td>
                           <td>
-                            <a href="${ctx}/manager/rooms/${item.id}">
+                            <a href="${ctx}/manager/rooms/${item.roomId}">
                               <strong><c:out value="${item.roomCode}"/></strong>
                             </a>
                           </td>
@@ -147,7 +147,7 @@
                    style="font-weight: 600; font-size: 0.8125rem; padding: 8px 16px; border-radius: 6px; 
                           transition: all 0.2s;
                           ${type == 'received' ? 'background: var(--hms-accent-deep); color: #fff;' : 'background: var(--hms-surface); color: var(--hms-text-muted); border: 1px solid var(--hms-border);'}">
-                  Gửi đến tôi (Từ Admin)
+                  Gửi đến tôi
                 </a>
               </li>
               <li class="nav-item" role="presentation">
@@ -373,6 +373,8 @@
                   </c:otherwise>
                 </c:choose>
               </c:otherwise>
+            </c:choose>
+          </c:otherwise>
         </c:choose>
       </div>
 

@@ -64,9 +64,17 @@
                                   <tr>
                                     <td>
                                       <a href="${ctx}/manager/payments/${payment.paymentId}"
-                                        style="font-weight:600;font-family:monospace">
+                                        style="font-weight:600;font-family:monospace;display:block;margin-bottom:2px">
                                         <c:out value="${payment.transactionCode}" />
                                       </a>
+                                      <c:choose>
+                                        <c:when test="${payment.paymentMethod == 'VNPAY'}">
+                                          <span class="badge-hms" style="font-size:0.7rem;padding:2px 6px;background-color:#e3f2fd;color:#0d47a1;border:1px solid #bbdefb;border-radius:4px;font-weight:600">VNPAY</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                          <span class="badge-hms" style="font-size:0.7rem;padding:2px 6px;background-color:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9;border-radius:4px;font-weight:600">Chuyển khoản</span>
+                                        </c:otherwise>
+                                      </c:choose>
                                     </td>
                                     <td><span class="badge-hms badge-neutral">
                                         <c:out value="${payment.roomCode}" />
