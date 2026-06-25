@@ -87,7 +87,7 @@
                 <select name="roomId" class="form-select" required>
                   <option value="">-- Click để chọn phòng --</option>
                   <c:forEach var="r" items="${availableRooms}">
-                    <option value="${r.id}">Phòng ${r.code}</option>
+                    <option value="${r.id}" ${not empty preselectedRoomId && r.id == preselectedRoomId ? 'selected' : ''}>Phòng ${r.code}</option>
                   </c:forEach>
                 </select>
                 <small class="form-text text-muted mt-2 d-block">Lưu ý: Chỉ những phòng đang ở trạng thái <strong>Trống</strong> mới có thể được tạo hợp đồng.</small>

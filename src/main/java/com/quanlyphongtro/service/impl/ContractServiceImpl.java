@@ -85,6 +85,7 @@ public class ContractServiceImpl implements ContractService {
         if (id <= 0) {
             throw new Exception("Lỗi hệ thống, không thể tạo hợp đồng trong cơ sở dữ liệu.");
         }
+        contract.setContractId(id);
 
         // Cập nhật trạng thái phòng sang OCCUPIED
         room.setStatus("OCCUPIED");

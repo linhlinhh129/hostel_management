@@ -2,9 +2,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Thêm người thuê - BQL"/>
+<c:set var="pageTitle" value="Tạo tài khoản người thuê - BQL"/>
 <c:set var="pageRole" value="MANAGER"/>
-<c:set var="activeMenu" value="tenants"/>
+<c:set var="activeMenu" value="contracts"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 <body>
 <div class="app-shell">
@@ -17,18 +17,16 @@
 
       <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
-          <h1>Thêm người thuê mới</h1>
-          <p>Tạo tài khoản và gán vào phòng trong cơ sở được phân công</p>
+          <h1>Tạo tài khoản người thuê</h1>
+          <p>Tạo tài khoản thành viên dựa trên thông tin hợp đồng</p>
         </div>
-        <a href="${ctx}/manager/tenants" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+        <a href="${ctx}/manager/contracts/detail?id=${prefilledContract.contractId}" class="btn-mintlify-secondary text-decoration-none">← Chi tiết hợp đồng</a>
       </div>
 
       <div class="data-surface" style="max-width:700px">
-        <form method="post" action="${ctx}/manager/tenants/create" class="p-4">
+        <form method="post" action="${ctx}/manager/contracts/add-tenant" class="p-4">
           <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-          <c:if test="${not empty prefilledContract}">
-            <input type="hidden" name="contractId" value="${prefilledContract.contractId}"/>
-          </c:if>
+          <input type="hidden" name="contractId" value="${prefilledContract.contractId}"/>
 
           <c:if test="${not empty errorMessage}">
             <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
@@ -98,28 +96,11 @@
             Thông tin thuê
           </h5>
 
-          <%-- Chọn phòng — Khóa khi có prefilledContract --%>
+          <%-- Chọn phòng — Khóa đối với hợp đồng --%>
           <div class="mb-3">
             <label class="form-label">Phòng <span class="text-danger">*</span></label>
-            <c:choose>
-              <c:when test="${not empty prefilledContract}">
-                <input type="hidden" name="roomId" value="${prefilledContract.roomId}"/>
-                <input type="text" class="form-control" value="Phòng ${prefilledContract.roomCode}" readonly style="background-color: var(--hms-neutral-bg);"/>
-              </c:when>
-              <c:otherwise>
-                <select class="form-select" id="roomId" name="roomId" required>
-                  <option value="">-- Chọn phòng --</option>
-                  <c:forEach var="facility" items="${assignedFacilities}">
-                    <c:set var="facilityRooms" value="${roomsByFacility[facility.id]}"/>
-                    <optgroup label="${facility.name} (${facility.code})">
-                      <c:forEach var="room" items="${facilityRooms}">
-                        <option value="${room.id}">Phòng ${room.code}</option>
-                      </c:forEach>
-                    </optgroup>
-                  </c:forEach>
-                </select>
-              </c:otherwise>
-            </c:choose>
+            <input type="hidden" name="roomId" value="${prefilledContract.roomId}"/>
+            <input type="text" class="form-control" value="Phòng ${prefilledContract.roomCode}" readonly style="background-color: var(--hms-neutral-bg);"/>
           </div>
 
           <div class="mb-3">
@@ -139,8 +120,7 @@
               <line x1="12" y1="8" x2="12" y2="12"/>
               <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            <strong>Mật khẩu tạm thời</strong> được tạo tự động từ
-            <strong>8 số cuối CCCD</strong> + <code>@Hostel</code>.
+            <strong>Mật khẩu tạm thời</strong> được tạo ngẫu nhiên bảo mật và gửi qua email đăng nhập của người thuê.
             Người thuê nên đổi mật khẩu sau khi đăng nhập lần đầu.
           </div>
 
@@ -155,14 +135,7 @@
               </svg>
               Tạo tài khoản người thuê
             </button>
-            <c:choose>
-              <c:when test="${not empty prefilledContract}">
-                <a href="${ctx}/manager/contracts/detail?id=${prefilledContract.contractId}" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
-              </c:when>
-              <c:otherwise>
-                <a href="${ctx}/manager/tenants" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
-              </c:otherwise>
-            </c:choose>
+            <a href="${ctx}/manager/contracts/detail?id=${prefilledContract.contractId}" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
           </div>
         </form>
       </div>

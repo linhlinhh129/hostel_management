@@ -58,6 +58,18 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </c:if>
+                <c:if test="${param.error == 'invalid_phone'}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
+                <c:if test="${param.error == 'invalid_identity'}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
 
                 <div class="row">
                     <!-- Column 1: Chỉnh sửa hồ sơ -->

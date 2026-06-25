@@ -172,8 +172,8 @@
                         <c:forEach var="dep" items="${dependents}">
                           <tr>
                             <td>
-                              <%-- Tên phải click được theo Manager.md §6 --%>
-                              <a href="#dep-${dep.id}" style="font-weight:500">
+                              <%-- Tên link thẳng đến trang chi tiết của người phụ thuộc --%>
+                              <a href="${ctx}/manager/dependents/${dep.id}" style="font-weight:500">
                                 <c:out value="${dep.fullName}"/>
                               </a>
                             </td>
@@ -188,67 +188,15 @@
                             </td>
                             <td><c:out value="${dep.phone}"/></td>
                             <td>
-                              <a href="#dep-${dep.id}"
+                              <a href="${ctx}/manager/dependents/${dep.id}"
                                  class="btn-mintlify-secondary text-decoration-none"
                                  style="padding:3px 10px;font-size:0.8125rem">Chi tiết</a>
-                              <c:if test="${tenant.status == 'ACTIVE'}">
-                                <button type="button"
-                                        class="btn-mintlify-secondary ms-1"
-                                        style="padding:3px 10px;font-size:0.8125rem"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editDependentModal"
-                                        onclick="openEditDependent(${dep.id}, '${dep.fullName}', '${dep.relationship}', '${dep.phone}', '${dep.gender}', '${dep.dob}')">
-                                  Sửa
-                                </button>
-                              </c:if>
                             </td>
                           </tr>
                         </c:forEach>
                       </tbody>
                     </table>
                   </div>
-
-                  <%-- Chi tiết từng người phụ thuộc — inline section --%>
-                  <c:forEach var="dep" items="${dependents}">
-                    <div id="dep-${dep.id}"
-                         style="background:var(--hms-surface-2);border-top:1px solid var(--hms-border);
-                                padding:1rem 1.25rem">
-                      <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 style="font-weight:600;margin:0">
-                          <c:out value="${dep.fullName}"/>
-                          <span class="badge-hms badge-neutral ms-2" style="font-size:0.75rem">
-                            <c:out value="${dep.relationship}"/>
-                          </span>
-                        </h6>
-                        <c:if test="${tenant.status == 'ACTIVE'}">
-                          <form method="post" action="${ctx}/manager/dependents/${dep.id}/remove"
-                                onsubmit="return confirm('Xóa người phụ thuộc ${dep.fullName}?')"
-                                style="display:inline">
-                            <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
-                          </form>
-                        </c:if>
-                      </div>
-                      <div class="row g-2" style="font-size:0.875rem">
-                        <div class="col-sm-4">
-                          <span style="color:var(--hms-text-muted)">Ngày sinh: </span>
-                          <c:out value="${dep.dob}"/>
-                        </div>
-                        <div class="col-sm-4">
-                          <span style="color:var(--hms-text-muted)">Giới tính: </span>
-                          <c:choose>
-                            <c:when test="${dep.gender == 'MALE'}">Nam</c:when>
-                            <c:when test="${dep.gender == 'FEMALE'}">Nữ</c:when>
-                            <c:otherwise><c:out value="${dep.gender}"/></c:otherwise>
-                          </c:choose>
-                        </div>
-                        <div class="col-sm-4">
-                          <span style="color:var(--hms-text-muted)">SĐT: </span>
-                          <c:out value="${dep.phone}"/>
-                        </div>
-                      </div>
-                    </div>
-                  </c:forEach>
 
                 </c:when>
                 <c:otherwise>
@@ -353,6 +301,10 @@
             <label for="dep_phone" class="form-label">Số điện thoại</label>
             <input type="tel" class="form-control" id="dep_phone" name="phone" maxlength="20">
           </div>
+          <div class="mb-3">
+            <label for="dep_identityNumber" class="form-label">Số CCCD/CMND</label>
+            <input type="text" class="form-control" id="dep_identityNumber" name="identityNumber" maxlength="50" placeholder="Nhập số CCCD/CMND (tùy chọn)">
+          </div>
           <div class="row g-3">
             <div class="col-sm-6">
               <label for="dep_gender" class="form-label">Giới tính</label>
@@ -440,69 +392,7 @@
   </div>
 </div>
 
-<!-- Modal Sửa người phụ thuộc -->
-<div class="modal fade" id="editDependentModal" tabindex="-1"
-     aria-labelledby="editDependentLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editDependentLabel">Sửa thông tin người phụ thuộc</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-      </div>
-      <form id="editDependentForm" method="post" action="">
-        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="edit_dep_fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit_dep_fullName" name="fullName"
-                   required maxlength="200">
-          </div>
-          <div class="mb-3">
-            <label for="edit_dep_relationship" class="form-label">Quan hệ <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit_dep_relationship" name="relationship"
-                   required maxlength="100" placeholder="VD: Con, Vợ/Chồng, Cha/Mẹ...">
-          </div>
-          <div class="mb-3">
-            <label for="edit_dep_phone" class="form-label">Số điện thoại</label>
-            <input type="tel" class="form-control" id="edit_dep_phone" name="phone" maxlength="20">
-          </div>
-          <div class="row g-3">
-            <div class="col-sm-6">
-              <label for="edit_dep_gender" class="form-label">Giới tính</label>
-              <select class="form-select" id="edit_dep_gender" name="gender">
-                <option value="">-- Chọn --</option>
-                <option value="MALE">Nam</option>
-                <option value="FEMALE">Nữ</option>
-                <option value="OTHER">Khác</option>
-              </select>
-            </div>
-            <div class="col-sm-6">
-              <label for="edit_dep_dob" class="form-label">Ngày sinh</label>
-              <input type="date" class="form-control" id="edit_dep_dob" name="dob">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-mintlify-secondary" data-bs-dismiss="modal">Hủy</button>
-          <button type="submit" class="quick-action-btn primary">Lưu thay đổi</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 
-<script>
-function openEditDependent(id, fullName, relationship, phone, gender, dob) {
-    document.getElementById('edit_dep_fullName').value = fullName;
-    document.getElementById('edit_dep_relationship').value = relationship;
-    document.getElementById('edit_dep_phone').value = phone;
-    document.getElementById('edit_dep_gender').value = gender;
-    document.getElementById('edit_dep_dob').value = dob;
-    
-    // Set form action dynamically
-    document.getElementById('editDependentForm').action = '${ctx}/manager/dependents/' + id + '/edit?tenantId=${tenant.id}';
-}
-</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 </body>

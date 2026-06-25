@@ -62,7 +62,8 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (pathInfo == null || "/".equals(pathInfo)) {
             handleList(req, resp);
         } else if ("/create".equals(pathInfo)) {
-            handleCreateForm(req, resp);
+            setFlashMessage(req, "error", "Vui lòng tạo tài khoản người thuê thông qua chi tiết hợp đồng.");
+            resp.sendRedirect(req.getContextPath() + "/manager/contracts");
         } else {
             // detail: /manager/tenants/{id}
             String[] parts = pathInfo.split("/");
@@ -114,7 +115,8 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (pathInfo != null) {
             String[] parts = pathInfo.split("/");
             if ("/create".equals(pathInfo)) {
-                handleCreateSubmit(req, resp);
+                setFlashMessage(req, "error", "Vui lòng tạo tài khoản người thuê thông qua chi tiết hợp đồng.");
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts");
                 return;
             } else if (parts.length == 3 && "end-rental".equals(parts[2])) {
                 try {
@@ -198,11 +200,13 @@ public class ManagerTenantsServlet extends BaseServlet {
         List<Map<String, Object>> tenants = new ArrayList<>();
         int totalCount = 0;
 
-        // Build filtering query — chỉ lấy tenant có phòng trong cơ sở manager phụ trách
+        // Build filtering query — chỉ lấy tenant có phòng hoặc hợp đồng trong cơ sở manager phụ trách
         StringBuilder whereClause = new StringBuilder(
             " WHERE u.role = 'TENANT' AND u.deleted_at IS NULL" +
-            " AND r.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)");
+            " AND (r.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)" +
+            "      OR cr.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL))");
         List<Object> params = new ArrayList<>();
+        params.add(currentUser.getId());
         params.add(currentUser.getId());
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -220,12 +224,16 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
 
         String countSql = "SELECT COUNT(DISTINCT u.user_id) FROM dbo.users u" +
-            " INNER JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
+            " LEFT JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
+            " LEFT JOIN dbo.contracts c ON c.tenant_id = u.user_id AND c.deleted_at IS NULL" +
+            " LEFT JOIN dbo.rooms cr ON c.room_id = cr.room_id AND cr.deleted_at IS NULL" +
             whereClause.toString();
         String selectSql = "SELECT u.user_id, u.username, u.full_name, u.email, u.phone, u.status," +
             " r.room_id, r.code AS room_code, r.contract_start_date" +
             " FROM dbo.users u" +
-            " INNER JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
+            " LEFT JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
+            " LEFT JOIN dbo.contracts c ON c.tenant_id = u.user_id AND c.deleted_at IS NULL" +
+            " LEFT JOIN dbo.rooms cr ON c.room_id = cr.room_id AND cr.deleted_at IS NULL" +
             whereClause.toString() +
             " ORDER BY u.user_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
@@ -287,189 +295,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/tenants/list.jsp").forward(req, resp);
     }
 
-    private void handleCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UserSessionDTO currentUser = getCurrentUser(req);
-        if (currentUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
-            return;
-        }
 
-        String contractIdStr = req.getParameter("contractId");
-        if (contractIdStr == null || contractIdStr.trim().isEmpty()) {
-            setFlashMessage(req, "error", "Yêu cầu tạo hợp đồng trước khi tạo tài khoản người thuê.");
-            resp.sendRedirect(req.getContextPath() + "/manager/contracts");
-            return;
-        }
-
-        Map<String, Object> prefilledContract = null;
-        try {
-            int contractId = Integer.parseInt(contractIdStr.trim());
-            String sql = "SELECT c.*, r.code AS room_code FROM dbo.contracts c " +
-                         "JOIN dbo.rooms r ON c.room_id = r.room_id " +
-                         "WHERE c.contract_id = ? AND c.created_by = ? AND c.deleted_at IS NULL";
-            try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, contractId);
-                ps.setInt(2, currentUser.getId());
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        prefilledContract = new HashMap<>();
-                        prefilledContract.put("contractId", rs.getInt("contract_id"));
-                        prefilledContract.put("roomId", rs.getInt("room_id"));
-                        prefilledContract.put("roomCode", rs.getString("room_code"));
-                        prefilledContract.put("tenantFullName", rs.getString("tenant_full_name"));
-                        prefilledContract.put("tenantPhone", rs.getString("tenant_phone"));
-                        prefilledContract.put("tenantIdentityNumber", rs.getString("tenant_identity_number"));
-                        prefilledContract.put("tenantPermanentAddress", rs.getString("tenant_permanent_address"));
-                        Date dob = rs.getDate("tenant_dob");
-                        prefilledContract.put("tenantDob", dob != null ? dob.toString() : "");
-                        Date sDate = rs.getDate("start_date");
-                        prefilledContract.put("startDate", sDate != null ? sDate.toString() : "");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load prefilled contract details for contractId={}", contractIdStr, e);
-        }
-
-        if (prefilledContract == null) {
-            setFlashMessage(req, "error", "Không tìm thấy hợp đồng hợp lệ để tạo tài khoản người thuê.");
-            resp.sendRedirect(req.getContextPath() + "/manager/contracts");
-            return;
-        }
-
-        req.setAttribute("prefilledContract", prefilledContract);
-        req.getRequestDispatcher("/WEB-INF/views/manager/tenants/create.jsp").forward(req, resp);
-    }
-
-    private void handleCreateSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UserSessionDTO currentUser = getCurrentUser(req);
-        if (currentUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
-            return;
-        }
-
-        String fullName = req.getParameter("fullName");
-        String phone = req.getParameter("phone");
-        String email = req.getParameter("email");
-        String identityNumber = req.getParameter("identityNumber");
-        String permanentAddress = req.getParameter("permanentAddress");
-        String gender = req.getParameter("gender");
-        String dobStr = req.getParameter("dob");
-        String roomIdStr = req.getParameter("roomId");
-        String contractStartDateStr = req.getParameter("contractStartDate");
-
-        String contractIdStr = req.getParameter("contractId");
-
-        if (fullName == null || phone == null || email == null || identityNumber == null || roomIdStr == null || roomIdStr.isEmpty()) {
-            req.setAttribute("errorMessage", "Vui lòng nhập đầy đủ các trường bắt buộc.");
-            handleCreateForm(req, resp);
-            return;
-        }
-
-        String username = email.trim(); // Username will be the email
-
-        // Generate temporary password automatically using PasswordUtil
-        String plainPassword = PasswordUtil.generateTempPassword();
-        String passwordHash = PasswordUtil.hash(plainPassword);
-
-        int roomId = Integer.parseInt(roomIdStr);
-        LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
-        LocalDate startDate = (contractStartDateStr != null && !contractStartDateStr.isEmpty()) ? LocalDate.parse(contractStartDateStr) : LocalDate.now();
-
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            conn.setAutoCommit(false);
-
-            // Check if username already exists
-            String checkSql = "SELECT user_id FROM dbo.users WHERE username = ? AND deleted_at IS NULL";
-            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
-                ps.setString(1, username);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        req.setAttribute("errorMessage", "Email/Tên đăng nhập đã tồn tại trong hệ thống.");
-                        conn.rollback();
-                        handleCreateForm(req, resp);
-                        return;
-                    }
-                }
-            }
-
-            // Insert user
-            String insUserSql = "INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, identity_number, dob, gender, permanent_address, force_change_pass, created_at, updated_at) " +
-                    "VALUES (?, ?, 'TENANT', ?, ?, ?, 'ACTIVE', ?, ?, ?, ?, 1, GETDATE(), GETDATE())";
-            int newUserId = 0;
-            try (PreparedStatement ps = conn.prepareStatement(insUserSql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, username);
-                ps.setString(2, passwordHash);
-                ps.setString(3, fullName.trim());
-                ps.setString(4, email.trim());
-                ps.setString(5, phone.trim());
-                ps.setString(6, identityNumber.trim());
-                ps.setDate(7, dob != null ? Date.valueOf(dob) : null);
-                ps.setString(8, gender);
-                ps.setString(9, permanentAddress);
-                ps.executeUpdate();
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        newUserId = rs.getInt(1);
-                    }
-                }
-            }
-
-            // Update room
-            String updRoomSql = "UPDATE dbo.rooms SET tenant_id = ?, status = 'OCCUPIED', contract_start_date = ?, contract_end_date = ?, updated_at = GETDATE() WHERE room_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(updRoomSql)) {
-                ps.setInt(1, newUserId);
-                ps.setDate(2, Date.valueOf(startDate));
-                ps.setDate(3, Date.valueOf(startDate.plusYears(1))); // Default 1 year contract
-                ps.setInt(4, roomId);
-                ps.executeUpdate();
-            }
-
-            // Update contract if contractId is present
-            if (contractIdStr != null && !contractIdStr.trim().isEmpty()) {
-                String updContractSql = "UPDATE dbo.contracts SET tenant_id = ?, updated_at = GETDATE() WHERE contract_id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(updContractSql)) {
-                    ps.setInt(1, newUserId);
-                    ps.setInt(2, Integer.parseInt(contractIdStr.trim()));
-                    ps.executeUpdate();
-                }
-            }
-
-            conn.commit();
-
-            // Send email to tenant with credentials
-            com.quanlyphongtro.util.EmailService.sendTempPassword(email.trim(), fullName.trim(), username, plainPassword);
-
-            try {
-                AuditLogHelper.log(auditLogDAO, req, "users", newUserId, "CREATE", null, username, currentUser.getId());
-            } catch (Exception ex) {
-                logger.warn("AuditLog failed after tenant create", ex);
-            }
-
-            if (contractIdStr != null && !contractIdStr.trim().isEmpty()) {
-                setFlashMessage(req, "success", "Tạo tài khoản người thuê thành công! Đã gửi thông tin tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
-                resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contractIdStr.trim());
-            } else {
-                setFlashMessage(req, "success", "Tạo người thuê và gán phòng thành công! Đã gửi tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
-                resp.sendRedirect(req.getContextPath() + "/manager/tenants");
-            }
-
-        } catch (Exception e) {
-            if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ignored) {}
-            }
-            logger.error("Failed to create tenant", e);
-            req.setAttribute("errorMessage", "Lỗi cơ sở dữ liệu: " + e.getMessage());
-            handleCreateForm(req, resp);
-        } finally {
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException ignored) {}
-            }
-        }
-    }
 
     private void handleDetail(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Map<String, Object> tenant = null;
@@ -547,6 +373,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         String phone = req.getParameter("phone");
         String gender = req.getParameter("gender");
         String dobStr = req.getParameter("dob");
+        String identityNumber = req.getParameter("identityNumber");
 
         if (fullName == null || relationship == null || fullName.trim().isEmpty() || relationship.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Họ tên và Quan hệ là bắt buộc.");
@@ -554,10 +381,25 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        if (phone != null && !phone.trim().isEmpty()) {
+            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+                setFlashMessage(req, "danger", "Số điện thoại người phụ thuộc không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                return;
+            }
+        }
+        if (identityNumber != null && !identityNumber.trim().isEmpty()) {
+            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+                setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                return;
+            }
+        }
+
         LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? java.time.LocalDate.parse(dobStr) : null;
 
-        String sql = "INSERT INTO dbo.dependents (tenant_id, full_name, relationship, phone, gender, dob, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        String sql = "INSERT INTO dbo.dependents (tenant_id, full_name, relationship, phone, gender, dob, identity_number, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -567,6 +409,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             ps.setString(4, phone);
             ps.setString(5, gender);
             ps.setDate(6, dob != null ? Date.valueOf(dob) : null);
+            ps.setString(7, identityNumber != null ? identityNumber.trim() : null);
             ps.executeUpdate();
             
             try {
@@ -654,6 +497,13 @@ public class ManagerTenantsServlet extends BaseServlet {
             // 2. Set tenant's status to INACTIVE
             String sqlUser = "UPDATE dbo.users SET status = 'INACTIVE', updated_at = GETDATE() WHERE user_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sqlUser)) {
+                ps.setInt(1, tenantId);
+                ps.executeUpdate();
+            }
+
+            // 3. Set contract's status to INACTIVE
+            String sqlContract = "UPDATE dbo.contracts SET status = 'INACTIVE', updated_at = GETDATE() WHERE tenant_id = ? AND status = 'ACTIVE'";
+            try (PreparedStatement ps = conn.prepareStatement(sqlContract)) {
                 ps.setInt(1, tenantId);
                 ps.executeUpdate();
             }
@@ -776,6 +626,8 @@ public class ManagerTenantsServlet extends BaseServlet {
                     dependent.put("tenantId", rs.getInt("tenant_id"));
                     dependent.put("tenantName", rs.getString("tenant_name"));
                     dependent.put("tenantCode", rs.getString("tenant_code"));
+                    dependent.put("identityNumber", rs.getString("identity_number"));
+                    dependent.put("permanentAddress", rs.getString("permanent_address"));
                 }
             }
         } catch (Exception e) {
@@ -804,6 +656,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         String gender = req.getParameter("gender");
         String dobStr = req.getParameter("dob");
         String tenantIdStr = req.getParameter("tenantId");
+        String identityNumber = req.getParameter("identityNumber");
 
         if (fullName == null || relationship == null || fullName.trim().isEmpty() || relationship.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Họ tên và Quan hệ là bắt buộc.");
@@ -813,6 +666,29 @@ public class ManagerTenantsServlet extends BaseServlet {
                 resp.sendRedirect(req.getContextPath() + "/manager/dependents/" + dependentId);
             }
             return;
+        }
+
+        if (phone != null && !phone.trim().isEmpty()) {
+            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+                setFlashMessage(req, "danger", "Số điện thoại người phụ thuộc không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+                if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
+                    resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/manager/dependents/" + dependentId);
+                }
+                return;
+            }
+        }
+        if (identityNumber != null && !identityNumber.trim().isEmpty()) {
+            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+                setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+                if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
+                    resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/manager/dependents/" + dependentId);
+                }
+                return;
+            }
         }
 
         LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
@@ -843,7 +719,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
-        String updateSql = "UPDATE dbo.dependents SET full_name = ?, relationship = ?, phone = ?, gender = ?, dob = ?, updated_at = GETDATE() WHERE dependent_id = ?";
+        String updateSql = "UPDATE dbo.dependents SET full_name = ?, relationship = ?, phone = ?, gender = ?, dob = ?, identity_number = ?, updated_at = GETDATE() WHERE dependent_id = ?";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(updateSql)) {
@@ -852,7 +728,8 @@ public class ManagerTenantsServlet extends BaseServlet {
             ps.setString(3, phone);
             ps.setString(4, gender);
             ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
-            ps.setInt(6, dependentId);
+            ps.setString(6, identityNumber != null ? identityNumber.trim() : null);
+            ps.setInt(7, dependentId);
             ps.executeUpdate();
             
             try {
@@ -892,6 +769,17 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (fullName == null || phone == null || email == null || identityNumber == null ||
             fullName.trim().isEmpty() || phone.trim().isEmpty() || email.trim().isEmpty() || identityNumber.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Vui lòng nhập đầy đủ các trường bắt buộc.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+            return;
+        }
+
+        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+            setFlashMessage(req, "danger", "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+            return;
+        }
+        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+            setFlashMessage(req, "danger", "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
             return;
         }

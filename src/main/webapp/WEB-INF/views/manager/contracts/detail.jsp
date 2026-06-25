@@ -96,13 +96,26 @@
         </div>
         <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
           <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
-            <a href="${ctx}/manager/tenants/create?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500;">
+            <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
               </svg>
               Tạo tài khoản người thuê
             </a>
+          </c:if>
+          <c:if test="${contract.status == 'INACTIVE'}">
+            <form action="${ctx}/manager/contracts/delete?id=${contract.contractId}" method="post" style="display:inline; margin:0;"
+                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?');">
+              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+              <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500; height: 38px; border-radius: var(--hms-radius-full, 9999px);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Xóa hợp đồng
+              </button>
+            </form>
           </c:if>
           <button onclick="window.print()" class="btn-mintlify-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">

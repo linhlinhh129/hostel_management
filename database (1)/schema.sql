@@ -330,7 +330,7 @@ BEGIN
 		code                       NVARCHAR(50) NOT NULL UNIQUE,
 
 		room_id                    INT NOT NULL,
-		tenant_id                  INT NOT NULL,
+		tenant_id                  INT NULL,
 
 		tenant_full_name           NVARCHAR(100) NOT NULL,
 		tenant_dob                 DATE NULL,
