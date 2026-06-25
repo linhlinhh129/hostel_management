@@ -20,7 +20,7 @@
         <div>
           <%-- Breadcrumb --%>
           <div style="font-size:0.8125rem;color:var(--hms-text-muted);margin-bottom:6px">
-            <a href="${ctx}/manager/rooms" style="color:var(--hms-text-muted);text-decoration:none">
+            <a href="${ctx}/manager/rooms?showGrid=true" style="color:var(--hms-text-muted);text-decoration:none">
               Căn hộ / Phòng
             </a>
             <span style="margin:0 6px">›</span>
@@ -38,14 +38,8 @@
               <c:when test="${room.status == 'OCCUPIED'}">
                 <span class="badge-hms badge-info">Đang thuê</span>
               </c:when>
-              <c:when test="${room.status == 'AVAILABLE' or room.status == 'ACTIVE'}">
-                <span class="badge-hms badge-success">Phòng trống</span>
-              </c:when>
-              <c:when test="${room.status == 'MAINTENANCE'}">
-                <span class="badge-hms badge-warning">Bảo trì</span>
-              </c:when>
               <c:otherwise>
-                <span class="badge-hms badge-neutral"><c:out value="${room.status}"/></span>
+                <span class="badge-hms badge-success">Trống</span>
               </c:otherwise>
             </c:choose>
           </div>
@@ -104,14 +98,8 @@
                       <c:when test="${room.status == 'OCCUPIED'}">
                         <span class="badge-hms badge-info">Đang thuê</span>
                       </c:when>
-                      <c:when test="${room.status == 'AVAILABLE' or room.status == 'ACTIVE'}">
-                        <span class="badge-hms badge-success">Trống</span>
-                      </c:when>
-                      <c:when test="${room.status == 'MAINTENANCE'}">
-                        <span class="badge-hms badge-warning">Bảo trì</span>
-                      </c:when>
                       <c:otherwise>
-                        <span class="badge-hms badge-neutral"><c:out value="${room.status}"/></span>
+                        <span class="badge-hms badge-success">Trống</span>
                       </c:otherwise>
                     </c:choose>
                   </td>

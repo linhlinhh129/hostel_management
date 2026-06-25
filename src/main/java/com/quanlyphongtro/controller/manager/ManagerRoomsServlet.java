@@ -51,7 +51,12 @@ public class ManagerRoomsServlet extends BaseServlet {
         } else {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null || "/".equals(pathInfo)) {
-                handleFacilityGrid(req, resp);
+                String showGrid = req.getParameter("showGrid");
+                if ("true".equals(showGrid)) {
+                    handleFacilityGrid(req, resp);
+                } else {
+                    redirectToDefaultFacility(req, resp);
+                }
             } else {
                 // Renders detail: /manager/rooms/{id}
                 String idStr = pathInfo.substring(1);
@@ -101,6 +106,35 @@ public class ManagerRoomsServlet extends BaseServlet {
         req.setAttribute("facilities", facilities);
         req.setAttribute("facilityId", null); // Set empty to trigger Mode 1 in list.jsp
         req.getRequestDispatcher("/WEB-INF/views/manager/rooms/list.jsp").forward(req, resp);
+    }
+
+    private void redirectToDefaultFacility(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        int firstFacilityId = -1;
+        String sql = "SELECT TOP 1 facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL ORDER BY code ASC";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, currentUser.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    firstFacilityId = rs.getInt("facility_id");
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to fetch first facility for manager={}", currentUser.getId(), e);
+        }
+
+        if (firstFacilityId != -1) {
+            resp.sendRedirect(req.getContextPath() + "/manager/facilities/" + firstFacilityId + "/rooms");
+        } else {
+            handleFacilityGrid(req, resp);
+        }
     }
 
     private void handleFacilityRooms(int facilityId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
