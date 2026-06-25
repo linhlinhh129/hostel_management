@@ -26,9 +26,6 @@
       <div class="data-surface">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 p-3 gap-3">
             <h5 class="m-0 text-center text-md-start" style="font-weight: 600;">Lịch sử báo cáo</h5>
-            <div class="d-grid d-md-block">
-                <a href="${ctx}/operator/incidents/create" class="btn-mintlify-primary text-center text-decoration-none">Báo cáo sự cố mới</a>
-            </div>
         </div>
 
         <c:choose>

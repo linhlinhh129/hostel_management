@@ -58,7 +58,6 @@
                     <!-- Hero Header -->
                     <div class="page-header hero-sky-gradient" style="border-radius: var(--hms-radius-lg, 12px); margin-bottom: 1.75rem;">
                         <h1>Dashboard Vận hành</h1>
-                        <p>Kỳ đo đạc ${billingPeriodLabel} · ${facilityName}</p>
                     </div>
 
                     <!-- Thao tác nhanh (Quick Actions) -->

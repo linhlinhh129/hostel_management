@@ -5,7 +5,7 @@
 <html lang="vi">
 <head>
     <jsp:include page="/WEB-INF/views/layout/head.jsp">
-        <jsp:param name="title" value="Danh sách điện nước" />
+        <jsp:param name="title" value="Lịch sử điện nước" />
     </jsp:include>
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -38,13 +38,13 @@
 
                     <!-- Header -->
                     <div class="page-header hero-sky-gradient" style="border-radius: var(--hms-radius-lg, 12px); margin-bottom: 1.75rem;">
-                        <h1>Danh sách điện nước</h1>
+                        <h1>Lịch sử điện nước</h1>
                     </div>
 
                     <!-- Filter -->
-                    <form action="${pageContext.request.contextPath}/operator/meter-readings" method="get" class="mb-4">
+                    <form action="${pageContext.request.contextPath}/operator/meter-readings/history" method="get" class="mb-4">
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <!-- Hiển thị tên cơ sở thay vì Dropdown -->
                                 <div class="mintlify-text-input d-flex align-items-center" style="height: 38px; background-color: var(--color-surface-soft); color: var(--color-steel);">
                                     <c:choose>
@@ -58,10 +58,24 @@
                                     </c:choose>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <input type="text" name="roomCode" class="mintlify-text-input" placeholder="Nhập mã phòng..." value="${searchRoomCode}" style="height: 38px;">
+                            <div class="col-md-2">
+                                <input type="text" name="roomCode" class="mintlify-text-input" placeholder="Mã phòng..." value="${searchRoomCode}" style="height: 38px;">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
+                                <select name="month" class="mintlify-text-input" style="height: 38px;">
+                                    <c:forEach var="m" begin="1" end="12">
+                                        <option value="${m}" ${selectedMonth == m ? 'selected' : ''}>Tháng ${m}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="year" class="mintlify-text-input" style="height: 38px;">
+                                    <c:forEach var="y" begin="${currentYear - 2}" end="${currentYear}">
+                                        <option value="${y}" ${selectedYear == y ? 'selected' : ''}>Năm ${y}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
                                 <button type="submit" class="btn-mintlify-primary w-100" style="height: 38px; padding: 0; justify-content: center;">Lọc danh sách</button>
                             </div>
                         </div>
@@ -78,7 +92,6 @@
                                         <th>Số nước</th>
                                         <th class="d-none d-md-table-cell">Cập nhật lúc</th>
                                         <th>Trạng thái</th>
-                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -126,23 +139,6 @@
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
-                                                    <td>
-                                                        <c:choose>
-                                                            <c:when test="${item.status != 'DA_CAP_NHAT'}">
-                                                                <a href="${pageContext.request.contextPath}/operator/meter-readings/update?roomCode=${item.roomCode}"
-                                                                   class="btn-mintlify-primary btn-sm px-3 py-1 text-decoration-none"
-                                                                   style="font-size:13px; display:inline-flex; align-items:center;">
-                                                                    Cập nhật
-                                                                </a>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <a href="${pageContext.request.contextPath}/operator/meter-readings/update?roomCode=${item.roomCode}"
-                                                                   class="btn-mintlify-secondary btn-sm px-3 py-1 text-decoration-none"
-                                                                   style="font-size:13px; display:inline-flex; align-items:center; background-color: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline-soft);">
-                                                                    Sửa
-                                                                </a>
-                                                            </c:otherwise>
-                                                        </c:choose>
                                                     </td>
                                                 </tr>
                                             </c:forEach>
