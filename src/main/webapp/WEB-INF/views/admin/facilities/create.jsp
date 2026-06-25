@@ -23,9 +23,7 @@
                 <form method="post" action="${ctx}/admin/facilities/create" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-                    </c:if>
+
 
                     <h2 class="h6 mb-3">Thông tin cơ sở</h2>
 

@@ -50,8 +50,8 @@
   <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
   <div class="sidebar-overlay"></div>
   <div class="main-wrapper">
-    <jsp:include page="/WEB-INF/views/layout/topbar.jsp"/>
     <main class="page-content">
+      <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div>
           <a href="${ctx}/manager/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">
@@ -62,12 +62,6 @@
           <p>Thiết lập thông tin và các điều khoản cơ bản cho khách thuê phòng</p>
         </div>
       </div>
-
-      <c:if test="${not empty errorMessage}">
-          <div class="alert alert-danger mt-3" style="font-weight:bold; font-size: 1.1rem; border-left: 4px solid red; background: #ffe6e6; padding: 15px;">
-              <i class="fas fa-exclamation-triangle"></i> CẢNH BÁO: <c:out value="${errorMessage}"/>
-          </div>
-      </c:if>
 
       <form method="post" action="${ctx}/manager/contracts/create">
         <input type="hidden" name="csrfToken" value="${csrfToken}">

@@ -24,9 +24,7 @@
         <form method="post" action="${ctx}/manager/notifications/create" class="p-4">
           <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
-          <c:if test="${not empty errorMessage}">
-            <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-          </c:if>
+
 
           <%-- Warning box: không được gửi ALL --%>
           <div style="background:#fff1f1;border:1px solid #fca5a5;
