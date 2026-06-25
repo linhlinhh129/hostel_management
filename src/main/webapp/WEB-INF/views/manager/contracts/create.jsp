@@ -90,7 +90,7 @@
                     <option value="${r.id}">Phòng ${r.code}</option>
                   </c:forEach>
                 </select>
-                <small class="form-text text-muted mt-2 d-block">Lưu ý: Chỉ những phòng đang ở trạng thái <strong>AVAILABLE</strong> mới có thể được tạo hợp đồng.</small>
+                <small class="form-text text-muted mt-2 d-block">Lưu ý: Chỉ những phòng đang ở trạng thái <strong>Trống</strong> mới có thể được tạo hợp đồng.</small>
               </div>
             </div>
 

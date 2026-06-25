@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -124,7 +124,7 @@
                 </c:otherwise>
               </c:choose>
             </select>
-            <div class="form-text">Chỉ hiển thị phòng đang trống (AVAILABLE) trong cơ sở bạn được phân công.</div>
+            <div class="form-text">Chỉ hiển thị phòng đang trống trong cơ sở bạn được phân công.</div>
           </div>
 
           <div class="mb-3">
