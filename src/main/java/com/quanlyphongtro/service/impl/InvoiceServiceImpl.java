@@ -271,4 +271,79 @@ public class InvoiceServiceImpl implements InvoiceService {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void deleteInvoice(int managerId, int invoiceId) throws Exception {
+        InvoiceDetailDTO dto = getInvoiceDetail(managerId, invoiceId);
+        if ("PAID".equalsIgnoreCase(dto.getStatus())) {
+            throw new IllegalArgumentException("Không thể xóa hóa đơn đã thanh toán.");
+        }
+
+        Integer meterId = null;
+        String checkMeterSql = "SELECT meter_id FROM invoices WHERE invoice_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(checkMeterSql)) {
+            ps.setInt(1, invoiceId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int mId = rs.getInt("meter_id");
+                    if (!rs.wasNull()) {
+                        meterId = mId;
+                    }
+                }
+            }
+        }
+
+        Connection conn = null;
+        try {
+            conn = DatabaseUtil.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Soft-delete the invoice
+            String deleteInvoiceSql = "UPDATE invoices SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE invoice_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(deleteInvoiceSql)) {
+                ps.setInt(1, invoiceId);
+                ps.executeUpdate();
+            }
+
+            // 2. If associated meter reading status is 'INCORRECT' or 'REPORTED', soft-delete the meter reading as well
+            if (meterId != null) {
+                String checkMeterStatusSql = "SELECT status FROM meter_readings WHERE meter_id = ? AND deleted_at IS NULL";
+                String meterStatus = null;
+                try (PreparedStatement ps = conn.prepareStatement(checkMeterStatusSql)) {
+                    ps.setInt(1, meterId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            meterStatus = rs.getString("status");
+                        }
+                    }
+                }
+
+                if ("INCORRECT".equals(meterStatus) || "REPORTED".equals(meterStatus)) {
+                    String deleteMeterSql = "UPDATE meter_readings SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE meter_id = ?";
+                    try (PreparedStatement ps = conn.prepareStatement(deleteMeterSql)) {
+                        ps.setInt(1, meterId);
+                        ps.executeUpdate();
+                    }
+                }
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (java.sql.SQLException ignored) {}
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (java.sql.SQLException ignored) {}
+            }
+        }
+
+        try {
+            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "DELETE", dto.getStatus(), "Soft Deleted", managerId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
