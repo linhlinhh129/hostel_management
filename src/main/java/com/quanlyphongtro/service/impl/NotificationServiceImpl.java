@@ -14,12 +14,22 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<Notification> getNotificationsForTenant(int roomId, int facilityId, int page, int pageSize) {
-        return notificationDAO.findForTenant(roomId, facilityId, page, pageSize);
+        return notificationDAO.findForTenant(roomId, facilityId, null, page, pageSize);
+    }
+
+    @Override
+    public List<Notification> getNotificationsForTenant(int roomId, int facilityId, String keyword, int page, int pageSize) {
+        return notificationDAO.findForTenant(roomId, facilityId, keyword, page, pageSize);
     }
 
     @Override
     public int countNotificationsForTenant(int roomId, int facilityId) {
-        return notificationDAO.countForTenant(roomId, facilityId);
+        return notificationDAO.countForTenant(roomId, facilityId, null);
+    }
+
+    @Override
+    public int countNotificationsForTenant(int roomId, int facilityId, String keyword) {
+        return notificationDAO.countForTenant(roomId, facilityId, keyword);
     }
 
     @Override

@@ -62,11 +62,6 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-info" style="font-size:0.875rem;border-radius:8px">
-                        <strong>Lưu ý:</strong> Sau khi tạo, cơ sở ở trạng thái <strong>DRAFT</strong>.
-                        Vào trang chi tiết và nhấn <em>Kích hoạt</em> để hệ thống tự động sinh danh sách phòng.
-                    </div>
-
                     <div class="d-flex gap-2 mt-2">
                         <button type="submit" class="btn btn-mintlify-primary" style="width:auto">Tạo cơ sở</button>
                         <a href="${ctx}/admin/facilities" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
