@@ -32,6 +32,29 @@
             <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
           </c:if>
 
+          <c:if test="${showReactivateConfirmation}">
+            <div class="alert alert-warning mb-3" style="border-left: 5px solid #ffb300; background-color: #fffde7; color: #663c00; border-radius: 6px; padding: 1rem;">
+              <h5 style="font-weight: 700; margin-bottom: 8px; color: #b78103;" class="d-flex align-items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Cảnh báo: Phát hiện Email của Người thuê cũ
+              </h5>
+              <p class="mb-2" style="font-size: 0.875rem;">Email này trùng khớp với tài khoản người thuê cũ đã ngưng thuê trên hệ thống:</p>
+              <ul class="mb-3" style="font-size: 0.875rem; padding-left: 20px;">
+                <li><strong>Họ tên cũ:</strong> <c:out value="${existingUserFullName}"/></li>
+                <li><strong>Số CMND/CCCD cũ:</strong> <c:out value="${existingUserIdentity}"/></li>
+              </ul>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="confirmReactivate" id="confirmReactivate" value="true" required>
+                <label class="form-check-label text-danger font-weight-bold" for="confirmReactivate" style="font-size: 0.875rem; cursor: pointer;">
+                  Tôi xác nhận đây đúng là người thuê cũ quay lại và đồng ý kích hoạt lại tài khoản này.
+                </label>
+              </div>
+            </div>
+          </c:if>
+
           <%-- ── Section 1: Thông tin cá nhân ─────────────────────── --%>
           <h5 style="font-weight:600;color:var(--hms-ink);padding-bottom:8px;
                      border-bottom:1px solid var(--hms-border);margin-bottom:1rem">
@@ -42,7 +65,7 @@
             <label for="fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="fullName" name="fullName"
                    required maxlength="200" placeholder="Nguyễn Văn A"
-                   value="<c:out value="${prefilledContract.tenantFullName}"/>">
+                   value="<c:out value="${dto != null ? dto.fullName : prefilledContract.tenantFullName}"/>">
           </div>
 
           <div class="row g-3 mb-3">
@@ -50,12 +73,13 @@
               <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
               <input type="tel" class="form-control" id="phone" name="phone"
                      required maxlength="20" placeholder="0901234567"
-                     value="<c:out value="${prefilledContract.tenantPhone}"/>">
+                     value="<c:out value="${dto != null ? dto.phone : prefilledContract.tenantPhone}"/>">
             </div>
             <div class="col-sm-6">
               <label for="email" class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
               <input type="email" class="form-control" id="email" name="email"
-                     required maxlength="200" placeholder="tenant@email.com">
+                     required maxlength="200" placeholder="tenant@email.com"
+                     value="<c:out value="${dto != null ? dto.email : ''}"/>">
             </div>
           </div>
 
@@ -63,14 +87,14 @@
             <label for="identityNumber" class="form-label">Số CCCD / CMND <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="identityNumber" name="identityNumber"
                    required maxlength="20" placeholder="012345678901"
-                   value="<c:out value="${prefilledContract.tenantIdentityNumber}"/>">
+                   value="<c:out value="${dto != null ? dto.identityNumber : prefilledContract.tenantIdentityNumber}"/>">
           </div>
 
           <div class="mb-3">
             <label for="permanentAddress" class="form-label">Địa chỉ thường trú</label>
             <input type="text" class="form-control" id="permanentAddress" name="permanentAddress"
                    maxlength="500" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
-                   value="<c:out value="${prefilledContract.tenantPermanentAddress}"/>">
+                   value="<c:out value="${dto != null ? dto.permanentAddress : prefilledContract.tenantPermanentAddress}"/>">
           </div>
 
           <div class="row g-3 mb-3">
@@ -78,15 +102,15 @@
               <label for="gender" class="form-label">Giới tính</label>
               <select class="form-select" id="gender" name="gender">
                 <option value="">-- Chọn --</option>
-                <option value="MALE">Nam</option>
-                <option value="FEMALE">Nữ</option>
-                <option value="OTHER">Khác</option>
+                <option value="MALE" ${(dto != null ? dto.gender : '') == 'MALE' ? 'selected' : ''}>Nam</option>
+                <option value="FEMALE" ${(dto != null ? dto.gender : '') == 'FEMALE' ? 'selected' : ''}>Nữ</option>
+                <option value="OTHER" ${(dto != null ? dto.gender : '') == 'OTHER' ? 'selected' : ''}>Khác</option>
               </select>
             </div>
             <div class="col-sm-6">
               <label for="dob" class="form-label">Ngày sinh</label>
               <input type="date" class="form-control" id="dob" name="dob"
-                     value="<c:out value="${prefilledContract.tenantDob}"/>">
+                     value="<c:out value="${dto != null ? dto.dob : prefilledContract.tenantDob}"/>">
             </div>
           </div>
 

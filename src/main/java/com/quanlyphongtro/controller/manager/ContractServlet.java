@@ -44,7 +44,7 @@ public class ContractServlet extends BaseServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String path = req.getServletPath();
-        
+
         try {
             UserSessionDTO user = getCurrentUser(req);
             if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
@@ -67,7 +67,8 @@ public class ContractServlet extends BaseServlet {
         }
     }
 
-    private void showList(HttpServletRequest req, HttpServletResponse resp, int managerId) throws ServletException, IOException {
+    private void showList(HttpServletRequest req, HttpServletResponse resp, int managerId)
+            throws ServletException, IOException {
         String searchName = req.getParameter("searchName");
         List<Contract> contracts = contractService.getContractsByManager(managerId, searchName);
         req.setAttribute("contracts", contracts);
@@ -75,7 +76,8 @@ public class ContractServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/contracts/list.jsp").forward(req, resp);
     }
 
-    private void showCreateForm(HttpServletRequest req, HttpServletResponse resp, int managerId) throws ServletException, IOException {
+    private void showCreateForm(HttpServletRequest req, HttpServletResponse resp, int managerId)
+            throws ServletException, IOException {
         ContractDAO contractDAO = new ContractDAO();
         req.setAttribute("availableRooms", contractDAO.getAvailableRooms(managerId));
         String roomIdParam = req.getParameter("roomId");
@@ -85,7 +87,8 @@ public class ContractServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/contracts/create.jsp").forward(req, resp);
     }
 
-    private void showDetail(HttpServletRequest req, HttpServletResponse resp, int managerId) throws ServletException, IOException {
+    private void showDetail(HttpServletRequest req, HttpServletResponse resp, int managerId)
+            throws ServletException, IOException {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
             Contract contract = contractService.getContractDetail(id, managerId);
@@ -113,7 +116,7 @@ public class ContractServlet extends BaseServlet {
 
                 Contract contract = new Contract();
                 contract.setRoomId(Integer.parseInt(req.getParameter("roomId")));
-                
+
                 String tenantIdStr = req.getParameter("tenantId");
                 if (tenantIdStr != null && !tenantIdStr.trim().isEmpty()) {
                     contract.setTenantId(Integer.parseInt(tenantIdStr));
@@ -138,14 +141,15 @@ public class ContractServlet extends BaseServlet {
                 contract.setEndDate(LocalDate.parse(req.getParameter("endDate")));
 
                 if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(contract.getTenantPhone())) {
-                    throw new IllegalArgumentException("Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+                    throw new IllegalArgumentException(
+                            "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
                 }
                 if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(contract.getTenantIdentityNumber())) {
                     throw new IllegalArgumentException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
                 }
 
                 contractService.createContract(contract, user.getId());
-                
+
                 // Redirect to the detail page of the newly created contract
                 resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contract.getContractId());
             } catch (Exception e) {
@@ -184,7 +188,8 @@ public class ContractServlet extends BaseServlet {
         }
     }
 
-    private void showAddTenantForm(HttpServletRequest req, HttpServletResponse resp, int managerId) throws ServletException, IOException {
+    private void showAddTenantForm(HttpServletRequest req, HttpServletResponse resp, int managerId)
+            throws ServletException, IOException {
         String contractIdStr = req.getParameter("contractId");
         if (contractIdStr == null || contractIdStr.trim().isEmpty()) {
             setFlashMessage(req, "error", "Yêu cầu cung cấp hợp đồng để tạo tài khoản người thuê.");
@@ -196,10 +201,10 @@ public class ContractServlet extends BaseServlet {
         try {
             int contractId = Integer.parseInt(contractIdStr.trim());
             String sql = "SELECT c.*, r.code AS room_code FROM dbo.contracts c " +
-                         "JOIN dbo.rooms r ON c.room_id = r.room_id " +
-                         "WHERE c.contract_id = ? AND c.created_by = ? AND c.deleted_at IS NULL";
+                    "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                    "WHERE c.contract_id = ? AND c.created_by = ? AND c.deleted_at IS NULL";
             try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setInt(1, contractId);
                 ps.setInt(2, managerId);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -239,7 +244,8 @@ public class ContractServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/contracts/add_tenant.jsp").forward(req, resp);
     }
 
-    private void handleAddTenantSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleAddTenantSubmit(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -257,14 +263,26 @@ public class ContractServlet extends BaseServlet {
         String contractStartDateStr = req.getParameter("contractStartDate");
         String contractIdStr = req.getParameter("contractId");
 
-        if (fullName == null || phone == null || email == null || identityNumber == null || roomIdStr == null || roomIdStr.isEmpty() || contractIdStr == null || contractIdStr.isEmpty()) {
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("fullName", fullName);
+        dto.put("phone", phone);
+        dto.put("email", email);
+        dto.put("identityNumber", identityNumber);
+        dto.put("permanentAddress", permanentAddress);
+        dto.put("gender", gender);
+        dto.put("dob", dobStr);
+        req.setAttribute("dto", dto);
+
+        if (fullName == null || phone == null || email == null || identityNumber == null || roomIdStr == null
+                || roomIdStr.isEmpty() || contractIdStr == null || contractIdStr.isEmpty()) {
             req.setAttribute("errorMessage", "Vui lòng nhập đầy đủ các trường bắt buộc.");
             showAddTenantForm(req, resp, currentUser.getId());
             return;
         }
 
         if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
-            req.setAttribute("errorMessage", "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+            req.setAttribute("errorMessage",
+                    "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
             showAddTenantForm(req, resp, currentUser.getId());
             return;
         }
@@ -280,45 +298,101 @@ public class ContractServlet extends BaseServlet {
 
         int roomId = Integer.parseInt(roomIdStr);
         LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
-        LocalDate startDate = (contractStartDateStr != null && !contractStartDateStr.isEmpty()) ? LocalDate.parse(contractStartDateStr) : LocalDate.now();
+        LocalDate startDate = (contractStartDateStr != null && !contractStartDateStr.isEmpty())
+                ? LocalDate.parse(contractStartDateStr)
+                : LocalDate.now();
 
         Connection conn = null;
         try {
             conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // Check if username already exists
-            String checkSql = "SELECT user_id FROM dbo.users WHERE username = ? AND deleted_at IS NULL";
+            String confirmReactivate = req.getParameter("confirmReactivate");
+
+            int newUserId = 0;
+            boolean userExists = false;
+            String checkSql = "SELECT user_id, role, full_name, identity_number FROM dbo.users WHERE username = ? AND deleted_at IS NULL";
             try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
                 ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        req.setAttribute("errorMessage", "Email/Tên đăng nhập đã tồn tại trong hệ thống.");
-                        conn.rollback();
-                        showAddTenantForm(req, resp, currentUser.getId());
-                        return;
+                        int existingUserId = rs.getInt("user_id");
+                        String existingRole = rs.getString("role");
+                        
+                        if (!"TENANT".equals(existingRole)) {
+                            req.setAttribute("errorMessage", "Email/Tên đăng nhập đã tồn tại trong hệ thống với vai trò khác.");
+                            conn.rollback();
+                            showAddTenantForm(req, resp, currentUser.getId());
+                            return;
+                        }
+
+                        String activeCheckSql = "SELECT COUNT(*) FROM (" +
+                                "SELECT contract_id FROM dbo.contracts WHERE tenant_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL " +
+                                "UNION ALL " +
+                                "SELECT room_id FROM dbo.rooms WHERE tenant_id = ? AND deleted_at IS NULL" +
+                                ") active_checks";
+                        try (PreparedStatement psCheck = conn.prepareStatement(activeCheckSql)) {
+                            psCheck.setInt(1, existingUserId);
+                            psCheck.setInt(2, existingUserId);
+                            try (ResultSet rsCheck = psCheck.executeQuery()) {
+                                if (rsCheck.next() && rsCheck.getInt(1) > 0) {
+                                    req.setAttribute("errorMessage", "Email/Tên đăng nhập đã tồn tại trong hệ thống và đang hoạt động ở phòng/cơ sở khác.");
+                                    conn.rollback();
+                                    showAddTenantForm(req, resp, currentUser.getId());
+                                    return;
+                                }
+                            }
+                        }
+
+                        if (!"true".equals(confirmReactivate)) {
+                            req.setAttribute("showReactivateConfirmation", true);
+                            req.setAttribute("existingUserFullName", rs.getString("full_name"));
+                            req.setAttribute("existingUserIdentity", rs.getString("identity_number"));
+                            
+                            conn.rollback();
+                            showAddTenantForm(req, resp, currentUser.getId());
+                            return;
+                        }
+
+                        newUserId = existingUserId;
+                        userExists = true;
                     }
                 }
             }
 
-            // Insert user
-            String insUserSql = "INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, identity_number, dob, gender, permanent_address, force_change_pass, created_at, updated_at) " +
-                    "VALUES (?, ?, 'TENANT', ?, ?, ?, 'ACTIVE', ?, ?, ?, ?, 1, GETDATE(), GETDATE())";
-            int newUserId = 0;
-            try (PreparedStatement ps = conn.prepareStatement(insUserSql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, username);
-                ps.setString(2, passwordHash);
-                ps.setString(3, fullName.trim());
-                ps.setString(4, email.trim());
-                ps.setString(5, phone.trim());
-                ps.setString(6, identityNumber.trim());
-                ps.setDate(7, dob != null ? Date.valueOf(dob) : null);
-                ps.setString(8, gender);
-                ps.setString(9, permanentAddress);
-                ps.executeUpdate();
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        newUserId = rs.getInt(1);
+            if (userExists) {
+                String updUserSql = "UPDATE dbo.users SET status = 'ACTIVE', password_hash = ?, full_name = ?, phone = ?, " +
+                        "identity_number = ?, dob = ?, gender = ?, permanent_address = ?, force_change_pass = 1, updated_at = GETDATE() " +
+                        "WHERE user_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updUserSql)) {
+                    ps.setString(1, passwordHash);
+                    ps.setString(2, fullName.trim());
+                    ps.setString(3, phone.trim());
+                    ps.setString(4, identityNumber.trim());
+                    ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
+                    ps.setString(6, gender);
+                    ps.setString(7, permanentAddress);
+                    ps.setInt(8, newUserId);
+                    ps.executeUpdate();
+                }
+            } else {
+                String insUserSql = "INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, identity_number, dob, gender, permanent_address, force_change_pass, created_at, updated_at) " +
+                        "VALUES (?, ?, 'TENANT', ?, ?, ?, 'ACTIVE', ?, ?, ?, ?, 1, GETDATE(), GETDATE())";
+                try (PreparedStatement ps = conn.prepareStatement(insUserSql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setString(1, username);
+                    ps.setString(2, passwordHash);
+                    ps.setString(3, fullName.trim());
+                    ps.setString(4, email.trim());
+                    ps.setString(5, phone.trim());
+                    ps.setString(6, identityNumber.trim());
+                    ps.setDate(7, dob != null ? Date.valueOf(dob) : null);
+                    ps.setString(8, gender);
+                    ps.setString(9, permanentAddress);
+                    ps.executeUpdate();
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            newUserId = rs.getInt(1);
+                        }
                     }
                 }
             }
@@ -347,24 +421,34 @@ public class ContractServlet extends BaseServlet {
             EmailService.sendTempPassword(email.trim(), fullName.trim(), username, plainPassword);
 
             try {
-                AuditLogHelper.log(auditLogDAO, req, "users", newUserId, "CREATE", null, username, currentUser.getId());
+                AuditLogHelper.log(auditLogDAO, req, "users", newUserId, userExists ? "REACTIVATE" : "CREATE", null, username, currentUser.getId());
             } catch (Exception ex) {
                 logger.warn("AuditLog failed after tenant create", ex);
             }
 
-            setFlashMessage(req, "success", "Tạo tài khoản người thuê thành công! Đã gửi thông tin tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
+            if (userExists) {
+                setFlashMessage(req, "success", "Kích hoạt lại tài khoản người thuê cũ thành công! Đã gửi mật khẩu tạm thời mới vào email " + email.trim() + ".");
+            } else {
+                setFlashMessage(req, "success", "Tạo tài khoản người thuê thành công! Đã gửi thông tin tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
+            }
             resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contractIdStr.trim());
 
         } catch (Exception e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ignored) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {
+                }
             }
             logger.error("Failed to create tenant from contract", e);
             req.setAttribute("errorMessage", "Lỗi cơ sở dữ liệu: " + e.getMessage());
             showAddTenantForm(req, resp, currentUser.getId());
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (SQLException ignored) {}
+                try {
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
             }
         }
     }
@@ -385,13 +469,13 @@ public class ContractServlet extends BaseServlet {
 
         try {
             int contractId = Integer.parseInt(idStr.trim());
-            
+
             // Verify contract exists, is inactive, and created by this manager
             String checkSql = "SELECT status, code FROM dbo.contracts WHERE contract_id = ? AND created_by = ? AND deleted_at IS NULL";
             String status = null;
             String code = null;
             try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                    PreparedStatement ps = conn.prepareStatement(checkSql)) {
                 ps.setInt(1, contractId);
                 ps.setInt(2, currentUser.getId());
                 try (ResultSet rs = ps.executeQuery()) {
@@ -417,13 +501,14 @@ public class ContractServlet extends BaseServlet {
             // Perform soft delete
             String deleteSql = "UPDATE dbo.contracts SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
             try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                    PreparedStatement ps = conn.prepareStatement(deleteSql)) {
                 ps.setInt(1, contractId);
                 ps.executeUpdate();
             }
 
             try {
-                AuditLogHelper.log(auditLogDAO, req, "contracts", contractId, "DELETE", null, "Soft Delete contract: " + code, currentUser.getId());
+                AuditLogHelper.log(auditLogDAO, req, "contracts", contractId, "DELETE", null,
+                        "Soft Delete contract: " + code, currentUser.getId());
             } catch (Exception ex) {
                 logger.warn("AuditLog failed after contract delete", ex);
             }
