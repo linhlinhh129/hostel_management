@@ -237,4 +237,71 @@ public class MeterReadingDAO extends BaseDAO {
         }
         return null;
     }
+
+    public Integer checkCurrentMonthReadingExists(int roomId, int month, int year) {
+        String sql = "SELECT TOP 1 meter_id FROM meter_readings " +
+                     "WHERE room_id = ? AND MONTH(reading_date) = ? AND YEAR(reading_date) = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, month);
+            ps.setInt(3, year);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("meter_id");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateMeterReading(int meterId, int electric, int water, String electricImg, String waterImg) {
+        String sql = "UPDATE meter_readings SET electric = ?, water = ?, electric_img = ?, water_img = ?, updated_at = GETDATE() " +
+                     "WHERE meter_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, electric);
+            ps.setInt(2, water);
+            ps.setString(3, electricImg);
+            ps.setString(4, waterImg);
+            ps.setInt(5, meterId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public MeterStatusDTO getReadingBeforeCurrentMonth(String roomCode, int currentMonth, int currentYear) {
+        String sql = "SELECT TOP 1 r.room_id AS roomId, r.code AS roomCode, mr.electric, mr.water " +
+                     "FROM rooms r " +
+                     "LEFT JOIN meter_readings mr ON r.room_id = mr.room_id AND mr.deleted_at IS NULL " +
+                     "  AND (YEAR(mr.reading_date) < ? OR (YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) < ?)) " +
+                     "WHERE r.code = ? AND r.deleted_at IS NULL " +
+                     "ORDER BY mr.reading_date DESC";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, currentYear);
+            ps.setInt(2, currentYear);
+            ps.setInt(3, currentMonth);
+            ps.setString(4, roomCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    MeterStatusDTO dto = new MeterStatusDTO();
+                    dto.setRoomId(rs.getInt("roomId"));
+                    dto.setRoomCode(rs.getString("roomCode"));
+                    int elec = rs.getInt("electric");
+                    if (!rs.wasNull()) dto.setPreviousElectricReading(elec);
+                    int water = rs.getInt("water");
+                    if (!rs.wasNull()) dto.setPreviousWaterReading(water);
+                    return dto;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

@@ -1,0 +1,14 @@
+- [x] **1. Phục hồi "Danh sách điện nước"**
+  - [x] Sửa lại `list.jsp` để xóa bộ lọc Tháng/Năm.
+  - [x] Sửa lại `ListElectricServlet.java` chỉ lấy dữ liệu tháng hiện tại, loại bỏ lấy tham số filterMonth, filterYear.
+- [x] **2. Tạo mới Backend cho "Lịch sử"**
+  - [x] Tạo file `MeterReadingHistoryServlet.java`.
+  - [x] Code logic ánh xạ `/operator/meter-readings/history`.
+  - [x] Code logic lấy tham số `month` và `year` từ request, đổ dữ liệu xuống DAO.
+- [x] **3. Tạo mới Frontend (JSP) cho "Lịch sử"**
+  - [x] Copy `list.jsp` sang file mới `history.jsp`.
+  - [x] Thêm bộ lọc Tháng/Năm vào `history.jsp`.
+  - [x] Xóa bỏ cột "Thao tác" (chứa nút Cập nhật/Sửa) ở `history.jsp`.
+- [x] **4. Cập nhật Sidebar Menu**
+  - [x] Mở file `sidebar.jsp`.
+  - [x] Thêm link mới cho "Lịch sử điện nước" trỏ tới `/operator/meter-readings/history`.

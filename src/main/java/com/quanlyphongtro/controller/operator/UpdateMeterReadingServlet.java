@@ -58,14 +58,30 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                 return;
             }
 
-            // Lookup room and previous readings
-            MeterStatusDTO previousReading = meterReadingService.getPreviousReadingByRoomCode(roomCode);
+            java.time.LocalDate now = java.time.LocalDate.now();
+            int currentMonth = now.getMonthValue();
+            int currentYear = now.getYear();
+
+            // Lookup room and previous month's readings
+            MeterStatusDTO previousReading = meterReadingService.getReadingBeforeCurrentMonth(roomCode, currentMonth, currentYear);
             if (previousReading == null) {
-                // AC06: Mã phòng không tồn tại
-                session.setAttribute("flashMessage", "Mã phòng không tồn tại hoặc phòng không ở trạng thái đang thuê.");
-                session.setAttribute("flashType", "error");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
-                return;
+                // AC06: Mã phòng không tồn tại hoặc chưa từng có dữ liệu trước tháng này
+                // Actually if it's the first time ever, previousReading could be null for valid room!
+                // Wait, if it's a valid room but first reading ever, we shouldn't block it.
+                // Let's check if the room exists using getPreviousReadingByRoomCode just to get roomId if getReadingBeforeCurrentMonth is null.
+                previousReading = meterReadingService.getPreviousReadingByRoomCode(roomCode);
+                if (previousReading == null) {
+                    session.setAttribute("flashMessage", "Mã phòng không tồn tại hoặc phòng không ở trạng thái đang thuê.");
+                    session.setAttribute("flashType", "error");
+                    response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                    return;
+                } else {
+                    // It means this is the VERY FIRST reading in the system, or the reading we got IS the current month's reading.
+                    // If it is the current month's reading, then the "previous" before this month is 0.
+                    // So we set prevElectric and prevWater to 0, but keep the roomId.
+                    previousReading.setPreviousElectricReading(0);
+                    previousReading.setPreviousWaterReading(0);
+                }
             }
 
             int roomId = previousReading.getRoomId();
@@ -119,13 +135,20 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             waterPart.write(uploadPath + File.separator + waterFileName);
             String waterImgUrl = request.getContextPath() + "/uploads/meter_readings/" + waterFileName;
 
-            // Insert into DB
-            boolean success = meterReadingService.insertMeterReading(roomId, newElectric, newWater, electricImgUrl, waterImgUrl, operatorId);
+            // Check if current month reading exists
+            Integer existingMeterId = meterReadingService.checkCurrentMonthReadingExists(roomId, now.getMonthValue(), now.getYear());
+
+            boolean success;
+            if (existingMeterId != null) {
+                success = meterReadingService.updateMeterReading(existingMeterId, newElectric, newWater, electricImgUrl, waterImgUrl);
+            } else {
+                success = meterReadingService.insertMeterReading(roomId, newElectric, newWater, electricImgUrl, waterImgUrl, operatorId);
+            }
 
             if (success) {
                 try {
                     AuditLogHelper.log(auditLogDAO, request, "rooms", roomId,
-                        "UPDATE", "Điện:" + prevElectric + " Nước:" + prevWater,
+                        existingMeterId != null ? "UPDATE" : "INSERT", "Điện:" + prevElectric + " Nước:" + prevWater,
                         "Điện:" + newElectric + " Nước:" + newWater, operatorId);
                 } catch (Exception ex) { /* ignore audit failure */ }
                 session.setAttribute("flashMessage", "Cập nhật chỉ số điện nước cho phòng " + roomCode + " thành công.");

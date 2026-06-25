@@ -36,12 +36,8 @@ public class NotificationListServlet extends HttpServlet {
             return;
         }
 
-        // Get facility of the operator
-        Optional<Facility> facilityOpt = facilityDAO.findByOperatorId(user.getId());
+        // Chỉ lấy thông báo của Hệ thống (target_type = 'ALL'), không lấy của riêng khu trọ
         int facilityId = 0;
-        if (facilityOpt.isPresent()) {
-            facilityId = facilityOpt.get().getFacilityId();
-        }
 
         // Pagination
         int page = 1;

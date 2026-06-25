@@ -232,14 +232,27 @@
                                         </div>
 
                                         <c:if test="${reqDetail.status == 'PENDING' || reqDetail.status == 'IN_PROGRESS'}">
-                                            <div class="mintlify-property-row" style="background-color: var(--color-surface); padding: 12px; border-radius: 8px; margin-top: 12px;">
-                                                <div class="mintlify-property-label" style="color: var(--color-brand-blue);">Ngày hẹn sửa chữa</div>
-                                                <form action="${pageContext.request.contextPath}/operator/requests/detail" method="POST" class="mt-2 mb-0 d-flex flex-column gap-2">
+                                            <div class="mt-4 p-4" style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                                                <div class="d-flex align-items-center gap-2 mb-3">
+                                                    <div style="background: #e0f2fe; color: #0284c7; padding: 6px; border-radius: 8px;">
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                                    </div>
+                                                    <span style="font-size: 14px; font-weight: 600; color: #0f172a;">Lên lịch sửa chữa</span>
+                                                </div>
+                                                
+                                                <form action="${pageContext.request.contextPath}/operator/requests/detail" method="POST" class="m-0">
                                                     <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                                     <input type="hidden" name="id" value="${reqDetail.requestId}" />
                                                     <input type="hidden" name="action" value="schedule" />
-                                                    <input type="datetime-local" name="appointmentDate" class="mintlify-text-input form-control-sm shadow-sm" style="font-size: 13px; max-width: 220px;" required />
-                                                    <button type="submit" class="mintlify-btn-secondary mt-1" style="font-size: 12px; padding: 4px 12px; align-self: flex-start;">Lưu ngày hẹn</button>
+                                                    
+                                                    <div class="position-relative mb-3">
+                                                        <input type="datetime-local" name="appointmentDate" class="form-control shadow-sm" style="border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 14px; color: #334155; width: 100%; transition: all 0.2s; outline: none;" required onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.2)';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';" />
+                                                    </div>
+                                                    
+                                                    <button type="submit" class="w-100 btn d-flex align-items-center justify-content-center gap-2" style="background: #0ea5e9; color: white; border: none; padding: 10px; font-weight: 500; font-size: 14px; border-radius: 8px; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);" onmouseover="this.style.background='#0284c7'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0ea5e9'; this.style.transform='translateY(0)';">
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                                        Xác nhận lịch hẹn
+                                                    </button>
                                                 </form>
                                             </div>
                                         </c:if>
@@ -279,7 +292,7 @@
                 </div>
 
                 <!-- Modal Nhập lý do từ chối -->
-                <div id="rejectModal" class="custom-modal-backdrop">
+                <div id="rejectModal" class="custom-modal-backdrop" style="z-index: 9999;">
                     <div class="custom-modal-dialog">
                         <h5 style="font-weight: 600; margin-bottom: 20px;">Từ chối yêu cầu</h5>
                         <form action="${pageContext.request.contextPath}/operator/requests/detail" method="POST">
@@ -304,7 +317,7 @@
                 </div>
 
                 <!-- Modal Báo cáo hoàn thành -->
-                <div id="completeModal" class="custom-modal-backdrop">
+                <div id="completeModal" class="custom-modal-backdrop" style="z-index: 9999;">
                     <div class="custom-modal-dialog">
                         <h5 style="font-weight: 600; margin-bottom: 20px;">Báo cáo hoàn thành sửa chữa</h5>
                         <form action="${pageContext.request.contextPath}/operator/requests/detail?csrfToken=${csrfToken}" method="POST"
