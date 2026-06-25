@@ -109,17 +109,19 @@ public class UserServiceImpl implements UserService {
         // Set facilityCode/roomCode vào session để dùng trong sidebar và filter
         String role = user.getRole();
         if ("MANAGER".equals(role) || "OPERATOR".equals(role)) {
-            // Lấy facilityCode từ facilities.manager_id hoặc user_facilities nếu có
-            // Dùng FacilityDAO inline để tránh circular dependency
+            // Lấy facilityCode từ facilities.manager_id hoặc operator_id
             try {
                 com.quanlyphongtro.dao.FacilityDAO facilityDAO =
                         new com.quanlyphongtro.dao.FacilityDAO();
-                facilityDAO.findByManagerId(user.getId())
-                        .ifPresent(f -> {
-                            dto.setFacilityCode(f.getCode());
-                            // Lưu facilityId vào session qua facilityCode (code là unique key hiển thị)
-                            // facilityId thực sẽ được resolve lại khi cần từ DAO
-                        });
+                Optional<com.quanlyphongtro.model.Facility> facilityOpt = "OPERATOR".equals(role) 
+                        ? facilityDAO.findByOperatorId(user.getId()) 
+                        : facilityDAO.findByManagerId(user.getId());
+                
+                facilityOpt.ifPresent(f -> {
+                    dto.setFacilityCode(f.getCode());
+                    // Lưu facilityId vào session qua facilityCode (code là unique key hiển thị)
+                    // facilityId thực sẽ được resolve lại khi cần từ DAO
+                });
             } catch (Exception ex) {
                 logger.warn("Could not resolve facilityCode for userId={}", user.getId(), ex);
             }

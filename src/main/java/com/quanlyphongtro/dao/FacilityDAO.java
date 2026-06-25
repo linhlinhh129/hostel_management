@@ -187,6 +187,27 @@ public class FacilityDAO extends BaseDAO {
         return Optional.empty();
     }
 
+    /**
+     * Lấy cơ sở mà một operator (user_id) đang vận hành.
+     * Dựa theo cột operator_id.
+     */
+    public Optional<Facility> findByOperatorId(int operatorId) {
+        if (!hasOperatorColumn()) {
+            return Optional.empty();
+        }
+        String sql = buildBaseSelect() + " AND f.operator_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, operatorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return Optional.of(mapRow(rs));
+            }
+        } catch (Exception e) {
+            logger.error("FacilityDAO.findByOperatorId failed for operatorId={}", operatorId, e);
+        }
+        return Optional.empty();
+    }
+
     public List<Facility> findActiveList() {
         List<Facility> list = new ArrayList<>();
         String sql = buildBaseSelect() + " AND f.status = 'ACTIVE' ORDER BY f.name";

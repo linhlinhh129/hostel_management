@@ -155,6 +155,61 @@ public class NotificationDAO extends BaseDAO {
         return 0;
     }
 
+    public List<Notification> findNotificationsForOperator(int facilityId, int page, int limit) {
+        List<Notification> list = new ArrayList<>();
+        
+        String condition = facilityId > 0 
+            ? "(n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?))" 
+            : "n.target_type = 'ALL'";
+            
+        String sql = "SELECT n.*, u.full_name AS created_by_name " +
+                     "FROM dbo.notifications n " +
+                     "LEFT JOIN dbo.users u ON u.user_id = n.created_by " +
+                     "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
+                     "AND " + condition + " " +
+                     "ORDER BY n.sent_at DESC, n.created_at DESC " +
+                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (facilityId > 0) {
+                ps.setInt(paramIndex++, facilityId);
+            }
+            ps.setInt(paramIndex++, (page - 1) * limit);
+            ps.setInt(paramIndex, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("findNotificationsForOperator failed for facilityId={}", facilityId, e);
+        }
+        return list;
+    }
+
+    public int countNotificationsForOperator(int facilityId) {
+        String condition = facilityId > 0 
+            ? "(n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?))" 
+            : "n.target_type = 'ALL'";
+            
+        String sql = "SELECT COUNT(*) FROM dbo.notifications n " +
+                     "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
+                     "AND " + condition;
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (facilityId > 0) {
+                ps.setInt(1, facilityId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            logger.error("countNotificationsForOperator failed for facilityId={}", facilityId, e);
+        }
+        return 0;
+    }
+
     public Optional<Notification> findById(int id) {
         String sql = BASE_SELECT + " AND n.notification_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
