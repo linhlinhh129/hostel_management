@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -117,7 +117,7 @@
           <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div>
               <div class="d-flex align-items-center gap-2 mb-1">
-                <a href="${ctx}/manager/rooms"
+                <a href="${ctx}/manager/rooms?showGrid=true"
                    style="font-size:0.875rem;color:var(--hms-text-muted);text-decoration:none">
                   ← Tất cả cơ sở
                 </a>
@@ -139,10 +139,8 @@
             <form class="filter-bar" method="get" action="${ctx}/manager/facilities/${facilityId}/rooms">
               <select class="form-select" name="status" style="max-width:180px">
                 <option value="">Tất cả trạng thái</option>
-                <option value="AVAILABLE"   ${filterStatus == 'AVAILABLE'   ? 'selected' : ''}>Phòng trống</option>
+                <option value="AVAILABLE"   ${filterStatus == 'AVAILABLE'   ? 'selected' : ''}>Trống</option>
                 <option value="OCCUPIED"    ${filterStatus == 'OCCUPIED'    ? 'selected' : ''}>Đang thuê</option>
-                <option value="MAINTENANCE" ${filterStatus == 'MAINTENANCE' ? 'selected' : ''}>Bảo trì</option>
-                <option value="RESERVED"    ${filterStatus == 'RESERVED'    ? 'selected' : ''}>Đặt chỗ</option>
               </select>
               <button type="submit" class="btn-mintlify-secondary">Lọc</button>
               <a href="${ctx}/manager/facilities/${facilityId}/rooms"
@@ -188,17 +186,8 @@
                               <c:when test="${room.status == 'OCCUPIED'}">
                                 <span class="badge-hms badge-info">Đang thuê</span>
                               </c:when>
-                              <c:when test="${room.status == 'AVAILABLE' or room.status == 'ACTIVE'}">
-                                <span class="badge-hms badge-success">Trống</span>
-                              </c:when>
-                              <c:when test="${room.status == 'MAINTENANCE'}">
-                                <span class="badge-hms badge-warning">Bảo trì</span>
-                              </c:when>
-                              <c:when test="${room.status == 'RESERVED'}">
-                                <span class="badge-hms badge-accent">Đặt chỗ</span>
-                              </c:when>
                               <c:otherwise>
-                                <span class="badge-hms badge-neutral"><c:out value="${room.status}"/></span>
+                                <span class="badge-hms badge-success">Trống</span>
                               </c:otherwise>
                             </c:choose>
                           </td>
