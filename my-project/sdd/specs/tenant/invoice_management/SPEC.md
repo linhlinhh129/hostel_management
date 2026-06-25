@@ -198,7 +198,30 @@ Hiển thị:
 
 \- Trạng thái
 
-\---
+---
+
+## Luồng xử lý giao dịch thanh toán (Chuyển khoản)
+
+### FR04.1 - Khởi tạo giao dịch qua VNPAY
+**WHEN** Người dùng thực hiện thanh toán qua cổng VNPAY và nhận thông báo thành công từ VNPAY
+**THE SYSTEM SHALL**
+- Lưu một bản ghi vào bảng `payments` với phương thức thanh toán là `VNPAY`.
+- Đặt trạng thái giao dịch (`status`) mặc định là `PENDING` (Đang xử lý).
+- Hóa đơn vẫn giữ trạng thái `UNPAID` nhưng trên giao diện web phải hiển thị trạng thái "Chờ duyệt" và không hiện cổng thanh toán VNPAY nữa.
+
+### FR04.2 - Ban quản lý Duyệt giao dịch
+**WHEN** Ban quản lý phê duyệt giao dịch thanh toán
+**THE SYSTEM SHALL**
+- Chỉ khi Ban quản lý phê duyệt giao dịch, cập nhật trạng thái bản ghi trong bảng `payments` thành `SUCCESS`.
+- Cập nhật trạng thái hóa đơn thành `PAID` và hiển thị "Đã thanh toán" trên web.
+
+### FR04.3 - Ban quản lý Hủy giao dịch
+**WHEN** Ban quản lý từ chối hoặc giao dịch bị hủy
+**THE SYSTEM SHALL**
+- Cập nhật trạng thái bản ghi trong bảng `payments` thành `REJECTED`.
+- Trạng thái bảng `invoices` vẫn là `UNPAID`, giao diện sẽ hiển thị lại cổng thanh toán VNPAY để người dùng tiến hành thanh toán lại.
+
+----
 
 \## Thanh toán VNPAY
 

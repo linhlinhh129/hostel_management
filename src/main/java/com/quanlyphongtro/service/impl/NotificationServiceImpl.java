@@ -13,8 +13,13 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationDAO notificationDAO = new NotificationDAO();
 
     @Override
-    public List<Notification> getNotificationsForTenant(int roomId, int facilityId) {
-        return notificationDAO.findForTenant(roomId, facilityId);
+    public List<Notification> getNotificationsForTenant(int roomId, int facilityId, int page, int pageSize) {
+        return notificationDAO.findForTenant(roomId, facilityId, page, pageSize);
+    }
+
+    @Override
+    public int countNotificationsForTenant(int roomId, int facilityId) {
+        return notificationDAO.countForTenant(roomId, facilityId);
     }
 
     @Override

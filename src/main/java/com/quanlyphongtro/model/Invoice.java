@@ -38,6 +38,7 @@ public class Invoice {
     private String billingPeriod; // Example: "Tháng 05/2026"
     // Transient from JOIN
     private String roomCodeCache;
+    private boolean hasPendingPayment;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -130,6 +131,9 @@ public class Invoice {
     public String getRoomCodeCache() { return roomCodeCache; }
     public void setRoomCodeCache(String roomCodeCache) { this.roomCodeCache = roomCodeCache; }
 
+    public boolean isHasPendingPayment() { return hasPendingPayment; }
+    public void setHasPendingPayment(boolean hasPendingPayment) { this.hasPendingPayment = hasPendingPayment; }
+
     // Helpers for View
     public String getDueDateLabel() {
         return dueDate != null ? dueDate.format(DATE_FORMATTER) : "N/A";
@@ -144,12 +148,14 @@ public class Invoice {
     }
 
     public String getStatusBadgeClass() {
+        if (hasPendingPayment) return "badge-info";
         if (StatusConstant.INVOICE_PAID.equals(status)) return "badge-success";
         if (StatusConstant.INVOICE_OVERDUE.equals(status)) return "badge-danger";
         return "badge-warning";
     }
 
     public String getStatusLabel() {
+        if (hasPendingPayment) return "Chờ duyệt";
         if (StatusConstant.INVOICE_PAID.equals(status)) return "Đã thanh toán";
         if (StatusConstant.INVOICE_OVERDUE.equals(status)) return "Quá hạn";
         return "Chưa thanh toán";

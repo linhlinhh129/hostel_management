@@ -65,16 +65,19 @@ public class TenantDashboardServlet extends BaseServlet {
 
             int facilityId = facilityOpt.map(Facility::getId).orElse(0);
             
-            int unreadCount = notificationService.countUnreadNotifications(room.getId(), facilityId, null);
+            java.time.LocalDateTime lastRead = currentUser.getLastReadNotificationTime();
+            if (lastRead == null) lastRead = java.time.LocalDateTime.now().minusDays(7);
+            
+            int unreadCount = notificationService.countUnreadNotifications(room.getId(), facilityId, lastRead);
             req.setAttribute("unreadNotifications", unreadCount);
 
             int pendingTickets = requestService.countPendingRequests(currentUser.getId());
             req.setAttribute("pendingTickets", pendingTickets);
 
             // Latest notifications
-            List<Notification> notifications = notificationService.getNotificationsForTenant(room.getId(), facilityId);
-            if (notifications.size() > 3) {
-                notifications = notifications.subList(0, 3);
+            List<Notification> notifications = notificationService.getNotificationsForTenant(room.getId(), facilityId, 1, 3);
+            for (Notification n : notifications) {
+                n.setUnread(n.getSentAt() != null && n.getSentAt().isAfter(lastRead));
             }
             req.setAttribute("latestNotifications", notifications);
 

@@ -69,6 +69,9 @@
                                             </td>
                                             <td class="text-center">
                                                 <c:choose>
+                                                    <c:when test="${inv.hasPendingPayment}">
+                                                        <span class="badge-hms badge-info">⌛ Chờ duyệt</span>
+                                                    </c:when>
                                                     <c:when test="${inv.status == 'PAID'}">
                                                         <span class="badge-hms badge-success">✓ Đã thanh toán</span>
                                                     </c:when>
