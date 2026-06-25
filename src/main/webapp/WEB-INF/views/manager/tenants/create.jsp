@@ -26,6 +26,9 @@
       <div class="data-surface" style="max-width:700px">
         <form method="post" action="${ctx}/manager/tenants/create" class="p-4">
           <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+          <c:if test="${not empty prefilledContract}">
+            <input type="hidden" name="contractId" value="${prefilledContract.contractId}"/>
+          </c:if>
 
           <c:if test="${not empty errorMessage}">
             <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
@@ -40,14 +43,16 @@
           <div class="mb-3">
             <label for="fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="fullName" name="fullName"
-                   required maxlength="200" placeholder="Nguyễn Văn A">
+                   required maxlength="200" placeholder="Nguyễn Văn A"
+                   value="<c:out value="${prefilledContract.tenantFullName}"/>">
           </div>
 
           <div class="row g-3 mb-3">
             <div class="col-sm-6">
               <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
               <input type="tel" class="form-control" id="phone" name="phone"
-                     required maxlength="20" placeholder="0901234567">
+                     required maxlength="20" placeholder="0901234567"
+                     value="<c:out value="${prefilledContract.tenantPhone}"/>">
             </div>
             <div class="col-sm-6">
               <label for="email" class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
@@ -59,13 +64,15 @@
           <div class="mb-3">
             <label for="identityNumber" class="form-label">Số CCCD / CMND <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="identityNumber" name="identityNumber"
-                   required maxlength="20" placeholder="012345678901">
+                   required maxlength="20" placeholder="012345678901"
+                   value="<c:out value="${prefilledContract.tenantIdentityNumber}"/>">
           </div>
 
           <div class="mb-3">
             <label for="permanentAddress" class="form-label">Địa chỉ thường trú</label>
             <input type="text" class="form-control" id="permanentAddress" name="permanentAddress"
-                   maxlength="500" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành">
+                   maxlength="500" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                   value="<c:out value="${prefilledContract.tenantPermanentAddress}"/>">
           </div>
 
           <div class="row g-3 mb-3">
@@ -80,7 +87,8 @@
             </div>
             <div class="col-sm-6">
               <label for="dob" class="form-label">Ngày sinh</label>
-              <input type="date" class="form-control" id="dob" name="dob">
+              <input type="date" class="form-control" id="dob" name="dob"
+                     value="<c:out value="${prefilledContract.tenantDob}"/>">
             </div>
           </div>
 
@@ -90,46 +98,34 @@
             Thông tin thuê
           </h5>
 
-          <%-- Chọn phòng — grouped by facility, dùng roomsByFacility map --%>
+          <%-- Chọn phòng — Khóa khi có prefilledContract --%>
           <div class="mb-3">
-            <label for="roomId" class="form-label">Phòng <span class="text-danger">*</span></label>
-            <select class="form-select" id="roomId" name="roomId" required>
-              <option value="">-- Chọn phòng --</option>
-              <c:choose>
-                <c:when test="${not empty assignedFacilities}">
+            <label class="form-label">Phòng <span class="text-danger">*</span></label>
+            <c:choose>
+              <c:when test="${not empty prefilledContract}">
+                <input type="hidden" name="roomId" value="${prefilledContract.roomId}"/>
+                <input type="text" class="form-control" value="Phòng ${prefilledContract.roomCode}" readonly style="background-color: var(--hms-neutral-bg);"/>
+              </c:when>
+              <c:otherwise>
+                <select class="form-select" id="roomId" name="roomId" required>
+                  <option value="">-- Chọn phòng --</option>
                   <c:forEach var="facility" items="${assignedFacilities}">
                     <c:set var="facilityRooms" value="${roomsByFacility[facility.id]}"/>
                     <optgroup label="${facility.name} (${facility.code})">
-                      <c:choose>
-                        <c:when test="${not empty facilityRooms}">
-                          <c:forEach var="room" items="${facilityRooms}">
-                            <option value="${room.id}">
-                              <c:out value="${room.code}"/>
-                              — Tầng <c:out value="${room.floor}"/>
-                              <c:if test="${not empty room.area}">
-                                — <fmt:formatNumber value="${room.area}" maxFractionDigits="1"/>m²
-                              </c:if>
-                            </option>
-                          </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                          <option disabled value="">Không có phòng trống</option>
-                        </c:otherwise>
-                      </c:choose>
+                      <c:forEach var="room" items="${facilityRooms}">
+                        <option value="${room.id}">Phòng ${room.code}</option>
+                      </c:forEach>
                     </optgroup>
                   </c:forEach>
-                </c:when>
-                <c:otherwise>
-                  <option disabled>Bạn chưa được phân công cơ sở nào</option>
-                </c:otherwise>
-              </c:choose>
-            </select>
-            <div class="form-text">Chỉ hiển thị phòng đang trống trong cơ sở bạn được phân công.</div>
+                </select>
+              </c:otherwise>
+            </c:choose>
           </div>
 
           <div class="mb-3">
             <label for="contractStartDate" class="form-label">Ngày bắt đầu thuê</label>
-            <input type="date" class="form-control" id="contractStartDate" name="contractStartDate">
+            <input type="date" class="form-control" id="contractStartDate" name="contractStartDate"
+                   value="<c:out value="${prefilledContract.startDate}"/>" readonly style="background-color: var(--hms-neutral-bg);">
           </div>
 
           <%-- Info box: mật khẩu tạm --%>
@@ -157,9 +153,16 @@
                 <line x1="19" y1="8" x2="19" y2="14"/>
                 <line x1="22" y1="11" x2="16" y2="11"/>
               </svg>
-              Tạo người thuê
+              Tạo tài khoản người thuê
             </button>
-            <a href="${ctx}/manager/tenants" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
+            <c:choose>
+              <c:when test="${not empty prefilledContract}">
+                <a href="${ctx}/manager/contracts/detail?id=${prefilledContract.contractId}" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
+              </c:when>
+              <c:otherwise>
+                <a href="${ctx}/manager/tenants" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
+              </c:otherwise>
+            </c:choose>
           </div>
         </form>
       </div>

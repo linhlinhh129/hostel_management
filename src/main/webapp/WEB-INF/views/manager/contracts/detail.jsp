@@ -95,6 +95,15 @@
           <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
         </div>
         <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+          <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
+            <a href="${ctx}/manager/tenants/create?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+              Tạo tài khoản người thuê
+            </a>
+          </c:if>
           <button onclick="window.print()" class="btn-mintlify-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
               <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>

@@ -294,60 +294,51 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
-        List<Map<String, Object>> assignedFacilities = new ArrayList<>();
-        Map<Integer, List<Map<String, Object>>> roomsByFacility = new HashMap<>();
+        String contractIdStr = req.getParameter("contractId");
+        if (contractIdStr == null || contractIdStr.trim().isEmpty()) {
+            setFlashMessage(req, "error", "Yêu cầu tạo hợp đồng trước khi tạo tài khoản người thuê.");
+            resp.sendRedirect(req.getContextPath() + "/manager/contracts");
+            return;
+        }
 
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            // Query facilities managed by current manager
-            String facSql = "SELECT facility_id, code, name FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL";
-            try (PreparedStatement ps = conn.prepareStatement(facSql)) {
-                ps.setInt(1, currentUser.getId());
+        Map<String, Object> prefilledContract = null;
+        try {
+            int contractId = Integer.parseInt(contractIdStr.trim());
+            String sql = "SELECT c.*, r.code AS room_code FROM dbo.contracts c " +
+                         "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                         "WHERE c.contract_id = ? AND c.created_by = ? AND c.deleted_at IS NULL";
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, contractId);
+                ps.setInt(2, currentUser.getId());
                 try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        Map<String, Object> f = new HashMap<>();
-                        int fId = rs.getInt("facility_id");
-                        f.put("id", fId);
-                        f.put("code", rs.getString("code"));
-                        f.put("name", rs.getString("name"));
-                        assignedFacilities.add(f);
-                        roomsByFacility.put(fId, new ArrayList<>());
-                    }
-                }
-            }
-
-            // Query AVAILABLE rooms under these facilities
-            String roomSql = "SELECT room_id, facility_id, code, area FROM dbo.rooms WHERE tenant_id IS NULL AND deleted_at IS NULL";
-            try (PreparedStatement ps = conn.prepareStatement(roomSql);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int fId = rs.getInt("facility_id");
-                    if (roomsByFacility.containsKey(fId)) {
-                        Map<String, Object> r = new HashMap<>();
-                        r.put("id", rs.getInt("room_id"));
-                        String roomCode = rs.getString("code");
-                        r.put("code", roomCode);
-                        r.put("area", rs.getDouble("area"));
-
-                        // Parse floor
-                        String floorStr = "—";
-                        if (roomCode != null && roomCode.length() >= 4) {
-                            String last4 = roomCode.substring(roomCode.length() - 4);
-                            if (last4.matches("\\d+")) {
-                                floorStr = String.valueOf(Integer.parseInt(last4.substring(0, 2)));
-                            }
-                        }
-                        r.put("floor", floorStr);
-
-                        roomsByFacility.get(fId).add(r);
+                    if (rs.next()) {
+                        prefilledContract = new HashMap<>();
+                        prefilledContract.put("contractId", rs.getInt("contract_id"));
+                        prefilledContract.put("roomId", rs.getInt("room_id"));
+                        prefilledContract.put("roomCode", rs.getString("room_code"));
+                        prefilledContract.put("tenantFullName", rs.getString("tenant_full_name"));
+                        prefilledContract.put("tenantPhone", rs.getString("tenant_phone"));
+                        prefilledContract.put("tenantIdentityNumber", rs.getString("tenant_identity_number"));
+                        prefilledContract.put("tenantPermanentAddress", rs.getString("tenant_permanent_address"));
+                        Date dob = rs.getDate("tenant_dob");
+                        prefilledContract.put("tenantDob", dob != null ? dob.toString() : "");
+                        Date sDate = rs.getDate("start_date");
+                        prefilledContract.put("startDate", sDate != null ? sDate.toString() : "");
                     }
                 }
             }
         } catch (Exception e) {
-            logger.error("Failed to load facilities/rooms for create", e);
+            logger.error("Failed to load prefilled contract details for contractId={}", contractIdStr, e);
         }
 
-        req.setAttribute("assignedFacilities", assignedFacilities);
-        req.setAttribute("roomsByFacility", roomsByFacility);
+        if (prefilledContract == null) {
+            setFlashMessage(req, "error", "Không tìm thấy hợp đồng hợp lệ để tạo tài khoản người thuê.");
+            resp.sendRedirect(req.getContextPath() + "/manager/contracts");
+            return;
+        }
+
+        req.setAttribute("prefilledContract", prefilledContract);
         req.getRequestDispatcher("/WEB-INF/views/manager/tenants/create.jsp").forward(req, resp);
     }
 
@@ -367,6 +358,8 @@ public class ManagerTenantsServlet extends BaseServlet {
         String dobStr = req.getParameter("dob");
         String roomIdStr = req.getParameter("roomId");
         String contractStartDateStr = req.getParameter("contractStartDate");
+
+        String contractIdStr = req.getParameter("contractId");
 
         if (fullName == null || phone == null || email == null || identityNumber == null || roomIdStr == null || roomIdStr.isEmpty()) {
             req.setAttribute("errorMessage", "Vui lòng nhập đầy đủ các trường bắt buộc.");
@@ -435,6 +428,16 @@ public class ManagerTenantsServlet extends BaseServlet {
                 ps.executeUpdate();
             }
 
+            // Update contract if contractId is present
+            if (contractIdStr != null && !contractIdStr.trim().isEmpty()) {
+                String updContractSql = "UPDATE dbo.contracts SET tenant_id = ?, updated_at = GETDATE() WHERE contract_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updContractSql)) {
+                    ps.setInt(1, newUserId);
+                    ps.setInt(2, Integer.parseInt(contractIdStr.trim()));
+                    ps.executeUpdate();
+                }
+            }
+
             conn.commit();
 
             // Send email to tenant with credentials
@@ -446,8 +449,13 @@ public class ManagerTenantsServlet extends BaseServlet {
                 logger.warn("AuditLog failed after tenant create", ex);
             }
 
-            setFlashMessage(req, "success", "Tạo người thuê và gán phòng thành công! Đã gửi tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
-            resp.sendRedirect(req.getContextPath() + "/manager/tenants");
+            if (contractIdStr != null && !contractIdStr.trim().isEmpty()) {
+                setFlashMessage(req, "success", "Tạo tài khoản người thuê thành công! Đã gửi thông tin tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contractIdStr.trim());
+            } else {
+                setFlashMessage(req, "success", "Tạo người thuê và gán phòng thành công! Đã gửi tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants");
+            }
 
         } catch (Exception e) {
             if (conn != null) {
