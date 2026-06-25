@@ -41,7 +41,7 @@ public class PaymentDAO extends BaseDAO {
     public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, int offset, int limit) {
         List<PaymentListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, " +
+            "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, " +
             "r.code AS room_code, u.full_name AS tenant_name " +
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
@@ -83,8 +83,17 @@ public class PaymentDAO extends BaseDAO {
                      dto.setPaymentId(rs.getInt("payment_id"));
                      dto.setTransactionCode(rs.getString("code"));
                      dto.setAmount(rs.getBigDecimal("payment_amount"));
-                     java.sql.Date d = rs.getDate("payment_date");
-                     if (d != null) dto.setPaymentDate(d.toString());
+                     java.sql.Timestamp created = rs.getTimestamp("created_at");
+                      if (created != null) {
+                          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                          dto.setPaymentDate(sdf.format(created));
+                      } else {
+                          java.sql.Date d = rs.getDate("payment_date");
+                          if (d != null) {
+                              java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                              dto.setPaymentDate(sdf.format(d));
+                          }
+                      }
                      dto.setPaymentMethod(rs.getString("payment_method"));
                      dto.setStatus(rs.getString("status"));
                      dto.setRoomCode(rs.getString("room_code"));
@@ -166,7 +175,10 @@ public class PaymentDAO extends BaseDAO {
                      dto.setTransactionCode(rs.getString("code"));
                      dto.setAmount(rs.getBigDecimal("payment_amount"));
                      java.sql.Date d = rs.getDate("payment_date");
-                     if (d != null) dto.setPaymentDate(d.toString());
+                      if (d != null) {
+                          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                          dto.setPaymentDate(sdf.format(d));
+                      }
                      dto.setPaymentMethod(rs.getString("payment_method"));
                      dto.setStatus(rs.getString("status"));
                      dto.setRoomCode(rs.getString("room_code"));
@@ -177,7 +189,10 @@ public class PaymentDAO extends BaseDAO {
                      dto.setFacilityAddress(rs.getString("facility_address"));
                      
                      java.sql.Timestamp created = rs.getTimestamp("created_at");
-                     if (created != null) dto.setCreatedAt(created.toString());
+                     if (created != null) {
+                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                         dto.setCreatedAt(sdf.format(created));
+                     }
                      
                      dto.setInvoiceCode(rs.getString("invoice_code"));
                      java.sql.Date dueD = rs.getDate("due_date");
