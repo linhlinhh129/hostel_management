@@ -119,27 +119,6 @@ public class RoomDAO extends BaseDAO {
         return Optional.empty();
     }
 
-    public void updateStatusByFacilityId(int facilityId, String status) {
-        String sql = "UPDATE dbo.rooms SET status = ?, updated_at = GETDATE() WHERE facility_id = ? AND deleted_at IS NULL";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, facilityId);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            logger.error("RoomDAO.updateStatusByFacilityId failed for facilityId={}", facilityId, e);
-        }
-    }
-
-    public void updateStatusByFacilityId(int facilityId, String status, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.rooms SET status = ?, updated_at = GETDATE() WHERE facility_id = ? AND deleted_at IS NULL";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, facilityId);
-            ps.executeUpdate();
-        }
-    }
-
     /**
      * Chỉ cập nhật diện tích (area) của phòng — dùng cho inline edit trên trang chi tiết cơ sở.
      */

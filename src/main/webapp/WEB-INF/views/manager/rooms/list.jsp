@@ -186,6 +186,12 @@
                               <c:when test="${room.status == 'OCCUPIED'}">
                                 <span class="badge-hms badge-info">Đang thuê</span>
                               </c:when>
+                              <c:when test="${room.status == 'MAINTENANCE'}">
+                                <span class="badge-hms badge-warning">Bảo trì</span>
+                              </c:when>
+                              <c:when test="${room.status == 'INACTIVE'}">
+                                <span class="badge-hms badge-neutral">Vô hiệu</span>
+                              </c:when>
                               <c:otherwise>
                                 <span class="badge-hms badge-success">Trống</span>
                               </c:otherwise>
