@@ -117,27 +117,19 @@
           <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div>
               <div class="d-flex align-items-center gap-2 mb-1">
-                <span style="font-size:0.875rem;color:var(--hms-text-muted)">Cơ sở:</span>
-                <c:choose>
-                  <c:when test="${facilities.size() > 1}">
-                    <select class="form-select form-select-sm" style="width: auto; font-size: 0.875rem; padding-top: 2px; padding-bottom: 2px;" onchange="window.location.href='${ctx}/manager/facilities/' + this.value + '/rooms'">
-                      <c:forEach var="f" items="${facilities}">
-                        <option value="${f.id}" ${f.id == currentFacility.id ? 'selected' : ''}>
-                          <c:out value="${f.name}"/> (<c:out value="${f.code}"/>)
-                        </option>
-                      </c:forEach>
-                    </select>
-                  </c:when>
-                  <c:otherwise>
-                    <span style="font-size:0.875rem;color:var(--hms-ink);font-weight:500">
-                      <c:out value="${currentFacility.name}"/>
-                    </span>
-                  </c:otherwise>
-                </c:choose>
+                <a href="${ctx}/manager/rooms?showGrid=true"
+                   style="font-size:0.875rem;color:var(--hms-text-muted);text-decoration:none">
+                  ← Tất cả cơ sở
+                </a>
+                <span style="color:var(--hms-text-muted)">/</span>
+                <span style="font-size:0.875rem;color:var(--hms-ink);font-weight:500">
+                  <c:out value="${currentFacility.name}"/>
+                </span>
               </div>
               <h1>Danh sách phòng</h1>
               <p>
-                Địa chỉ: <c:out value="${currentFacility.address}"/>
+                Cơ sở: <strong><c:out value="${currentFacility.code}"/></strong>
+                — <c:out value="${currentFacility.address}"/>
               </p>
             </div>
           </div>
@@ -147,7 +139,7 @@
             <form class="filter-bar" method="get" action="${ctx}/manager/facilities/${facilityId}/rooms">
               <select class="form-select" name="status" style="max-width:180px">
                 <option value="">Tất cả trạng thái</option>
-                <option value="AVAILABLE"   ${filterStatus == 'AVAILABLE'   ? 'selected' : ''}>Phòng trống</option>
+                <option value="AVAILABLE"   ${filterStatus == 'AVAILABLE'   ? 'selected' : ''}>Trống</option>
                 <option value="OCCUPIED"    ${filterStatus == 'OCCUPIED'    ? 'selected' : ''}>Đang thuê</option>
               </select>
               <button type="submit" class="btn-mintlify-secondary">Lọc</button>
@@ -167,6 +159,7 @@
                         <th>Diện tích</th>
                         <th>Trạng thái</th>
                         <th>Chủ thuê</th>
+                        <th>Số người ở</th>
                         <th>Thao tác</th>
                       </tr>
                     </thead>
@@ -209,6 +202,17 @@
                               </c:when>
                               <c:otherwise>
                                 <span class="text-muted" style="font-size:0.8125rem">Chưa có</span>
+                              </c:otherwise>
+                            </c:choose>
+                          </td>
+                          <td>
+                            <%-- Số người ở: 1 (chủ thuê) + people_count nếu có --%>
+                            <c:choose>
+                              <c:when test="${not empty room.tenantId}">
+                                <span class="badge-hms badge-neutral">≥1</span>
+                              </c:when>
+                              <c:otherwise>
+                                <span class="text-muted" style="font-size:0.8125rem">0</span>
                               </c:otherwise>
                             </c:choose>
                           </td>

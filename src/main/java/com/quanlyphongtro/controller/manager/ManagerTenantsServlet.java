@@ -315,8 +315,8 @@ public class ManagerTenantsServlet extends BaseServlet {
                 }
             }
 
-            // Query vacant rooms under these facilities
-            String roomSql = "SELECT room_id, facility_id, code, area FROM dbo.rooms WHERE tenant_id IS NULL AND deleted_at IS NULL";
+            // Query AVAILABLE rooms under these facilities
+            String roomSql = "SELECT room_id, facility_id, code, area FROM dbo.rooms WHERE status = 'AVAILABLE' AND deleted_at IS NULL";
             try (PreparedStatement ps = conn.prepareStatement(roomSql);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -370,21 +370,6 @@ public class ManagerTenantsServlet extends BaseServlet {
 
         if (fullName == null || phone == null || email == null || identityNumber == null || roomIdStr == null || roomIdStr.isEmpty()) {
             req.setAttribute("errorMessage", "Vui lòng nhập đầy đủ các trường bắt buộc.");
-            handleCreateForm(req, resp);
-            return;
-        }
-
-        phone = phone.trim();
-        identityNumber = identityNumber.trim();
-
-        if (!phone.matches("^0[0-9]{9}$")) {
-            req.setAttribute("errorMessage", "Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại gồm 10 chữ số bắt đầu bằng số 0.");
-            handleCreateForm(req, resp);
-            return;
-        }
-
-        if (!identityNumber.matches("^([0-9]{9}|[0-9]{12})$")) {
-            req.setAttribute("errorMessage", "Số CCCD / CMND không hợp lệ. Vui lòng nhập 9 hoặc 12 chữ số.");
             handleCreateForm(req, resp);
             return;
         }
@@ -903,21 +888,6 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
-        phone = phone.trim();
-        identityNumber = identityNumber.trim();
-
-        if (!phone.matches("^0[0-9]{9}$")) {
-            setFlashMessage(req, "danger", "Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại gồm 10 chữ số bắt đầu bằng số 0.");
-            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
-            return;
-        }
-
-        if (!identityNumber.matches("^([0-9]{9}|[0-9]{12})$")) {
-            setFlashMessage(req, "danger", "Số CCCD / CMND không hợp lệ. Vui lòng nhập 9 hoặc 12 chữ số.");
-            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
-            return;
-        }
-
         LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
         String username = email.trim();
 
@@ -1011,69 +981,24 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            conn.setAutoCommit(false);
-
-            // 1. Release room
-            String sqlRoom = "UPDATE dbo.rooms SET tenant_id = NULL, status = 'AVAILABLE', contract_start_date = NULL, contract_end_date = NULL, updated_at = GETDATE() WHERE tenant_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sqlRoom)) {
-                ps.setInt(1, tenantId);
-                ps.executeUpdate();
-            }
-
-            // 2. Delete dependents
-            String sqlDeps = "DELETE FROM dbo.dependents WHERE tenant_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sqlDeps)) {
-                ps.setInt(1, tenantId);
-                ps.executeUpdate();
-            }
-
-            // 3. Delete requests
-            String sqlReqs = "DELETE FROM dbo.requests WHERE sender_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sqlReqs)) {
-                ps.setInt(1, tenantId);
-                ps.executeUpdate();
-            }
-
-            // 4. Delete contracts
-            String sqlContracts = "DELETE FROM dbo.contracts WHERE tenant_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sqlContracts)) {
-                ps.setInt(1, tenantId);
-                ps.executeUpdate();
-            }
-
-            // 5. Delete the tenant user
-            String sqlUser = "DELETE FROM dbo.users WHERE user_id = ? AND role = 'TENANT'";
-            int rows;
-            try (PreparedStatement ps = conn.prepareStatement(sqlUser)) {
-                ps.setInt(1, tenantId);
-                rows = ps.executeUpdate();
-            }
-
+        String sql = "UPDATE dbo.users SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, tenantId);
+            int rows = ps.executeUpdate();
             if (rows > 0) {
-                conn.commit();
                 try {
-                    AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "DELETE", null, "Hard Delete", currentUser.getId());
+                    AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "DELETE", null, "Soft Delete", currentUser.getId());
                 } catch (Exception ex) {
-                    logger.warn("AuditLog failed after hard delete", ex);
+                    logger.warn("AuditLog failed after soft delete", ex);
                 }
-                setFlashMessage(req, "success", "Xóa toàn bộ dữ liệu người thuê thành công!");
+                setFlashMessage(req, "success", "Xóa người thuê thành công!");
             } else {
-                conn.rollback();
                 setFlashMessage(req, "danger", "Không tìm thấy người thuê hoặc không có quyền xóa.");
             }
         } catch (Exception e) {
-            if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ignored) {}
-            }
-            logger.error("Failed to delete tenant={}", tenantId, e);
+            logger.error("Failed to soft delete tenant={}", tenantId, e);
             setFlashMessage(req, "danger", "Lỗi xóa người thuê: " + e.getMessage());
-        } finally {
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException ignored) {}
-            }
         }
         resp.sendRedirect(req.getContextPath() + "/manager/tenants");
     }

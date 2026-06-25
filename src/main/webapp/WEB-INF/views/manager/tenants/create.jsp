@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -47,8 +47,7 @@
             <div class="col-sm-6">
               <label for="phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
               <input type="tel" class="form-control" id="phone" name="phone"
-                     required maxlength="20" placeholder="0901234567"
-                     pattern="^0[0-9]{9}$" title="Số điện thoại phải gồm 10 chữ số bắt đầu bằng số 0.">
+                     required maxlength="20" placeholder="0901234567">
             </div>
             <div class="col-sm-6">
               <label for="email" class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
@@ -60,8 +59,7 @@
           <div class="mb-3">
             <label for="identityNumber" class="form-label">Số CCCD / CMND <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="identityNumber" name="identityNumber"
-                   required maxlength="20" placeholder="012345678901"
-                   pattern="^([0-9]{9}|[0-9]{12})$" title="Số CCCD/CMND phải là 9 hoặc 12 chữ số.">
+                   required maxlength="20" placeholder="012345678901">
           </div>
 
           <div class="mb-3">
@@ -126,7 +124,7 @@
                 </c:otherwise>
               </c:choose>
             </select>
-            <div class="form-text">Chỉ hiển thị phòng đang trống trong cơ sở bạn được phân công.</div>
+            <div class="form-text">Chỉ hiển thị phòng đang trống (AVAILABLE) trong cơ sở bạn được phân công.</div>
           </div>
 
           <div class="mb-3">
