@@ -3,8 +3,6 @@ package com.quanlyphongtro.dao;
 import com.quanlyphongtro.dto.PaymentListItemDTO;
 import com.quanlyphongtro.dto.PaymentDetailDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
-import com.quanlyphongtro.dto.PaymentListItemDTO;
-import com.quanlyphongtro.dto.PaymentDetailDTO;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -38,10 +36,10 @@ public class PaymentDAO extends BaseDAO {
         }
     }
 
-    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, int offset, int limit) {
+    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year, int offset, int limit) {
         List<PaymentListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, " +
+            "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, " +
             "r.code AS room_code, u.full_name AS tenant_name " +
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
@@ -55,6 +53,21 @@ public class PaymentDAO extends BaseDAO {
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+        }
+        
+        // Lọc theo khoảng thời gian (fromDate - toDate)
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date >= ? ");
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date <= ? ");
+        }
+        
+        // Lọc theo kỳ (tháng/năm)
+        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+            sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
+        } else if (year != null && !year.trim().isEmpty()) {
+            sql.append("AND YEAR(p.payment_date) = ? ");
         }
         
         sql.append("ORDER BY p.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
@@ -74,6 +87,21 @@ public class PaymentDAO extends BaseDAO {
                  ps.setString(paramIndex++, kw);
                  ps.setString(paramIndex++, kw);
              }
+             
+             if (fromDate != null && !fromDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(fromDate));
+             }
+             if (toDate != null && !toDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(toDate));
+             }
+             
+             if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(month));
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
+             } else if (year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
+             }
+             
              ps.setInt(paramIndex++, offset);
              ps.setInt(paramIndex++, limit);
              
@@ -83,8 +111,17 @@ public class PaymentDAO extends BaseDAO {
                      dto.setPaymentId(rs.getInt("payment_id"));
                      dto.setTransactionCode(rs.getString("code"));
                      dto.setAmount(rs.getBigDecimal("payment_amount"));
-                     java.sql.Date d = rs.getDate("payment_date");
-                     if (d != null) dto.setPaymentDate(d.toString());
+                     java.sql.Timestamp created = rs.getTimestamp("created_at");
+                      if (created != null) {
+                          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                          dto.setPaymentDate(sdf.format(created));
+                      } else {
+                          java.sql.Date d = rs.getDate("payment_date");
+                          if (d != null) {
+                              java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                              dto.setPaymentDate(sdf.format(d));
+                          }
+                      }
                      dto.setPaymentMethod(rs.getString("payment_method"));
                      dto.setStatus(rs.getString("status"));
                      dto.setRoomCode(rs.getString("room_code"));
@@ -98,7 +135,7 @@ public class PaymentDAO extends BaseDAO {
         return list;
     }
     
-    public int countPayments(int managerId, String keyword, String status) {
+    public int countPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(1) " +
@@ -116,6 +153,21 @@ public class PaymentDAO extends BaseDAO {
             sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
         }
         
+        // Lọc theo khoảng thời gian (fromDate - toDate)
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date >= ? ");
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date <= ? ");
+        }
+        
+        // Lọc theo kỳ (tháng/năm)
+        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+            sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
+        } else if (year != null && !year.trim().isEmpty()) {
+            sql.append("AND YEAR(p.payment_date) = ? ");
+        }
+        
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
              
@@ -130,6 +182,20 @@ public class PaymentDAO extends BaseDAO {
                  ps.setString(paramIndex++, kw);
                  ps.setString(paramIndex++, kw);
                  ps.setString(paramIndex++, kw);
+             }
+             
+             if (fromDate != null && !fromDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(fromDate));
+             }
+             if (toDate != null && !toDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(toDate));
+             }
+             
+             if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(month));
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
+             } else if (year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
              }
              
              try (ResultSet rs = ps.executeQuery()) {
@@ -166,7 +232,10 @@ public class PaymentDAO extends BaseDAO {
                      dto.setTransactionCode(rs.getString("code"));
                      dto.setAmount(rs.getBigDecimal("payment_amount"));
                      java.sql.Date d = rs.getDate("payment_date");
-                     if (d != null) dto.setPaymentDate(d.toString());
+                      if (d != null) {
+                          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                          dto.setPaymentDate(sdf.format(d));
+                      }
                      dto.setPaymentMethod(rs.getString("payment_method"));
                      dto.setStatus(rs.getString("status"));
                      dto.setRoomCode(rs.getString("room_code"));
@@ -177,7 +246,10 @@ public class PaymentDAO extends BaseDAO {
                      dto.setFacilityAddress(rs.getString("facility_address"));
                      
                      java.sql.Timestamp created = rs.getTimestamp("created_at");
-                     if (created != null) dto.setCreatedAt(created.toString());
+                     if (created != null) {
+                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                         dto.setCreatedAt(sdf.format(created));
+                     }
                      
                      dto.setInvoiceCode(rs.getString("invoice_code"));
                      java.sql.Date dueD = rs.getDate("due_date");

@@ -21,19 +21,12 @@ import java.util.Map;
 
 @WebServlet(name = "ManagerTicketsServlet", urlPatterns = {
         "/manager/tickets",
-        "/manager/tickets/*",
-        "/manager/requests/create"
+        "/manager/tickets/*"
 })
 public class ManagerTicketsServlet extends BaseServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String servletPath = req.getServletPath();
-        if ("/manager/requests/create".equals(servletPath)) {
-            handleRequestCreate(req, resp);
-            return;
-        }
-
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || "/".equals(pathInfo)) {
@@ -129,13 +122,13 @@ public class ManagerTicketsServlet extends BaseServlet {
         String countSql = "SELECT COUNT(*) FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND u.user_id = f.operator_id)) AND f.deleted_at IS NULL" + whereClause.toString();
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL" + whereClause.toString();
 
         String selectSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, r.room_id, r.code AS room_code, f.name AS facility_name " +
                 "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND u.user_id = f.operator_id)) AND f.deleted_at IS NULL" + whereClause.toString() +
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL" + whereClause.toString() +
                 " ORDER BY req.request_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
@@ -210,11 +203,11 @@ public class ManagerTicketsServlet extends BaseServlet {
         List<Map<String, Object>> operators = new ArrayList<>();
 
         String ticketSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, u.phone AS sender_phone, " +
-                "r.room_id, r.code AS room_code, f.name AS facility_name, f.manager_id, o.full_name AS assigned_operator_name " +
+                "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, o.full_name AS assigned_operator_name " +
                 "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND u.user_id = f.operator_id)) AND f.deleted_at IS NULL " +
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL " +
                 "LEFT JOIN dbo.users o ON req.assigned_staff_id = o.user_id " +
                 "WHERE req.request_id = ? AND req.deleted_at IS NULL";
 
@@ -242,6 +235,7 @@ public class ManagerTicketsServlet extends BaseServlet {
                         ticket.put("senderPhone", rs.getString("sender_phone"));
                         ticket.put("roomId", rs.getInt("room_id"));
                         ticket.put("roomCode", rs.getString("room_code"));
+                        ticket.put("facilityId", rs.getInt("facility_id"));
                         ticket.put("facilityName", rs.getString("facility_name"));
                         Timestamp cAt = rs.getTimestamp("created_at");
                         Timestamp uAt = rs.getTimestamp("updated_at");
@@ -309,15 +303,35 @@ public class ManagerTicketsServlet extends BaseServlet {
                 return;
             }
 
-            // Query operators lists
-            String opsSql = "SELECT user_id, full_name FROM dbo.users WHERE role = 'OPERATOR' AND status = 'ACTIVE' AND deleted_at IS NULL";
-            try (PreparedStatement ps = conn.prepareStatement(opsSql);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> op = new HashMap<>();
-                    op.put("id", rs.getInt("user_id"));
-                    op.put("fullName", rs.getString("full_name"));
-                    operators.add(op);
+            // Query operators list assigned to the same facility
+            int facilityId = ticket != null && ticket.get("facilityId") != null ? (Integer) ticket.get("facilityId") : -1;
+            String opsSql;
+            if (facilityId > 0) {
+                opsSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
+                        "JOIN dbo.facilities f ON u.user_id = f.operator_id " +
+                        "WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND u.deleted_at IS NULL " +
+                        "AND f.facility_id = ? AND f.deleted_at IS NULL " +
+                        "ORDER BY u.full_name";
+            } else {
+                opsSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
+                        "JOIN dbo.facilities f ON u.user_id = f.operator_id " +
+                        "WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND u.deleted_at IS NULL " +
+                        "AND f.manager_id = ? AND f.deleted_at IS NULL " +
+                        "ORDER BY u.full_name";
+            }
+            try (PreparedStatement ps = conn.prepareStatement(opsSql)) {
+                if (facilityId > 0) {
+                    ps.setInt(1, facilityId);
+                } else {
+                    ps.setInt(1, currentUser.getId());
+                }
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> op = new HashMap<>();
+                        op.put("id", rs.getInt("user_id"));
+                        op.put("fullName", rs.getString("full_name"));
+                        operators.add(op);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -386,68 +400,5 @@ public class ManagerTicketsServlet extends BaseServlet {
             setFlashMessage(req, "danger", "Lỗi từ chối yêu cầu: " + e.getMessage());
         }
         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
-    }
-
-    private void handleRequestCreate(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UserSessionDTO currentUser = getCurrentUser(req);
-        if (currentUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
-            return;
-        }
-
-        String category = req.getParameter("category");
-        String title = req.getParameter("title");
-        String redirectUrl = req.getContextPath() + "/manager/notifications?tab=incorrect-utility";
-
-        if ("TECHNICAL".equalsIgnoreCase(category) && title != null && title.contains("Phát hiện sai số:")) {
-            int index = title.indexOf("Phát hiện sai số:");
-            String invoiceCode = title.substring(index + "Phát hiện sai số:".length()).trim();
-            if (!invoiceCode.isEmpty()) {
-                String querySql = "SELECT i.invoice_id, i.meter_id, f.manager_id FROM dbo.invoices i " +
-                        "JOIN dbo.rooms r ON i.room_id = r.room_id " +
-                        "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                        "WHERE i.code = ? AND i.deleted_at IS NULL";
-                
-                String updateSql = "UPDATE dbo.meter_readings SET status = 'INCORRECT', updated_at = GETDATE() WHERE meter_id = ?";
-
-                try (Connection conn = DatabaseUtil.getConnection()) {
-                    int meterId = -1;
-                    int managerId = -1;
-                    try (PreparedStatement ps = conn.prepareStatement(querySql)) {
-                        ps.setString(1, invoiceCode);
-                        try (ResultSet rs = ps.executeQuery()) {
-                            if (rs.next()) {
-                                meterId = rs.getInt("meter_id");
-                                managerId = rs.getInt("manager_id");
-                            }
-                        }
-                    }
-
-                    if (managerId != -1) {
-                        if (managerId != currentUser.getId()) {
-                            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền báo cáo hóa đơn này.");
-                            return;
-                        }
-
-                        if (meterId > 0) {
-                            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
-                                ps.setInt(1, meterId);
-                                ps.executeUpdate();
-                            }
-                            setFlashMessage(req, "success", "Đã báo cáo sai số điện nước cho hóa đơn " + invoiceCode + "!");
-                            redirectUrl += "&keyword=" + java.net.URLEncoder.encode(invoiceCode, "UTF-8");
-                        } else {
-                            setFlashMessage(req, "danger", "Hóa đơn không liên kết với chỉ số điện nước hợp lệ.");
-                        }
-                    } else {
-                        setFlashMessage(req, "danger", "Không tìm thấy hóa đơn: " + invoiceCode);
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to report incorrect utility via ticket creation", e);
-                    setFlashMessage(req, "danger", "Lỗi hệ thống: " + e.getMessage());
-                }
-            }
-        }
-        resp.sendRedirect(redirectUrl);
     }
 }

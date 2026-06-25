@@ -70,7 +70,7 @@ public class ContractDAO extends BaseDAO {
     public List<com.quanlyphongtro.model.Room> getAvailableRooms(int managerId) {
         String sql = "SELECT r.* FROM dbo.rooms r " +
                      "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                     "WHERE f.manager_id = ? AND r.status = 'AVAILABLE' AND r.deleted_at IS NULL";
+                     "WHERE f.manager_id = ? AND r.tenant_id IS NULL AND r.deleted_at IS NULL";
         List<com.quanlyphongtro.model.Room> rooms = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -20,12 +20,7 @@
           <h1>Người thuê</h1>
           <p>Danh sách người thuê trong cơ sở được phân công</p>
         </div>
-        <a href="${ctx}/manager/tenants/create" class="quick-action-btn primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Thêm người thuê
-        </a>
+
       </div>
 
       <div class="data-surface">
@@ -100,7 +95,7 @@
                         <div class="d-inline-flex gap-1 align-items-center">
                           <a href="${ctx}/manager/tenants/${tenant.id}"
                              class="btn-mintlify-secondary text-decoration-none"
-                              style="padding:4px 12px;font-size:0.8125rem">Xem</a>
+                             style="padding:4px 12px;font-size:0.8125rem">Chi tiết</a>
                         </div>
                       </td>
                     </tr>
@@ -128,8 +123,7 @@
           <c:otherwise>
             <div class="empty-state p-4 text-center">
               <h4>Chưa có người thuê nào</h4>
-              <p class="text-muted">Thêm người thuê đầu tiên để bắt đầu quản lý cơ sở.</p>
-              <a href="${ctx}/manager/tenants/create" class="quick-action-btn primary mt-2">Thêm người thuê</a>
+              <p class="text-muted">Vui lòng tạo hợp đồng trước, sau đó tạo tài khoản người thuê tại trang chi tiết hợp đồng.</p>
             </div>
           </c:otherwise>
         </c:choose>

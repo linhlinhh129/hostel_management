@@ -27,7 +27,7 @@
 
                 <%-- Filter bar --%>
                   <div class="data-surface">
-                    <form class="filter-bar" method="get" action="${ctx}/manager/payments">
+                    <form class="filter-bar" method="get" action="${ctx}/manager/payments" id="filterForm">
                       <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
                         placeholder="Tìm mã GD, phòng, người thuê..." style="max-width:250px" />
 
@@ -38,10 +38,86 @@
                         <option value="REJECTED" ${status=='REJECTED' ? 'selected' : '' }>Từ chối</option>
                       </select>
 
+                      <div style="display:flex;gap:8px;align-items:center;border-left:1px solid var(--hms-border);padding-left:12px;margin-left:4px">
+                        <label style="font-size:0.875rem;font-weight:500;white-space:nowrap;color:var(--hms-text-primary)">Từ ngày:</label>
+                        <input type="date" class="form-control" name="fromDate" value="<c:out value='${fromDate}'/>" 
+                          style="max-width:160px" id="fromDate" />
+                        
+                        <label style="font-size:0.875rem;font-weight:500;white-space:nowrap;color:var(--hms-text-primary)">Đến ngày:</label>
+                        <input type="date" class="form-control" name="toDate" value="<c:out value='${toDate}'/>" 
+                          style="max-width:160px" id="toDate" />
+                      </div>
+
+                      <div style="display:flex;gap:8px;align-items:center;border-left:1px solid var(--hms-border);padding-left:12px;margin-left:4px">
+                        <label style="font-size:0.875rem;font-weight:500;white-space:nowrap;color:var(--hms-text-primary)">Kỳ:</label>
+                        <select class="form-select" name="month" style="max-width:120px" id="month">
+                          <option value="">Tất cả tháng</option>
+                          <option value="1" ${month=='1' ? 'selected' : '' }>Tháng 1</option>
+                          <option value="2" ${month=='2' ? 'selected' : '' }>Tháng 2</option>
+                          <option value="3" ${month=='3' ? 'selected' : '' }>Tháng 3</option>
+                          <option value="4" ${month=='4' ? 'selected' : '' }>Tháng 4</option>
+                          <option value="5" ${month=='5' ? 'selected' : '' }>Tháng 5</option>
+                          <option value="6" ${month=='6' ? 'selected' : '' }>Tháng 6</option>
+                          <option value="7" ${month=='7' ? 'selected' : '' }>Tháng 7</option>
+                          <option value="8" ${month=='8' ? 'selected' : '' }>Tháng 8</option>
+                          <option value="9" ${month=='9' ? 'selected' : '' }>Tháng 9</option>
+                          <option value="10" ${month=='10' ? 'selected' : '' }>Tháng 10</option>
+                          <option value="11" ${month=='11' ? 'selected' : '' }>Tháng 11</option>
+                          <option value="12" ${month=='12' ? 'selected' : '' }>Tháng 12</option>
+                        </select>
+                        
+                        <select class="form-select" name="year" style="max-width:110px" id="year">
+                          <option value="">Năm</option>
+                          <c:forEach var="y" begin="2020" end="2030">
+                            <option value="${y}" ${year==y.toString() ? 'selected' : '' }>${y}</option>
+                          </c:forEach>
+                        </select>
+                      </div>
+
                       <button type="submit" class="btn-mintlify-secondary">Lọc</button>
                       <a href="${ctx}/manager/payments" class="btn-mintlify-secondary text-decoration-none">Xóa bộ
                         lọc</a>
                     </form>
+
+                    <script>
+                      // Xử lý xung đột giữa bộ lọc khoảng thời gian và kỳ
+                      document.addEventListener('DOMContentLoaded', function() {
+                        const fromDate = document.getElementById('fromDate');
+                        const toDate = document.getElementById('toDate');
+                        const month = document.getElementById('month');
+                        const year = document.getElementById('year');
+                        
+                        // Khi chọn khoảng thời gian, xóa lựa chọn kỳ
+                        fromDate.addEventListener('change', function() {
+                          if (this.value) {
+                            month.value = '';
+                            year.value = '';
+                          }
+                        });
+                        
+                        toDate.addEventListener('change', function() {
+                          if (this.value) {
+                            month.value = '';
+                            year.value = '';
+                          }
+                        });
+                        
+                        // Khi chọn kỳ, xóa khoảng thời gian
+                        month.addEventListener('change', function() {
+                          if (this.value) {
+                            fromDate.value = '';
+                            toDate.value = '';
+                          }
+                        });
+                        
+                        year.addEventListener('change', function() {
+                          if (this.value) {
+                            fromDate.value = '';
+                            toDate.value = '';
+                          }
+                        });
+                      });
+                    </script>
 
                     <%-- Table --%>
                       <c:choose>
@@ -64,9 +140,17 @@
                                   <tr>
                                     <td>
                                       <a href="${ctx}/manager/payments/${payment.paymentId}"
-                                        style="font-weight:600;font-family:monospace">
+                                        style="font-weight:600;font-family:monospace;display:block;margin-bottom:2px">
                                         <c:out value="${payment.transactionCode}" />
                                       </a>
+                                      <c:choose>
+                                        <c:when test="${payment.paymentMethod == 'VNPAY'}">
+                                          <span class="badge-hms" style="font-size:0.7rem;padding:2px 6px;background-color:#e3f2fd;color:#0d47a1;border:1px solid #bbdefb;border-radius:4px;font-weight:600">VNPAY</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                          <span class="badge-hms" style="font-size:0.7rem;padding:2px 6px;background-color:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9;border-radius:4px;font-weight:600">Chuyển khoản</span>
+                                        </c:otherwise>
+                                      </c:choose>
                                     </td>
                                     <td><span class="badge-hms badge-neutral">
                                         <c:out value="${payment.roomCode}" />
@@ -113,15 +197,53 @@
                                   <c:out value="${totalPages}" />
                                 </span>
                                 <div class="d-flex gap-1">
+                                  <c:url var="prevUrl" value="/manager/payments">
+                                    <c:param name="page" value="${currentPage - 1}" />
+                                    <c:if test="${not empty keyword}">
+                                      <c:param name="keyword" value="${keyword}" />
+                                    </c:if>
+                                    <c:if test="${not empty status}">
+                                      <c:param name="status" value="${status}" />
+                                    </c:if>
+                                    <c:if test="${not empty fromDate}">
+                                      <c:param name="fromDate" value="${fromDate}" />
+                                    </c:if>
+                                    <c:if test="${not empty toDate}">
+                                      <c:param name="toDate" value="${toDate}" />
+                                    </c:if>
+                                    <c:if test="${not empty month}">
+                                      <c:param name="month" value="${month}" />
+                                    </c:if>
+                                    <c:if test="${not empty year}">
+                                      <c:param name="year" value="${year}" />
+                                    </c:if>
+                                  </c:url>
+                                  <c:url var="nextUrl" value="/manager/payments">
+                                    <c:param name="page" value="${currentPage + 1}" />
+                                    <c:if test="${not empty keyword}">
+                                      <c:param name="keyword" value="${keyword}" />
+                                    </c:if>
+                                    <c:if test="${not empty status}">
+                                      <c:param name="status" value="${status}" />
+                                    </c:if>
+                                    <c:if test="${not empty fromDate}">
+                                      <c:param name="fromDate" value="${fromDate}" />
+                                    </c:if>
+                                    <c:if test="${not empty toDate}">
+                                      <c:param name="toDate" value="${toDate}" />
+                                    </c:if>
+                                    <c:if test="${not empty month}">
+                                      <c:param name="month" value="${month}" />
+                                    </c:if>
+                                    <c:if test="${not empty year}">
+                                      <c:param name="year" value="${year}" />
+                                    </c:if>
+                                  </c:url>
                                   <c:if test="${currentPage > 1}">
-                                    <a href="${ctx}/manager/payments?page=${currentPage - 1}&keyword=${keyword}&status=${status}"
-                                      class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">←
-                                      Trước</a>
+                                    <a href="${prevUrl}" class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">← Trước</a>
                                   </c:if>
                                   <c:if test="${currentPage < totalPages}">
-                                    <a href="${ctx}/manager/payments?page=${currentPage + 1}&keyword=${keyword}&status=${status}"
-                                      class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau
-                                      →</a>
+                                    <a href="${nextUrl}" class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau →</a>
                                   </c:if>
                                 </div>
                               </div>

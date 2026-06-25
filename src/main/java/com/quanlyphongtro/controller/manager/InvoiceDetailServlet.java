@@ -104,6 +104,18 @@ public class InvoiceDetailServlet extends BaseServlet {
                 req.getSession().setAttribute("errorMessage", "Đã xảy ra lỗi: " + e.getMessage());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1]);
             }
+        } else if (parts.length == 3 && "delete".equals(parts[2])) {
+            try {
+                int invoiceId = Integer.parseInt(parts[1]);
+                UserSessionDTO user = getCurrentUser(req);
+                invoiceService.deleteInvoice(user.getId(), invoiceId);
+                setFlashMessage(req, "success", "Xóa hóa đơn thành công!");
+                resp.sendRedirect(req.getContextPath() + "/manager/invoices");
+            } catch (Exception e) {
+                e.printStackTrace();
+                setFlashMessage(req, "danger", "Đã xảy ra lỗi: " + e.getMessage());
+                resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1]);
+            }
         } else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }

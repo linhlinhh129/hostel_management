@@ -162,6 +162,8 @@
                         <tr>
                           <th>Họ tên</th>
                           <th>Quan hệ</th>
+                          <th>Ngày sinh</th>
+                          <th>Giới tính</th>
                           <th>SĐT</th>
                           <th>Thao tác</th>
                         </tr>
@@ -170,22 +172,25 @@
                         <c:forEach var="dep" items="${dependents}">
                           <tr>
                             <td>
-                              <%-- Tên phải click được theo Manager.md §6 --%>
-                              <a href="javascript:void(0)"
-                                 onclick="openDependentDetail(${dep.id}, '<c:out value="${dep.fullName}"/>', '<c:out value="${dep.relationship}"/>', '<c:out value="${dep.phone}"/>', '<c:out value="${dep.gender}"/>', '<c:out value="${dep.dob}"/>')"
-                                 style="font-weight:500">
+                              <%-- Tên link thẳng đến trang chi tiết của người phụ thuộc --%>
+                              <a href="${ctx}/manager/dependents/${dep.id}" style="font-weight:500">
                                 <c:out value="${dep.fullName}"/>
                               </a>
                             </td>
                             <td><c:out value="${dep.relationship}"/></td>
+                            <td style="font-size:0.8125rem"><c:out value="${dep.dob}"/></td>
+                            <td>
+                              <c:choose>
+                                <c:when test="${dep.gender == 'MALE'}">Nam</c:when>
+                                <c:when test="${dep.gender == 'FEMALE'}">Nữ</c:when>
+                                <c:otherwise><c:out value="${dep.gender}"/></c:otherwise>
+                              </c:choose>
+                            </td>
                             <td><c:out value="${dep.phone}"/></td>
                             <td>
-                              <button type="button"
-                                      class="btn-mintlify-secondary"
-                                      style="padding:3px 10px;font-size:0.8125rem"
-                                      onclick="openDependentDetail(${dep.id}, '<c:out value="${dep.fullName}"/>', '<c:out value="${dep.relationship}"/>', '<c:out value="${dep.phone}"/>', '<c:out value="${dep.gender}"/>', '<c:out value="${dep.dob}"/>')">
-                                Chi tiết
-                              </button>
+                              <a href="${ctx}/manager/dependents/${dep.id}"
+                                 class="btn-mintlify-secondary text-decoration-none"
+                                 style="padding:3px 10px;font-size:0.8125rem">Chi tiết</a>
                             </td>
                           </tr>
                         </c:forEach>
@@ -296,6 +301,10 @@
             <label for="dep_phone" class="form-label">Số điện thoại</label>
             <input type="tel" class="form-control" id="dep_phone" name="phone" maxlength="20">
           </div>
+          <div class="mb-3">
+            <label for="dep_identityNumber" class="form-label">Số CCCD/CMND</label>
+            <input type="text" class="form-control" id="dep_identityNumber" name="identityNumber" maxlength="50" placeholder="Nhập số CCCD/CMND (tùy chọn)">
+          </div>
           <div class="row g-3">
             <div class="col-sm-6">
               <label for="dep_gender" class="form-label">Giới tính</label>
@@ -346,14 +355,12 @@
           <div class="mb-3">
             <label for="tenant_phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
             <input type="tel" class="form-control" id="tenant_phone" name="phone"
-                   required maxlength="20" value="<c:out value='${tenant.phone}'/>"
-                   pattern="^0[0-9]{9}$" title="Số điện thoại phải gồm 10 chữ số bắt đầu bằng số 0.">
+                   required maxlength="20" value="<c:out value='${tenant.phone}'/>">
           </div>
           <div class="mb-3">
             <label for="tenant_identityNumber" class="form-label">CCCD/CMND <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="tenant_identityNumber" name="identityNumber"
-                   required maxlength="50" value="<c:out value='${tenant.identityNumber}'/>"
-                   pattern="^([0-9]{9}|[0-9]{12})$" title="Số CCCD/CMND phải là 9 hoặc 12 chữ số.">
+                   required maxlength="50" value="<c:out value='${tenant.identityNumber}'/>">
           </div>
           <div class="row g-3 mb-3">
             <div class="col-sm-6">
@@ -385,166 +392,7 @@
   </div>
 </div>
 
-<!-- Modal Chi tiết người phụ thuộc -->
-<div class="modal fade" id="dependentDetailModal" tabindex="-1"
-     aria-labelledby="dependentDetailLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="dependentDetailLabel">Chi tiết người phụ thuộc</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-      </div>
-      <div class="modal-body">
-        <table class="table table-borderless" style="font-size:0.875rem; margin-bottom: 0;">
-          <tr>
-            <td style="color:var(--hms-text-muted); width: 35%; padding: 6px 0;">Họ tên:</td>
-            <td style="font-weight: 600; padding: 6px 0;" id="view_dep_fullName"></td>
-          </tr>
-          <tr>
-            <td style="color:var(--hms-text-muted); padding: 6px 0;">Quan hệ:</td>
-            <td style="padding: 6px 0;" id="view_dep_relationship"></td>
-          </tr>
-          <tr>
-            <td style="color:var(--hms-text-muted); padding: 6px 0;">Ngày sinh:</td>
-            <td style="padding: 6px 0;" id="view_dep_dob"></td>
-          </tr>
-          <tr>
-            <td style="color:var(--hms-text-muted); padding: 6px 0;">Giới tính:</td>
-            <td style="padding: 6px 0;" id="view_dep_gender"></td>
-          </tr>
-          <tr>
-            <td style="color:var(--hms-text-muted); padding: 6px 0;">Số điện thoại:</td>
-            <td style="padding: 6px 0;" id="view_dep_phone"></td>
-          </tr>
-        </table>
-      </div>
-      <div class="modal-footer d-flex justify-content-between">
-        <div>
-          <c:if test="${tenant.status == 'ACTIVE'}">
-            <button type="button" class="btn btn-outline-primary"
-                    onclick="triggerEditFromDetail()">
-              Sửa
-            </button>
-            <form id="view_dep_delete_form" method="post" action="" style="display:inline; margin:0 0 0 6px;"
-                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa người phụ thuộc này?');">
-              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-              <button type="submit" class="btn btn-outline-danger">Xóa</button>
-            </form>
-          </c:if>
-        </div>
-        <button type="button" class="btn-mintlify-secondary" data-bs-dismiss="modal" style="margin:0;">Đóng</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Modal Sửa người phụ thuộc -->
-<div class="modal fade" id="editDependentModal" tabindex="-1"
-     aria-labelledby="editDependentLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editDependentLabel">Sửa thông tin người phụ thuộc</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-      </div>
-      <form id="editDependentForm" method="post" action="">
-        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="edit_dep_fullName" class="form-label">Họ tên <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit_dep_fullName" name="fullName"
-                   required maxlength="200">
-          </div>
-          <div class="mb-3">
-            <label for="edit_dep_relationship" class="form-label">Quan hệ <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="edit_dep_relationship" name="relationship"
-                   required maxlength="100" placeholder="VD: Con, Vợ/Chồng, Cha/Mẹ...">
-          </div>
-          <div class="mb-3">
-            <label for="edit_dep_phone" class="form-label">Số điện thoại</label>
-            <input type="tel" class="form-control" id="edit_dep_phone" name="phone" maxlength="20">
-          </div>
-          <div class="row g-3">
-            <div class="col-sm-6">
-              <label for="edit_dep_gender" class="form-label">Giới tính</label>
-              <select class="form-select" id="edit_dep_gender" name="gender">
-                <option value="">-- Chọn --</option>
-                <option value="MALE">Nam</option>
-                <option value="FEMALE">Nữ</option>
-                <option value="OTHER">Khác</option>
-              </select>
-            </div>
-            <div class="col-sm-6">
-              <label for="edit_dep_dob" class="form-label">Ngày sinh</label>
-              <input type="date" class="form-control" id="edit_dep_dob" name="dob">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-mintlify-secondary" data-bs-dismiss="modal">Hủy</button>
-          <button type="submit" class="quick-action-btn primary">Lưu thay đổi</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<script>
-let currentDep = {};
-
-function openDependentDetail(id, fullName, relationship, phone, gender, dob) {
-    currentDep = { id, fullName, relationship, phone, gender, dob };
-    
-    document.getElementById('view_dep_fullName').innerText = fullName;
-    document.getElementById('view_dep_relationship').innerText = relationship;
-    document.getElementById('view_dep_dob').innerText = dob || '—';
-    
-    let genderText = '—';
-    if (gender === 'MALE') genderText = 'Nam';
-    else if (gender === 'FEMALE') genderText = 'Nữ';
-    else if (gender === 'OTHER') genderText = 'Khác';
-    document.getElementById('view_dep_gender').innerText = genderText;
-    
-    document.getElementById('view_dep_phone').innerText = phone || '—';
-    
-    // Delete form action
-    const deleteForm = document.getElementById('view_dep_delete_form');
-    if (deleteForm) {
-        deleteForm.action = '${ctx}/manager/dependents/' + id + '/remove';
-    }
-    
-    // Open detail modal
-    const detailModal = new bootstrap.Modal(document.getElementById('dependentDetailModal'));
-    detailModal.show();
-}
-
-function triggerEditFromDetail() {
-    // Close detail modal
-    const detailModalEl = document.getElementById('dependentDetailModal');
-    const modalInstance = bootstrap.Modal.getInstance(detailModalEl);
-    if (modalInstance) {
-        modalInstance.hide();
-    }
-    
-    // Setup edit form
-    openEditDependent(currentDep.id, currentDep.fullName, currentDep.relationship, currentDep.phone, currentDep.gender, currentDep.dob);
-    
-    // Open edit modal
-    const editModal = new bootstrap.Modal(document.getElementById('editDependentModal'));
-    editModal.show();
-}
-
-function openEditDependent(id, fullName, relationship, phone, gender, dob) {
-    document.getElementById('edit_dep_fullName').value = fullName;
-    document.getElementById('edit_dep_relationship').value = relationship;
-    document.getElementById('edit_dep_phone').value = phone;
-    document.getElementById('edit_dep_gender').value = gender;
-    document.getElementById('edit_dep_dob').value = dob;
-    
-    // Set form action dynamically
-    document.getElementById('editDependentForm').action = '${ctx}/manager/dependents/' + id + '/edit?tenantId=${tenant.id}';
-}
-</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 </body>

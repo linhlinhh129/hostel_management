@@ -216,43 +216,22 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
             // Load reported incorrect invoices
             List<Map<String, Object>> incorrectInvoices = new ArrayList<>();
-            StringBuilder incorrectSql = new StringBuilder(
-                    "SELECT i.invoice_id, i.code AS invoice_code, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, "
-                            +
-                            "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount "
-                            +
-                            "FROM dbo.invoices i " +
-                            "JOIN dbo.rooms r ON i.room_id = r.room_id " +
-                            "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                            "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
-                            "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL");
-            List<Object> incorrectParams = new ArrayList<>();
-            incorrectParams.add(currentUser.getId());
-
-            if (filterFacilityId != null) {
-                incorrectSql.append(" AND f.facility_id = ?");
-                incorrectParams.add(filterFacilityId);
-            }
-
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                incorrectSql.append(" AND (i.code LIKE ? OR r.code LIKE ? OR f.name LIKE ?)");
-                String match = "%" + keyword.trim() + "%";
-                incorrectParams.add(match);
-                incorrectParams.add(match);
-                incorrectParams.add(match);
-            }
-
-            incorrectSql.append(" ORDER BY mr.reading_date DESC, i.invoice_id DESC");
-
-            try (PreparedStatement psInc = conn.prepareStatement(incorrectSql.toString())) {
-                for (int pIdx = 0; pIdx < incorrectParams.size(); pIdx++) {
-                    psInc.setObject(pIdx + 1, incorrectParams.get(pIdx));
-                }
+            String incorrectSql = "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
+                    "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount " +
+                    "FROM dbo.invoices i " +
+                    "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                    "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                    "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
+                    "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL " +
+                    "ORDER BY mr.reading_date DESC, i.invoice_id DESC";
+            try (PreparedStatement psInc = conn.prepareStatement(incorrectSql)) {
+                psInc.setInt(1, currentUser.getId());
                 try (ResultSet rsInc = psInc.executeQuery()) {
                     while (rsInc.next()) {
                         Map<String, Object> item = new HashMap<>();
                         item.put("id", rsInc.getInt("invoice_id"));
                         item.put("code", rsInc.getString("invoice_code"));
+                        item.put("roomId", rsInc.getInt("room_id"));
                         item.put("roomCode", rsInc.getString("room_code"));
                         item.put("facilityName", rsInc.getString("facility_name"));
                         item.put("facilityCode", rsInc.getString("facility_code"));
@@ -260,12 +239,11 @@ public class ManagerNotificationsServlet extends BaseServlet {
                         item.put("water", rsInc.getInt("water"));
                         item.put("meterStatus", rsInc.getString("meter_status"));
                         item.put("totalAmount", rsInc.getDouble("total_amount"));
-
+                        
                         java.sql.Date rDate = rsInc.getDate("reading_date");
                         if (rDate != null) {
                             java.time.LocalDate localDate = rDate.toLocalDate();
-                            item.put("billingPeriod",
-                                    String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                            item.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
                         } else {
                             item.put("billingPeriod", "—");
                         }
@@ -296,8 +274,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/list.jsp").forward(req, resp);
     }
 
-    private void handleCreateForm(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private void handleCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -307,7 +284,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         List<Map<String, Object>> assignedFacilities = new ArrayList<>();
         String sql = "SELECT facility_id, code, name FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, currentUser.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -329,7 +306,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                 "WHERE f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL " +
                 "ORDER BY f.name, r.code";
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(roomsSql)) {
+             PreparedStatement ps = conn.prepareStatement(roomsSql)) {
             ps.setInt(1, currentUser.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -349,8 +326,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/create.jsp").forward(req, resp);
     }
 
-    private void handleCreateSubmit(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private void handleCreateSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -372,15 +348,12 @@ public class ManagerNotificationsServlet extends BaseServlet {
             }
         }
 
-        if (title == null || content == null || recipientType == null || title.trim().isEmpty()
-                || content.trim().isEmpty()) {
+        if (title == null || content == null || recipientType == null || title.trim().isEmpty() || content.trim().isEmpty()) {
             req.setAttribute("errorMessage", "Vui lòng điền đầy đủ các trường bắt buộc.");
             Integer rId = null;
             try {
-                if (recipientIdStr != null)
-                    rId = Integer.parseInt(recipientIdStr.trim());
-            } catch (Exception e) {
-            }
+                if (recipientIdStr != null) rId = Integer.parseInt(recipientIdStr.trim());
+            } catch (Exception e) {}
             req.setAttribute("dto", buildDto(title, content, recipientType, rId, facilityIdForRoom));
             handleCreateForm(req, resp);
             return;
@@ -409,7 +382,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             boolean isFacilityAuthorized = false;
             String checkFacilitySql = "SELECT 1 FROM dbo.facilities WHERE facility_id = ? AND manager_id = ? AND deleted_at IS NULL";
             try (Connection conn = DatabaseUtil.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(checkFacilitySql)) {
+                 PreparedStatement ps = conn.prepareStatement(checkFacilitySql)) {
                 ps.setInt(1, facilityId);
                 ps.setInt(2, currentUser.getId());
                 try (ResultSet rs = ps.executeQuery()) {
@@ -447,7 +420,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             boolean isRoomAuthorized = false;
             String checkRoomSql = "SELECT r.facility_id FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE r.room_id = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
             try (Connection conn = DatabaseUtil.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(checkRoomSql)) {
+                 PreparedStatement ps = conn.prepareStatement(checkRoomSql)) {
                 ps.setInt(1, roomId);
                 ps.setInt(2, currentUser.getId());
                 try (ResultSet rs = ps.executeQuery()) {
@@ -477,8 +450,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         com.quanlyphongtro.dao.NotificationDAO notificationDAO = new com.quanlyphongtro.dao.NotificationDAO();
         String code = notificationDAO.generateCode(recipientType);
 
-        String sql = "INSERT INTO dbo.notifications (code, title, content, target_type, facility_id, room_id, status, created_by, created_at, sent_at) "
-                +
+        String sql = "INSERT INTO dbo.notifications (code, title, content, target_type, facility_id, room_id, status, created_by, created_at, sent_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, 'SENT', ?, GETDATE(), GETDATE())";
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -487,14 +459,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
             ps.setString(2, title.trim());
             ps.setString(3, content.trim());
             ps.setString(4, recipientType);
-            if (facilityId != null)
-                ps.setInt(5, facilityId);
-            else
-                ps.setNull(5, java.sql.Types.INTEGER);
-            if (roomId != null)
-                ps.setInt(6, roomId);
-            else
-                ps.setNull(6, java.sql.Types.INTEGER);
+            if (facilityId != null) ps.setInt(5, facilityId); else ps.setNull(5, java.sql.Types.INTEGER);
+            if (roomId != null) ps.setInt(6, roomId); else ps.setNull(6, java.sql.Types.INTEGER);
             ps.setInt(7, currentUser.getId());
             ps.executeUpdate();
             
@@ -517,8 +483,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         } catch (Exception e) {
             logger.error("Failed to insert notification", e);
             req.setAttribute("errorMessage", "Lỗi gửi thông báo: " + e.getMessage());
-            req.setAttribute("dto", buildDto(title, content, recipientType, facilityId != null ? facilityId : roomId,
-                    facilityIdForRoom));
+            req.setAttribute("dto", buildDto(title, content, recipientType, facilityId != null ? facilityId : roomId, facilityIdForRoom));
             handleCreateForm(req, resp);
             return;
         }
@@ -526,8 +491,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=general&type=sent");
     }
 
-    private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId,
-            Integer facilityId) {
+    private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId, Integer facilityId) {
         Map<String, Object> dto = new HashMap<>();
         dto.put("title", title);
         dto.put("content", content);
@@ -537,8 +501,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         return dto;
     }
 
-    private void handleDetail(int notificationId, HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private void handleDetail(int notificationId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -547,7 +510,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
         Map<String, Object> notification = null;
 
-        String sql = "SELECT n.*, u.full_name AS creator_name, u.role AS creator_role, " +
+        String sql = "SELECT n.*, u.full_name AS creator_name, " +
                 "f.code AS facility_code, f.name AS facility_name, f.manager_id AS target_facility_manager_id, " +
                 "r.code AS room_code, rf.manager_id AS target_room_facility_manager_id " +
                 "FROM dbo.notifications n " +
@@ -558,24 +521,17 @@ public class ManagerNotificationsServlet extends BaseServlet {
                 "WHERE n.notification_id = ? AND n.deleted_at IS NULL";
 
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, notificationId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     int creatorId = rs.getInt("created_by");
-                    String creatorRole = rs.getString("creator_role");
-                    Integer targetFacilityManagerId = rs.getObject("target_facility_manager_id") != null
-                            ? rs.getInt("target_facility_manager_id")
-                            : null;
-                    Integer targetRoomFacilityManagerId = rs.getObject("target_room_facility_manager_id") != null
-                            ? rs.getInt("target_room_facility_manager_id")
-                            : null;
+                    Integer targetFacilityManagerId = rs.getObject("target_facility_manager_id") != null ? rs.getInt("target_facility_manager_id") : null;
+                    Integer targetRoomFacilityManagerId = rs.getObject("target_room_facility_manager_id") != null ? rs.getInt("target_room_facility_manager_id") : null;
 
-                    boolean hasAccess = (creatorId == currentUser.getId())
-                            || (targetFacilityManagerId != null && targetFacilityManagerId == currentUser.getId())
-                            || (targetRoomFacilityManagerId != null
-                                    && targetRoomFacilityManagerId == currentUser.getId())
-                            || ("ADMIN".equals(creatorRole) && "SENT".equals(rs.getString("status")));
+                    boolean hasAccess = (creatorId == currentUser.getId()) 
+                                     || (targetFacilityManagerId != null && targetFacilityManagerId == currentUser.getId())
+                                     || (targetRoomFacilityManagerId != null && targetRoomFacilityManagerId == currentUser.getId());
 
                     if (!hasAccess) {
                         resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xem thông báo này.");
@@ -590,18 +546,15 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     String targetType = rs.getString("target_type");
                     notification.put("recipientType", targetType);
                     notification.put("createdByName", rs.getString("creator_name"));
-                    notification.put("creatorRole", creatorRole);
                     notification.put("status", rs.getString("status"));
                     Timestamp cAt = rs.getTimestamp("created_at");
                     Timestamp sAt = rs.getTimestamp("sent_at");
-                    notification.put("createdAt",
-                            cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
+                    notification.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
                     notification.put("sentAt", sAt != null ? sAt.toLocalDateTime().toString().replace("T", " ") : "—");
 
                     // Set recipientName
                     if ("FACILITY".equals(targetType)) {
-                        notification.put("recipientName",
-                                rs.getString("facility_name") + " (" + rs.getString("facility_code") + ")");
+                        notification.put("recipientName", rs.getString("facility_name") + " (" + rs.getString("facility_code") + ")");
                     } else if ("ROOM".equals(targetType)) {
                         notification.put("recipientName", "Phòng " + rs.getString("room_code"));
                     } else {
@@ -622,8 +575,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/detail.jsp").forward(req, resp);
     }
 
-    private void handleReportIncorrect(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private void handleReportIncorrect(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -638,17 +590,17 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
         try {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
-
+            
             // Verify manager owns this invoice
             boolean isAuthorized = false;
             int meterId = -1;
             String invoiceCode = "";
-            String verifySql = "SELECT i.meter_id, i.code, f.manager_id FROM dbo.invoices i " +
+            String verifySql = "SELECT i.meter_id, i.code, i.status, f.manager_id FROM dbo.invoices i " +
                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                     "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
             try (Connection conn = DatabaseUtil.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(verifySql)) {
+                 PreparedStatement ps = conn.prepareStatement(verifySql)) {
                 ps.setInt(1, invoiceId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -657,6 +609,12 @@ public class ManagerNotificationsServlet extends BaseServlet {
                             isAuthorized = true;
                             meterId = rs.getInt("meter_id");
                             invoiceCode = rs.getString("code");
+                            String invoiceStatus = rs.getString("status");
+                            if ("PAID".equals(invoiceStatus)) {
+                                setFlashMessage(req, "danger", "Không thể báo cáo sai số cho hóa đơn đã thanh toán.");
+                                resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + invoiceId);
+                                return;
+                            }
                         }
                     }
                 }
@@ -676,14 +634,13 @@ public class ManagerNotificationsServlet extends BaseServlet {
             // Update meter reading status
             String updateSql = "UPDATE dbo.meter_readings SET status = 'INCORRECT', updated_at = GETDATE() WHERE meter_id = ?";
             try (Connection conn = DatabaseUtil.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                 PreparedStatement ps = conn.prepareStatement(updateSql)) {
                 ps.setInt(1, meterId);
                 ps.executeUpdate();
             }
 
-            setFlashMessage(req, "success", "Đã báo cáo sai số điện nước cho hóa đơn " + invoiceCode
-                    + ". Vui lòng gửi thông báo cho Operator.");
-            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
+            setFlashMessage(req, "success", "Đã báo cáo sai số điện nước cho hóa đơn " + invoiceCode + ". Vui lòng gửi thông báo cho Operator.");
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications/send-operator?invoiceId=" + invoiceId);
 
         } catch (Exception e) {
             logger.error("Failed to report incorrect invoice", e);
@@ -691,8 +648,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
     }
 
-    private void handleSendOperatorForm(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private void handleSendOperatorForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -709,8 +665,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
             Map<String, Object> invoice = null;
 
-            String sql = "SELECT i.*, r.code AS room_code, f.code AS facility_code, f.name AS facility_name, f.manager_id, "
-                    +
+            String sql = "SELECT i.*, r.code AS room_code, f.facility_id, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
                     "mr.electric, mr.water, mr.reading_date " +
                     "FROM dbo.invoices i " +
                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
@@ -727,8 +682,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                         if (rs.next()) {
                             int managerId = rs.getInt("manager_id");
                             if (managerId != currentUser.getId()) {
-                                resp.sendError(HttpServletResponse.SC_FORBIDDEN,
-                                        "Bạn không có quyền thực hiện thao tác này.");
+                                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện thao tác này.");
                                 return;
                             }
 
@@ -745,11 +699,11 @@ public class ManagerNotificationsServlet extends BaseServlet {
                             java.sql.Date rDate = rs.getDate("reading_date");
                             if (rDate != null) {
                                 java.time.LocalDate localDate = rDate.toLocalDate();
-                                invoice.put("billingPeriod",
-                                        String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                                invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
                             } else {
                                 invoice.put("billingPeriod", "—");
                             }
+                    invoice.put("facilityId", rs.getInt("facility_id"));
                         }
                     }
                 }
@@ -759,9 +713,16 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     return;
                 }
 
-                // Query active operators
-                String opsSql = "SELECT user_id, full_name FROM dbo.users WHERE role = 'OPERATOR' AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY full_name";
+                int facilityId = (Integer) invoice.get("facilityId");
+
+                // Query active operators assigned to this facility
+                String opsSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
+                        "JOIN dbo.facilities f ON u.user_id = f.operator_id " +
+                        "WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND u.deleted_at IS NULL " +
+                        "AND f.facility_id = ? AND f.deleted_at IS NULL " +
+                        "ORDER BY u.full_name";
                 try (PreparedStatement psOps = conn.prepareStatement(opsSql)) {
+                    psOps.setInt(1, facilityId);
                     try (ResultSet rsOps = psOps.executeQuery()) {
                         while (rsOps.next()) {
                             Map<String, Object> op = new HashMap<>();
@@ -774,8 +735,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
             }
 
             String defaultTitle = "Báo cáo sai số điện nước - Phòng " + invoice.get("roomCode");
-            String defaultContent = "Kính gửi nhân viên vận hành,\n\nHóa đơn kỳ " + invoice.get("billingPeriod") +
-                    " của phòng " + invoice.get("roomCode") + " thuộc cơ sở " + invoice.get("facilityName") +
+            String defaultContent = "Kính gửi nhân viên vận hành,\n\nHóa đơn kỳ " + invoice.get("billingPeriod") + 
+                    " của phòng " + invoice.get("roomCode") + " thuộc cơ sở " + invoice.get("facilityName") + 
                     " được phát hiện bị nhập sai chỉ số điện nước.\n\nThông tin hiện tại:\n" +
                     "- Chỉ số điện: " + invoice.get("electric") + " kWh\n" +
                     "- Chỉ số nước: " + invoice.get("water") + " m3\n\n" +
@@ -794,8 +755,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
     }
 
-    private void handleSendOperatorSubmit(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private void handleSendOperatorSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -807,9 +767,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String title = req.getParameter("title");
         String content = req.getParameter("content");
 
-        if (invoiceIdStr == null || operatorIdStr == null || title == null || content == null ||
-                invoiceIdStr.trim().isEmpty() || operatorIdStr.trim().isEmpty() || title.trim().isEmpty()
-                || content.trim().isEmpty()) {
+        if (invoiceIdStr == null || operatorIdStr == null || title == null || content == null || 
+                invoiceIdStr.trim().isEmpty() || operatorIdStr.trim().isEmpty() || title.trim().isEmpty() || content.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Vui lòng nhập đầy đủ tất cả các trường.");
             resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
             return;
@@ -829,7 +788,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                     "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
             try (Connection conn = DatabaseUtil.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                 PreparedStatement ps = conn.prepareStatement(checkSql)) {
                 ps.setInt(1, invoiceId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -852,10 +811,9 @@ public class ManagerNotificationsServlet extends BaseServlet {
             String reqCode = "REQ-UTL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
             // Insert request
-            String insertReqSql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, status, assigned_staff_id, created_at, updated_at) "
-                    +
+            String insertReqSql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, status, assigned_staff_id, created_at, updated_at) " +
                     "VALUES (?, ?, 'UTILITY', ?, ?, 'PENDING', ?, GETDATE(), GETDATE())";
-
+            
             // Update meter status to REPORTED
             String updateMeterSql = "UPDATE dbo.meter_readings SET status = 'REPORTED', updated_at = GETDATE() WHERE meter_id = ?";
 
@@ -877,8 +835,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     }
 
                     conn.commit();
-                    setFlashMessage(req, "success",
-                            "Đã gửi thông báo yêu cầu sửa chỉ số điện nước cho Operator thành công!");
+                    setFlashMessage(req, "success", "Đã gửi thông báo yêu cầu sửa chỉ số điện nước cho Operator thành công!");
                 } catch (Exception ex) {
                     conn.rollback();
                     throw ex;

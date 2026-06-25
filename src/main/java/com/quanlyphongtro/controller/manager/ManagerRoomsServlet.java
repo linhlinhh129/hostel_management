@@ -51,7 +51,12 @@ public class ManagerRoomsServlet extends BaseServlet {
         } else {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null || "/".equals(pathInfo)) {
-                handleFacilityGrid(req, resp);
+                String showGrid = req.getParameter("showGrid");
+                if ("true".equals(showGrid)) {
+                    handleFacilityGrid(req, resp);
+                } else {
+                    redirectToDefaultFacility(req, resp);
+                }
             } else {
                 // Renders detail: /manager/rooms/{id}
                 String idStr = pathInfo.substring(1);
@@ -98,15 +103,38 @@ public class ManagerRoomsServlet extends BaseServlet {
             logger.error("Failed to load facilities managed by manager={}", currentUser.getId(), e);
         }
 
-        if (facilities.size() > 0) {
-            int firstFacilityId = (Integer) facilities.get(0).get("id");
-            resp.sendRedirect(req.getContextPath() + "/manager/facilities/" + firstFacilityId + "/rooms");
-            return;
-        }
-
         req.setAttribute("facilities", facilities);
         req.setAttribute("facilityId", null); // Set empty to trigger Mode 1 in list.jsp
         req.getRequestDispatcher("/WEB-INF/views/manager/rooms/list.jsp").forward(req, resp);
+    }
+
+    private void redirectToDefaultFacility(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        int firstFacilityId = -1;
+        String sql = "SELECT TOP 1 facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL ORDER BY code ASC";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, currentUser.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    firstFacilityId = rs.getInt("facility_id");
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to fetch first facility for manager={}", currentUser.getId(), e);
+        }
+
+        if (firstFacilityId != -1) {
+            resp.sendRedirect(req.getContextPath() + "/manager/facilities/" + firstFacilityId + "/rooms");
+        } else {
+            handleFacilityGrid(req, resp);
+        }
     }
 
     private void handleFacilityRooms(int facilityId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -118,23 +146,18 @@ public class ManagerRoomsServlet extends BaseServlet {
 
         // Verify manager access to facility
         Map<String, Object> facility = null;
-        List<Map<String, Object>> facilities = new ArrayList<>();
-        String verifySql = "SELECT * FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL";
+        String verifySql = "SELECT * FROM dbo.facilities WHERE facility_id = ? AND manager_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(verifySql)) {
-            ps.setInt(1, currentUser.getId());
+            ps.setInt(1, facilityId);
+            ps.setInt(2, currentUser.getId());
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> f = new HashMap<>();
-                    f.put("id", rs.getInt("facility_id"));
-                    f.put("code", rs.getString("code"));
-                    f.put("name", rs.getString("name"));
-                    f.put("address", rs.getString("address"));
-                    facilities.add(f);
-                    
-                    if (rs.getInt("facility_id") == facilityId) {
-                        facility = f;
-                    }
+                if (rs.next()) {
+                    facility = new HashMap<>();
+                    facility.put("id", rs.getInt("facility_id"));
+                    facility.put("code", rs.getString("code"));
+                    facility.put("name", rs.getString("name"));
+                    facility.put("address", rs.getString("address"));
                 }
             }
         } catch (Exception e) {
@@ -205,7 +228,12 @@ public class ManagerRoomsServlet extends BaseServlet {
                         room.put("code", roomCode);
                         room.put("area", rs.getDouble("area"));
                         room.put("status", rs.getString("status"));
-                        room.put("tenantId", rs.getInt("tenant_id"));
+                        int tenantIdVal = rs.getInt("tenant_id");
+                        if (rs.wasNull()) {
+                            room.put("tenantId", null);
+                        } else {
+                            room.put("tenantId", tenantIdVal);
+                        }
                         room.put("tenantName", rs.getString("tenant_name"));
 
                         // Parse floor and room number from code (e.g. HN0102)
@@ -240,7 +268,6 @@ public class ManagerRoomsServlet extends BaseServlet {
         req.setAttribute("page", pageObj);
         req.setAttribute("facilityId", facilityId);
         req.setAttribute("currentFacility", facility);
-        req.setAttribute("facilities", facilities);
         req.setAttribute("filterStatus", filterStatus);
 
         req.getRequestDispatcher("/WEB-INF/views/manager/rooms/list.jsp").forward(req, resp);
@@ -288,6 +315,17 @@ public class ManagerRoomsServlet extends BaseServlet {
                     room.put("tenantId", rs.getInt("tenant_id"));
                     if (rs.wasNull()) {
                         room.put("tenantId", null);
+                    }
+                    if (room.get("tenantId") == null && "OCCUPIED".equals(room.get("status"))) {
+                        String activeContractSql = "SELECT TOP 1 contract_id FROM dbo.contracts WHERE room_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY contract_id DESC";
+                        try (PreparedStatement psContract = conn.prepareStatement(activeContractSql)) {
+                            psContract.setInt(1, roomId);
+                            try (ResultSet rsContract = psContract.executeQuery()) {
+                                if (rsContract.next()) {
+                                    req.setAttribute("activeContractId", rsContract.getInt("contract_id"));
+                                }
+                            }
+                        }
                     }
                     room.put("tenantName", rs.getString("tenant_name"));
                     room.put("tenantCode", rs.getString("tenant_code"));

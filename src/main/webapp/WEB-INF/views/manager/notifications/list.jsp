@@ -51,23 +51,6 @@
         <c:choose>
           <c:when test="${param.tab == 'incorrect-utility'}">
             <%-- Tab Báo lỗi điện nước --%>
-            <form class="filter-bar mb-3" method="get" action="${ctx}/manager/notifications">
-              <input type="hidden" name="tab" value="incorrect-utility"/>
-              <select class="form-select" name="facilityId" style="max-width:240px">
-                <option value="">Tất cả cơ sở</option>
-                <c:forEach var="facility" items="${assignedFacilities}">
-                  <option value="${facility.id}" ${filterFacilityId == facility.id ? 'selected' : ''}>
-                    <c:out value="${facility.name}"/> (<c:out value="${facility.code}"/>)
-                  </option>
-                </c:forEach>
-              </select>
-              <input type="text" class="form-control" name="keyword"
-                     placeholder="Mã hóa đơn / phòng / cơ sở..."
-                     value="<c:out value='${keyword}'/>">
-              <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
-              <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
-            </form>
-
             <c:choose>
               <c:when test="${not empty incorrectInvoices}">
                 <div class="table-responsive">
@@ -88,7 +71,7 @@
                         <tr>
                           <td><c:out value="${item.facilityName}"/> (<c:out value="${item.facilityCode}"/>)</td>
                           <td>
-                            <a href="${ctx}/manager/rooms/${item.id}">
+                            <a href="${ctx}/manager/rooms/${item.roomId}">
                               <strong><c:out value="${item.roomCode}"/></strong>
                             </a>
                           </td>
@@ -164,7 +147,7 @@
                    style="font-weight: 600; font-size: 0.8125rem; padding: 8px 16px; border-radius: 6px; 
                           transition: all 0.2s;
                           ${type == 'received' ? 'background: var(--hms-accent-deep); color: #fff;' : 'background: var(--hms-surface); color: var(--hms-text-muted); border: 1px solid var(--hms-border);'}">
-                  Gửi đến tôi (Từ Admin)
+                  Gửi đến tôi
                 </a>
               </li>
               <li class="nav-item" role="presentation">
