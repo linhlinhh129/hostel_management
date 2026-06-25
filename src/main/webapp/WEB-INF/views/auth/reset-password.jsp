@@ -16,7 +16,7 @@
                 </div>
 
                 <div class="auth-stagger-2">
-                    <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
+                    <jsp:include page="/WEB-INF/views/layout/inline_alerts.jsp"/>
                 </div>
 
                 <form action="${ctx}/reset-password" method="post" class="auth-stagger-3" onsubmit="return validatePasswords(event)">

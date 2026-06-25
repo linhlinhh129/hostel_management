@@ -28,9 +28,7 @@
           <input type="hidden" name="csrfToken" value="${csrfToken}"/>
           <input type="hidden" name="contractId" value="${prefilledContract.contractId}"/>
 
-          <c:if test="${not empty errorMessage}">
-            <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-          </c:if>
+
 
           <c:if test="${showReactivateConfirmation}">
             <div class="alert alert-warning mb-3" style="border-left: 5px solid #ffb300; background-color: #fffde7; color: #663c00; border-radius: 6px; padding: 1rem;">

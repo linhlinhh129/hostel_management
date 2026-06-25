@@ -27,9 +27,7 @@
             <form method="post" action="${ctx}/manager/notifications/send-operator" class="p-4">
               <input type="hidden" name="invoiceId" value="${invoice.id}"/>
 
-              <c:if test="${not empty errorMessage}">
-                <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-              </c:if>
+
 
               <%-- Chọn Operator --%>
               <div class="mb-3">

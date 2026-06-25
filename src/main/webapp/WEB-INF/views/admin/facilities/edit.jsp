@@ -28,9 +28,7 @@
                 <form method="post" action="${ctx}/admin/facilities/${facility.id}/edit" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-                    </c:if>
+
 
                     <!-- Mã cơ sở: readonly nếu ACTIVE -->
                     <div class="mb-3">

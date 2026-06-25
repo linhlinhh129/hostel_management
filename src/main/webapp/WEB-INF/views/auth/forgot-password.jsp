@@ -17,7 +17,7 @@
                 </div>
 
                 <div id="alertContainer" class="auth-stagger-2">
-                    <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
+                    <jsp:include page="/WEB-INF/views/layout/inline_alerts.jsp"/>
                 </div>
 
                 <!-- Success state -->

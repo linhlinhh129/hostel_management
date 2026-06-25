@@ -28,9 +28,7 @@
                 <form method="post" action="${ctx}/admin/personnel/${user.id}/edit" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-                    </c:if>
+
 
                     <%-- ── Thông tin cá nhân ─────────────────────────── --%>
                     <h2 class="h6 mb-3">Thông tin cá nhân</h2>
