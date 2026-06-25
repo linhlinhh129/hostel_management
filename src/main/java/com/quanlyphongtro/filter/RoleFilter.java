@@ -42,6 +42,37 @@ public class RoleFilter implements Filter {
             return;
         }
 
+        String method = req.getMethod();
+        if (("MANAGER".equals(currentUser.getRole()) || "OPERATOR".equals(currentUser.getRole()))
+                && (path.startsWith(MANAGER_PREFIX) || path.startsWith(OPERATOR_PREFIX))) {
+            try {
+                com.quanlyphongtro.dao.FacilityDAO facilityDAO = new com.quanlyphongtro.dao.FacilityDAO();
+                java.util.Optional<com.quanlyphongtro.model.Facility> facilityOpt = "OPERATOR".equals(currentUser.getRole())
+                        ? facilityDAO.findByOperatorId(currentUser.getId())
+                        : facilityDAO.findByManagerId(currentUser.getId());
+                
+                if (facilityOpt.isPresent()) {
+                    String status = facilityOpt.get().getStatus();
+                    req.setAttribute("currentFacilityStatus", status);
+
+                    if ("INACTIVE".equals(status) && 
+                       ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method))) {
+                        String referer = req.getHeader("Referer");
+                        req.getSession().setAttribute("flashType", "error");
+                        req.getSession().setAttribute("flashMessage", "Cơ sở đã bị vô hiệu hoá. Bạn chỉ có quyền xem, không thể thực hiện thao tác thêm/sửa.");
+                        if (referer != null) {
+                            resp.sendRedirect(referer);
+                        } else {
+                            resp.sendRedirect(req.getContextPath() + "/" + currentUser.getRole().toLowerCase() + "/dashboard");
+                        }
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                req.getServletContext().log("Failed to check facility status in RoleFilter", e);
+            }
+        }
+
         if (!hasRequiredRole(path, currentUser.getRole())) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;

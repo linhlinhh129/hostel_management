@@ -20,5 +20,32 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+<c:if test="${currentFacilityStatus == 'INACTIVE'}">
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('form[method="post"] input, form[method="post"] select, form[method="post"] textarea').forEach(function(el) {
+        if (el.type !== 'hidden') {
+            el.setAttribute('disabled', 'disabled');
+            el.setAttribute('readonly', 'readonly');
+            el.style.backgroundColor = '#f3f4f6';
+        }
+    });
+
+    document.querySelectorAll('form[method="post"] button[type="submit"], form[method="post"] input[type="submit"]').forEach(function(btn) {
+        btn.setAttribute('disabled', 'disabled');
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        btn.title = 'Cơ sở đã bị vô hiệu hoá';
+    });
+
+    document.querySelectorAll('.btn-add, .btn-edit, .quick-action-btn:not(.btn-secondary), a.btn-primary, button.btn-primary, a.btn-mintlify-primary, button.btn-mintlify-primary, a.btn-mintlify-accent, button.btn-mintlify-accent').forEach(function(el) {
+        if (!el.closest('.topbar') && !el.closest('.sidebar') && !el.closest('.filter-bar')) {
+            el.style.display = 'none';
+        }
+    });
+});
+</script>
+</c:if>
 </body>
 </html>

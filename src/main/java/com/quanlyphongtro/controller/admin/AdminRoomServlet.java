@@ -66,17 +66,13 @@ public class AdminRoomServlet extends BaseServlet {
         if (pathInfo != null && pathInfo.matches("/\\d+/update")) {
             int roomId = Integer.parseInt(pathInfo.split("/")[1]);
             
-            Map<String, Object> roomMap = loadRoom(roomId);
-            if (roomMap == null) {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
-            if ("INACTIVE".equals(roomMap.get("facilityStatus"))) {
-                setFlashMessage(req, "error", "Cơ sở đã bị vô hiệu hoá, không thể chỉnh sửa.");
+            Map<String, Object> room = loadRoom(roomId);
+            if (room != null && "INACTIVE".equals(room.get("facilityStatus"))) {
+                setFlashMessage(req, "error", "Cơ sở đã bị vô hiệu hóa. Không thể chỉnh sửa thông tin phòng.");
                 resp.sendRedirect(req.getContextPath() + "/admin/rooms/" + roomId);
                 return;
             }
-
+            
             String areaStr = req.getParameter("area");
             String feeStr = req.getParameter("roomFee");
 

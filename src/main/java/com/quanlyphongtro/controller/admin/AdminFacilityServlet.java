@@ -138,13 +138,6 @@ public class AdminFacilityServlet extends BaseServlet {
             throws ServletException, IOException {
         Facility facility = facilityDAO.findById(id)
             .orElseThrow(NotFoundException::new);
-
-        if ("INACTIVE".equals(facility.getStatus())) {
-            setFlashMessage(req, "error", "Cơ sở đã bị vô hiệu hoá, không thể chỉnh sửa.");
-            resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
-            return;
-        }
-
         req.setAttribute("facility", facility);
         req.getRequestDispatcher(VIEW_BASE + "edit.jsp").forward(req, resp);
     }
@@ -223,12 +216,6 @@ public class AdminFacilityServlet extends BaseServlet {
             throws Exception {
         Facility existing = facilityDAO.findById(id)
             .orElseThrow(NotFoundException::new);
-
-        if ("INACTIVE".equals(existing.getStatus())) {
-            setFlashMessage(req, "error", "Cơ sở đã bị vô hiệu hoá, không thể chỉnh sửa.");
-            resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
-            return;
-        }
 
         String name        = trim(req.getParameter("name"));
         String address     = trim(req.getParameter("address"));
@@ -310,19 +297,7 @@ public class AdminFacilityServlet extends BaseServlet {
             return;
         }
 
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            conn.setAutoCommit(false);
-            facilityDAO.updateStatus(id, "INACTIVE", conn);
-            roomDAO.updateStatusByFacilityId(id, "INACTIVE", conn);
-            conn.commit();
-        } catch (Exception e) {
-            DatabaseUtil.rollbackQuietly(conn);
-            throw e;
-        } finally {
-            DatabaseUtil.closeQuietly(conn);
-        }
+        facilityDAO.updateStatus(id, "INACTIVE");
 
         UserSessionDTO currentUser = getCurrentUser(req);
         try {
@@ -341,15 +316,6 @@ public class AdminFacilityServlet extends BaseServlet {
         // path: /{facilityId}/rooms/{roomId}/area
         String[] parts = path.split("/");
         int facilityId = Integer.parseInt(parts[1]);
-
-        Facility facility = facilityDAO.findById(facilityId)
-            .orElseThrow(NotFoundException::new);
-        if ("INACTIVE".equals(facility.getStatus())) {
-            setFlashMessage(req, "error", "Cơ sở đã bị vô hiệu hoá, không thể chỉnh sửa.");
-            resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + facilityId);
-            return;
-        }
-
         int roomId     = Integer.parseInt(parts[3]);
 
         String areaStr = trim(req.getParameter("area"));
