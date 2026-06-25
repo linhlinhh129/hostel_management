@@ -38,6 +38,20 @@ public class PaymentDAO extends BaseDAO {
         }
     }
 
+    public boolean hasPendingPayment(int invoiceId) {
+        String sql = "SELECT 1 FROM payments WHERE invoice_id = ? AND status = 'PENDING' AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, int offset, int limit) {
         List<PaymentListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(

@@ -114,9 +114,7 @@ public class TenantPaymentReturnServlet extends BaseServlet {
         String getRoomSql = "SELECT room_id FROM invoices WHERE invoice_id = ?";
         // Correct query based on schema.sql: payments(code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_at, updated_at)
         String insertPayment = "INSERT INTO payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_at, updated_at) "
-                             + "VALUES (?, ?, ?, 'SUCCESS', GETDATE(), 'VNPAY', ?, GETDATE(), GETDATE())";
-                             
-        String updateInvoice = "UPDATE invoices SET status = 'PAID', updated_at = GETDATE() WHERE invoice_id = ?";
+                             + "VALUES (?, ?, ?, 'PENDING', GETDATE(), 'VNPAY', ?, GETDATE(), GETDATE())";
         
         Connection conn = null;
         try {
@@ -145,11 +143,7 @@ public class TenantPaymentReturnServlet extends BaseServlet {
                 psPay.executeUpdate();
             }
 
-            // 2. Chuyển trạng thái công nợ bảng invoices thành PAID
-            try (PreparedStatement psInv = conn.prepareStatement(updateInvoice)) {
-                psInv.setInt(1, invoiceId);
-                psInv.executeUpdate();
-            }
+            // Do NOT update invoice status here. It must be approved by the manager.
 
             conn.commit(); 
             return true;

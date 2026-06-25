@@ -25,6 +25,8 @@ public class Notification {
     private String summary; // Shortened content
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+    private static final DateTimeFormatter DATE_ONLY_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TIME_ONLY_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     public Notification() {}
 
@@ -78,7 +80,18 @@ public class Notification {
 
     // Helpers for View
     public String getCreatedDateLabel() {
+        if (sentAt != null) return sentAt.format(DATE_TIME_FORMATTER);
         return createdAt != null ? createdAt.format(DATE_TIME_FORMATTER) : "N/A";
+    }
+
+    public String getCreatedDateOnly() {
+        if (sentAt != null) return sentAt.format(DATE_ONLY_FORMATTER);
+        return createdAt != null ? createdAt.format(DATE_ONLY_FORMATTER) : "N/A";
+    }
+
+    public String getCreatedTimeOnly() {
+        if (sentAt != null) return sentAt.format(TIME_ONLY_FORMATTER);
+        return createdAt != null ? createdAt.format(TIME_ONLY_FORMATTER) : "N/A";
     }
 
     public void generateSummary() {

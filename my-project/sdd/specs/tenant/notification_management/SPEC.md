@@ -82,7 +82,7 @@ Mục tiêu của tính năng là:
 
 **THE SYSTEM SHALL**
 
-- Sắp xếp theo thời gian tạo giảm dần (Newest First).
+- Sắp xếp theo trình tự thời gian mới nhất rồi tới cũ (Newest First).
 
 ---
 
@@ -202,7 +202,7 @@ Mục tiêu của tính năng là:
 
 - Danh sách sử dụng phân trang.
 
-- Mặc định **20 thông báo/trang**.
+- Mặc định **10 thông báo/trang**.
 
 ---
 
@@ -212,7 +212,7 @@ Mục tiêu của tính năng là:
 
 ### Lấy danh sách
 
-GET /api/v1/tenant/notifications?page=1&pageSize=20
+GET /api/v1/tenant/notifications?page=1&pageSize=10
 
 ---
 
@@ -249,7 +249,7 @@ Không thay đổi schema.
 ```json
 {
     "page":1,
-    "pageSize":20,
+    "pageSize":10,
     "totalItems":42,
     "items":[
         {
