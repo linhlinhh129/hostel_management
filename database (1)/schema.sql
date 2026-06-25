@@ -37,8 +37,7 @@ BEGIN
         permanent_address   NVARCHAR(500)       NULL,
 
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL
+        updated_at          DATETIME2           NOT NULL DEFAULT GETDATE()
     );
 END
 GO
@@ -64,10 +63,12 @@ BEGIN
         service_fee         DECIMAL(10,2)       NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL,
+
 
         CONSTRAINT FK_facilities_users_manager
-            FOREIGN KEY (manager_id) REFERENCES dbo.users(user_id)
+            FOREIGN KEY (manager_id) REFERENCES dbo.users(user_id),
+        CONSTRAINT FK_facilities_users_operator
+            FOREIGN KEY (operator_id) REFERENCES dbo.users(user_id)
     );
 END
 GO
@@ -89,7 +90,6 @@ BEGIN
         contract_end_date   DATE                NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL,
         room_fee            DECIMAL(18,2)       NOT NULL,
 
         CONSTRAINT FK_rooms_facilities
@@ -115,7 +115,6 @@ BEGIN
         phone               NVARCHAR(20)        NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL,
         identity_number     NVARCHAR(50)        NULL,
         permanent_address   NVARCHAR(500)       NULL,
 
@@ -140,7 +139,6 @@ BEGIN
         created_by          INT                 NULL, -- Nhân viên chốt số
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL,
         water_img           NVARCHAR(500)       NULL,
         electric_img        NVARCHAR(500)       NULL,
 
@@ -176,7 +174,6 @@ BEGIN
         created_by          INT                 NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL,
 
         CONSTRAINT FK_invoices_rooms
             FOREIGN KEY (room_id) REFERENCES dbo.rooms(room_id),
@@ -205,7 +202,6 @@ BEGIN
 		created_by          INT                 NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL,
 
         CONSTRAINT FK_payments_invoices
             FOREIGN KEY (invoice_id) REFERENCES dbo.invoices(invoice_id),
@@ -236,7 +232,6 @@ BEGIN
         rejection_reason    NVARCHAR(500)       NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
-        deleted_at          DATETIME2           NULL,
 
         CONSTRAINT FK_requests_users_sender
             FOREIGN KEY (sender_id) REFERENCES dbo.users(user_id),
@@ -264,7 +259,6 @@ BEGIN
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         sent_at             DATETIME2           NULL,
-        deleted_at          DATETIME2           NULL,
 
         CONSTRAINT FK_notifications_users_creator
             FOREIGN KEY (created_by) REFERENCES dbo.users(user_id),
@@ -330,7 +324,7 @@ BEGIN
 		code                       NVARCHAR(50) NOT NULL UNIQUE,
 
 		room_id                    INT NOT NULL,
-		tenant_id                  INT NOT NULL,
+		tenant_id                  INT     NULL,
 
 		tenant_full_name           NVARCHAR(100) NOT NULL,
 		tenant_dob                 DATE NULL,
@@ -351,7 +345,6 @@ BEGIN
 		created_by                 INT NULL,
 		created_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),
 		updated_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),
-		deleted_at                 DATETIME2 NULL,
 
 		CONSTRAINT FK_contracts_rooms
 			FOREIGN KEY (room_id) REFERENCES dbo.rooms(room_id),
@@ -372,13 +365,6 @@ SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_users_username' AND object_id = OBJECT_ID(N'dbo.users'))
-    CREATE NONCLUSTERED INDEX IX_users_username ON dbo.users(username) WHERE deleted_at IS NULL;
-GO
-
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_users_role' AND object_id = OBJECT_ID(N'dbo.users'))
-    CREATE NONCLUSTERED INDEX IX_users_role ON dbo.users(role) WHERE deleted_at IS NULL;
-GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_audit_logs_entity' AND object_id = OBJECT_ID(N'dbo.audit_logs'))
     CREATE NONCLUSTERED INDEX IX_audit_logs_entity ON dbo.audit_logs(entity_type, entity_id);
@@ -400,10 +386,6 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_rooms_facility' AND ob
     CREATE NONCLUSTERED INDEX IX_rooms_facility ON dbo.rooms(facility_id);
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_rooms_status' AND object_id = OBJECT_ID(N'dbo.rooms'))
-    CREATE NONCLUSTERED INDEX IX_rooms_status ON dbo.rooms(status) WHERE deleted_at IS NULL;
-GO
-
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_dependents_tenant' AND object_id = OBJECT_ID(N'dbo.dependents'))
     CREATE NONCLUSTERED INDEX IX_dependents_tenant ON dbo.dependents(tenant_id);
 GO
@@ -416,16 +398,8 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_requests_staff' AND ob
     CREATE NONCLUSTERED INDEX IX_requests_staff ON dbo.requests(assigned_staff_id);
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_requests_status' AND object_id = OBJECT_ID(N'dbo.requests'))
-    CREATE NONCLUSTERED INDEX IX_requests_status ON dbo.requests(status) WHERE deleted_at IS NULL;
-GO
-
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_invoices_room' AND object_id = OBJECT_ID(N'dbo.invoices'))
     CREATE NONCLUSTERED INDEX IX_invoices_room ON dbo.invoices(room_id);
-GO
-
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_invoices_status' AND object_id = OBJECT_ID(N'dbo.invoices'))
-    CREATE NONCLUSTERED INDEX IX_invoices_status ON dbo.invoices(status) WHERE deleted_at IS NULL;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_payments_invoice' AND object_id = OBJECT_ID(N'dbo.payments'))
@@ -434,10 +408,6 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_payments_room' AND object_id = OBJECT_ID(N'dbo.payments'))
     CREATE NONCLUSTERED INDEX IX_payments_room ON dbo.payments(room_id);
-GO
-
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_notifications_status' AND object_id = OBJECT_ID(N'dbo.notifications'))
-    CREATE NONCLUSTERED INDEX IX_notifications_status ON dbo.notifications(status) WHERE deleted_at IS NULL;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_meter_room_date' AND object_id = OBJECT_ID(N'dbo.meter_readings'))

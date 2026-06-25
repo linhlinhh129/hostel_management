@@ -71,7 +71,7 @@
                                 </c:forEach>
                                 <c:forEach var="p" items="${periodRevenues}" varStatus="st">
                                     <tr style="${st.first ? 'background:var(--hms-accent-bg)' : ''}">
-                                        <td style="font-family:var(--hms-font-mono);font-weight:700;font-size:0.9375rem">
+                                        <td style="font-weight:700;font-size:0.9375rem">
                                             <c:out value="${p.facilityCode}"/>
                                             <c:if test="${st.first}">
                                                 <span class="badge-hms badge-accent ms-1" style="font-size:0.625rem">Mới nhất</span>
@@ -144,7 +144,7 @@
                                             <c:out value="${g.facilityName}"/>
                                         </div>
                                     </td>
-                                    <td style="font-family:var(--hms-font-mono)"><c:out value="${g.facilityCode}"/></td>
+                                    <td><c:out value="${g.facilityCode}"/></td>
                                     <td style="font-weight:700">
                                         <fmt:formatNumber value="${g.totalRevenue}" pattern="#,##0"/> đ
                                     </td>

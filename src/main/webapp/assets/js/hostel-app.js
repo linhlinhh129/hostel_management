@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function update() {
       var remaining = max - ta.value.length;
-      counter.textContent = remaining + ' ký tự còn lại';
+      counter.textContent = remaining + ' k\xFD t\u1EF1 c\xF2n l\u1EA1i';
       counter.style.color = remaining < 100 ? 'var(--hms-warning)' : 'var(--hms-text-muted)';
       if (remaining < 20) counter.style.color = 'var(--hms-danger)';
     }
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
           submitBtn.disabled = true;
           submitBtn.style.opacity = '0.7';
           var orig = submitBtn.textContent;
-          submitBtn.textContent = 'Đang xử lý...';
+          submitBtn.textContent = '\u0110ang x\u1EED l\xFD...';
           // Re-enable after 8s as safety net
           setTimeout(function () {
             submitBtn.disabled = false;

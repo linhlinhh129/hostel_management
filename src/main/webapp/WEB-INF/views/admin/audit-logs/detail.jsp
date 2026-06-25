@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"  uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="ctx"       value="${pageContext.request.contextPath}"/>
@@ -25,7 +25,7 @@
                     </h1>
                     <p>Chi tiết hoạt động thao tác trong hệ thống</p>
                 </div>
-                <a href="${ctx}/admin/audit-logs" class="quick-action-btn">← Danh sách</a>
+                <a href="javascript:history.back()" class="quick-action-btn">← Danh sách</a>
             </div>
 
             <%-- ─── Content grid ─────────────────────────────────────────── --%>
@@ -104,13 +104,19 @@
                                                color:var(--hms-text-muted);font-weight:500">Đối tượng</dt>
                                     <dd style="margin:0;display:flex;flex-direction:column;gap:4px">
                                         
-                                        <%-- Tên entity (nếu có) --%>
-                                        <c:if test="${not empty auditLog.entityName}">
-                                            <span style="font-size:0.875rem;font-weight:600;
-                                                         color:var(--hms-text);line-height:1.4">
-                                                <c:out value="${auditLog.entityName}"/>
-                                            </span>
-                                        </c:if>
+                                        <span style="font-size:0.875rem;font-weight:600;color:var(--hms-text);line-height:1.4">
+                                            <c:choose>
+                                                <c:when test="${auditLog.entityType == 'facilities'}">Cơ sở</c:when>
+                                                <c:when test="${auditLog.entityType == 'rooms'}">Phòng</c:when>
+                                                <c:when test="${auditLog.entityType == 'users'}">Nhân sự</c:when>
+                                                <c:when test="${auditLog.entityType == 'notifications'}">Thông báo</c:when>
+                                                <c:when test="${auditLog.entityType == 'invoices'}">Hóa đơn</c:when>
+                                                <c:when test="${auditLog.entityType == 'payments'}">Thanh toán</c:when>
+                                                <c:when test="${auditLog.entityType == 'requests'}">Yêu cầu</c:when>
+                                                <c:when test="${auditLog.entityType == 'meter_readings'}">Số điện nước</c:when>
+                                                <c:otherwise>Hệ thống</c:otherwise>
+                                            </c:choose>
+                                        </span>
                                     </dd>
                                 </div>
 
@@ -141,12 +147,15 @@
                                                 </span>
                                             </c:when>
                                             <c:when test="${auditLog.action == 'UPDATE' or auditLog.action == 'UPDATE_STATUS'
-                                                            or auditLog.action == 'UPDATE_AREA' or auditLog.action == 'UPDATE_EMPLOYEE'}">
+                                                            or auditLog.action == 'UPDATE_AREA' or auditLog.action == 'UPDATE_EMPLOYEE'
+                                                            or auditLog.action == 'UPDATE_ELECTRICITY' or auditLog.action == 'UPDATE_WATER'}">
                                                 <span class="badge-hms badge-info">
                                                     <c:choose>
                                                         <c:when test="${auditLog.action == 'UPDATE'}">Cập nhật</c:when>
                                                         <c:when test="${auditLog.action == 'UPDATE_STATUS'}">Đổi trạng thái</c:when>
                                                         <c:when test="${auditLog.action == 'UPDATE_AREA'}">Cập nhật diện tích</c:when>
+                                                        <c:when test="${auditLog.action == 'UPDATE_ELECTRICITY'}">Cập nhật số điện</c:when>
+                                                        <c:when test="${auditLog.action == 'UPDATE_WATER'}">Cập nhật số nước</c:when>
                                                         <c:otherwise>Sửa nhân sự</c:otherwise>
                                                     </c:choose>
                                                 </span>
@@ -262,6 +271,19 @@
                                     'PENDING':  'Chờ xử lý',
                                     'APPROVED': 'Đã duyệt',
                                     'REJECTED': 'Từ chối',
+                                    'IN_PROGRESS': 'Đang xử lý',
+                                    'COMPLETED': 'Hoàn thành',
+                                    'SCHEDULED': 'Đã lên lịch',
+                                    'CANCELLED': 'Đã hủy',
+                                    'DONE':      'Hoàn thành',
+                                    'ASSIGNED':  'Đã phân công',
+                                    'AVAILABLE': 'Trống',
+                                    'OCCUPIED':  'Đang thuê',
+                                    'MAINTENANCE': 'Đang bảo trì',
+                                    'RESERVED':  'Đã đặt cọc',
+                                    'UNPAID':    'Chưa thanh toán',
+                                    'PAID':      'Đã thanh toán',
+                                    'OVERDUE':   'Quá hạn',
                                     'null':     '—',
                                     'NA':       '—'
                                 };
@@ -269,11 +291,14 @@
                                 function fieldLabel(k)  { return FIELD_LABELS[k] || k; }
                                 function valueLabel(v)  {
                                     if (!v || v === 'null' || v === 'undefined' || v === 'NA') return '—';
-                                    if (VALUE_LABELS[v]) return VALUE_LABELS[v];
+                                    var vStr = String(v).trim();
+                                    if (vStr.indexOf('Old Total: ') === 0) return vStr.substring(11).trim();
+                                    if (vStr.indexOf('New Total: ') === 0) return vStr.substring(11).trim();
+                                    if (VALUE_LABELS[vStr]) return VALUE_LABELS[vStr];
                                     // Dịch dạng "INACTIVE (xxx)" chưa có trong bảng
-                                    var m = v.match(/^INACTIVE\s*\((.+)\)$/);
+                                    var m = vStr.match(/^INACTIVE\s*\((.+)\)$/);
                                     if (m) return 'Không hoạt động (' + m[1] + ')';
-                                    return v;
+                                    return vStr;
                                 }
 
                                 // ── Parse chuỗi "key=value | key=value" thành map ──────────
@@ -298,6 +323,15 @@
                                                          'UNLOCK_EMPLOYEE','UPDATE_STATUS'];
                                     if (statusActions.indexOf(action) > -1) return 'Trạng thái';
                                     if (action === 'UPDATE_AREA')  return 'Diện tích';
+                                    
+                                    var knownStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'SCHEDULED', 'REJECTED', 'APPROVED', 'CANCELLED', 'DONE', 'ASSIGNED', 'AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'RESERVED', 'UNPAID', 'PAID', 'OVERDUE', 'DRAFT', 'SENT'];
+                                    if (action === 'UPDATE' && (knownStatuses.indexOf(oldRaw.trim()) > -1 || knownStatuses.indexOf(newRaw.trim()) > -1)) {
+                                        return 'Trạng thái';
+                                    }
+                                    if (oldRaw.trim().indexOf('Old Total: ') === 0 || newRaw.trim().indexOf('New Total: ') === 0) {
+                                        return 'Tổng tiền';
+                                    }
+                                    
                                     if (action === 'UPDATE')       return 'Tên cơ sở';
                                     return 'Giá trị';
                                 }

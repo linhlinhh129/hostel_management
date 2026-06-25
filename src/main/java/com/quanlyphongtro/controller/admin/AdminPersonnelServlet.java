@@ -79,8 +79,11 @@ public class AdminPersonnelServlet extends BaseServlet {
             req.setAttribute("errorMessage", e.getMessage());
             // Re-forward về đúng form (create vs edit)
             if (path.equals("/create")) {
-                req.setAttribute("activeFacilities", facilityDAO.findActiveList());
-                req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
+                    // Giữ lại dữ liệu user đã nhập để không bị xóa trắng form
+                    req.setAttribute("dto", buildDtoFromRequest(req));
+                    req.setAttribute("managerFacilities",  personnelDAO.findFacilitiesForManager(null));
+                    req.setAttribute("operatorFacilities", personnelDAO.findFacilitiesForOperator(null));
+                    req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
             } else if (path.matches("/\\d+/edit")) {
                 int editId = extractIdFromPrefix(path);
                 try {
@@ -89,10 +92,10 @@ public class AdminPersonnelServlet extends BaseServlet {
                     user.setFacilityNames(personnelDAO.findFacilityNamesForUser(editId));
                     req.setAttribute("user", user);
                     req.setAttribute("currentFacilityId", currentFacilityId);
-                    List<Facility> facilities = "MANAGER".equals(user.getRole())
-                        ? personnelDAO.findFacilitiesForManager(editId)
-                        : personnelDAO.findFacilitiesForOperator(editId);
-                    req.setAttribute("availableFacilities", facilities);
+                    req.setAttribute("managerFacilities",  personnelDAO.findFacilitiesForManager(
+                            "MANAGER".equals(user.getRole()) ? editId : null));
+                    req.setAttribute("operatorFacilities", personnelDAO.findFacilitiesForOperator(
+                            "OPERATOR".equals(user.getRole()) ? editId : null));
                     req.getRequestDispatcher(VIEW_BASE + "edit.jsp").forward(req, resp);
                 } catch (Exception ex) {
                     resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -136,7 +139,9 @@ public class AdminPersonnelServlet extends BaseServlet {
 
     private void showCreate(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        req.setAttribute("activeFacilities", facilityDAO.findActiveList());
+        // Truyền 2 list riêng: cơ sở chưa có MANAGER và cơ sở chưa có OPERATOR
+        req.setAttribute("managerFacilities",  personnelDAO.findFacilitiesForManager(null));
+        req.setAttribute("operatorFacilities", personnelDAO.findFacilitiesForOperator(null));
         req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
     }
 
@@ -159,11 +164,11 @@ public class AdminPersonnelServlet extends BaseServlet {
         req.setAttribute("user", user);
         req.setAttribute("currentFacilityId", currentFacilityId);
 
-        // Danh sách cơ sở lọc theo vai trò hiện tại
-        List<Facility> facilities = "MANAGER".equals(user.getRole())
-            ? personnelDAO.findFacilitiesForManager(id)
-            : personnelDAO.findFacilitiesForOperator(id);
-        req.setAttribute("availableFacilities", facilities);
+        // Truyền cả 2 list, mỗi list include cơ sở hiện tại của user để không bị mất khi render
+        req.setAttribute("managerFacilities",  personnelDAO.findFacilitiesForManager(
+                "MANAGER".equals(user.getRole()) ? id : null));
+        req.setAttribute("operatorFacilities", personnelDAO.findFacilitiesForOperator(
+                "OPERATOR".equals(user.getRole()) ? id : null));
 
         req.getRequestDispatcher(VIEW_BASE + "edit.jsp").forward(req, resp);
     }
@@ -240,10 +245,9 @@ public class AdminPersonnelServlet extends BaseServlet {
         user.setStatus("ACTIVE");
         user.setForceChangePass(true);
 
-        // Generate username from email prefix
-        String username = email.split("@")[0].toLowerCase()
-            .replaceAll("[^a-z0-9]", "") + System.currentTimeMillis() % 10000;
-        user.setUsername(username);
+        // Username = email (đồng bộ với luồng tạo tenant)
+        // Kiểm tra username chưa tồn tại (email đã check unique ở trên nên username cũng unique)
+        user.setUsername(email);
 
         // Generate and hash temp password
         String tempPassword = PasswordUtil.generateTempPassword();
@@ -276,7 +280,7 @@ public class AdminPersonnelServlet extends BaseServlet {
 
         // Send email (async, non-blocking)
         try {
-            EmailService.sendTempPassword(email, fullName, username, tempPassword);
+            EmailService.sendTempPassword(email, fullName, email, tempPassword);
         } catch (Exception ex) {
             logger.warn("Email send failed for new user id={}", newId, ex);
         }
@@ -284,7 +288,7 @@ public class AdminPersonnelServlet extends BaseServlet {
         UserSessionDTO currentUser = getCurrentUser(req);
         try {
             AuditLogHelper.log(auditLogDAO, req, "users", newId,
-                "CREATE_EMPLOYEE", null, username,
+                "CREATE_EMPLOYEE", null, email,
                 currentUser != null ? currentUser.getId() : null);
         } catch (Exception ex) {
             logger.warn("AuditLog failed after personnel create id={}", newId, ex);
@@ -548,5 +552,21 @@ public class AdminPersonnelServlet extends BaseServlet {
     private String nullToEmpty(String s) { return s == null ? "" : s.trim(); }
     private int parseIntOrDefault(String s, int def) {
         try { return Integer.parseInt(s); } catch (Exception e) { return def; }
+    }
+
+    /**
+     * Đóng gói lại các tham số từ request thành một Map đơn giản
+     * để JSP có thể render lại giá trị đã nhập khi form bị lỗi.
+     */
+    private java.util.Map<String, String> buildDtoFromRequest(HttpServletRequest req) {
+        java.util.Map<String, String> dto = new java.util.HashMap<>();
+        String[] fields = { "fullName", "email", "phone", "role",
+                            "identityNumber", "dob", "gender",
+                            "permanentAddress", "facilityId" };
+        for (String f : fields) {
+            String v = req.getParameter(f);
+            dto.put(f, v != null ? v.trim() : "");
+        }
+        return dto;
     }
 }

@@ -87,6 +87,17 @@
                   </td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
+                  <td style="padding:10px 16px;color:var(--hms-text-muted)">Giá phòng</td>
+                  <td style="padding:10px 16px">
+                    <c:choose>
+                      <c:when test="${not empty room.roomFee}">
+                        <strong><fmt:formatNumber value="${room.roomFee}" pattern="#,###"/></strong> VNĐ
+                      </c:when>
+                      <c:otherwise><em class="text-muted">Chưa cập nhật</em></c:otherwise>
+                    </c:choose>
+                  </td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Trạng thái</td>
                   <td style="padding:10px 16px">
                     <c:choose>
@@ -117,27 +128,35 @@
             </div>
           </div>
 
-          <%-- Sửa diện tích (chỉ admin) --%>
+          <%-- Sửa thông tin (chỉ admin) --%>
           <div class="widget-surface">
-            <div class="widget-surface-header"><h3>Chỉnh sửa diện tích</h3></div>
+            <div class="widget-surface-header"><h3>Chỉnh sửa thông tin</h3></div>
             <div class="widget-surface-body">
               <form method="post"
-                    action="${ctx}/admin/facilities/${room.facilityId}/rooms/${room.id}/area"
-                    class="d-flex gap-2 align-items-center">
+                    action="${ctx}/admin/rooms/${room.id}/update"
+                    class="d-flex flex-column gap-3">
                 <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                <input type="number"
-                       name="area"
-                       class="form-control"
-                       style="max-width:160px"
-                       step="0.1" min="0" max="9999"
-                       placeholder="VD: 25.5"
-                       value="${not empty room.areaRaw ? room.area : ''}"/>
-                <button type="submit" class="btn btn-mintlify-primary" style="width:auto">
-                  Lưu diện tích
+                
+                <div>
+                  <label class="form-label" style="font-size:0.8125rem">Diện tích (m²)</label>
+                  <input type="number" name="area" class="form-control"
+                         step="0.1" min="0" max="9999" placeholder="VD: 25.5"
+                         value="${not empty room.areaRaw ? room.area : ''}"/>
+                </div>
+                
+                <div>
+                  <label class="form-label" style="font-size:0.8125rem">Giá phòng (VNĐ)</label>
+                  <input type="number" name="roomFee" class="form-control"
+                         min="0" step="1000" placeholder="VD: 3000000"
+                         value="${not empty room.roomFee ? room.roomFee : ''}"/>
+                </div>
+
+                <button type="submit" class="btn btn-mintlify-primary mt-1" style="width:auto">
+                  Lưu thay đổi
                 </button>
               </form>
               <div class="form-text text-muted mt-2" style="font-size:0.8rem">
-                Đơn vị: m². Để trống để xóa giá trị diện tích.
+                Để trống ô nếu muốn xóa giá trị đã lưu.
               </div>
             </div>
           </div>

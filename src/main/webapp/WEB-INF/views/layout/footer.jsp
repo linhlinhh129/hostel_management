@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="${ctx}/assets/js/hostel-app.js"></script>
+<script src="${ctx}/assets/js/hostel-app.js?v=3"></script>
 <script>
 /* Row-click: click vào bất kỳ chỗ nào trên row để vào detail
    - Chỉ kích hoạt khi <tr> có data-href
