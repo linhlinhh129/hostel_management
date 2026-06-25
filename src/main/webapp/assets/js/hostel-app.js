@@ -146,7 +146,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ── Form loading state on submit ─────────────────────────
   document.querySelectorAll('form').forEach(function (form) {
-    form.addEventListener('submit', function () {
+    form.addEventListener('submit', function (event) {
+      if (event.defaultPrevented) {
+        return;
+      }
       var submitBtn = form.querySelector('[type="submit"]');
       if (submitBtn) {
         setTimeout(function () {
