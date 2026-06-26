@@ -1120,19 +1120,68 @@ body {
 .hero-sky-gradient .quick-action-btn {
   position: relative;
   z-index: 1;
-  backdrop-filter: blur(4px);
+}
+
+/* Khi nút nằm trên hero-sky-gradient, tạo hiệu ứng phát sáng nhẹ */
+.hero-sky-gradient .btn-mintlify-secondary,
+.hero-sky-gradient .quick-action-btn:not(.primary) {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.08);
+}
+.hero-sky-gradient .btn-mintlify-secondary:hover,
+.hero-sky-gradient .quick-action-btn:not(.primary):hover {
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(0, 112, 243, 0.12);
 }
 
 /* ╔══════════════════════════════════════════════════════════════╗
    ║  BUTTONS (DESIGN.md button-primary = ink black pill)         ║
    ╚══════════════════════════════════════════════════════════════╝ */
 
-/* Primary — ink black pill */
+/* Primary — Vibrant Mint Gradient */
 .btn-mintlify-primary,
 .quick-action-btn.primary {
-  background: var(--hms-ink);
-  border: 1px solid var(--hms-ink);
-  color: var(--hms-on-primary);
+  background: linear-gradient(135deg, #00c698 0%, #00e0b0 100%);
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 10px 20px;
+  border-radius: var(--hms-radius-full);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  box-shadow: 0 4px 12px rgba(0, 212, 164, 0.3);
+}
+
+.btn-mintlify-primary:hover,
+.quick-action-btn.primary:hover {
+  background: linear-gradient(135deg, #00b48a 0%, #00d4a4 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 212, 164, 0.4);
+}
+
+.btn-mintlify-primary:active,
+.quick-action-btn.primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 212, 164, 0.25);
+}
+
+/* Secondary — Bright White Pill */
+.btn-mintlify-secondary,
+.quick-action-btn {
+  background: #ffffff;
+  border: 1px solid var(--hms-border-soft);
+  color: var(--hms-ink);
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 9px 18px;
@@ -1141,54 +1190,21 @@ body {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.375rem;
-  transition: all var(--t) var(--hms-ease);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
   line-height: 1.3;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-}
-
-.btn-mintlify-primary:hover,
-.quick-action-btn.primary:hover {
-  background: var(--hms-charcoal);
-  color: var(--hms-on-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--hms-shadow-md);
-}
-
-.btn-mintlify-primary:active,
-.quick-action-btn.primary:active {
-  transform: translateY(0);
-}
-
-/* Secondary — outlined pill */
-.btn-mintlify-secondary,
-.quick-action-btn {
-  background: var(--hms-canvas);
-  border: 1px solid var(--hms-border);
-  color: var(--hms-ink);
-  font-weight: 600;
-  font-size: 0.8125rem;
-  padding: 8px 16px;
-  border-radius: var(--hms-radius-full);
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  transition: all var(--t) var(--hms-ease);
-  letter-spacing: -0.01em;
-  line-height: 1.3;
-  box-shadow: var(--hms-shadow-xs);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
 .btn-mintlify-secondary:hover,
 .quick-action-btn:hover {
-  background: var(--hms-surface);
-  border-color: #ccc;
-  color: var(--hms-ink);
-  transform: translateY(-1px);
-  box-shadow: var(--hms-shadow-sm);
+  background: #fafbfc;
+  border-color: var(--hms-border);
+  color: var(--hms-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 /* Accent — brand-green pill (DESIGN.md button-accent-green) */
@@ -2400,6 +2416,19 @@ textarea.form-control {
     justify-content: center;
   }
 
+  /* Fix cho các group filter bên trong filter-bar (trang payments) */
+  .filter-bar > div {
+    flex-direction: column !important;
+    border-left: none !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    width: 100%;
+  }
+  .filter-bar > div > label {
+    align-self: flex-start;
+    margin-bottom: -4px;
+  }
+
   /* ── Tables: hide low-priority columns, reduce padding ── */
   .table-mintlify th,
   .table-mintlify td {
@@ -2411,10 +2440,8 @@ textarea.form-control {
     font-size: 0.5625rem;
   }
 
-  /* Columns to hide on phone */
-  .table-mintlify .hide-mobile,
-  .table-mintlify th:nth-child(n+5),
-  .table-mintlify td:nth-child(n+5) {
+  /* Columns to hide on phone - use explicit .hide-mobile class instead of arbitrary nth-child */
+  .table-mintlify .hide-mobile {
     display: none;
   }
 
@@ -2514,39 +2541,57 @@ textarea.form-control {
   }
 }
 
-/* ── Very small phones (< 380px) ─────────────────────────────── */
-@media (max-width: 379px) {
-  .kpi-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.375rem;
-  }
+/* ── Specific Phone Breakpoints (Dimensions) ─────────────────── */
 
-  .kpi-value {
-    font-size: 1.25rem;
-  }
+/* Toàn cục chống tràn ngang (Global anti-overflow cho Manager JSPs) */
+@media (max-width: 575px) {
+  body, .app-shell, .main-wrapper { max-width: 100vw; overflow-x: clip; }
+  .row { margin-left: 0; margin-right: 0; }
+  .row > * { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .data-surface { padding: 1rem !important; }
+  /* Chống zoom tự động trên iOS khi focus vào form */
+  .form-control, .form-select { font-size: 16px !important; }
+}
 
-  .page-content {
-    padding: 0.75rem 0.75rem 4rem;
-  }
+/* iPhone 14 Pro Max / 15 Pro Max (430px) */
+@media (max-width: 430px) {
+  .page-content { padding: 0.875rem 0.875rem 4rem; }
+  .hero-sky-gradient { padding: 1.25rem 1rem; margin: -0.875rem -0.875rem 1.125rem; }
+  .kpi-grid { gap: 0.5rem; }
+  .table-mintlify th, .table-mintlify td { font-size: 0.75rem; padding: 0.5rem; }
+  .form-control, .form-select { width: 100%; max-width: 100%; }
+}
 
-  .hero-sky-gradient {
-    padding: 1rem 0.75rem;
-    margin: -0.75rem -0.75rem 1rem;
-  }
+/* iPhone 14 Pro / 15 Pro (393px) & iPhone 12 Pro / 13 Pro (390px) */
+@media (max-width: 393px) {
+  .hero-sky-gradient h1 { font-size: 1.15rem; }
+  .kpi-value { font-size: 1.25rem; }
+}
 
-  .topbar {
-    padding: 0 0.75rem;
-  }
+/* iPhone SE / 8 / X / 11 Pro (375px) */
+@media (max-width: 375px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.375rem; }
+  .hero-sky-gradient h1 { font-size: 1.1rem; }
+  .hero-sky-gradient p { font-size: 0.75rem; }
+  .page-content { padding: 0.75rem 0.75rem 4rem; }
+  .hero-sky-gradient { padding: 1rem 0.75rem; margin: -0.75rem -0.75rem 1rem; }
+  .topbar { padding: 0 0.75rem; }
+  .filter-bar { padding: 0.5rem 0.75rem; }
+}
 
-  .filter-bar {
-    padding: 0.5rem 0.75rem;
-  }
+/* Samsung Galaxy S8+ / S21 / S22 (360px) */
+@media (max-width: 360px) {
+  .kpi-value { font-size: 1.15rem; }
+  .table-mintlify th, .table-mintlify td { font-size: 0.6875rem; padding: 0.4rem; }
+  .quick-action-btn, .btn-mintlify-secondary, .btn-mintlify-primary { font-size: 0.7rem; padding: 6px 10px; width: 100%; justify-content: center; margin-bottom: 4px; }
+  .data-surface { padding: 0.75rem !important; }
+}
 
-  .table-mintlify th,
-  .table-mintlify td {
-    padding: 0.5rem;
-    font-size: 0.6875rem;
-  }
+/* Galaxy Fold / Small screens (< 320px) */
+@media (max-width: 320px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .hero-sky-gradient h1 { font-size: 1rem; }
+  .table-responsive { overflow-x: auto; width: 100%; display: block; }
 }
 
 /* ── Touch-friendly tap targets ──────────────────────────────── */

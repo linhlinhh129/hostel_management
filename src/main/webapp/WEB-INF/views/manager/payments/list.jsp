@@ -17,8 +17,8 @@
               <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
 
               <%-- Header --%>
-                <div
-                  class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" 
+                     style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
                   <div>
                     <h1>Quản lý Thanh toán</h1>
                     <p>Duyệt các khoản thanh toán từ người thuê</p>
