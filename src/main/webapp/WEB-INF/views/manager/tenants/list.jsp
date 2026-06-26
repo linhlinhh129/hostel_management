@@ -15,7 +15,8 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+           style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <h1>Người thuê</h1>
           <p>Danh sách người thuê trong cơ sở được phân công</p>

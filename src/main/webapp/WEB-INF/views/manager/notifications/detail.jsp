@@ -15,7 +15,7 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <h1><c:out value="${notification.title}"/></h1>
           <p>Mã: <strong><c:out value="${notification.code}"/></strong></p>

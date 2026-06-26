@@ -22,7 +22,8 @@
       <c:choose>
         <c:when test="${empty facilityId}">
 
-          <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+          <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+               style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
             <div>
               <h1>Căn hộ / Phòng</h1>
               <p>Chọn cơ sở để xem danh sách phòng</p>
@@ -114,18 +115,10 @@
              ================================================================ --%>
         <c:otherwise>
 
-          <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+          <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+               style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
             <div>
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <a href="${ctx}/manager/rooms?showGrid=true"
-                   style="font-size:0.875rem;color:var(--hms-text-muted);text-decoration:none">
-                  ← Tất cả cơ sở
-                </a>
-                <span style="color:var(--hms-text-muted)">/</span>
-                <span style="font-size:0.875rem;color:var(--hms-ink);font-weight:500">
-                  <c:out value="${currentFacility.name}"/>
-                </span>
-              </div>
+              
               <h1>Danh sách phòng</h1>
               <p>
                 Cơ sở: <strong><c:out value="${currentFacility.code}"/></strong>
