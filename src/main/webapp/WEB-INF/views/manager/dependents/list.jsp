@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -15,7 +15,8 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+           style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <h1>Người phụ thuộc</h1>
           <p>Danh sách người phụ thuộc của cư dân trong cơ sở</p>
