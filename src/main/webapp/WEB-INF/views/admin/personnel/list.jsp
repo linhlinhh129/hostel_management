@@ -56,12 +56,12 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Họ tên</th>
-                                    <th>Email</th>
-                                    <th>SĐT</th>
-                                    <th>Vai trò</th>
-                                    <th>Cơ sở phụ trách</th>
+                                    <th class="d-none d-md-table-cell">Email</th>
+                                    <th class="d-none d-md-table-cell">SĐT</th>
+                                    <th class="d-none d-md-table-cell">Vai trò</th>
+                                    <th class="d-none d-md-table-cell">Cơ sở phụ trách</th>
                                     <th>Trạng thái</th>
-                                    <th>Thao tác</th>
+                                    <th class="d-none d-md-table-cell">Thao tác</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -69,16 +69,16 @@
                                     <tr data-href="${ctx}/admin/personnel/${emp.id}">
                                         <td><a href="${ctx}/admin/personnel/${emp.id}">#<c:out value="${emp.id}"/></a></td>
                                         <td><c:out value="${emp.fullName}"/></td>
-                                        <td><c:out value="${emp.email}"/></td>
-                                        <td><c:out value="${emp.phone}"/></td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell"><c:out value="${emp.email}"/></td>
+                                        <td class="d-none d-md-table-cell"><c:out value="${emp.phone}"/></td>
+                                        <td class="d-none d-md-table-cell">
                                             <c:choose>
                                                 <c:when test="${emp.role == 'MANAGER'}"><span class="badge-hms badge-info">Ban Quản lý</span></c:when>
                                                 <c:when test="${emp.role == 'OPERATOR'}"><span class="badge-hms badge-neutral">Nhân viên vận hành</span></c:when>
                                                 <c:otherwise><c:out value="${emp.role}"/></c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell">
                                             <c:choose>
                                                 <c:when test="${not empty emp.facilityNames}">
                                                     <c:forEach var="fname" items="${emp.facilityNames}" varStatus="st">
@@ -94,7 +94,7 @@
                                                 <c:otherwise><span class="badge-hms badge-danger">Ngừng hoạt động</span></c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell">
                                             <a href="${ctx}/admin/personnel/${emp.id}" class="me-2">Chi tiết</a>
                                         </td>
                                     </tr>
