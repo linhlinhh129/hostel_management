@@ -2355,6 +2355,38 @@ textarea.form-control {
     gap: 0.75rem !important;
   }
 
+  /* Đẩy nút action (con trực tiếp của page-header) sang phải */
+  .page-header.d-flex > a,
+  .page-header.d-flex > button,
+  .page-header.d-flex > div:last-child:not(:first-child) {
+    align-self: flex-end !important;
+  }
+
+  /* Wrapper div chứa nút (dùng inline style justify-content) */
+  .page-header [style*="space-between"],
+  .page-header [style*="justify-content:space-between"],
+  .page-header [style*="justify-content: space-between"] {
+    width: 100%;
+  }
+
+  .page-header [style*="space-between"] > a,
+  .page-header [style*="space-between"] > button {
+    align-self: flex-end !important;
+    margin-left: auto;
+  }
+
+  /* hero-sky-gradient inner wrapper: đẩy button cuối sang phải khi wrap */
+  .hero-sky-gradient > div > a:last-child,
+  .hero-sky-gradient > div > button:last-child,
+  .hero-sky-gradient > div > div:last-child:not(:first-child) > a,
+  .hero-sky-gradient > div > div:last-child:not(:first-child) > button {
+    margin-left: auto;
+  }
+
+  .hero-sky-gradient > div {
+    width: 100%;
+  }
+
   .page-header h1 {
     font-size: 1.25rem !important;
   }
@@ -2399,19 +2431,34 @@ textarea.form-control {
     font-size: 0.875rem;
   }
 
-  /* ── Filter bar: column ── */
+  /* ── Filter bar: optimized mobile grid ── */
   .filter-bar {
-    flex-direction: column;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
     padding: 0.625rem 0.875rem;
     gap: 0.5rem;
   }
 
-  .filter-bar .form-control,
+  /* Text inputs: full width */
+  .filter-bar .form-control:not([type="date"]) {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* Selects, date inputs, buttons, links: 2-column (50%) */
   .filter-bar .form-select,
+  .filter-bar input[type="date"] {
+    flex: 1 1 calc(50% - 0.25rem) !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
   .filter-bar button,
   .filter-bar a {
-    width: 100%;
-    max-width: 100% !important;
+    flex: 1 1 calc(50% - 0.25rem) !important;
+    width: auto !important;
+    max-width: none !important;
     text-align: center;
     justify-content: center;
   }
@@ -2560,6 +2607,11 @@ textarea.form-control {
   .kpi-grid { gap: 0.5rem; }
   .table-mintlify th, .table-mintlify td { font-size: 0.75rem; padding: 0.5rem; }
   .form-control, .form-select { width: 100%; max-width: 100%; }
+  /* Override for filter-bar: keep 2-col grid */
+  .filter-bar .form-control:not([type="date"]) { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; }
+  .filter-bar .form-select,
+  .filter-bar input[type="date"] { flex: 1 1 calc(50% - 0.25rem) !important; width: auto !important; max-width: none !important; }
+  .filter-bar button, .filter-bar a { flex: 1 1 calc(50% - 0.25rem) !important; width: auto !important; max-width: none !important; }
 }
 
 /* iPhone 14 Pro / 15 Pro (393px) & iPhone 12 Pro / 13 Pro (390px) */
@@ -2584,6 +2636,8 @@ textarea.form-control {
   .kpi-value { font-size: 1.15rem; }
   .table-mintlify th, .table-mintlify td { font-size: 0.6875rem; padding: 0.4rem; }
   .quick-action-btn, .btn-mintlify-secondary, .btn-mintlify-primary { font-size: 0.7rem; padding: 6px 10px; width: 100%; justify-content: center; margin-bottom: 4px; }
+  /* Override for filter-bar buttons: keep 2-col */
+  .filter-bar button, .filter-bar a { flex: 1 1 calc(50% - 0.25rem) !important; width: auto !important; margin-bottom: 0 !important; }
   .data-surface { padding: 0.75rem !important; }
 }
 

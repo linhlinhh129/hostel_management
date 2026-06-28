@@ -82,11 +82,11 @@
                                 <thead>
                                 <tr>
                                     <th>Log ID</th>
-                                    <th>Thời gian</th>
-                                    <th>Người thực hiện</th>
+                                    <th class="d-none d-md-table-cell">Thời gian</th>
+                                    <th class="d-none d-md-table-cell">Người thực hiện</th>
                                     <th>Đối tượng</th>
                                     <th>Hành động</th>
-                                    <th>Chi tiết</th>
+                                    <th class="d-none d-md-table-cell">Chi tiết</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -98,14 +98,14 @@
                                                 #<c:out value="${log.id}"/>
                                             </a>
                                         </td>
-                                        <td style="white-space:nowrap;font-size:0.8125rem;color:var(--hms-text-muted)">
+                                        <td class="d-none d-md-table-cell" style="white-space:nowrap;font-size:0.8125rem;color:var(--hms-text-muted)">
                                             <c:if test="${not empty log.createdAt}">
                                                 <span>${fn:substring(log.createdAt, 8, 10)}/${fn:substring(log.createdAt, 5, 7)}/${fn:substring(log.createdAt, 0, 4)}</span>
                                                 <br/>
                                                 <span style="font-size:0.75rem">${fn:substring(log.createdAt, 11, 16)}</span>
                                             </c:if>
                                         </td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell">
                                             <div style="display:flex;align-items:center;gap:8px">
                                                 <div style="width:26px;height:26px;border-radius:6px;
                                                             background:linear-gradient(135deg,var(--hms-hero-from),var(--hms-accent));
@@ -181,7 +181,7 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell">
                                             <a href="${ctx}/admin/audit-logs/${log.id}"
                                                style="font-size:0.8125rem;color:var(--hms-info);font-weight:600">
                                                 Chi tiết

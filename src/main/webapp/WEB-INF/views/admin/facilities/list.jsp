@@ -52,12 +52,12 @@
                                 <tr>
                                     <th>Mã cơ sở</th>
                                     <th>Tên cơ sở</th>
-                                    <th>Địa chỉ</th>
-                                    <th>Số tầng</th>
-                                    <th>Phòng/tầng</th>
-                                    <th>Tổng phòng</th>
+                                    <th class="d-none d-md-table-cell">Địa chỉ</th>
+                                    <th class="d-none d-md-table-cell">Số tầng</th>
+                                    <th class="d-none d-md-table-cell">Phòng/tầng</th>
+                                    <th class="d-none d-md-table-cell">Tổng phòng</th>
                                     <th>Trạng thái</th>
-                                    <th>Thao tác</th>
+                                    <th class="d-none d-md-table-cell">Thao tác</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -65,10 +65,10 @@
                                     <tr data-href="${ctx}/admin/facilities/${f.id}">
                                         <td><a href="${ctx}/admin/facilities/${f.id}"><c:out value="${f.code}"/></a></td>
                                         <td><c:out value="${f.name}"/></td>
-                                        <td><c:out value="${f.address}"/></td>
-                                        <td><fmt:formatNumber value="${f.floorCount}"/></td>
-                                        <td><fmt:formatNumber value="${f.roomsPerFloor}"/></td>
-                                        <td><fmt:formatNumber value="${f.totalRooms}" groupingUsed="true"/></td>
+                                        <td class="d-none d-md-table-cell"><c:out value="${f.address}"/></td>
+                                        <td class="d-none d-md-table-cell"><fmt:formatNumber value="${f.floorCount}"/></td>
+                                        <td class="d-none d-md-table-cell"><fmt:formatNumber value="${f.roomsPerFloor}"/></td>
+                                        <td class="d-none d-md-table-cell"><fmt:formatNumber value="${f.totalRooms}" groupingUsed="true"/></td>
                                         <td>
                                             <c:choose>
                                                 <c:when test="${f.status == 'ACTIVE'}">
@@ -82,7 +82,7 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell">
                                             <a href="${ctx}/admin/facilities/${f.id}" class="me-2">Chi tiết</a>
                                         </td>
                                     </tr>

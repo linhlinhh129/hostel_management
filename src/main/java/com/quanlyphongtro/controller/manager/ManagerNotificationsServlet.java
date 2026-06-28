@@ -528,10 +528,12 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     int creatorId = rs.getInt("created_by");
                     Integer targetFacilityManagerId = rs.getObject("target_facility_manager_id") != null ? rs.getInt("target_facility_manager_id") : null;
                     Integer targetRoomFacilityManagerId = rs.getObject("target_room_facility_manager_id") != null ? rs.getInt("target_room_facility_manager_id") : null;
+                    String targetType = rs.getString("target_type");
 
                     boolean hasAccess = (creatorId == currentUser.getId()) 
                                      || (targetFacilityManagerId != null && targetFacilityManagerId == currentUser.getId())
-                                     || (targetRoomFacilityManagerId != null && targetRoomFacilityManagerId == currentUser.getId());
+                                     || (targetRoomFacilityManagerId != null && targetRoomFacilityManagerId == currentUser.getId())
+                                     || "ALL".equals(targetType);
 
                     if (!hasAccess) {
                         resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xem thông báo này.");
@@ -543,7 +545,6 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     notification.put("code", rs.getString("code"));
                     notification.put("title", rs.getString("title"));
                     notification.put("content", rs.getString("content"));
-                    String targetType = rs.getString("target_type");
                     notification.put("recipientType", targetType);
                     notification.put("createdByName", rs.getString("creator_name"));
                     notification.put("status", rs.getString("status"));
