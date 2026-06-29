@@ -107,7 +107,7 @@ public class AdminDashboardServlet extends BaseServlet {
         List<RevenueActivityDTO> recentActivities = new ArrayList<>();
         try {
             List<AuditLog> recentLogs = auditLogDAO.findRecent(5);
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             for (AuditLog log : recentLogs) {
                 String actor = log.getCreatedByName() != null ? log.getCreatedByName() : "Hệ thống";
                 String desc  = buildActionDescription(log);
@@ -127,17 +127,34 @@ public class AdminDashboardServlet extends BaseServlet {
         if (log == null) return "";
         String action     = log.getAction()     != null ? log.getAction()     : "";
         String entityType = log.getEntityType() != null ? log.getEntityType() : "";
-        String newVal     = log.getNewValue()   != null ? " [" + log.getNewValue() + "]" : "";
+        
+        String entityTypeVN;
+        switch (entityType) {
+            case "facilities":    entityTypeVN = "cơ sở"; break;
+            case "rooms":         entityTypeVN = "phòng"; break;
+            case "users":         entityTypeVN = "nhân sự"; break;
+            case "notifications": entityTypeVN = "thông báo"; break;
+            case "invoices":      entityTypeVN = "hóa đơn"; break;
+            case "payments":      entityTypeVN = "thanh toán"; break;
+            case "requests":      entityTypeVN = "yêu cầu"; break;
+            case "meter_readings":entityTypeVN = "số điện nước"; break;
+            default:              entityTypeVN = "dữ liệu"; break;
+        }
+
         return switch (action) {
-            case "CREATE"           -> "Tạo mới " + entityType + newVal;
-            case "UPDATE"           -> "Cập nhật " + entityType + newVal;
-            case "ACTIVATE"         -> "Kích hoạt " + entityType + newVal;
-            case "DEACTIVATE"       -> "Vô hiệu hóa " + entityType + newVal;
-            case "CREATE_EMPLOYEE"  -> "Tạo nhân sự" + newVal;
-            case "UPDATE_EMPLOYEE"  -> "Cập nhật nhân sự" + newVal;
-            case "LOCK_EMPLOYEE"    -> "Khóa tài khoản nhân sự" + newVal;
-            case "UNLOCK_EMPLOYEE"  -> "Mở khóa tài khoản nhân sự" + newVal;
-            default                 -> action + " " + entityType + newVal;
+            case "CREATE"             -> "Tạo mới " + entityTypeVN;
+            case "UPDATE"             -> "Cập nhật " + entityTypeVN;
+            case "ACTIVATE"           -> "Kích hoạt " + entityTypeVN;
+            case "DEACTIVATE"         -> "Vô hiệu hóa " + entityTypeVN;
+            case "CREATE_EMPLOYEE"    -> "Tạo nhân sự";
+            case "UPDATE_EMPLOYEE"    -> "Cập nhật nhân sự";
+            case "LOCK_EMPLOYEE"      -> "Khóa tài khoản nhân sự";
+            case "UNLOCK_EMPLOYEE"    -> "Mở khóa tài khoản nhân sự";
+            case "UPDATE_ELECTRICITY" -> "Cập nhật số điện";
+            case "UPDATE_WATER"       -> "Cập nhật số nước";
+            case "UPDATE_STATUS"      -> "Đổi trạng thái " + entityTypeVN;
+            case "UPDATE_AREA"        -> "Cập nhật diện tích phòng";
+            default                   -> "Thao tác " + entityTypeVN;
         };
     }
 }

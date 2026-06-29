@@ -52,7 +52,9 @@
   <div class="main-wrapper">
     <jsp:include page="/WEB-INF/views/layout/topbar.jsp"/>
     <main class="page-content">
-      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
+           style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <a href="${ctx}/manager/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; margin-top:-2px"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -63,12 +65,6 @@
         </div>
       </div>
 
-      <c:if test="${not empty errorMessage}">
-          <div class="alert alert-danger mt-3" style="font-weight:bold; font-size: 1.1rem; border-left: 4px solid red; background: #ffe6e6; padding: 15px;">
-              <i class="fas fa-exclamation-triangle"></i> CẢNH BÁO: <c:out value="${errorMessage}"/>
-          </div>
-      </c:if>
-
       <form method="post" action="${ctx}/manager/contracts/create">
         <input type="hidden" name="csrfToken" value="${csrfToken}">
         <div class="row g-4 mt-2">
@@ -77,7 +73,7 @@
           <div class="col-lg-8">
             
             <!-- Phần 1: Chọn phòng -->
-            <div class="data-surface p-4 mb-4 shadow-sm" style="border-radius: 12px;">
+            <div class="data-surface mb-4">
               <h4 class="form-section-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 Thông tin Phòng thuê
@@ -95,7 +91,7 @@
             </div>
 
             <!-- Phần 2: Người thuê -->
-            <div class="data-surface p-4 mb-4 shadow-sm" style="border-radius: 12px;">
+            <div class="data-surface mb-4">
               <h4 class="form-section-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 Thông tin Người Thuê Đại Diện (Bên B)
@@ -140,8 +136,8 @@
               </div>
             </div>
 
-            <!-- Phần 3: Điều khoản hợp đồng -->
-            <div class="data-surface p-4 shadow-sm" style="border-radius: 12px;">
+            <!-- Phần 3: Chi tiết Hợp đồng -->
+            <div class="data-surface mb-4">
               <h4 class="form-section-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Thông tin Hợp đồng

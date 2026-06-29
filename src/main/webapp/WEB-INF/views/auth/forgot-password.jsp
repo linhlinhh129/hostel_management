@@ -16,29 +16,11 @@
                     <p style="color:var(--hms-text-muted);font-size:1rem;">Nhập email đã đăng ký để nhận link đặt lại</p>
                 </div>
 
-<<<<<<< HEAD
-                <!-- Success state -->
-                <c:if test="${emailSent}">
-                    <div class="auth-stagger-2 text-center" style="padding:1.5rem 0">
-                        <div style="font-size:3rem;margin-bottom:1rem">📬</div>
-                        <h2 style="font-size:1.25rem;font-weight:600;margin-bottom:0.5rem">Email đã được gửi</h2>
-                        <p style="color:var(--hms-text-muted);font-size:1rem;margin-bottom:1.5rem;line-height:1.6">
-                            Nếu địa chỉ <strong><c:out value="${submittedEmail}"/></strong> tồn tại trong hệ thống,
-                            link đặt lại mật khẩu đã được gửi. Kiểm tra hộp thư (kể cả Spam).
-                        </p>
-                        <a href="${ctx}/login"
-                           class="btn btn-mintlify-secondary text-decoration-none py-2 px-4"
-                           style="border-radius: 16px; font-size:1rem;">
-                            ← Quay lại đăng nhập
-                        </a>
-                    </div>
-                </c:if>
-=======
                 <div id="alertContainer" class="auth-stagger-2">
-                    <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
+                    <jsp:include page="/WEB-INF/views/layout/inline_alerts.jsp"/>
                 </div>
 
-                <!-- Success state (hidden by default) -->
+                <!-- Success state -->
                 <div id="successState" class="auth-stagger-2" style="display:none;text-align:center;padding:1.5rem 0">
                     <div style="font-size:3rem;margin-bottom:1rem">📬</div>
                     <h2 style="font-size:1.125rem;font-weight:700;margin:0 0 0.5rem">Email đã được gửi</h2>
@@ -51,7 +33,6 @@
                         ← Quay lại đăng nhập
                     </a>
                 </div>
->>>>>>> d8470d7e766f743f4de36d68ff1f8dcfb13ad622
 
                 <!-- Form state -->
                 <form id="forgotPasswordForm" class="auth-stagger-3">
@@ -61,35 +42,7 @@
                                placeholder="email@example.com"
                                required autocomplete="email">
                     </div>
-<<<<<<< HEAD
 
-                    <form action="${ctx}/forgot-password" method="post" class="auth-stagger-3">
-                        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                        <div class="mb-4">
-                            <label for="email" class="form-label-modern">Địa chỉ Email</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                   value="<c:out value='${email}'/>"
-                                   placeholder="email@example.com"
-                                   required autocomplete="email"
-                                   style="border-radius: 16px; padding: 0.75rem 1rem;">
-                        </div>
-                        <div class="text-center auth-stagger-4 mb-3">
-                            <button type="submit"
-                                    class="btn btn-mintlify-primary py-2 px-5"
-                                    style="font-size:1rem; min-width: 220px;">
-                                Gửi link đặt lại mật khẩu
-                            </button>
-                        </div>
-                        <div class="text-center auth-stagger-4">
-                            <a href="${ctx}/login"
-                               class="text-decoration-none"
-                               style="font-size:0.875rem;color:var(--hms-stone);">
-                                ← Quay lại đăng nhập
-                            </a>
-                        </div>
-                    </form>
-                </c:if>
-=======
                     <button type="submit" id="submitBtn"
                             class="btn btn-mintlify-primary w-100"
                             style="border-radius:var(--hms-radius-full);padding:11px">
@@ -101,7 +54,6 @@
                         ← Quay lại đăng nhập
                     </a>
                 </form>
->>>>>>> d8470d7e766f743f4de36d68ff1f8dcfb13ad622
 
             </div>
         </div>
@@ -111,40 +63,46 @@
     </div>
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
-
 <script>
 document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    const email = document.getElementById('email').value;
-    
+    var btn   = document.getElementById('submitBtn');
+    var email = document.getElementById('email').value;
+
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang gửi...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> \u0110ang g\u1EED\u0069...';
+
+    // Lấy CSRF token từ meta tag hoặc cookie nếu có
+    var csrfToken = '${csrfToken}';
 
     fetch('${ctx}/api/v1/auth/forgot-password', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'X-CSRF-Token': csrfToken
         },
         body: JSON.stringify({ email: email })
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
         if (data.success) {
             document.getElementById('forgotPasswordForm').style.display = 'none';
             document.getElementById('successState').style.display = 'block';
-            document.getElementById('successMessageText').innerHTML = 'Nếu địa chỉ <strong>' + email + '</strong> tồn tại trong hệ thống, link đặt lại mật khẩu đã được gửi. Kiểm tra hộp thư (kể cả Spam).';
+            document.getElementById('successMessageText').innerHTML =
+                'N\u1EBFu \u0111\u1ECBa ch\u1EC9 <strong>' + email + '</strong> t\u1ED3n t\u1EA1i trong h\u1EC7 th\u1ED1ng, link \u0111\u1EB7t l\u1EA1i m\u1EADt kh\u1EA9u \u0111\u00E3 \u0111\u01B0\u1EE3c g\u1EED\u0069. Ki\u1EC3m tra h\u1ED9p th\u01B0 (k\u1EC3 c\u1EA3 Spam).';
         } else {
-            alert(data.error ? data.error.message : 'Có lỗi xảy ra, vui lòng thử lại.');
+            alert(data.error ? data.error.message : 'C\u00F3 l\u1ED7i x\u1EA3y ra, vui l\u00F2ng th\u1EED l\u1EA1i.');
             btn.disabled = false;
-            btn.innerHTML = 'Gửi link đặt lại mật khẩu';
+            btn.innerHTML = 'G\u1EED\u0069 link \u0111\u1EB7t l\u1EA1i m\u1EADt kh\u1EA9u';
         }
     })
-    .catch(error => {
-        alert('Lỗi kết nối. Vui lòng thử lại sau.');
+    .catch(function() {
+        alert('L\u1ED7i k\u1EBFt n\u1ED1i. Vui l\u00F2ng th\u1EED l\u1EA1i sau.');
         btn.disabled = false;
-        btn.innerHTML = 'Gửi link đặt lại mật khẩu';
+        btn.innerHTML = 'G\u1EED\u0069 link \u0111\u1EB7t l\u1EA1i m\u1EADt kh\u1EA9u';
     });
 });
 </script>
+</body>
+</html>

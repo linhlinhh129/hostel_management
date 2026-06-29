@@ -14,7 +14,7 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
                 <div>
                     <h1><c:out value="${notification.title}"/></h1>
                     <p>Mã: <c:out value="${notification.code}"/></p>
@@ -46,9 +46,9 @@
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Người tạo</td>
                                     <td style="padding:6px 0"><c:out value="${notification.createdByName}"/></td></tr>
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Ngày tạo</td>
-                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.createdAt}"/></td></tr>
+                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.createdAtLabel}"/></td></tr>
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Gửi lúc</td>
-                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.sentAt}"/></td></tr>
+                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.sentAtLabel}"/></td></tr>
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Đối tượng</td>
                                     <td style="padding:6px 0">
                                         <c:choose>

@@ -280,7 +280,7 @@ select.mintlify-text-input {
 .custom-modal-backdrop {
   display: none;
   position: fixed;
-  z-index: 999;
+  z-index: 1050;
   left: 0;
   top: 0;
   width: 100%;

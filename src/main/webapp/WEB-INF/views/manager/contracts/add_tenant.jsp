@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -15,7 +15,7 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <h1>Tạo tài khoản người thuê</h1>
           <p>Tạo tài khoản thành viên dựa trên thông tin hợp đồng</p>
@@ -28,9 +28,7 @@
           <input type="hidden" name="csrfToken" value="${csrfToken}"/>
           <input type="hidden" name="contractId" value="${prefilledContract.contractId}"/>
 
-          <c:if test="${not empty errorMessage}">
-            <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-          </c:if>
+
 
           <c:if test="${showReactivateConfirmation}">
             <div class="alert alert-warning mb-3" style="border-left: 5px solid #ffb300; background-color: #fffde7; color: #663c00; border-radius: 6px; padding: 1rem;">

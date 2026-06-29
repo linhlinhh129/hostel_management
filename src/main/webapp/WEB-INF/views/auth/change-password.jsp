@@ -32,7 +32,7 @@
 
                 <!-- Error -->
                 <div class="auth-stagger-2">
-                    <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
+                    <jsp:include page="/WEB-INF/views/layout/inline_alerts.jsp"/>
                 </div>
 
                 <!-- Form -->
@@ -60,7 +60,14 @@
                                autocomplete="new-password"
                                placeholder="Ít nhất 8 ký tự"
                                style="border-radius: 16px; padding: 0.75rem 1rem;">
-                        <div class="form-text" style="font-size: 0.8rem; margin-top: 0.5rem;">Tối thiểu 8 ký tự, nên có chữ hoa, số và ký tự đặc biệt</div>
+                        <%-- Checklist yêu cầu mật khẩu --%>
+                        <ul id="pwChecklist" style="list-style:none;padding:0.5rem 0 0;margin:0;font-size:0.8rem;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px">
+                            <li id="chk-len"     style="color:var(--hms-stone)">&#10007; Ít nhất 8 ký tự</li>
+                            <li id="chk-upper"   style="color:var(--hms-stone)">&#10007; 1 chữ hoa (A-Z)</li>
+                            <li id="chk-lower"   style="color:var(--hms-stone)">&#10007; 1 chữ thường (a-z)</li>
+                            <li id="chk-digit"   style="color:var(--hms-stone)">&#10007; 1 chữ số (0-9)</li>
+                            <li id="chk-special" style="color:var(--hms-stone)">&#10007; 1 ký tự đặc biệt</li>
+                        </ul>
                     </div>
 
                     <div class="mb-4">
@@ -70,6 +77,7 @@
                                autocomplete="new-password"
                                placeholder="Nhập lại mật khẩu mới"
                                style="border-radius: 16px; padding: 0.75rem 1rem;">
+                        <div id="confirmMsg" style="font-size:0.8rem;margin-top:4px;min-height:1rem"></div>
                     </div>
 
                     <!-- Password strength indicator -->
@@ -107,24 +115,84 @@
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
-// Password strength bar
-document.getElementById('newPassword').addEventListener('input', function () {
-    var pw = this.value;
-    var score = 0;
-    if (pw.length >= 8)  score++;
-    if (pw.length >= 12) score++;
-    if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
+(function () {
+    var pwInput  = document.getElementById('newPassword');
+    var cfInput  = document.getElementById('confirmPassword');
+    var bar      = document.getElementById('pwStrengthBar');
+    var submitBtn = document.querySelector('button[type="submit"]');
 
-    var bar = document.getElementById('pwStrengthBar');
-    var colors = ['', '#dc2626', '#d97706', '#d97706', '#059669', '#059669'];
-    bar.style.width  = (score * 20) + '%';
-    bar.style.background = colors[score] || '#dc2626';
-});
-// Confirm match
-document.getElementById('confirmPassword').addEventListener('input', function () {
-    var match = this.value === document.getElementById('newPassword').value;
-    this.style.borderColor = this.value ? (match ? 'var(--hms-accent)' : 'var(--hms-danger)') : '';
-});
+    var checks = {
+        len:     { el: document.getElementById('chk-len'),     test: function(v){ return v.length >= 8; } },
+        upper:   { el: document.getElementById('chk-upper'),   test: function(v){ return /[A-Z]/.test(v); } },
+        lower:   { el: document.getElementById('chk-lower'),   test: function(v){ return /[a-z]/.test(v); } },
+        digit:   { el: document.getElementById('chk-digit'),   test: function(v){ return /[0-9]/.test(v); } },
+        special: { el: document.getElementById('chk-special'), test: function(v){ return /[^A-Za-z0-9]/.test(v); } }
+    };
+
+    function updateChecklist(pw) {
+        var passed = 0;
+        Object.keys(checks).forEach(function(k) {
+            var c = checks[k];
+            var ok = c.test(pw);
+            if (ok) {
+                c.el.style.color = '#059669';
+                c.el.innerHTML   = '&#10003; ' + c.el.innerHTML.slice(2);
+                passed++;
+            } else {
+                c.el.style.color = 'var(--hms-stone)';
+                c.el.innerHTML   = '&#10007; ' + c.el.innerHTML.slice(2);
+            }
+        });
+        return passed;
+    }
+
+    function updateStrengthBar(passed) {
+        var colors = ['', '#dc2626', '#d97706', '#d97706', '#059669', '#059669'];
+        bar.style.width      = (passed * 20) + '%';
+        bar.style.background = colors[passed] || '#dc2626';
+    }
+
+    function allPassed(pw) {
+        return Object.keys(checks).every(function(k){ return checks[k].test(pw); });
+    }
+
+    pwInput.addEventListener('input', function () {
+        var passed = updateChecklist(this.value);
+        updateStrengthBar(passed);
+        updateConfirm();
+        submitBtn.disabled = !allPassed(this.value);
+    });
+
+    cfInput.addEventListener('input', updateConfirm);
+
+    function updateConfirm() {
+        var msg   = document.getElementById('confirmMsg');
+        var match = cfInput.value === pwInput.value;
+        if (!cfInput.value) { msg.textContent = ''; return; }
+        if (match) {
+            msg.style.color = '#059669';
+            msg.textContent = '\u2713 M\u1EADt kh\u1EA9u kh\u1EDBp';
+        } else {
+            msg.style.color = '#dc2626';
+            msg.textContent = '\u2717 M\u1EADt kh\u1EA9u ch\u01B0a kh\u1EDBp';
+        }
+    }
+
+    // Block submit nếu chưa đủ điều kiện
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (!allPassed(pwInput.value)) {
+            e.preventDefault();
+            pwInput.focus();
+            return false;
+        }
+        if (cfInput.value !== pwInput.value) {
+            e.preventDefault();
+            cfInput.focus();
+            return false;
+        }
+    });
+
+    // Init
+    submitBtn.disabled = true;
+})();
 </script>

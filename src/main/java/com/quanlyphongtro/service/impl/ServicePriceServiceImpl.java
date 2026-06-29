@@ -29,7 +29,9 @@ public class ServicePriceServiceImpl implements ServicePriceService {
         
         if (facilityOpt.isPresent()) {
             Facility facility = facilityOpt.get();
-            String updatedAt = facility.getUpdatedAt() != null ? facility.getUpdatedAt().toString() : "";
+            String updatedAt = facility.getUpdatedAt() != null
+                    ? facility.getUpdatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+                    : "";
             
             prices.add(new ServicePriceDTO("ELECTRICITY", "Giá điện", "VNĐ/kWh", facility.getElectricityPrice(), updatedAt, null, null));
             prices.add(new ServicePriceDTO("WATER", "Giá nước", "VNĐ/m3", facility.getWaterPrice(), updatedAt, null, null));

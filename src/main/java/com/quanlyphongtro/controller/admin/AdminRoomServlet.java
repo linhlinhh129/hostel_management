@@ -13,6 +13,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.sql.Types;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +59,56 @@ public class AdminRoomServlet extends BaseServlet {
         req.getRequestDispatcher(VIEW_BASE + "detail.jsp").forward(req, resp);
     }
 
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String pathInfo = req.getPathInfo();
+        if (pathInfo != null && pathInfo.matches("/\\d+/update")) {
+            int roomId = Integer.parseInt(pathInfo.split("/")[1]);
+            
+            Map<String, Object> room = loadRoom(roomId);
+            if (room != null && "INACTIVE".equals(room.get("facilityStatus"))) {
+                setFlashMessage(req, "error", "Cơ sở đã bị vô hiệu hóa. Không thể chỉnh sửa thông tin phòng.");
+                resp.sendRedirect(req.getContextPath() + "/admin/rooms/" + roomId);
+                return;
+            }
+            
+            String areaStr = req.getParameter("area");
+            String feeStr = req.getParameter("roomFee");
+
+            BigDecimal area = null;
+            BigDecimal fee = null;
+
+            try {
+                if (areaStr != null && !areaStr.isBlank()) {
+                    area = new BigDecimal(areaStr.replace(",", "."));
+                    if (area.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Diện tích không được âm.");
+                }
+                if (feeStr != null && !feeStr.isBlank()) {
+                    fee = new BigDecimal(feeStr.replace(",", "."));
+                    if (fee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Giá phòng không được âm.");
+                }
+
+                String sql = "UPDATE dbo.rooms SET area = ?, room_fee = ?, updated_at = GETDATE() WHERE room_id = ? AND deleted_at IS NULL";
+                try (Connection conn = DatabaseUtil.getConnection();
+                     PreparedStatement ps = conn.prepareStatement(sql)) {
+                    if (area != null) ps.setBigDecimal(1, area); else ps.setNull(1, Types.DECIMAL);
+                    if (fee != null) ps.setBigDecimal(2, fee); else ps.setNull(2, Types.DECIMAL);
+                    ps.setInt(3, roomId);
+                    ps.executeUpdate();
+                }
+
+                setFlashMessage(req, "success", "Cập nhật thông tin phòng thành công.");
+            } catch (Exception e) {
+                logger.error("AdminRoomServlet.doPost error updating room {}", roomId, e);
+                setFlashMessage(req, "error", "Lỗi: " + e.getMessage());
+            }
+            resp.sendRedirect(req.getContextPath() + "/admin/rooms/" + roomId);
+            return;
+        }
+        resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
     // ── private helpers ────────────────────────────────────────────────────
 
     private Map<String, Object> loadRoom(int roomId) {
@@ -66,6 +118,7 @@ public class AdminRoomServlet extends BaseServlet {
             "       r.created_at, r.updated_at, " +
             "       f.code  AS facility_code, " +
             "       f.name  AS facility_name, " +
+            "       f.status AS facility_status, " +
             "       u.user_id   AS tenant_id, " +
             "       u.full_name AS tenant_name, " +
             "       u.username  AS tenant_code, " +
@@ -87,6 +140,7 @@ public class AdminRoomServlet extends BaseServlet {
                 room.put("facilityId",   rs.getInt("facility_id"));
                 room.put("facilityCode", rs.getString("facility_code"));
                 room.put("facilityName", rs.getString("facility_name"));
+                room.put("facilityStatus", rs.getString("facility_status"));
 
                 String code = rs.getString("code");
                 room.put("code", code);

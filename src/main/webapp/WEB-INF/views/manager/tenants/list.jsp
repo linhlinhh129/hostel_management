@@ -15,7 +15,8 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+           style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <h1>Người thuê</h1>
           <p>Danh sách người thuê trong cơ sở được phân công</p>
@@ -24,18 +25,28 @@
       </div>
 
       <div class="data-surface">
-        <form class="filter-bar" method="get" action="${ctx}/manager/tenants">
-          <input type="text" class="form-control" name="keyword"
-                 placeholder="Tên / SĐT / Email..."
-                 value="<c:out value='${keyword}'/>">
-          <select class="form-select" name="status" style="max-width:160px">
-            <option value="">Tất cả trạng thái</option>
-            <option value="ACTIVE"   ${selectedStatus == 'ACTIVE'   ? 'selected' : ''}>Đang thuê</option>
-            <option value="LOCKED"   ${selectedStatus == 'LOCKED'   ? 'selected' : ''}>Đã khóa</option>
-            <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Ngừng thuê</option>
-          </select>
-          <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
-          <a href="${ctx}/manager/tenants" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+        <form method="get" action="${ctx}/manager/tenants" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+              <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+              <input type="text" class="form-control" name="keyword"
+                     placeholder="Tên / SĐT / Email..."
+                     value="<c:out value='${keyword}'/>">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
+              <select class="form-select" name="status">
+                <option value="">Tất cả</option>
+                <option value="ACTIVE"   ${selectedStatus == 'ACTIVE'   ? 'selected' : ''}>Đang thuê</option>
+                <option value="LOCKED"   ${selectedStatus == 'LOCKED'   ? 'selected' : ''}>Đã khóa</option>
+                <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Ngừng thuê</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
+              <a href="${ctx}/manager/tenants" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+              <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
+            </div>
+          </div>
         </form>
 
         <c:choose>
@@ -46,12 +57,12 @@
                   <tr>
                     <th>Mã NT</th>
                     <th>Họ tên</th>
-                    <th>SĐT</th>
-                    <th>Email</th>
-                    <th>Phòng</th>
-                    <th>Ngày bắt đầu thuê</th>
+                    <th class="d-none d-md-table-cell">SĐT</th>
+                    <th class="d-none d-md-table-cell">Email</th>
+                    <th class="d-none d-md-table-cell">Phòng</th>
+                    <th class="d-none d-md-table-cell">Ngày bắt đầu thuê</th>
                     <th>Trạng thái</th>
-                    <th>Thao tác</th>
+                    <th class="d-none d-md-table-cell">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -63,9 +74,9 @@
                         </a>
                       </td>
                       <td><strong><c:out value="${tenant.fullName}"/></strong></td>
-                      <td><c:out value="${tenant.phone}"/></td>
-                      <td style="font-size:0.8125rem"><c:out value="${tenant.email}"/></td>
-                      <td>
+                      <td class="d-none d-md-table-cell"><c:out value="${tenant.phone}"/></td>
+                      <td class="d-none d-md-table-cell" style="font-size:0.8125rem"><c:out value="${tenant.email}"/></td>
+                      <td class="d-none d-md-table-cell">
                         <c:choose>
                           <c:when test="${not empty tenant.roomCode}">
                             <a href="${ctx}/manager/rooms/${tenant.roomId}">
@@ -75,7 +86,7 @@
                           <c:otherwise><em class="text-muted">Chưa gán phòng</em></c:otherwise>
                         </c:choose>
                       </td>
-                      <td style="font-size:0.8125rem;color:var(--hms-text-muted)">
+                      <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted)">
                         <c:out value="${tenant.contractStartDate}"/>
                       </td>
                       <td>

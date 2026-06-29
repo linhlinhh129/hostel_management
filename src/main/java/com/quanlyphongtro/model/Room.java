@@ -72,6 +72,17 @@ public class Room {
 
     public boolean isDeleted() { return deletedAt != null; }
 
+    // Backward compatibility for JSP fmt:formatDate
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return java.sql.Timestamp.valueOf(createdAt);
+    }
+
+    public java.util.Date getUpdatedAtAsDate() {
+        if (updatedAt == null) return null;
+        return java.sql.Timestamp.valueOf(updatedAt);
+    }
+
     /** Trích số tầng từ mã phòng — 2 ký tự trước 2 ký tự cuối. VD: HL0103 → "01" */
     public String getFloorLabel() {
         if (code == null || code.length() < 4) return "";

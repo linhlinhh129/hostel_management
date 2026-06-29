@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -47,11 +47,11 @@
                                 <tr>
                                     <th>Mã</th>
                                     <th>Tiêu đề</th>
-                                    <th>Người tạo</th>
-                                    <th>Đối tượng</th>
+                                    <th class="d-none d-md-table-cell">Người tạo</th>
+                                    <th class="d-none d-md-table-cell">Đối tượng</th>
                                     <th>Trạng thái</th>
-                                    <th>Ngày tạo</th>
-                                    <th></th>
+                                    <th class="d-none d-md-table-cell">Ngày tạo</th>
+                                    <th class="d-none d-md-table-cell"></th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -59,8 +59,8 @@
                                     <tr data-href="${ctx}/admin/notifications/${notif.id}">
                                         <td><a href="${ctx}/admin/notifications/${notif.id}"><c:out value="${notif.code}"/></a></td>
                                         <td style="max-width:300px"><c:out value="${notif.title}"/></td>
-                                        <td><c:out value="${notif.createdByName}"/></td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell"><c:out value="${notif.createdByName}"/></td>
+                                        <td class="d-none d-md-table-cell">
                                             <c:choose>
                                                 <c:when test="${notif.recipientType == 'ALL'}">
                                                     <span class="badge-hms badge-info">Tất cả</span>
@@ -83,10 +83,10 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td style="font-size:0.8125rem;color:var(--hms-text-muted)">
-                                            <c:out value="${notif.createdAt}"/>
+                                        <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted)">
+                                            <c:out value="${notif.createdDateLabel}"/>
                                         </td>
-                                        <td><a href="${ctx}/admin/notifications/${notif.id}">Xem</a></td>
+                                        <td class="d-none d-md-table-cell"><a href="${ctx}/admin/notifications/${notif.id}">Xem</a></td>
                                     </tr>
                                 </c:forEach>
                                 </tbody>

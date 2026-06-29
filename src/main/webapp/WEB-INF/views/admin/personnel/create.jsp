@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Thêm nhân sự - Admin"/>
@@ -23,9 +23,7 @@
                 <form method="post" action="${ctx}/admin/personnel/create" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-                    </c:if>
+
 
                     <h2 class="h6 mb-3">Thông tin cá nhân</h2>
                     <div class="row">
@@ -93,19 +91,11 @@
                             </label>
                             <select class="form-select" id="facilityId" name="facilityId">
                                 <option value="">— Chọn cơ sở —</option>
-                                <c:forEach var="fac" items="${activeFacilities}">
-                                    <option value="${fac.id}"
-                                            ${dto.facilityId == fac.id ? 'selected' : ''}>
-                                        <c:out value="${fac.code}"/> — <c:out value="${fac.name}"/>
-                                    </option>
-                                </c:forEach>
                             </select>
-                            <c:if test="${empty activeFacilities}">
-                                <div class="form-text text-warning">
-                                    Chưa có cơ sở ACTIVE nào.
-                                    <a href="${ctx}/admin/facilities">Quản lý cơ sở →</a>
-                                </div>
-                            </c:if>
+                            <div id="noFacilityWarning" class="form-text text-warning" style="display:none">
+                                Tất cả cơ sở đã được phân công cho vai trò này.
+                                <a href="${ctx}/admin/facilities">Quản lý cơ sở →</a>
+                            </div>
                             <div class="form-text">Mỗi nhân sự chỉ được phân công một cơ sở duy nhất</div>
                         </div>
                     </div>
@@ -115,6 +105,18 @@
                         <a href="${ctx}/admin/personnel" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
                     </div>
                 </form>
+
+                <%-- Dữ liệu cơ sở cho JS — nằm ngoài form, render thành <option> theo từng nhóm --%>
+                <select id="managerFacilitiesSelect" style="display:none" aria-hidden="true">
+                    <c:forEach var="fac" items="${managerFacilities}">
+                        <option value="${fac.id}"><c:out value="${fac.code}"/> — <c:out value="${fac.name}"/></option>
+                    </c:forEach>
+                </select>
+                <select id="operatorFacilitiesSelect" style="display:none" aria-hidden="true">
+                    <c:forEach var="fac" items="${operatorFacilities}">
+                        <option value="${fac.id}"><c:out value="${fac.code}"/> — <c:out value="${fac.name}"/></option>
+                    </c:forEach>
+                </select>
             </div>
         </main>
     </div>
@@ -124,7 +126,27 @@
 function toggleFacilitySection(role) {
     var show = (role === 'MANAGER' || role === 'OPERATOR');
     document.getElementById('facilitySection').style.display = show ? 'block' : 'none';
+    if (show) populateFacilities(role);
 }
+
+function populateFacilities(role) {
+    var sourceId = role === 'MANAGER' ? 'managerFacilitiesSelect' : 'operatorFacilitiesSelect';
+    var source   = document.getElementById(sourceId);
+    var target   = document.getElementById('facilityId');
+    var warning  = document.getElementById('noFacilityWarning');
+
+    var opts = source.options;
+    // Reset về option mặc định
+    target.length = 0;
+    target.add(new Option('— Chọn cơ sở —', ''));
+
+    for (var i = 0; i < opts.length; i++) {
+        target.add(new Option(opts[i].text, opts[i].value));
+    }
+
+    warning.style.display = opts.length === 0 ? 'block' : 'none';
+}
+
 // Init on load
 toggleFacilitySection(document.getElementById('role').value);
 </script>

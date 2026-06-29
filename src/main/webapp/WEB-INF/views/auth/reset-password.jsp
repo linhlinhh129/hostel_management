@@ -16,26 +16,44 @@
                 </div>
 
                 <div class="auth-stagger-2">
-                    <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
+                    <jsp:include page="/WEB-INF/views/layout/inline_alerts.jsp"/>
                 </div>
 
-                <form id="resetPasswordForm" class="auth-stagger-3">
-                    <input type="hidden" id="token" value="<c:out value='${resetToken}'/>"/>
+                <form action="${ctx}/reset-password" method="post" class="auth-stagger-3" onsubmit="return validatePasswords(event)">
+                    <input type="hidden" name="token" value="<c:out value='${resetToken}'/>"/>
+                    <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
                     <div class="mb-4">
                         <label for="newPassword" class="form-label-modern">Mật khẩu mới</label>
-                        <input type="password" class="form-control" id="newPassword"
-                               name="newPassword" required minlength="8"
-                               autocomplete="new-password" placeholder="Ít nhất 8 ký tự"
-                               style="border-radius: 16px; padding: 0.75rem 1rem;">
+                        <div class="input-group" style="position: relative;">
+                            <input type="password" class="form-control" id="newPassword"
+                                   name="newPassword" required minlength="8"
+                                   pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}"
+                                   title="Ít nhất 8 ký tự, bao gồm 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt (@#$%^&+=!)"
+                                   autocomplete="new-password" placeholder="Ít nhất 8 ký tự"
+                                   style="border-radius: 16px; padding: 0.75rem 1rem; padding-right: 3rem;">
+                            <button type="button" class="btn btn-outline-secondary toggle-password"
+                                    style="position: absolute; right: 0; top: 0; height: 100%; border: none; background: transparent; z-index: 10; border-radius: 0 16px 16px 0;"
+                                    onclick="togglePasswordVisibility('newPassword', this)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.8rem; margin-top: 0.5rem; display: block;">Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt.</small>
                     </div>
 
                     <div class="mb-4">
                         <label for="confirmPassword" class="form-label-modern">Xác nhận mật khẩu</label>
-                        <input type="password" class="form-control" id="confirmPassword"
-                               name="confirmPassword" required minlength="8"
-                               autocomplete="new-password" placeholder="Nhập lại mật khẩu mới"
-                               style="border-radius: 16px; padding: 0.75rem 1rem;">
+                        <div class="input-group" style="position: relative;">
+                            <input type="password" class="form-control" id="confirmPassword"
+                                   name="confirmPassword" required minlength="8"
+                                   autocomplete="new-password" placeholder="Nhập lại mật khẩu mới"
+                                   style="border-radius: 16px; padding: 0.75rem 1rem; padding-right: 3rem;">
+                            <button type="button" class="btn btn-outline-secondary toggle-password"
+                                    style="position: absolute; right: 0; top: 0; height: 100%; border: none; background: transparent; z-index: 10; border-radius: 0 16px 16px 0;"
+                                    onclick="togglePasswordVisibility('confirmPassword', this)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Strength bar -->
@@ -43,20 +61,6 @@
                         <div id="bar" style="height:100%;width:0;border-radius:99px;background:var(--hms-danger);transition:width 0.3s,background 0.3s"></div>
                     </div>
 
-<<<<<<< HEAD
-                    <div class="text-center auth-stagger-4 mb-3">
-                        <button type="submit" class="btn btn-mintlify-primary py-2 px-5"
-                                style="font-size:1rem; min-width: 220px;">
-                            Đặt lại mật khẩu
-                        </button>
-                    </div>
-                    <div class="text-center auth-stagger-4">
-                        <a href="${ctx}/login" class="text-decoration-none"
-                           style="font-size:0.875rem;color:var(--hms-stone);">
-                            ← Quay lại đăng nhập
-                        </a>
-                    </div>
-=======
                     <button type="submit" id="submitBtn" class="btn btn-mintlify-primary w-100"
                             style="border-radius:var(--hms-radius-full);padding:11px">
                         Đặt lại mật khẩu
@@ -65,7 +69,6 @@
                        style="font-size:0.8125rem;color:var(--hms-stone);text-decoration:none">
                         ← Quay lại đăng nhập
                     </a>
->>>>>>> d8470d7e766f743f4de36d68ff1f8dcfb13ad622
                 </form>
             </div>
         </div>
@@ -76,6 +79,7 @@
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
+// Logic tính độ mạnh mật khẩu
 document.getElementById('newPassword').addEventListener('input', function () {
     var pw = this.value, s = 0;
     if (pw.length >= 8) s++;
@@ -87,47 +91,42 @@ document.getElementById('newPassword').addEventListener('input', function () {
     b.style.width = (s * 20) + '%';
     b.style.background = ['','#dc2626','#d97706','#d97706','#059669','#059669'][s] || '#dc2626';
 });
+
+// Highlight viền nếu khớp
 document.getElementById('confirmPassword').addEventListener('input', function () {
     var match = this.value === document.getElementById('newPassword').value;
     this.style.borderColor = this.value ? (match ? 'var(--hms-accent)' : 'var(--hms-danger)') : '';
 });
-document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    const token = document.getElementById('token').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
 
+// Validate 2 pass trùng nhau khi ấn submit
+function validatePasswords(event) {
+    var newPassword = document.getElementById('newPassword').value;
+    var confirmPassword = document.getElementById('confirmPassword').value;
     if (newPassword !== confirmPassword) {
         alert("Xác nhận mật khẩu không khớp.");
-        return;
+        event.preventDefault();
+        return false;
     }
-
+    
+    // Đổi chữ nút thành Đang xử lý
+    const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+    return true;
+}
 
-    fetch('${ctx}/api/v1/auth/reset-password', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ token: token, newPassword: newPassword })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.href = '${ctx}/login?success=reset';
-        } else {
-            alert(data.error ? data.error.message : 'Có lỗi xảy ra, vui lòng thử lại.');
-            btn.disabled = false;
-            btn.innerHTML = 'Đặt lại mật khẩu';
-        }
-    })
-    .catch(error => {
-        alert('Lỗi kết nối. Vui lòng thử lại sau.');
-        btn.disabled = false;
-        btn.innerHTML = 'Đặt lại mật khẩu';
-    });
-});
+// Hàm Show/Hide con mắt
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+    input.setAttribute('type', type);
+    
+    if (type === 'text') {
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+    } else {
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    }
+}
 </script>
+</body>
+</html>

@@ -175,6 +175,8 @@ public class AuditLogDAO extends BaseDAO {
         if (role != null && !role.isBlank()) {
             sql.append(" AND u.role = ?");
             params.add(role.trim());
+        } else {
+            sql.append(" AND u.role IN ('MANAGER', 'OPERATOR')");
         }
         if (actor != null && !actor.isBlank()) {
             sql.append(" AND u.full_name LIKE ?");
@@ -230,6 +232,8 @@ public class AuditLogDAO extends BaseDAO {
         if (role != null && !role.isBlank()) {
             sql.append(" AND u.role = ?");
             params.add(role.trim());
+        } else {
+            sql.append(" AND u.role IN ('MANAGER', 'OPERATOR')");
         }
         if (actor != null && !actor.isBlank()) {
             sql.append(" AND u.full_name LIKE ?");
@@ -410,7 +414,7 @@ public class AuditLogDAO extends BaseDAO {
     }
 
     public int countToday() {
-        String sql = "SELECT COUNT(*) FROM dbo.audit_logs WHERE CAST(created_at AS DATE) = CAST(GETDATE() AS DATE)";
+        String sql = "SELECT COUNT(*) FROM dbo.audit_logs a LEFT JOIN dbo.users u ON a.created_by = u.user_id WHERE CAST(a.created_at AS DATE) = CAST(GETDATE() AS DATE) AND (u.role IS NULL OR u.role != 'ADMIN')";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -424,6 +428,7 @@ public class AuditLogDAO extends BaseDAO {
     public List<AuditLog> findRecent(int limit) {
         List<AuditLog> list = new ArrayList<>();
         String sql = BASE_SELECT +
+            " WHERE u.role IN ('MANAGER', 'OPERATOR')" +
             " ORDER BY al.created_at DESC OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

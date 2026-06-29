@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
@@ -16,7 +16,7 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <h1><c:out value="${ticket.title}"/></h1>
           <div class="d-flex align-items-center gap-2 mt-1">
@@ -219,7 +219,7 @@
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:9px 14px;color:var(--hms-text-muted)">Ngày gửi</td>
-                  <td style="padding:9px 14px;font-size:0.8125rem"><c:out value="${ticket.createdAt}"/></td>
+                  <td style="padding:9px 14px;font-size:0.8125rem"><fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
                 </tr>
                 <tr>
                   <td style="padding:9px 14px;color:var(--hms-text-muted)">Nhân sự phân công</td>

@@ -39,20 +39,24 @@
                     <!-- Header -->
                     <div class="page-header hero-sky-gradient" style="border-radius: var(--hms-radius-lg, 12px); margin-bottom: 1.75rem;">
                         <h1>Danh sách điện nước</h1>
-                        <p>Kỳ đo đạc tháng ${currentMonth}/${currentYear}</p>
                     </div>
 
                     <!-- Filter -->
                     <form action="${pageContext.request.contextPath}/operator/meter-readings" method="get" class="mb-4">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <select name="facility" class="mintlify-text-input" style="height: 38px;">
-                                    <option value="" ${empty selectedFacility ? 'selected' : ''}>-- Chọn cơ sở --</option>
-                                    <c:forEach var="f" items="${facilities}">
-                                        <c:set var="facVal" value="${f.name} (${f.code})"/>
-                                        <option value="${facVal}" ${selectedFacility == facVal ? 'selected' : ''}><c:out value="${facVal}"/></option>
-                                    </c:forEach>
-                                </select>
+                                <!-- Hiển thị tên cơ sở thay vì Dropdown -->
+                                <div class="mintlify-text-input d-flex align-items-center" style="height: 38px; background-color: var(--color-surface-soft); color: var(--color-steel);">
+                                    <c:choose>
+                                        <c:when test="${not empty facilities and facilities.size() > 0}">
+                                            Cơ sở: <c:out value="${facilities[0].name} (${facilities[0].code})" />
+                                            <input type="hidden" name="facility" value="${facilities[0].name} (${facilities[0].code})" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            Chưa phân công cơ sở
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 <input type="text" name="roomCode" class="mintlify-text-input" placeholder="Nhập mã phòng..." value="${searchRoomCode}" style="height: 38px;">
@@ -107,7 +111,7 @@
                                                     <td class="d-none d-md-table-cell">
                                                         <c:choose>
                                                             <c:when test="${not empty item.updatedAt}">
-                                                                <fmt:formatDate value="${item.updatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                                <fmt:formatDate value="${item.updatedAt}" pattern="dd/MM/yyyy HH:mm:ss"/>
                                                             </c:when>
                                                             <c:otherwise>-</c:otherwise>
                                                         </c:choose>
@@ -123,13 +127,22 @@
                                                         </c:choose>
                                                     </td>
                                                     <td>
-                                                        <c:if test="${item.status != 'DA_CAP_NHAT'}">
-                                                            <a href="${pageContext.request.contextPath}/operator/meter-readings/update?roomCode=${item.roomCode}"
-                                                               class="btn-mintlify-primary btn-sm px-3 py-1 text-decoration-none"
-                                                               style="font-size:13px; display:inline-flex; align-items:center;">
-                                                                Cập nhật
-                                                            </a>
-                                                        </c:if>
+                                                        <c:choose>
+                                                            <c:when test="${item.status != 'DA_CAP_NHAT'}">
+                                                                <a href="${pageContext.request.contextPath}/operator/meter-readings/update?roomCode=${item.roomCode}"
+                                                                   class="btn-mintlify-primary btn-sm px-3 py-1 text-decoration-none"
+                                                                   style="font-size:13px; display:inline-flex; align-items:center;">
+                                                                    Cập nhật
+                                                                </a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <a href="${pageContext.request.contextPath}/operator/meter-readings/update?roomCode=${item.roomCode}"
+                                                                   class="btn-mintlify-secondary btn-sm px-3 py-1 text-decoration-none"
+                                                                   style="font-size:13px; display:inline-flex; align-items:center; background-color: var(--color-surface-soft); color: var(--color-ink); border: 1px solid var(--color-hairline-soft);">
+                                                                    Sửa
+                                                                </a>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </td>
                                                 </tr>
                                             </c:forEach>

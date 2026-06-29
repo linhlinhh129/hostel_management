@@ -27,21 +27,26 @@
 
 
                             <div class="data-surface">
-                                <form class="filter-bar" method="get" action="${ctx}/manager/debts">
-                                    <input type="text" class="form-control" name="keyword"
-                                        value="<c:out value='${keyword}'/>" placeholder="Tìm mã HĐ, phòng..."
-                                        style="max-width:250px" />
-
-                                    <select class="form-select" name="status" style="max-width:180px">
-                                        <option value="">Tất cả trạng thái</option>
-                                        <option value="UNPAID" ${status=='UNPAID' ? 'selected' : '' }>Chưa thanh toán
-                                        </option>
+                                <form method="get" action="${ctx}/manager/debts" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+                                  <div class="row g-3 align-items-end">
+                                    <div class="col-12 col-md-5">
+                                      <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                                      <input type="text" class="form-control" name="keyword"
+                                             value="<c:out value='${keyword}'/>" placeholder="Tìm mã HĐ, phòng..." />
+                                    </div>
+                                    <div class="col-12 col-md-3">
+                                      <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
+                                      <select class="form-select" name="status">
+                                        <option value="">Tất cả</option>
+                                        <option value="UNPAID" ${status=='UNPAID' ? 'selected' : '' }>Chưa thanh toán</option>
                                         <option value="OVERDUE" ${status=='OVERDUE' ? 'selected' : '' }>Quá hạn</option>
-                                    </select>
-
-                                    <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-                                    <a href="${ctx}/manager/debts"
-                                        class="btn-mintlify-secondary text-decoration-none">Xóa lọc</a>
+                                      </select>
+                                    </div>
+                                    <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
+                                      <a href="${ctx}/manager/debts" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+                                      <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc dữ liệu</button>
+                                    </div>
+                                  </div>
                                 </form>
                                 <c:choose>
                                     <c:when test="${not empty debts}">
@@ -49,21 +54,21 @@
                                             <table class="table-mintlify mb-0">
                                                 <thead>
                                                     <tr>
-                                                        <th>Mã HĐ</th>
+                                                        <th style="white-space: nowrap;">Mã HĐ</th>
                                                         <th>Phòng</th>
-                                                        <th>Người thuê</th>
-                                                        <th style="white-space: nowrap; width: 5%;">Kỳ HĐ</th>
-                                                        <th style="text-align:right; width: 20%;">Tổng tiền</th>
-                                                        <th style="text-align:right; width: 15%;">Phí quá hạn</th>
-                                                        <th style="white-space: nowrap">Hạn nộp</th>
+                                                        <th class="d-none d-md-table-cell">Người thuê</th>
+                                                        <th class="d-none d-md-table-cell">Kỳ HĐ</th>
+                                                        <th style="text-align:right; white-space: nowrap;">Tổng tiền</th>
+                                                        <th class="d-none d-md-table-cell" style="text-align:right; white-space: nowrap;">Phí quá hạn</th>
+                                                        <th class="d-none d-md-table-cell">Hạn nộp</th>
                                                         <th>Trạng thái</th>
-                                                        <th>Thao tác</th>
+                                                        <th class="d-none d-md-table-cell">Thao tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <c:forEach var="debt" items="${debts}">
-                                                        <tr>
-                                                            <td>
+                                                        <tr data-href="${ctx}/manager/debts?action=detail&id=${debt.invoiceId}">
+                                                            <td style="white-space: nowrap;">
                                                                 <a href="${ctx}/manager/debts?action=detail&id=${debt.invoiceId}"
                                                                     style="font-weight:600;font-family:monospace">
                                                                     <c:out value="${debt.invoiceCode}" />
@@ -74,22 +79,22 @@
                                                                     <c:out value="${debt.roomCode}" />
                                                                 </span>
                                                             </td>
-                                                            <td>
+                                                            <td class="d-none d-md-table-cell">
                                                                 <c:out value="${debt.tenantName}" />
                                                             </td>
-                                                            <td>
+                                                            <td class="d-none d-md-table-cell">
                                                                 <c:out value="${debt.billingPeriod}" />
                                                             </td>
-                                                            <td style="text-align:right; font-weight:600">
+                                                            <td style="text-align:right; font-weight:600; white-space: nowrap;">
                                                                 <fmt:formatNumber value="${debt.invoiceTotalAmount}"
                                                                     pattern="#,##0" /> đ
                                                             </td>
-                                                            <td
-                                                                style="text-align:right; font-weight:600; color:var(--hms-danger-color, #ef4444);">
+                                                            <td class="d-none d-md-table-cell"
+                                                                style="text-align:right; font-weight:600; color:var(--hms-danger-color, #ef4444); white-space: nowrap;">
                                                                 <fmt:formatNumber value="${debt.lateFeePreview}"
                                                                     pattern="#,##0" /> đ
                                                             </td>
-                                                            <td>
+                                                            <td class="d-none d-md-table-cell">
                                                                 <c:out value="${debt.dueDate}" />
                                                             </td>
                                                             <td>
@@ -115,7 +120,7 @@
                                                                     </c:otherwise>
                                                                 </c:choose>
                                                             </td>
-                                                            <td>
+                                                            <td class="d-none d-md-table-cell">
                                                                 <a href="${ctx}/manager/debts?action=detail&id=${debt.invoiceId}"
                                                                     class="btn-mintlify-secondary text-decoration-none"
                                                                     style="padding:4px 12px;font-size:0.8125rem">

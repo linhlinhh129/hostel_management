@@ -42,9 +42,7 @@
                             </div>
                         </c:if>
 
-                        <c:if test="${not empty errorMessage}">
-                            <div class="alert alert-danger mb-4"><c:out value="${errorMessage}"/></div>
-                        </c:if>
+
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">

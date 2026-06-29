@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="pageTitle" value="Chỉnh sửa Hóa đơn - BQL" />
@@ -15,7 +15,7 @@
       <main class="page-content">
         <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
 
-        <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
           <div>
             <a href="${ctx}/manager/invoices/${invoice.invoiceId}" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại chi tiết</a>
             <h1>Chỉnh Sửa Hóa Đơn: <c:out value="${invoice.invoiceCode}" /></h1>

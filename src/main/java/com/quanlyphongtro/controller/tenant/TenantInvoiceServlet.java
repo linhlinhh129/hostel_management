@@ -43,6 +43,11 @@ public class TenantInvoiceServlet extends BaseServlet {
                 List<Invoice> invoices = invoiceService.getInvoicesByRoomId(roomId);
                 BigDecimal unpaidTotal = invoiceService.getUnpaidTotal(roomId);
                 
+                com.quanlyphongtro.dao.PaymentDAO paymentDAO = new com.quanlyphongtro.dao.PaymentDAO();
+                for (Invoice inv : invoices) {
+                    inv.setHasPendingPayment(paymentDAO.hasPendingPayment(inv.getId()));
+                }
+                
                 req.setAttribute("invoices", invoices);
                 req.setAttribute("unpaidTotal", unpaidTotal);
                 req.getRequestDispatcher("/WEB-INF/views/tenant/invoices/list.jsp").forward(req, resp);
@@ -53,7 +58,9 @@ public class TenantInvoiceServlet extends BaseServlet {
                     int id = Integer.parseInt(idStr);
                     Optional<Invoice> invOpt = invoiceService.getInvoiceById(id, roomId);
                     if (invOpt.isPresent()) {
-                        req.setAttribute("invoice", invOpt.get());
+                        Invoice inv = invOpt.get();
+                        inv.setHasPendingPayment(new com.quanlyphongtro.dao.PaymentDAO().hasPendingPayment(inv.getId()));
+                        req.setAttribute("invoice", inv);
                         req.getRequestDispatcher("/WEB-INF/views/tenant/invoices/detail.jsp").forward(req, resp);
                     } else {
                         resp.sendError(HttpServletResponse.SC_NOT_FOUND);

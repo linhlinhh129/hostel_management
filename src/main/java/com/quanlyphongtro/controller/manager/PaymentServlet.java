@@ -20,6 +20,10 @@ public class PaymentServlet extends BaseServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
+        String fromDate = request.getParameter("fromDate");
+        String toDate = request.getParameter("toDate");
+        String month = request.getParameter("month");
+        String year = request.getParameter("year");
         
         int page = 1;
         int limit = 10;
@@ -45,8 +49,8 @@ public class PaymentServlet extends BaseServlet {
             }
         } catch (Exception e) {}
         
-        List<PaymentListItemDTO> payments = paymentService.findPayments(userId, keyword, status, offset, limit);
-        int totalItems = paymentService.countPayments(userId, keyword, status);
+        List<PaymentListItemDTO> payments = paymentService.findPayments(userId, keyword, status, fromDate, toDate, month, year, offset, limit);
+        int totalItems = paymentService.countPayments(userId, keyword, status, fromDate, toDate, month, year);
         int totalPages = (int) Math.ceil((double) totalItems / limit);
         
         request.setAttribute("payments", payments);
@@ -54,6 +58,10 @@ public class PaymentServlet extends BaseServlet {
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("keyword", keyword);
         request.setAttribute("status", status);
+        request.setAttribute("fromDate", fromDate);
+        request.setAttribute("toDate", toDate);
+        request.setAttribute("month", month);
+        request.setAttribute("year", year);
         
         request.getRequestDispatcher("/WEB-INF/views/manager/payments/list.jsp").forward(request, response);
     }

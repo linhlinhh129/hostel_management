@@ -16,7 +16,8 @@
       <main class="page-content">
         <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
 
-        <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
+             style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
           <div>
             <a href="${ctx}/manager/invoices" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
             <h1>Chi tiết Hóa Đơn: <c:out value="${invoice.invoiceCode}" /></h1>
@@ -189,11 +190,11 @@
                 </li>
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Ngày tạo</span>
-                  <span><c:out value="${invoice.createdAt}"/> bởi <c:out value="${invoice.createdByName}"/></span>
+                  <span><fmt:formatDate value="${invoice.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/> bởi <c:out value="${invoice.createdByName}"/></span>
                 </li>
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Cập nhật cuối</span>
-                  <span><c:out value="${invoice.updatedAt}"/></span>
+                  <span><fmt:formatDate value="${invoice.updatedAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/></span>
                 </li>
               </ul>
             </div>

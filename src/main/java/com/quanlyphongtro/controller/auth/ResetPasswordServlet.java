@@ -61,8 +61,15 @@ public class ResetPasswordServlet extends BaseServlet {
             return;
         }
 
-        if (newPassword == null || newPassword.length() < 6 || !newPassword.equals(confirmPassword)) {
-            req.setAttribute("errorMessage", "Mật khẩu không hợp lệ hoặc xác nhận mật khẩu không khớp.");
+        if (!newPassword.equals(confirmPassword)) {
+            req.setAttribute("errorMessage", "Xác nhận mật khẩu không khớp.");
+            req.setAttribute("resetToken", token);
+            req.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp").forward(req, resp);
+            return;
+        }
+
+        if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
+            req.setAttribute("errorMessage", com.quanlyphongtro.util.PasswordValidator.POLICY_MESSAGE);
             req.setAttribute("resetToken", token);
             req.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp").forward(req, resp);
             return;

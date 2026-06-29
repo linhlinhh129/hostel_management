@@ -19,6 +19,8 @@ public class UserSessionDTO implements Serializable {
     private String roomCode;
     /** true nếu force_change_pass=1 trong DB — bắt redirect về change-password */
     private boolean firstLogin;
+    
+    private java.time.LocalDateTime lastReadNotificationTime;
 
     public UserSessionDTO() {}
 
@@ -57,6 +59,9 @@ public class UserSessionDTO implements Serializable {
 
     public boolean isFirstLogin() { return firstLogin; }
     public void setFirstLogin(boolean firstLogin) { this.firstLogin = firstLogin; }
+
+    public java.time.LocalDateTime getLastReadNotificationTime() { return lastReadNotificationTime; }
+    public void setLastReadNotificationTime(java.time.LocalDateTime lastReadNotificationTime) { this.lastReadNotificationTime = lastReadNotificationTime; }
 
     private String resolveRoleLabel(String role) {
         if (role == null) return "";

@@ -22,7 +22,8 @@
       <c:choose>
         <c:when test="${empty facilityId}">
 
-          <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+          <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+               style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
             <div>
               <h1>Căn hộ / Phòng</h1>
               <p>Chọn cơ sở để xem danh sách phòng</p>
@@ -114,18 +115,10 @@
              ================================================================ --%>
         <c:otherwise>
 
-          <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+          <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+               style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
             <div>
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <a href="${ctx}/manager/rooms?showGrid=true"
-                   style="font-size:0.875rem;color:var(--hms-text-muted);text-decoration:none">
-                  ← Tất cả cơ sở
-                </a>
-                <span style="color:var(--hms-text-muted)">/</span>
-                <span style="font-size:0.875rem;color:var(--hms-ink);font-weight:500">
-                  <c:out value="${currentFacility.name}"/>
-                </span>
-              </div>
+              
               <h1>Danh sách phòng</h1>
               <p>
                 Cơ sở: <strong><c:out value="${currentFacility.code}"/></strong>
@@ -136,15 +129,21 @@
 
           <div class="data-surface">
             <%-- Bộ lọc trạng thái --%>
-            <form class="filter-bar" method="get" action="${ctx}/manager/facilities/${facilityId}/rooms">
-              <select class="form-select" name="status" style="max-width:180px">
-                <option value="">Tất cả trạng thái</option>
-                <option value="AVAILABLE"   ${filterStatus == 'AVAILABLE'   ? 'selected' : ''}>Trống</option>
-                <option value="OCCUPIED"    ${filterStatus == 'OCCUPIED'    ? 'selected' : ''}>Đang thuê</option>
-              </select>
-              <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-              <a href="${ctx}/manager/facilities/${facilityId}/rooms"
-                 class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+            <form method="get" action="${ctx}/manager/facilities/${facilityId}/rooms" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+              <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                  <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
+                  <select class="form-select" name="status">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="AVAILABLE"   ${filterStatus == 'AVAILABLE'   ? 'selected' : ''}>Trống</option>
+                    <option value="OCCUPIED"    ${filterStatus == 'OCCUPIED'    ? 'selected' : ''}>Đang thuê</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-8 d-flex justify-content-md-end gap-2">
+                  <a href="${ctx}/manager/facilities/${facilityId}/rooms" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa bộ lọc</a>
+                  <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc</button>
+                </div>
+              </div>
             </form>
 
             <c:choose>
@@ -154,13 +153,13 @@
                     <thead>
                       <tr>
                         <th>Mã phòng</th>
-                        <th>Tầng</th>
-                        <th>Số phòng</th>
-                        <th>Diện tích</th>
+                        <th class="d-none d-md-table-cell">Tầng</th>
+                        <th class="d-none d-md-table-cell">Số phòng</th>
+                        <th class="d-none d-md-table-cell">Diện tích</th>
                         <th>Trạng thái</th>
                         <th>Chủ thuê</th>
-                        <th>Số người ở</th>
-                        <th>Thao tác</th>
+                        <th class="d-none d-md-table-cell">Số người ở</th>
+                        <th class="d-none d-md-table-cell">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -171,9 +170,9 @@
                               <c:out value="${room.code}"/>
                             </a>
                           </td>
-                          <td><c:out value="${room.floor}"/></td>
-                          <td><c:out value="${room.roomNumber}"/></td>
-                          <td>
+                          <td class="d-none d-md-table-cell"><c:out value="${room.floor}"/></td>
+                          <td class="d-none d-md-table-cell"><c:out value="${room.roomNumber}"/></td>
+                          <td class="d-none d-md-table-cell">
                             <c:choose>
                               <c:when test="${not empty room.area}">
                                 <fmt:formatNumber value="${room.area}" maxFractionDigits="1"/> m²
@@ -185,6 +184,12 @@
                             <c:choose>
                               <c:when test="${room.status == 'OCCUPIED'}">
                                 <span class="badge-hms badge-info">Đang thuê</span>
+                              </c:when>
+                              <c:when test="${room.status == 'MAINTENANCE'}">
+                                <span class="badge-hms badge-warning">Bảo trì</span>
+                              </c:when>
+                              <c:when test="${room.status == 'INACTIVE'}">
+                                <span class="badge-hms badge-neutral">Vô hiệu</span>
                               </c:when>
                               <c:otherwise>
                                 <span class="badge-hms badge-success">Trống</span>
@@ -205,7 +210,7 @@
                               </c:otherwise>
                             </c:choose>
                           </td>
-                          <td>
+                          <td class="d-none d-md-table-cell">
                             <%-- Số người ở: 1 (chủ thuê) + people_count nếu có --%>
                             <c:choose>
                               <c:when test="${not empty room.tenantId}">
@@ -216,7 +221,7 @@
                               </c:otherwise>
                             </c:choose>
                           </td>
-                          <td>
+                          <td class="d-none d-md-table-cell">
                             <a href="${ctx}/manager/rooms/${room.id}"
                                class="btn-mintlify-secondary text-decoration-none"
                                style="padding:4px 12px;font-size:0.8125rem">Xem</a>

@@ -32,20 +32,23 @@
                 </div>
               </div>
 
-              <div class="data-surface p-3 mb-4">
-                <form action="${ctx}/manager/contracts" method="get" class="row g-2 align-items-center">
-                  <div class="col-md-6 col-12 position-relative">
-                    <svg class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" name="searchName" class="form-control ps-5" placeholder="Tìm kiếm theo tên người đại diện..." value="${searchName}">
-                  </div>
-                  <div class="col-md-2 col-4">
-                    <button type="submit" class="btn-mintlify-primary w-100">Tìm kiếm</button>
-                  </div>
-                  <c:if test="${not empty searchName}">
-                    <div class="col-md-2 col-4">
-                      <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none w-100 text-center d-block">Xóa lọc</a>
+              <div class="data-surface p-3 mb-4" style="border: 1px solid var(--hms-border);">
+                <form action="${ctx}/manager/contracts" method="get" id="filterForm">
+                  <div class="row g-3 align-items-end">
+                    <div class="col-12 col-md-6">
+                      <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                      <div class="position-relative">
+                        <svg class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" name="searchName" class="form-control ps-5" placeholder="Tìm kiếm theo tên người đại diện..." value="${searchName}">
+                      </div>
                     </div>
-                  </c:if>
+                    <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
+                      <c:if test="${not empty searchName}">
+                        <a href="${ctx}/manager/contracts" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+                      </c:if>
+                      <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
+                    </div>
+                  </div>
                 </form>
               </div>
 
@@ -57,38 +60,38 @@
                         <thead>
                           <tr>
                             <th>Mã HĐ</th>
-                            <th>Phòng</th>
+                            <th class="d-none d-md-table-cell">Phòng</th>
                             <th>Người đại diện</th>
-                            <th>Ngày ký</th>
-                            <th>Thời hạn</th>
+                            <th class="d-none d-md-table-cell">Ngày ký</th>
+                            <th class="d-none d-md-table-cell">Thời hạn</th>
                             <th>Trạng thái</th>
-                            <th>Thao tác</th>
+                            <th class="d-none d-md-table-cell">Thao tác</th>
                           </tr>
                         </thead>
                         <tbody>
                           <c:forEach var="c" items="${contracts}">
-                            <tr>
+                            <tr data-href="${ctx}/manager/contracts/detail?id=${c.contractId}">
                               <td>
                                 <a href="${ctx}/manager/contracts/detail?id=${c.contractId}"
                                   style="font-weight:600;font-family:monospace">
                                   <c:out value="${c.code}" />
                                 </a>
                               </td>
-                              <td><span class="badge-hms badge-neutral">
+                              <td class="d-none d-md-table-cell"><span class="badge-hms badge-neutral">
                                   <c:out value="${c.room.code}" />
                                 </span></td>
                               <td>
                                 <div class="fw-bold">
                                   <c:out value="${c.tenantFullName}" />
                                 </div>
-                                <small class="text-muted">CCCD:
+                                <small class="text-muted d-none d-md-inline">CCCD:
                                   <c:out value="${c.tenantIdentityNumber}" />
                                 </small>
                               </td>
-                              <td>
+                              <td class="d-none d-md-table-cell">
                                 <c:out value="${c.signedDate}" />
                               </td>
-                              <td>
+                              <td class="d-none d-md-table-cell">
                                 <c:out value="${c.startDate}" /> -
                                 <c:out value="${c.endDate}" />
                               </td>
@@ -97,7 +100,7 @@
                                   <c:out value="${c.status}" />
                                 </span>
                               </td>
-                              <td>
+                              <td class="d-none d-md-table-cell">
                                 <div class="d-inline-flex gap-1 align-items-center">
                                   <a href="${ctx}/manager/contracts/detail?id=${c.contractId}"
                                     class="btn-mintlify-secondary text-decoration-none"

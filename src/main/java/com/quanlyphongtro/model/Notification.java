@@ -24,7 +24,9 @@ public class Notification {
     private boolean unread;
     private String summary; // Shortened content
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final DateTimeFormatter DATE_ONLY_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TIME_ONLY_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     public Notification() {}
 
@@ -66,9 +68,25 @@ public class Notification {
 
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+    
+    public java.util.Date getSentAtAsDate() {
+        if (sentAt == null) return null;
+        return java.util.Date.from(sentAt.atZone(java.time.ZoneId.systemDefault()).toInstant());
+    }
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    // Backward compatibility for JSP fmt:formatDate
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return java.sql.Timestamp.valueOf(createdAt);
+    }
+
+    public java.util.Date getUpdatedAtAsDate() {
+        if (updatedAt == null) return null;
+        return java.sql.Timestamp.valueOf(updatedAt);
+    }
 
     public boolean isUnread() { return unread; }
     public void setUnread(boolean unread) { this.unread = unread; }
@@ -78,7 +96,26 @@ public class Notification {
 
     // Helpers for View
     public String getCreatedDateLabel() {
+        if (sentAt != null) return sentAt.format(DATE_TIME_FORMATTER);
         return createdAt != null ? createdAt.format(DATE_TIME_FORMATTER) : "N/A";
+    }
+
+    public String getCreatedAtLabel() {
+        return createdAt != null ? createdAt.format(DATE_TIME_FORMATTER) : "N/A";
+    }
+
+    public String getSentAtLabel() {
+        return sentAt != null ? sentAt.format(DATE_TIME_FORMATTER) : "-";
+    }
+
+    public String getCreatedDateOnly() {
+        if (sentAt != null) return sentAt.format(DATE_ONLY_FORMATTER);
+        return createdAt != null ? createdAt.format(DATE_ONLY_FORMATTER) : "N/A";
+    }
+
+    public String getCreatedTimeOnly() {
+        if (sentAt != null) return sentAt.format(TIME_ONLY_FORMATTER);
+        return createdAt != null ? createdAt.format(TIME_ONLY_FORMATTER) : "N/A";
     }
 
     public void generateSummary() {

@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -16,7 +16,7 @@
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
       <%-- Breadcrumb + Header --%>
-      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <%-- Breadcrumb --%>
           <div style="font-size:0.8125rem;color:var(--hms-text-muted);margin-bottom:6px">
@@ -106,11 +106,11 @@
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Ngày tạo</td>
-                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${room.createdAt}"/></td>
+                  <td style="padding:10px 16px;font-size:0.8125rem"><fmt:formatDate value="${room.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
                 </tr>
                 <tr>
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Cập nhật lúc</td>
-                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${room.updatedAt}"/></td>
+                  <td style="padding:10px 16px;font-size:0.8125rem"><fmt:formatDate value="${room.updatedAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
                 </tr>
               </table>
             </div>

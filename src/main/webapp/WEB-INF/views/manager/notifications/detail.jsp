@@ -15,7 +15,7 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <h1><c:out value="${notification.title}"/></h1>
           <p>Mã: <strong><c:out value="${notification.code}"/></strong></p>
@@ -86,11 +86,11 @@
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Ngày tạo</td>
-                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.createdAt}"/></td>
+                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.createdAtLabel}"/></td>
                 </tr>
                 <tr>
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Gửi lúc</td>
-                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.sentAt}"/></td>
+                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.sentAtLabel}"/></td>
                 </tr>
               </table>
             </div>

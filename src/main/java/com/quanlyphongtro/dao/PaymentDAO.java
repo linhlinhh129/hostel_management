@@ -3,8 +3,6 @@ package com.quanlyphongtro.dao;
 import com.quanlyphongtro.dto.PaymentListItemDTO;
 import com.quanlyphongtro.dto.PaymentDetailDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
-import com.quanlyphongtro.dto.PaymentListItemDTO;
-import com.quanlyphongtro.dto.PaymentDetailDTO;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -38,7 +36,21 @@ public class PaymentDAO extends BaseDAO {
         }
     }
 
-    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, int offset, int limit) {
+    public boolean hasPendingPayment(int invoiceId) {
+        String sql = "SELECT 1 FROM payments WHERE invoice_id = ? AND status = 'PENDING' AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year, int offset, int limit) {
         List<PaymentListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, " +
@@ -55,6 +67,21 @@ public class PaymentDAO extends BaseDAO {
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+        }
+        
+        // Lọc theo khoảng thời gian (fromDate - toDate)
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date >= ? ");
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date <= ? ");
+        }
+        
+        // Lọc theo kỳ (tháng/năm)
+        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+            sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
+        } else if (year != null && !year.trim().isEmpty()) {
+            sql.append("AND YEAR(p.payment_date) = ? ");
         }
         
         sql.append("ORDER BY p.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
@@ -74,6 +101,21 @@ public class PaymentDAO extends BaseDAO {
                  ps.setString(paramIndex++, kw);
                  ps.setString(paramIndex++, kw);
              }
+             
+             if (fromDate != null && !fromDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(fromDate));
+             }
+             if (toDate != null && !toDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(toDate));
+             }
+             
+             if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(month));
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
+             } else if (year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
+             }
+             
              ps.setInt(paramIndex++, offset);
              ps.setInt(paramIndex++, limit);
              
@@ -107,7 +149,7 @@ public class PaymentDAO extends BaseDAO {
         return list;
     }
     
-    public int countPayments(int managerId, String keyword, String status) {
+    public int countPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(1) " +
@@ -125,6 +167,21 @@ public class PaymentDAO extends BaseDAO {
             sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
         }
         
+        // Lọc theo khoảng thời gian (fromDate - toDate)
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date >= ? ");
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date <= ? ");
+        }
+        
+        // Lọc theo kỳ (tháng/năm)
+        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+            sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
+        } else if (year != null && !year.trim().isEmpty()) {
+            sql.append("AND YEAR(p.payment_date) = ? ");
+        }
+        
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
              
@@ -139,6 +196,20 @@ public class PaymentDAO extends BaseDAO {
                  ps.setString(paramIndex++, kw);
                  ps.setString(paramIndex++, kw);
                  ps.setString(paramIndex++, kw);
+             }
+             
+             if (fromDate != null && !fromDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(fromDate));
+             }
+             if (toDate != null && !toDate.trim().isEmpty()) {
+                 ps.setDate(paramIndex++, Date.valueOf(toDate));
+             }
+             
+             if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(month));
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
+             } else if (year != null && !year.trim().isEmpty()) {
+                 ps.setInt(paramIndex++, Integer.parseInt(year));
              }
              
              try (ResultSet rs = ps.executeQuery()) {

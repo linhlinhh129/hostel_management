@@ -87,6 +87,17 @@ public class User {
 
     public boolean isDeleted() { return deletedAt != null; }
 
+    // Backward compatibility for JSP fmt:formatDate
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return java.sql.Timestamp.valueOf(createdAt);
+    }
+
+    public java.util.Date getUpdatedAtAsDate() {
+        if (updatedAt == null) return null;
+        return java.sql.Timestamp.valueOf(updatedAt);
+    }
+
     public List<String> getFacilityNames() { return facilityNames; }
     public void setFacilityNames(List<String> facilityNames) {
         this.facilityNames = facilityNames != null ? facilityNames : new ArrayList<>();

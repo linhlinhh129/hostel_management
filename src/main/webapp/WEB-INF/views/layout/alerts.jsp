@@ -1,5 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:if test="${currentFacilityStatus == 'INACTIVE'}">
+    <div class="alert alert-warning mb-3" style="border-radius: 8px; text-align: center; font-weight: 500;">
+        ⚠ Cơ sở này đã bị vô hiệu hoá. Giao diện đang ở chế độ <strong>CHỈ XEM</strong>. Không thể thêm mới hay chỉnh sửa dữ liệu.
+    </div>
+</c:if>
 <%--
     Consume flash messages từ session ngay lập tức để chúng không bị hiển thị lại ở màn khác.
     errorMessage / successMessage / warningMessage là request-scope → tự mất sau request.

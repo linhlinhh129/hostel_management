@@ -57,14 +57,13 @@ public class FirstLoginServlet extends BaseServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        if (newPassword == null || newPassword.length() < 7) {
-            request.setAttribute("errorMessage", "Mật khẩu phải có ít nhất 7 ký tự.");
+        if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
+            request.setAttribute("errorMessage", com.quanlyphongtro.util.PasswordValidator.POLICY_MESSAGE);
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
             return;
         }
-
         if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("errorMessage", "Mật khẩu xác nhận không khớp.");
+            request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u x\u00E1c nh\u1EADn kh\u00F4ng kh\u1EDBp.");
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
             return;
         }

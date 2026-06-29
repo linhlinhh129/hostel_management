@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle"  value="Tạo thông báo - Admin"/>
@@ -26,9 +26,7 @@
                     <%-- Admin chỉ gửi ALL — cố định theo Admin.md §12 --%>
                     <input type="hidden" name="recipientType" value="ALL"/>
 
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-                    </c:if>
+
 
                     <!-- Thông tin đối tượng nhận (read-only, chỉ ALL) -->
                     <div class="alert"

@@ -18,7 +18,8 @@ public class CsrfFilter implements Filter {
 
     private static final String CSRF_SESSION_KEY = "csrfToken";
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
-            "/login", "/logout", "/forgot-password", "/reset-password", "/assets"
+            "/login", "/logout", "/forgot-password", "/reset-password",
+            "/api/v1/auth", "/assets"
     );
 
     @Override
@@ -38,7 +39,12 @@ public class CsrfFilter implements Filter {
         req.setAttribute(CSRF_SESSION_KEY, token);
 
         if ("POST".equalsIgnoreCase(req.getMethod()) && requiresCsrf(path)) {
-            String submitted = req.getParameter(CSRF_SESSION_KEY);
+            // JSON API requests gửi token qua header X-CSRF-Token
+            String submitted = req.getHeader("X-CSRF-Token");
+            if (submitted == null) {
+                // Form requests gửi token qua parameter
+                submitted = req.getParameter(CSRF_SESSION_KEY);
+            }
             if (submitted == null || !submitted.equals(token)) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, ErrorMessageConstant.CSRF_INVALID);
                 return;

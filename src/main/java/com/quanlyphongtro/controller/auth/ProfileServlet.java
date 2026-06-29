@@ -128,14 +128,19 @@ public class ProfileServlet extends BaseServlet {
                 
             } else if ("change_password".equals(action)) {
                 String currentPassword = request.getParameter("currentPassword");
-                String newPassword = request.getParameter("newPassword");
+                String newPassword     = request.getParameter("newPassword");
                 String confirmPassword = request.getParameter("confirmPassword");
+
+                // ── Validate độ mạnh mật khẩu ───────────────────────────
+                if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=invalid_policy");
+                    return;
+                }
 
                 if (!newPassword.equals(confirmPassword)) {
                     response.sendRedirect(request.getContextPath() + "/profile?error=password_mismatch");
                     return;
                 }
-
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
                     response.sendRedirect(request.getContextPath() + "/profile?error=invalid_password");
                     return;

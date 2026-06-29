@@ -111,6 +111,9 @@
                                     <c:when test="${invoice.status == 'PAID'}">
                                         <span class="badge-hms badge-success">✓ Đã thanh toán</span>
                                     </c:when>
+                                    <c:when test="${invoice.hasPendingPayment}">
+                                        <span class="badge-hms badge-info">⌛ Chờ duyệt</span>
+                                    </c:when>
                                     <c:when test="${invoice.status == 'OVERDUE'}">
                                         <span class="badge-hms badge-danger">⚠ Quá hạn</span>
                                     </c:when>
@@ -126,7 +129,7 @@
                     </div>
 
                     <%-- Hướng dẫn thanh toán & VNPAY --%>
-                    <c:if test="${invoice.status == 'UNPAID' or invoice.status == 'OVERDUE'}">
+                    <c:if test="${not invoice.hasPendingPayment and (invoice.status == 'UNPAID' or invoice.status == 'OVERDUE')}">
                         <div class="widget-surface" style="background:var(--hms-accent-bg); border-color:var(--hms-accent);">
                             <div class="widget-surface-header border-bottom-0 pb-0">
                                 <h3 style="color:var(--hms-ink)">💳 Thanh toán</h3>

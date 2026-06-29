@@ -66,27 +66,69 @@ public class NotificationDAO extends BaseDAO {
         return list;
     }
 
-    public List<Notification> findForTenant(int roomId, int facilityId) {
+    public List<Notification> findForTenant(int roomId, int facilityId, int page, int pageSize) {
+        return findForTenant(roomId, facilityId, null, page, pageSize);
+    }
+
+    public List<Notification> findForTenant(int roomId, int facilityId, String keyword, int page, int pageSize) {
         List<Notification> list = new ArrayList<>();
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         String sql = "SELECT n.*, u.full_name AS created_by_name " +
                      "FROM dbo.notifications n " +
                      "LEFT JOIN dbo.users u ON u.user_id = n.created_by " +
                      "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
                      "AND (n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?) OR (n.target_type = 'ROOM' AND n.room_id = ?)) " +
-                     "ORDER BY n.sent_at DESC, n.created_at DESC";
+                     (hasKeyword ? "AND (n.title LIKE ? OR n.content LIKE ?) " : "") +
+                     "ORDER BY n.sent_at DESC, n.created_at DESC " +
+                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, facilityId);
-            ps.setInt(2, roomId);
+            int idx = 1;
+            ps.setInt(idx++, facilityId);
+            ps.setInt(idx++, roomId);
+            if (hasKeyword) {
+                String like = "%" + keyword.trim() + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx++, like);
+            }
+            ps.setInt(idx++, (page - 1) * pageSize);
+            ps.setInt(idx,   pageSize);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapRow(rs));
-                }
+                while (rs.next()) list.add(mapRow(rs));
             }
         } catch (Exception e) {
-            logger.error("findForTenant failed for roomId={}, facilityId={}", roomId, facilityId, e);
+            logger.error("findForTenant failed for roomId={}, facilityId={}, keyword={}", roomId, facilityId, keyword, e);
         }
         return list;
+    }
+
+    public int countForTenant(int roomId, int facilityId) {
+        return countForTenant(roomId, facilityId, null);
+    }
+
+    public int countForTenant(int roomId, int facilityId, String keyword) {
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        String sql = "SELECT COUNT(*) FROM dbo.notifications " +
+                     "WHERE status = 'SENT' AND deleted_at IS NULL " +
+                     "AND (target_type = 'ALL' OR (target_type = 'FACILITY' AND facility_id = ?) OR (target_type = 'ROOM' AND room_id = ?)) " +
+                     (hasKeyword ? "AND (title LIKE ? OR content LIKE ?)" : "");
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int idx = 1;
+            ps.setInt(idx++, facilityId);
+            ps.setInt(idx++, roomId);
+            if (hasKeyword) {
+                String like = "%" + keyword.trim() + "%";
+                ps.setString(idx++, like);
+                ps.setString(idx,   like);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            logger.error("countForTenant failed for roomId={}, facilityId={}, keyword={}", roomId, facilityId, keyword, e);
+        }
+        return 0;
     }
 
     public Optional<Notification> findByIdForTenant(int id, int roomId, int facilityId) {
@@ -111,7 +153,7 @@ public class NotificationDAO extends BaseDAO {
     }
 
     public int countUnreadForTenant(int roomId, int facilityId, java.time.LocalDateTime lastReadTime) {
-        if (lastReadTime == null) return findForTenant(roomId, facilityId).size();
+        if (lastReadTime == null) return countForTenant(roomId, facilityId);
 
         String sql = "SELECT COUNT(*) FROM dbo.notifications " +
                      "WHERE status = 'SENT' AND deleted_at IS NULL " +
@@ -151,6 +193,61 @@ public class NotificationDAO extends BaseDAO {
             }
         } catch (Exception e) {
             logger.error("NotificationDAO.count failed", e);
+        }
+        return 0;
+    }
+
+    public List<Notification> findNotificationsForOperator(int facilityId, int page, int limit) {
+        List<Notification> list = new ArrayList<>();
+        
+        String condition = facilityId > 0 
+            ? "(n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?))" 
+            : "n.target_type = 'ALL'";
+            
+        String sql = "SELECT n.*, u.full_name AS created_by_name " +
+                     "FROM dbo.notifications n " +
+                     "LEFT JOIN dbo.users u ON u.user_id = n.created_by " +
+                     "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
+                     "AND " + condition + " " +
+                     "ORDER BY n.sent_at DESC, n.created_at DESC " +
+                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (facilityId > 0) {
+                ps.setInt(paramIndex++, facilityId);
+            }
+            ps.setInt(paramIndex++, (page - 1) * limit);
+            ps.setInt(paramIndex, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("findNotificationsForOperator failed for facilityId={}", facilityId, e);
+        }
+        return list;
+    }
+
+    public int countNotificationsForOperator(int facilityId) {
+        String condition = facilityId > 0 
+            ? "(n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?))" 
+            : "n.target_type = 'ALL'";
+            
+        String sql = "SELECT COUNT(*) FROM dbo.notifications n " +
+                     "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
+                     "AND " + condition;
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (facilityId > 0) {
+                ps.setInt(1, facilityId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            logger.error("countNotificationsForOperator failed for facilityId={}", facilityId, e);
         }
         return 0;
     }

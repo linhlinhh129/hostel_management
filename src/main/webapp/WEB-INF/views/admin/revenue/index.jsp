@@ -53,8 +53,7 @@
             <c:if test="${not empty systemRevenue}">
                 <div class="kpi-grid" style="margin-bottom:1.75rem">
                     <div class="kpi-surface-card highlight-success">
-                        <div class="kpi-icon" style="font-size:1.25rem">💰</div>
-                        <span class="kpi-label">Tổng doanh thu đã thu</span>
+                        <span class="kpi-label">Tổng doanh thu </span>
                         <span class="kpi-value" style="font-size:1.5rem">
                             <fmt:formatNumber value="${systemRevenue.totalRevenue}" pattern="#,##0"/> đ
                         </span>
@@ -67,18 +66,15 @@
                         </span>
                     </div>
                     <div class="kpi-surface-card">
-                        <div class="kpi-icon">✅</div>
                         <span class="kpi-label">Hóa đơn đã thanh toán</span>
                         <span class="kpi-value"><fmt:formatNumber value="${systemRevenue.paidCount}"/></span>
                         <span class="kpi-trend up">Tỷ lệ thu hồi <c:out value="${systemRevenue.collectionRate}"/>%</span>
                     </div>
                     <div class="kpi-surface-card highlight-warning">
-                        <div class="kpi-icon">⏳</div>
                         <span class="kpi-label">Chưa thanh toán</span>
                         <span class="kpi-value"><fmt:formatNumber value="${systemRevenue.unpaidCount}"/></span>
                     </div>
                     <div class="kpi-surface-card">
-                        <div class="kpi-icon">⚠</div>
                         <span class="kpi-label">Quá hạn</span>
                         <span class="kpi-value" style="color:var(--hms-danger)">
                             <fmt:formatNumber value="${systemRevenue.overdueCount}"/>
@@ -220,7 +216,7 @@
                                 <tbody>
                                 <c:forEach var="t" items="${revenueTrend}">
                                     <tr>
-                                        <td style="font-weight:600;font-family:var(--hms-font-mono)">
+                                        <td style="font-weight:600">
                                             <c:out value="${t.facilityCode}"/>
                                         </td>
                                         <td style="font-weight:700">

@@ -5,6 +5,7 @@ import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.model.Contract;
 import com.quanlyphongtro.dao.ContractDAO;
 import com.quanlyphongtro.dao.AuditLogDAO;
+import com.quanlyphongtro.dao.PersonnelDAO;
 import com.quanlyphongtro.service.ContractService;
 import com.quanlyphongtro.service.impl.ContractServiceImpl;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -40,6 +41,7 @@ public class ContractServlet extends BaseServlet {
 
     private final ContractService contractService = new ContractServiceImpl();
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
+    private final PersonnelDAO personnelDAO = new PersonnelDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -273,26 +275,74 @@ public class ContractServlet extends BaseServlet {
         dto.put("dob", dobStr);
         req.setAttribute("dto", dto);
 
-        if (fullName == null || phone == null || email == null || identityNumber == null || roomIdStr == null
-                || roomIdStr.isEmpty() || contractIdStr == null || contractIdStr.isEmpty()) {
-            req.setAttribute("errorMessage", "Vui lòng nhập đầy đủ các trường bắt buộc.");
+        // ── Validation: kiểm tra rỗng từng trường (đồng bộ với admin/personnel)
+        if (fullName == null || fullName.trim().isEmpty()) {
+            req.setAttribute("errorMessage", "Họ tên không được để trống.");
             showAddTenantForm(req, resp, currentUser.getId());
             return;
         }
-
-        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+        if (email == null || email.trim().isEmpty()) {
+            req.setAttribute("errorMessage", "Email không được để trống.");
+            showAddTenantForm(req, resp, currentUser.getId());
+            return;
+        }
+        if (!email.trim().matches("^[\\w.+-]+@[\\w-]+\\.[\\w.]{2,}$")) {
+            req.setAttribute("errorMessage", "Email không đúng định dạng.");
+            showAddTenantForm(req, resp, currentUser.getId());
+            return;
+        }
+        if (phone == null || phone.trim().isEmpty()) {
+            req.setAttribute("errorMessage", "Số điện thoại không được để trống.");
+            showAddTenantForm(req, resp, currentUser.getId());
+            return;
+        }
+        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone.trim())) {
             req.setAttribute("errorMessage",
                     "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
             showAddTenantForm(req, resp, currentUser.getId());
             return;
         }
-        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+        if (identityNumber == null || identityNumber.trim().isEmpty()) {
+            req.setAttribute("errorMessage", "Số CMND/CCCD không được để trống.");
+            showAddTenantForm(req, resp, currentUser.getId());
+            return;
+        }
+        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber.trim())) {
             req.setAttribute("errorMessage", "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
             showAddTenantForm(req, resp, currentUser.getId());
             return;
         }
+        if (roomIdStr == null || roomIdStr.isEmpty() || contractIdStr == null || contractIdStr.isEmpty()) {
+            req.setAttribute("errorMessage", "Vui lòng nhập đầy đủ các trường bắt buộc.");
+            showAddTenantForm(req, resp, currentUser.getId());
+            return;
+        }
 
+        // ── Kiểm tra trùng lặp (phải loại trừ user đị reactivate để không chặn chính họ)
         String username = email.trim(); // Username is the email
+
+        // Tìm user hiện có với email này (để lấy excludeId khi check uniqueness)
+        Integer existingUserId = null;
+        try (Connection connCheck = DatabaseUtil.getConnection();
+             PreparedStatement psCheck = connCheck.prepareStatement(
+                 "SELECT user_id FROM dbo.users WHERE username = ? AND deleted_at IS NULL")) {
+            psCheck.setString(1, username);
+            try (ResultSet rs = psCheck.executeQuery()) {
+                if (rs.next()) existingUserId = rs.getInt("user_id");
+            }
+        } catch (Exception ignored) {}
+
+        if (personnelDAO.existsByPhone(phone.trim(), existingUserId)) {
+            req.setAttribute("errorMessage", "Số điện thoại '" + phone.trim() + "' đã được sử dụng bởi tài khoản khác.");
+            showAddTenantForm(req, resp, currentUser.getId());
+            return;
+        }
+        if (personnelDAO.existsByIdentityNumber(identityNumber.trim(), existingUserId)) {
+            req.setAttribute("errorMessage", "Số CMND/CCCD '" + identityNumber.trim() + "' đã được sử dụng bởi tài khoản khác.");
+            showAddTenantForm(req, resp, currentUser.getId());
+            return;
+        }
+
         String plainPassword = PasswordUtil.generateTempPassword();
         String passwordHash = PasswordUtil.hash(plainPassword);
 
@@ -316,7 +366,7 @@ public class ContractServlet extends BaseServlet {
                 ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        int existingUserId = rs.getInt("user_id");
+                        int foundUserId = rs.getInt("user_id");
                         String existingRole = rs.getString("role");
                         
                         if (!"TENANT".equals(existingRole)) {
@@ -331,10 +381,10 @@ public class ContractServlet extends BaseServlet {
                                 "UNION ALL " +
                                 "SELECT room_id FROM dbo.rooms WHERE tenant_id = ? AND deleted_at IS NULL" +
                                 ") active_checks";
-                        try (PreparedStatement psCheck = conn.prepareStatement(activeCheckSql)) {
-                            psCheck.setInt(1, existingUserId);
-                            psCheck.setInt(2, existingUserId);
-                            try (ResultSet rsCheck = psCheck.executeQuery()) {
+                        try (PreparedStatement psCheck2 = conn.prepareStatement(activeCheckSql)) {
+                            psCheck2.setInt(1, foundUserId);
+                            psCheck2.setInt(2, foundUserId);
+                            try (ResultSet rsCheck = psCheck2.executeQuery()) {
                                 if (rsCheck.next() && rsCheck.getInt(1) > 0) {
                                     req.setAttribute("errorMessage", "Email/Tên đăng nhập đã tồn tại trong hệ thống và đang hoạt động ở phòng/cơ sở khác.");
                                     conn.rollback();
@@ -354,7 +404,7 @@ public class ContractServlet extends BaseServlet {
                             return;
                         }
 
-                        newUserId = existingUserId;
+                        newUserId = foundUserId;
                         userExists = true;
                     }
                 }

@@ -13,13 +13,13 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentDAO paymentDAO = new PaymentDAO();
 
     @Override
-    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, int offset, int limit) {
-        return paymentDAO.findPayments(managerId, keyword, status, offset, limit);
+    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year, int offset, int limit) {
+        return paymentDAO.findPayments(managerId, keyword, status, fromDate, toDate, month, year, offset, limit);
     }
 
     @Override
-    public int countPayments(int managerId, String keyword, String status) {
-        return paymentDAO.countPayments(managerId, keyword, status);
+    public int countPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year) {
+        return paymentDAO.countPayments(managerId, keyword, status, fromDate, toDate, month, year);
     }
 
     @Override

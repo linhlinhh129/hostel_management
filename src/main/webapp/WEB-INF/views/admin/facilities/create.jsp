@@ -23,9 +23,7 @@
                 <form method="post" action="${ctx}/admin/facilities/create" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger mb-3"><c:out value="${errorMessage}"/></div>
-                    </c:if>
+
 
                     <h2 class="h6 mb-3">Thông tin cơ sở</h2>
 
@@ -62,11 +60,6 @@
                                    min="1" max="99" required value="<c:out value='${dto.roomsPerFloor}'/>">
                             <div class="form-text">1 – 99 phòng</div>
                         </div>
-                    </div>
-
-                    <div class="alert alert-info" style="font-size:0.875rem;border-radius:8px">
-                        <strong>Lưu ý:</strong> Sau khi tạo, cơ sở ở trạng thái <strong>DRAFT</strong>.
-                        Vào trang chi tiết và nhấn <em>Kích hoạt</em> để hệ thống tự động sinh danh sách phòng.
                     </div>
 
                     <div class="d-flex gap-2 mt-2">
