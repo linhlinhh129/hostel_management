@@ -373,4 +373,3 @@ UNION ALL SELECT 'contracts',  COUNT(*) FROM dbo.contracts;
 GO
 
 
-ư
