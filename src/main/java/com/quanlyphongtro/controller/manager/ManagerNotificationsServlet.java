@@ -201,7 +201,13 @@ public class ManagerNotificationsServlet extends BaseServlet {
                         notif.put("creatorRole", rs.getString("creator_role"));
                         notif.put("status", rs.getString("status"));
                         Timestamp cAt = rs.getTimestamp("created_at");
+                        String dateLabel = "";
+                        if (cAt != null) {
+                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+                            dateLabel = sdf.format(cAt);
+                        }
                         notif.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
+                        notif.put("createdDateLabel", dateLabel);
                         notifications.add(notif);
                     }
                 }
@@ -223,16 +229,34 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
             // Load reported incorrect invoices
             List<Map<String, Object>> incorrectInvoices = new ArrayList<>();
-            String incorrectSql = "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
+            StringBuilder incorrectSql = new StringBuilder(
+                    "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
                     "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount " +
                     "FROM dbo.invoices i " +
                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                     "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
-                    "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL " +
-                    "ORDER BY mr.reading_date DESC, i.invoice_id DESC";
-            try (PreparedStatement psInc = conn.prepareStatement(incorrectSql)) {
-                psInc.setInt(1, currentUser.getId());
+                    "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL"
+            );
+            List<Object> incParams = new ArrayList<>();
+            incParams.add(currentUser.getId());
+
+            if (filterFacilityId != null) {
+                incorrectSql.append(" AND f.facility_id = ?");
+                incParams.add(filterFacilityId);
+            }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                incorrectSql.append(" AND (i.code LIKE ? OR r.code LIKE ?)");
+                String kw = "%" + keyword.trim() + "%";
+                incParams.add(kw);
+                incParams.add(kw);
+            }
+            incorrectSql.append(" ORDER BY mr.reading_date DESC, i.invoice_id DESC");
+
+            try (PreparedStatement psInc = conn.prepareStatement(incorrectSql.toString())) {
+                for (int pIdx = 0; pIdx < incParams.size(); pIdx++) {
+                    psInc.setObject(pIdx + 1, incParams.get(pIdx));
+                }
                 try (ResultSet rsInc = psInc.executeQuery()) {
                     while (rsInc.next()) {
                         Map<String, Object> item = new HashMap<>();

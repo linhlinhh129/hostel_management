@@ -58,6 +58,22 @@
         <c:choose>
           <c:when test="${param.tab == 'incorrect-utility'}">
             <%-- Tab Báo lỗi điện nước --%>
+            <form method="get" action="${ctx}/manager/notifications" id="filterFormIncorrect" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+              <input type="hidden" name="tab" value="incorrect-utility"/>
+              <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-8">
+                  <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                  <input type="text" class="form-control" name="keyword"
+                         placeholder="Mã hóa đơn / phòng..."
+                         value="<c:out value='${keyword}'/>">
+                </div>
+                <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
+                  <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+                  <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
+                </div>
+              </div>
+            </form>
+
             <c:choose>
               <c:when test="${not empty incorrectInvoices}">
                 <div class="table-responsive">
@@ -148,22 +164,11 @@
             <form method="get" action="${ctx}/manager/notifications" id="filterFormReminder" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
               <input type="hidden" name="tab" value="payment-reminder"/>
               <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-8">
                   <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
                   <input type="text" class="form-control" name="keyword"
                          placeholder="Tiêu đề / nội dung..."
                          value="<c:out value='${keyword}'/>">
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Cơ sở</label>
-                  <select class="form-select" name="facilityId">
-                    <option value="">Tất cả cơ sở</option>
-                    <c:forEach var="facility" items="${assignedFacilities}">
-                      <option value="${facility.id}" ${filterFacilityId == facility.id ? 'selected' : ''}>
-                        <c:out value="${facility.name}"/> (<c:out value="${facility.code}"/>)
-                      </option>
-                    </c:forEach>
-                  </select>
                 </div>
                 <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
                   <a href="${ctx}/manager/notifications?tab=payment-reminder" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
