@@ -306,6 +306,7 @@ public class NotificationDAO extends BaseDAO {
         switch (targetType == null ? "ALL" : targetType.toUpperCase()) {
             case "FACILITY": typeTag = "FAC";  break;
             case "ROOM":     typeTag = "ROOM"; break;
+            case "DEBT":     typeTag = "DEBT"; break;
             default:         typeTag = "ALL";  break;
         }
         // Use MAX to avoid duplicates under concurrent inserts

@@ -40,6 +40,13 @@
             </a>
           </li>
           <li class="nav-item" role="presentation">
+            <a class="nav-link ${tab == 'payment-reminder' ? 'active' : ''}" 
+               href="${ctx}/manager/notifications?tab=payment-reminder" 
+               style="font-weight: 600; color: ${tab == 'payment-reminder' ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+              Nhắc nhở thanh toán
+            </a>
+          </li>
+          <li class="nav-item" role="presentation">
             <a class="nav-link ${tab == 'incorrect-utility' ? 'active' : ''}" 
                href="${ctx}/manager/notifications?tab=incorrect-utility" 
                style="font-weight: 600; color: ${tab == 'incorrect-utility' ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
@@ -132,6 +139,117 @@
                   </svg>
                   <h4>Không có hóa đơn báo lỗi</h4>
                   <p class="text-muted">Tất cả hóa đơn trong các cơ sở của bạn đều có chỉ số điện nước bình thường.</p>
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </c:when>
+          <c:when test="${param.tab == 'payment-reminder'}">
+            <%-- Tab Nhắc nhở thanh toán --%>
+            <form method="get" action="${ctx}/manager/notifications" id="filterFormReminder" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+              <input type="hidden" name="tab" value="payment-reminder"/>
+              <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                  <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                  <input type="text" class="form-control" name="keyword"
+                         placeholder="Tiêu đề / nội dung..."
+                         value="<c:out value='${keyword}'/>">
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Cơ sở</label>
+                  <select class="form-select" name="facilityId">
+                    <option value="">Tất cả cơ sở</option>
+                    <c:forEach var="facility" items="${assignedFacilities}">
+                      <option value="${facility.id}" ${filterFacilityId == facility.id ? 'selected' : ''}>
+                        <c:out value="${facility.name}"/> (<c:out value="${facility.code}"/>)
+                      </option>
+                    </c:forEach>
+                  </select>
+                </div>
+                <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
+                  <a href="${ctx}/manager/notifications?tab=payment-reminder" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+                  <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
+                </div>
+              </div>
+            </form>
+
+            <c:choose>
+              <c:when test="${not empty page.items}">
+                <div class="table-responsive">
+                  <table class="table-mintlify">
+                    <thead>
+                      <tr>
+                        <th>Mã</th>
+                        <th>Tiêu đề</th>
+                        <th class="d-none d-md-table-cell">Đối tượng</th>
+                        <th class="d-none d-md-table-cell">Người gửi</th>
+                        <th>Trạng thái</th>
+                        <th class="d-none d-md-table-cell">Ngày gửi</th>
+                        <th class="d-none d-md-table-cell">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <c:forEach var="notif" items="${page.items}">
+                        <tr data-href="${ctx}/manager/notifications/${notif.id}">
+                          <td>
+                            <a href="${ctx}/manager/notifications/${notif.id}" class="code-badge">
+                              <c:out value="${notif.code}"/>
+                            </a>
+                          </td>
+                          <td style="max-width:280px"><c:out value="${notif.title}"/></td>
+                          <td class="d-none d-md-table-cell">
+                            <c:choose>
+                              <c:when test="${notif.recipientType == 'ROOM'}">
+                                <span class="badge-hms badge-neutral">Phòng</span>
+                              </c:when>
+                              <c:otherwise>
+                                <span class="badge-hms badge-neutral"><c:out value="${notif.recipientType}"/></span>
+                              </c:otherwise>
+                            </c:choose>
+                          </td>
+                          <td class="d-none d-md-table-cell"><c:out value="${notif.createdByName}"/></td>
+                          <td>
+                            <span class="badge-hms badge-success">Đã gửi</span>
+                          </td>
+                          <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted)">
+                            <c:out value="${notif.createdDateLabel}"/>
+                          </td>
+                          <td class="d-none d-md-table-cell">
+                            <a href="${ctx}/manager/notifications/${notif.id}"
+                               class="btn-mintlify-secondary text-decoration-none"
+                               style="padding:4px 12px;font-size:0.8125rem">Xem</a>
+                          </td>
+                        </tr>
+                      </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
+                  <span class="text-muted" style="font-size:0.875rem">
+                    Tổng <fmt:formatNumber value="${page.total}" groupingUsed="true"/> nhắc nhở
+                    · Trang ${page.page} / ${page.totalPages}
+                  </span>
+                  <div class="d-flex gap-1">
+                    <c:if test="${page.page > 1}">
+                      <a href="${ctx}/manager/notifications?page=${page.page - 1}&keyword=${keyword}&facilityId=${filterFacilityId}&tab=payment-reminder"
+                         class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Trước</a>
+                    </c:if>
+                    <c:if test="${page.page < page.totalPages}">
+                      <a href="${ctx}/manager/notifications?page=${page.page + 1}&keyword=${keyword}&facilityId=${filterFacilityId}&tab=payment-reminder"
+                         class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau</a>
+                    </c:if>
+                  </div>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="empty-state p-4 text-center">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--hms-text-muted)" stroke-width="1.5" style="margin-bottom:12px">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <h4>Chưa có nhắc nhở thanh toán nào</h4>
+                  <p class="text-muted">Các nhắc nhở thanh toán gửi từ danh sách công nợ quá hạn sẽ hiển thị ở đây.</p>
                 </div>
               </c:otherwise>
             </c:choose>

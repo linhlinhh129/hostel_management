@@ -282,7 +282,7 @@ public class PaymentDAO extends BaseDAO {
     
     public void approvePayment(int paymentId, int approvedBy) throws SQLException {
         String updatePaymentSql = "UPDATE payments SET status = 'SUCCESS', updated_at = GETDATE() " +
-                                  "WHERE payment_id = ? AND status = 'PENDING' AND " +
+                                  "WHERE payment_id = ? AND status IN ('PENDING', 'REJECTED') AND " +
                                   "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(updatePaymentSql)) {

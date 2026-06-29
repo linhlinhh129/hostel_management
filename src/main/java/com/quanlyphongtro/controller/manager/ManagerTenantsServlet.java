@@ -303,8 +303,11 @@ public class ManagerTenantsServlet extends BaseServlet {
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             // Query tenant details
-            String tenantSql = "SELECT u.*, r.room_id, r.code AS room_code, r.contract_start_date FROM dbo.users u " +
-                    "LEFT JOIN dbo.rooms r ON u.user_id = r.tenant_id WHERE u.user_id = ? AND u.role = 'TENANT' AND u.deleted_at IS NULL";
+            String tenantSql = "SELECT u.*, r.room_id, r.code AS room_code, r.contract_start_date, " +
+                    "(SELECT TOP 1 contract_id FROM dbo.contracts WHERE tenant_id = u.user_id AND deleted_at IS NULL ORDER BY CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, created_at DESC) AS contract_id " +
+                    "FROM dbo.users u " +
+                    "LEFT JOIN dbo.rooms r ON u.user_id = r.tenant_id " +
+                    "WHERE u.user_id = ? AND u.role = 'TENANT' AND u.deleted_at IS NULL";
             try (PreparedStatement ps = conn.prepareStatement(tenantSql)) {
                 ps.setInt(1, tenantId);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -325,6 +328,8 @@ public class ManagerTenantsServlet extends BaseServlet {
                         tenant.put("roomCode", rs.getString("room_code"));
                         Date sDate = rs.getDate("contract_start_date");
                         tenant.put("contractStartDate", sDate != null ? sDate.toString() : null);
+                        int contractId = rs.getInt("contract_id");
+                        tenant.put("contractId", rs.wasNull() ? null : contractId);
                     }
                 }
             }

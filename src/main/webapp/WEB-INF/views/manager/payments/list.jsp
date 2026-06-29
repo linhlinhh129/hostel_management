@@ -17,8 +17,9 @@
               <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
 
               <%-- Header --%>
-                <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" 
-                     style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div
+                  class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+                  style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
                   <div>
                     <h1>Quản lý Thanh toán</h1>
                     <p>Duyệt các khoản thanh toán từ người thuê</p>
@@ -27,16 +28,21 @@
 
                 <%-- Filter bar --%>
                   <div class="data-surface">
-                    <form method="get" action="${ctx}/manager/payments" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+                    <form method="get" action="${ctx}/manager/payments" id="filterForm" class="mb-4 p-3 rounded"
+                      style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
                       <div class="row g-3 align-items-end">
                         <div class="col-12 col-md-3">
-                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                          <label class="form-label"
+                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm
+                            kiếm</label>
                           <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
                             placeholder="Mã GD, phòng, người thuê..." />
                         </div>
-                        
+
                         <div class="col-12 col-md-2">
-                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
+                          <label class="form-label"
+                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng
+                            thái</label>
                           <select class="form-select" name="status">
                             <option value="">Tất cả</option>
                             <option value="PENDING" ${status=='PENDING' ? 'selected' : '' }>Chờ duyệt</option>
@@ -44,18 +50,24 @@
                             <option value="REJECTED" ${status=='REJECTED' ? 'selected' : '' }>Từ chối</option>
                           </select>
                         </div>
-                        
+
                         <div class="col-12 col-md-4">
-                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Thời gian thanh toán</label>
+                          <label class="form-label"
+                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Thời
+                            gian thanh toán</label>
                           <div class="input-group">
-                            <input type="date" class="form-control" name="fromDate" value="<c:out value='${fromDate}'/>" id="fromDate" title="Từ ngày" />
+                            <input type="date" class="form-control" name="fromDate" value="<c:out value='${fromDate}'/>"
+                              id="fromDate" title="Từ ngày" />
                             <span class="input-group-text bg-light text-muted border-start-0 border-end-0">đến</span>
-                            <input type="date" class="form-control" name="toDate" value="<c:out value='${toDate}'/>" id="toDate" title="Đến ngày" />
+                            <input type="date" class="form-control" name="toDate" value="<c:out value='${toDate}'/>"
+                              id="toDate" title="Đến ngày" />
                           </div>
                         </div>
 
                         <div class="col-12 col-md-3">
-                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Kỳ thanh toán</label>
+                          <label class="form-label"
+                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Kỳ
+                            thanh toán</label>
                           <div class="input-group">
                             <select class="form-select" name="month" id="month">
                               <option value="">Tháng</option>
@@ -71,46 +83,49 @@
                             </select>
                           </div>
                         </div>
-                        
-                        <div class="col-12 d-flex justify-content-end gap-2 mt-3 pt-2" style="border-top: 1px dashed var(--hms-border);">
-                          <a href="${ctx}/manager/payments" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa bộ lọc</a>
-                          <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc dữ liệu</button>
+
+                        <div class="col-12 d-flex justify-content-end gap-2 mt-3 pt-2"
+                          style="border-top: 1px dashed var(--hms-border);">
+                          <a href="${ctx}/manager/payments" class="btn btn-light border text-decoration-none"
+                            style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa bộ lọc</a>
+                          <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc dữ
+                            liệu</button>
                         </div>
                       </div>
                     </form>
 
                     <script>
                       // Xử lý xung đột giữa bộ lọc khoảng thời gian và kỳ
-                      document.addEventListener('DOMContentLoaded', function() {
+                      document.addEventListener('DOMContentLoaded', function () {
                         const fromDate = document.getElementById('fromDate');
                         const toDate = document.getElementById('toDate');
                         const month = document.getElementById('month');
                         const year = document.getElementById('year');
-                        
+
                         // Khi chọn khoảng thời gian, xóa lựa chọn kỳ
-                        fromDate.addEventListener('change', function() {
+                        fromDate.addEventListener('change', function () {
                           if (this.value) {
                             month.value = '';
                             year.value = '';
                           }
                         });
-                        
-                        toDate.addEventListener('change', function() {
+
+                        toDate.addEventListener('change', function () {
                           if (this.value) {
                             month.value = '';
                             year.value = '';
                           }
                         });
-                        
+
                         // Khi chọn kỳ, xóa khoảng thời gian
-                        month.addEventListener('change', function() {
+                        month.addEventListener('change', function () {
                           if (this.value) {
                             fromDate.value = '';
                             toDate.value = '';
                           }
                         });
-                        
-                        year.addEventListener('change', function() {
+
+                        year.addEventListener('change', function () {
                           if (this.value) {
                             fromDate.value = '';
                             toDate.value = '';
@@ -145,10 +160,13 @@
                                       </a>
                                       <c:choose>
                                         <c:when test="${payment.paymentMethod == 'VNPAY'}">
-                                          <span class="badge-hms" style="font-size:0.7rem;padding:2px 6px;background-color:#e3f2fd;color:#0d47a1;border:1px solid #bbdefb;border-radius:4px;font-weight:600">VNPAY</span>
+                                          <span class="badge-hms"
+                                            style="font-size:0.7rem;padding:2px 6px;background-color:#e3f2fd;color:#0d47a1;border:1px solid #bbdefb;border-radius:4px;font-weight:600">VNPAY</span>
                                         </c:when>
                                         <c:otherwise>
-                                          <span class="badge-hms" style="font-size:0.7rem;padding:2px 6px;background-color:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9;border-radius:4px;font-weight:600">Chuyển khoản</span>
+                                          <span class="badge-hms"
+                                            style="font-size:0.7rem;padding:2px 6px;background-color:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9;border-radius:4px;font-weight:600">Chuyển
+                                            khoản</span>
                                         </c:otherwise>
                                       </c:choose>
                                     </td>
@@ -240,10 +258,12 @@
                                     </c:if>
                                   </c:url>
                                   <c:if test="${currentPage > 1}">
-                                    <a href="${prevUrl}" class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">← Trước</a>
+                                    <a href="${prevUrl}" class="btn-mintlify-secondary text-decoration-none"
+                                      style="padding:6px 14px">← Trước</a>
                                   </c:if>
                                   <c:if test="${currentPage < totalPages}">
-                                    <a href="${nextUrl}" class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau →</a>
+                                    <a href="${nextUrl}" class="btn-mintlify-secondary text-decoration-none"
+                                      style="padding:6px 14px">Sau →</a>
                                   </c:if>
                                 </div>
                               </div>

@@ -46,6 +46,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
             handleCreateForm(req, resp);
         } else if ("/send-operator".equals(pathInfo)) {
             handleSendOperatorForm(req, resp);
+        } else if ("/send-debt-reminder".equals(pathInfo)) {
+            handleSendDebtReminderForm(req, resp);
         } else {
             String idStr = pathInfo.substring(1);
             try {
@@ -64,6 +66,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
             handleCreateSubmit(req, resp);
         } else if ("/send-operator".equals(pathInfo)) {
             handleSendOperatorSubmit(req, resp);
+        } else if ("/send-debt-reminder".equals(pathInfo)) {
+            handleSendDebtReminderSubmit(req, resp);
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -123,9 +127,12 @@ public class ManagerNotificationsServlet extends BaseServlet {
                 params.add(currentUser.getId());
                 params.add(currentUser.getId());
             } else {
-                whereClause.append(" WHERE n.deleted_at IS NULL AND n.created_by = ?");
+                whereClause.append(" WHERE n.deleted_at IS NULL AND n.created_by = ? AND n.code NOT LIKE 'NTF-DEBT-%'");
                 params.add(currentUser.getId());
             }
+        } else if ("payment-reminder".equals(tab)) {
+            whereClause.append(" WHERE n.deleted_at IS NULL AND n.created_by = ? AND n.code LIKE 'NTF-DEBT-%'");
+            params.add(currentUser.getId());
         } else {
             whereClause.append(" WHERE n.deleted_at IS NULL AND (n.created_by = ? OR n.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL) OR n.room_id IN (SELECT r.room_id FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL))");
             params.add(currentUser.getId());
@@ -281,6 +288,49 @@ public class ManagerNotificationsServlet extends BaseServlet {
             return;
         }
 
+        if (req.getAttribute("dto") == null) {
+            String pRecipientType = req.getParameter("recipientType");
+            String pRoomIdStr = req.getParameter("roomId");
+            String pFacilityIdStr = req.getParameter("facilityId");
+            String pTitle = req.getParameter("title");
+            String pContent = req.getParameter("content");
+            boolean pIsDebtReminder = "true".equals(req.getParameter("isDebtReminder")) || pRoomIdStr != null;
+
+            Integer pRecipientId = null;
+            Integer pFacilityId = null;
+
+            if (pRoomIdStr != null && !pRoomIdStr.trim().isEmpty()) {
+                try {
+                    pRecipientId = Integer.parseInt(pRoomIdStr.trim());
+                    pRecipientType = "ROOM";
+                    
+                    try (Connection conn = DatabaseUtil.getConnection();
+                         PreparedStatement ps = conn.prepareStatement("SELECT facility_id FROM dbo.rooms WHERE room_id = ? AND deleted_at IS NULL")) {
+                        ps.setInt(1, pRecipientId);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) {
+                                pFacilityId = rs.getInt("facility_id");
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to resolve facility for room", e);
+                }
+            } else if (pFacilityIdStr != null && !pFacilityIdStr.trim().isEmpty()) {
+                try {
+                    pRecipientId = Integer.parseInt(pFacilityIdStr.trim());
+                    pRecipientType = "FACILITY";
+                    pFacilityId = pRecipientId;
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+
+            if (pRecipientType != null || pTitle != null || pContent != null || pIsDebtReminder) {
+                req.setAttribute("dto", buildDto(pTitle, pContent, pRecipientType, pRecipientId, pFacilityId, pIsDebtReminder));
+            }
+        }
+
         List<Map<String, Object>> assignedFacilities = new ArrayList<>();
         String sql = "SELECT facility_id, code, name FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -338,6 +388,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String recipientType = req.getParameter("recipientType");
         String recipientIdStr = req.getParameter("recipientId");
         String facilityIdForRoomStr = req.getParameter("facilityId_for_room");
+        boolean isDebtReminder = "true".equals(req.getParameter("isDebtReminder"));
 
         Integer facilityIdForRoom = null;
         if (facilityIdForRoomStr != null && !facilityIdForRoomStr.trim().isEmpty()) {
@@ -354,7 +405,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             try {
                 if (recipientIdStr != null) rId = Integer.parseInt(recipientIdStr.trim());
             } catch (Exception e) {}
-            req.setAttribute("dto", buildDto(title, content, recipientType, rId, facilityIdForRoom));
+            req.setAttribute("dto", buildDto(title, content, recipientType, rId, facilityIdForRoom, isDebtReminder));
             handleCreateForm(req, resp);
             return;
         }
@@ -448,7 +499,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
         // Generate unique code
         com.quanlyphongtro.dao.NotificationDAO notificationDAO = new com.quanlyphongtro.dao.NotificationDAO();
-        String code = notificationDAO.generateCode(recipientType);
+        String code = notificationDAO.generateCode(isDebtReminder ? "DEBT" : recipientType);
 
         String sql = "INSERT INTO dbo.notifications (code, title, content, target_type, facility_id, room_id, status, created_by, created_at, sent_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, 'SENT', ?, GETDATE(), GETDATE())";
@@ -488,16 +539,21 @@ public class ManagerNotificationsServlet extends BaseServlet {
             return;
         }
 
-        resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=general&type=sent");
+        resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=" + (isDebtReminder ? "payment-reminder" : "general&type=sent"));
     }
 
     private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId, Integer facilityId) {
+        return buildDto(title, content, recipientType, recipientId, facilityId, false);
+    }
+
+    private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId, Integer facilityId, boolean isDebtReminder) {
         Map<String, Object> dto = new HashMap<>();
         dto.put("title", title);
         dto.put("content", content);
         dto.put("recipientType", recipientType);
         dto.put("recipientId", recipientId);
         dto.put("facilityId", facilityId);
+        dto.put("isDebtReminder", isDebtReminder);
         return dto;
     }
 
@@ -849,6 +905,175 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
         } catch (Exception e) {
             logger.error("Failed to send operator request", e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void handleSendDebtReminderForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String invoiceIdStr = req.getParameter("invoiceId");
+        if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã hóa đơn.");
+            return;
+        }
+
+        try {
+            int invoiceId = Integer.parseInt(invoiceIdStr.trim());
+            Map<String, Object> invoice = null;
+
+            String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.due_date, " +
+                    "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, " +
+                    "u.full_name AS tenant_name, u.phone AS tenant_phone " +
+                    "FROM dbo.invoices i " +
+                    "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                    "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                    "LEFT JOIN dbo.users u ON r.tenant_id = u.user_id " +
+                    "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
+
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, invoiceId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        int managerId = rs.getInt("manager_id");
+                        if (managerId != currentUser.getId()) {
+                            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện thao tác này.");
+                            return;
+                        }
+
+                        invoice = new HashMap<>();
+                        invoice.put("id", rs.getInt("invoice_id"));
+                        invoice.put("code", rs.getString("invoice_code"));
+                        invoice.put("totalAmount", rs.getDouble("total_amount"));
+                        invoice.put("roomCode", rs.getString("room_code"));
+                        invoice.put("roomId", rs.getInt("room_id"));
+                        invoice.put("facilityId", rs.getInt("facility_id"));
+                        invoice.put("facilityName", rs.getString("facility_name"));
+                        invoice.put("tenantName", rs.getString("tenant_name") != null ? rs.getString("tenant_name") : "Chưa có");
+                        invoice.put("tenantPhone", rs.getString("tenant_phone") != null ? rs.getString("tenant_phone") : "—");
+
+                        java.sql.Date dDate = rs.getDate("due_date");
+                        if (dDate != null) {
+                            java.time.LocalDate localDate = dDate.toLocalDate();
+                            invoice.put("dueDateLabel", String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear()));
+                            invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                            
+                            // calculate overdue days
+                            long days = java.time.temporal.ChronoUnit.DAYS.between(localDate, java.time.LocalDate.now());
+                            invoice.put("overdueDays", days > 0 ? days : 0);
+                        } else {
+                            invoice.put("dueDateLabel", "—");
+                            invoice.put("billingPeriod", "—");
+                            invoice.put("overdueDays", 0);
+                        }
+                    }
+                }
+            }
+
+            if (invoice == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hóa đơn.");
+                return;
+            }
+
+            String defaultTitle = "Nhắc đóng tiền phòng quá hạn - Phòng " + invoice.get("roomCode");
+            String defaultContent = "Kính gửi thành viên phòng " + invoice.get("roomCode") + ",\n\n" +
+                    "Hóa đơn tháng " + invoice.get("billingPeriod") + " của phòng bạn đã quá hạn thanh toán.\n" +
+                    "Chi tiết khoản nợ:\n" +
+                    "- Số tiền cần đóng: " + String.format("%,.0f", invoice.get("totalAmount")) + " đ\n" +
+                    "- Hạn thanh toán: " + invoice.get("dueDateLabel") + "\n" +
+                    "- Số ngày quá hạn: " + invoice.get("overdueDays") + " ngày\n\n" +
+                    "Vui lòng thanh toán sớm nhất có thể để tránh phát sinh thêm phí phạt quá hạn hoặc các gián đoạn dịch vụ.\n" +
+                    "Xin cảm ơn!";
+
+            req.setAttribute("invoice", invoice);
+            req.setAttribute("defaultTitle", defaultTitle);
+            req.setAttribute("defaultContent", defaultContent);
+
+            req.getRequestDispatcher("/WEB-INF/views/manager/notifications/send_debt_reminder.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            logger.error("Failed to prepare send debt reminder form", e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void handleSendDebtReminderSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String invoiceIdStr = req.getParameter("invoiceId");
+        String title = req.getParameter("title");
+        String content = req.getParameter("content");
+
+        if (invoiceIdStr == null || title == null || content == null || 
+                invoiceIdStr.trim().isEmpty() || title.trim().isEmpty() || content.trim().isEmpty()) {
+            setFlashMessage(req, "danger", "Vui lòng điền đầy đủ tiêu đề và nội dung nhắc nợ.");
+            resp.sendRedirect(req.getContextPath() + "/manager/debts");
+            return;
+        }
+
+        try {
+            int invoiceId = Integer.parseInt(invoiceIdStr.trim());
+            int roomId = -1;
+            int facilityId = -1;
+            boolean isAuthorized = false;
+
+            // Verify manager and get details
+            String checkSql = "SELECT r.room_id, r.facility_id, f.manager_id FROM dbo.invoices i " +
+                    "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                    "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                    "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setInt(1, invoiceId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        int mId = rs.getInt("manager_id");
+                        if (mId == currentUser.getId()) {
+                            isAuthorized = true;
+                            roomId = rs.getInt("room_id");
+                            facilityId = rs.getInt("facility_id");
+                        }
+                    }
+                }
+            }
+
+            if (!isAuthorized) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
+            // Generate unique code: NTF-DEBT-XXXX
+            com.quanlyphongtro.dao.NotificationDAO notificationDAO = new com.quanlyphongtro.dao.NotificationDAO();
+            String code = notificationDAO.generateCode("DEBT");
+
+            // Insert request as sent ROOM notification (facility_id must be NULL for target_type = 'ROOM' to satisfy database constraint CK_notifications_target)
+            String sql = "INSERT INTO dbo.notifications (code, title, content, target_type, facility_id, room_id, status, created_by, created_at, sent_at) " +
+                    "VALUES (?, ?, ?, 'ROOM', NULL, ?, 'SENT', ?, GETDATE(), GETDATE())";
+
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, code);
+                ps.setString(2, title.trim());
+                ps.setString(3, content.trim());
+                ps.setInt(4, roomId);
+                ps.setInt(5, currentUser.getId());
+                ps.executeUpdate();
+            }
+
+            setFlashMessage(req, "success", "Gửi nhắc nhở thanh toán thành công!");
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=payment-reminder");
+
+        } catch (Exception e) {
+            logger.error("Failed to send debt reminder", e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
