@@ -68,6 +68,13 @@ public class FirstLoginServlet extends BaseServlet {
             return;
         }
 
+        java.util.Optional<com.quanlyphongtro.model.User> userOpt = userDAO.findById(currentUser.getId());
+        if (userOpt.isPresent() && PasswordUtil.verify(newPassword, userOpt.get().getPasswordHash())) {
+            request.setAttribute("errorMessage", "Mật khẩu mới không được trùng với mật khẩu cũ.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
+            return;
+        }
+
         try {
             // Update password
             String hashedNewPassword = PasswordUtil.hash(newPassword);

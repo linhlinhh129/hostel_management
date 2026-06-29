@@ -141,6 +141,10 @@ public class ProfileServlet extends BaseServlet {
                     response.sendRedirect(request.getContextPath() + "/profile?error=password_mismatch");
                     return;
                 }
+                if (newPassword.equals(currentPassword)) {
+                    response.sendRedirect(request.getContextPath() + "/profile?error=password_duplicate");
+                    return;
+                }
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
                     response.sendRedirect(request.getContextPath() + "/profile?error=invalid_password");
                     return;
