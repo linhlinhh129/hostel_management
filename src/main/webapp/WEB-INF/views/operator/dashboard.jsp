@@ -167,17 +167,17 @@
                         </div>
                     </div>
 
-                    <!-- Row: Lịch hẹn hôm nay -->
+                    <!-- Row: Lịch hẹn sắp tới -->
                     <div class="row g-4 mt-2 mb-5">
                         <div class="col-12">
                             <div class="widget-surface h-100">
                                 <div class="widget-surface-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <h3 class="mb-0">Lịch hẹn hôm nay</h3>
-                                    <span class="badge-hms badge-warning">${todaysAppointments.size()} lịch hẹn</span>
+                                    <h3 class="mb-0">Lịch hẹn sắp tới</h3>
+                                    <span class="badge-hms badge-warning">${upcomingAppointments.size()} lịch hẹn</span>
                                 </div>
                                 <div class="widget-surface-body">
                                     <c:choose>
-                                        <c:when test="${not empty todaysAppointments}">
+                                        <c:when test="${not empty upcomingAppointments}">
                                             <div class="table-responsive">
                                                 <table class="table-mintlify">
                                                     <thead>
@@ -189,7 +189,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <c:forEach var="req" items="${todaysAppointments}">
+                                                        <c:forEach var="req" items="${upcomingAppointments}">
                                                             <tr>
                                                                 <td class="fw-bold text-ink">${req.roomCode}</td>
                                                                 <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${req.title}">${req.title}</td>
@@ -217,7 +217,7 @@
                                                 <line x1="8" y1="2" x2="8" y2="6"></line>
                                                 <line x1="3" y1="10" x2="21" y2="10"></line>
                                             </svg><br>
-                                            Hôm nay bạn không có lịch hẹn sửa chữa nào.
+                                            Hiện tại bạn không có lịch hẹn sửa chữa nào.
                                         </div>
                                     </c:otherwise>
                                 </c:choose>

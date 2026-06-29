@@ -1,107 +1,90 @@
-# Đặc tả Kỹ thuật (Specification) - Tính năng: Quên mật khẩu (Chưa đăng nhập)
+# Đặc tả Kỹ thuật (Specification) - Tính năng: Đổi mật khẩu (Khi đã đăng nhập)
 
-**Trạng thái:** Draft  
-**Người viết:** Phạm Anh Tú | **Ngày:** 2026-06-10  
-**Mức độ ưu tiên:** Cao  
+**Trạng thái:** Bản nháp
+**Người viết:** @Phạm Anh Tú
+**Người duyệt:** Tech Lead
+**Ngày cập nhật:** 2026-06-24
+**Mức độ ưu tiên:** Cao
 
 ---
 
 ## 1. Bối cảnh Nghiệp vụ
-Tính năng này cho phép người dùng khôi phục quyền truy cập vào tài khoản khi họ quên mật khẩu đăng nhập. Việc này giúp giảm thiểu lượng yêu cầu hỗ trợ (support tickets) đòi hỏi nhân viên phải cấp lại mật khẩu thủ công, đồng thời giữ chân người dùng tiếp tục sử dụng hệ thống một cách liền mạch.
+
+Khác với luồng "Quên mật khẩu" từ màn hình ngoài, tính năng này phục vụ người dùng đang có phiên đăng nhập (Session) hợp lệ trên hệ thống. Việc cho phép người dùng chủ động đổi mật khẩu định kỳ giúp tăng cường bảo mật cho tài khoản cá nhân. Đồng thời, hệ thống cũng cần cung cấp một lối thoát (luồng phụ) gửi email khôi phục trong trường hợp người dùng đang đăng nhập nhưng lại không nhớ mật khẩu hiện tại để thực hiện đổi.
+
+---
 
 ## 2. Câu chuyện Người dùng (User Stories)
-* **Story 1 (Yêu cầu gửi link khôi phục - Luồng chuẩn):** Là một người dùng đã được cấp tài khoản, tôi muốn yêu cầu gửi link khôi phục mật khẩu qua email đã đăng ký để tôi có thể bắt đầu quá trình lấy lại tài khoản.
-* **Story 2 (Thực hiện đổi mật khẩu - Luồng chuẩn):** Là một người dùng đã được cấp tài khoản, khi tôi nhấp vào link khôi phục hợp lệ trong email, tôi muốn thiết lập mật khẩu mới để có thể đăng nhập và sử dụng hệ thống trở lại.
-* **Story 3 (Token hết hạn/Không hợp lệ - Trường hợp ngoại lệ):** Là một người dùng đã được cấp tài khoản, khi tôi sử dụng link khôi phục đã hết hạn hoặc bị lỗi, tôi muốn thấy thông báo lỗi rõ ràng và được hướng dẫn yêu cầu gửi lại link mới.
 
-## 3. Tiêu chí Chấp nhận (Theo chuẩn EARS)
-* **KHI** người dùng gửi form "Quên mật khẩu" với một email đã tồn tại trong hệ thống  
-  **HỆ THỐNG SẼ** tạo ra một mã xác thực (token) duy nhất có giới hạn thời gian VÀ gửi email khôi phục kèm link chứa token đó.
-* **KHI** người dùng gửi form với một email chưa từng đăng ký  
-  **HỆ THỐNG SẼ** trả về thông báo thành công chung chung (để kẻ xấu không thể lợi dụng dò quét xem email nào đã đăng ký) NHƯNG sẽ không gửi bất kỳ email nào ra ngoài.
-* **KHI** người dùng gửi form "Đặt lại mật khẩu" với token hợp lệ và mật khẩu mới  
-  **HỆ THỐNG SẼ** cập nhật mật khẩu một cách an toàn, vô hiệu hóa token vừa sử dụng để không thể dùng lại, VÀ trả về thông báo thành công.
-* **TRONG KHI** token đã quá hạn (ví dụ: quá 15 phút kể từ lúc tạo)  
-  **HỆ THỐNG SẼ** chặn lệnh cập nhật mật khẩu VÀ trả về lỗi HTTP 400.
+* **Kịch bản chuẩn (Chủ động đổi mật khẩu):** Là một người dùng đang đăng nhập, tôi muốn đổi mật khẩu bằng cách nhập mật khẩu cũ và mật khẩu mới, để cập nhật bảo mật cho tài khoản của mình.
+* **Trường hợp ngoại lệ 1 (Sai mật khẩu cũ):** Là một người dùng đang đăng nhập, nếu tôi nhập sai mật khẩu hiện tại, tôi muốn hệ thống báo lỗi rõ ràng trực tiếp trên giao diện để tôi có thể thử lại.
+* **Trường hợp ngoại lệ 2 (Quên mật khẩu cũ khi đang đăng nhập):** Là một người dùng đang đăng nhập nhưng không nhớ mật khẩu cũ, tôi muốn có một nút "Quên mật khẩu hiện tại", khi nhấn vào hệ thống sẽ tự động gửi link xác thực về email của tôi (dựa trên thông tin phiên đăng nhập) mà không cần tôi phải tự nhập lại email.
 
-## 4. Đặc tả API (API Contract)
+---
 
-### Endpoint 1: Yêu cầu Link Khôi phục
-* **API:** `POST /api/v1/auth/forgot-password`
-* **Dữ liệu gửi lên (Request):**
+## 3. Tiêu chí Chấp thuận (Theo chuẩn EARS)
 
-Kết quả chạy mã
-File created successfully at: dac_ta_tinh_nang_quen_mat_khau.md
+* **KHI** người dùng gửi form "Đổi mật khẩu" kèm theo mật khẩu cũ chính xác và mật khẩu mới hợp lệ, **HỆ THỐNG PHẢI** cập nhật mật khẩu xuống cơ sở dữ liệu **VÀ** hiển thị thông báo thành công.
+* **KHI** người dùng nhập sai mật khẩu cũ, **HỆ THỐNG PHẢI** từ chối cập nhật **VÀ** hiển thị lỗi "Mật khẩu hiện tại không chính xác" bằng thẻ `<c:if>` trên giao diện JSP.
+* **KHI** người dùng nhập mật khẩu mới không đáp ứng đủ 7 quy tắc của Chính sách Mật khẩu, **HỆ THỐNG PHẢI** hiển thị cảnh báo yêu cầu nhập lại đúng định dạng.
+* **KHI** người dùng chọn chức năng "Quên mật khẩu hiện tại", **HỆ THỐNG PHẢI** trích xuất email từ `HttpSession` của người dùng, tạo mã Token (hạn 15 phút) **VÀ** gửi link khôi phục qua email đó.
 
-```json
-  { 
-    "email": "chuỗi ký tự (bắt buộc, đúng định dạng email)" 
-  }
+---
 
-Phản hồi 200 (Thành công):
-JSON
-{ 
-  "success": true, 
-  "message": "Nếu email của bạn có trong hệ thống, link khôi phục đã được gửi đi." 
-}
+## 4. Giao tiếp Hệ thống (System Flow)
 
+* **Đường dẫn (Endpoint):** `POST /user/change-password`
+* **Loại dữ liệu (Content-Type):** `application/x-www-form-urlencoded`
+
+### Dữ liệu gửi lên (Request Parameters)
+
+* Hệ thống tự động lấy `userId` (hoặc `username`) từ `HttpSession`.
+* `oldPassword`: chuỗi (bắt buộc).
+* `newPassword`: chuỗi (bắt buộc).
+
+### Phản hồi Hệ thống (System Response)
+
+* **Thành công:**
+* Cập nhật DB.
+* Forward về trang `/WEB-INF/views/user/profile.jsp`.
+* Đính kèm biến `successMessage` = "Đổi mật khẩu thành công. Vui lòng sử dụng mật khẩu mới cho lần đăng nhập sau."
 
 
+* **Lỗi (Sai mật khẩu cũ):**
+* Forward lại trang đổi mật khẩu.
+* Đính kèm biến `errorMessage` = "Mật khẩu hiện tại không chính xác."
 
-Phản hồi 400 (Lỗi):
-JSON
-{ 
-  "success": false, 
-  "error": { 
-    "code": "INVALID_EMAIL", 
-    "message": "Sai định dạng email" 
-  } 
-}
+
+* **Lỗi (Mật khẩu mới vi phạm chính sách):**
+* Forward lại trang đổi mật khẩu.
+* Đính kèm biến `errorMessage` = "Mật khẩu mới chưa đáp ứng đủ điều kiện bảo mật."
 
 
 
+---
 
-Endpoint 2: Đặt lại Mật khẩu
-API: POST /api/v1/auth/reset-password
-Dữ liệu gửi lên (Request):
-JSON
-{ 
-  "token": "chuỗi ký tự (bắt buộc)", 
-  "newPassword": "chuỗi ký tự (bắt buộc, tối thiểu 8 ký tự)" 
-}
+## 5. Ràng buộc & Chính sách
 
+### Ràng buộc Kỹ thuật (Technical Constraints)
 
+* **Xác thực phiên (Session):** Controller/Servlet bắt buộc phải kiểm tra `HttpSession` trước khi thực thi logic. Nếu Session không tồn tại hoặc đã hết hạn, điều hướng ngay về trang Đăng nhập.
+* **Bảo mật Cơ sở dữ liệu:** Các thao tác truy vấn (kiểm tra mật khẩu cũ, cập nhật mật khẩu mới) tuân thủ việc sử dụng **Basic SQL Statements**. Các chuỗi đầu vào phải đi qua hàm làm sạch (sanitize) chuyên biệt để ngăn chặn triệt để rủi ro SQL Injection. Không tự ý sử dụng PreparedStatements.
+* **Mã hóa (Hashing):** Mật khẩu mới phải được băm (BCrypt/Argon2) trước khi tạo câu lệnh SQL `UPDATE`. Việc so sánh `oldPassword` cũng phải thực hiện bằng hàm `checkpw` với chuỗi hash lấy từ DB.
 
+### Chính sách Mật khẩu (Business Constraints - Password Policy)
 
-Phản hồi 200 (Thành công):
-JSON
-{ 
-  "success": true, 
-  "message": "Cập nhật mật khẩu thành công" 
-}
+Mật khẩu mới (`newPassword`) phải khác biệt hoàn toàn với `oldPassword` và đáp ứng các tiêu chuẩn sau:
 
+1. **Độ dài:** Tối thiểu 8 ký tự.
+2. **Chữ hoa:** Có ít nhất 1 chữ cái viết hoa (A-Z).
+3. **Chữ thường:** Có ít nhất 1 chữ cái viết thường (a-z).
+4. **Chữ số:** Có ít nhất 1 chữ số (0-9).
+5. **Ký tự đặc biệt:** Có ít nhất 1 ký tự đặc biệt (!, @, #, $, %, ^, &, *, v.v.).
+6. **Khoảng trắng:** Không được chứa khoảng trắng.
+7. **Bảo mật chéo:** Không được trùng với tên đăng nhập hoặc email.
 
+---
 
+## 6. Nằm ngoài phạm vi (Out of Scope)
 
-Phản hồi 400 (Lỗi):
-JSON
-{ 
-  "success": false, 
-  "error": { 
-    "code": "INVALID_TOKEN", 
-    "message": "Token không hợp lệ hoặc đã hết hạn" 
-  } 
-}
-
-
-
-
-5. Ràng buộc Kỹ thuật
-Thời hạn Token: Link khôi phục chỉ có hiệu lực tối đa trong 15 phút.
-Giới hạn tần suất (Rate limit): Tối đa 3 lần yêu cầu gửi email/giờ cho mỗi địa chỉ email (chống hành vi spam).
-Ràng buộc Database: Các thao tác truy vấn kiểm tra email và cập nhật mật khẩu trong cơ sở dữ liệu sẽ sử dụng Basic SQL Statements. Cần chú ý viết code xử lý làm sạch dữ liệu đầu vào (sanitize) cẩn thận để phòng chống tấn công SQL Injection.
-Bảo mật mật khẩu: Mật khẩu mới bắt buộc phải được băm (hash) bằng thuật toán an toàn (như BCrypt hoặc Argon2) trước khi lưu, tuyệt đối không lưu dưới dạng văn bản thuần (plain-text).
-6. Nằm ngoài phạm vi (Out of Scope)
-Gửi mã xác thực OTP qua tin nhắn SMS (Chưa làm ở giai đoạn này).
-Chức năng tự động khóa tài khoản tạm thời nếu người dùng nhập sai hoặc dùng token lỗi quá nhiều lần.
-
+* **Đăng xuất các phiên khác:** Hệ thống hiện tại sẽ không tự động hủy các phiên đăng nhập hợp lệ (Session) đang tồn tại trên các trình duyệt/thiết bị khác sau khi đổi mật khẩu thành công. Tính năng "Đăng xuất khỏi mọi thiết bị" sẽ được cân nhắc ở bản cập nhật sau.

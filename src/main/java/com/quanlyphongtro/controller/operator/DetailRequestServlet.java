@@ -130,10 +130,10 @@ public class DetailRequestServlet extends HttpServlet {
                 try {
                     String auditAction = action.toUpperCase();
                     String auditNew = null;
-                    if ("accept".equals(action))   { auditAction = "UPDATE"; auditNew = "IN_PROGRESS"; }
-                    else if ("reject".equals(action))   { auditAction = "UPDATE"; auditNew = "REJECTED"; }
-                    else if ("complete".equals(action)) { auditAction = "UPDATE"; auditNew = "COMPLETED"; }
-                    else if ("schedule".equals(action)) { auditAction = "UPDATE"; auditNew = "SCHEDULED"; }
+                    if ("accept".equals(action))   { auditAction = "UPDATE"; auditNew = "IN_PROGRESS"; session.setAttribute("successMessage", "Đã tiếp nhận yêu cầu thành công!"); }
+                    else if ("reject".equals(action))   { auditAction = "UPDATE"; auditNew = "REJECTED"; session.setAttribute("successMessage", "Đã từ chối yêu cầu!"); }
+                    else if ("complete".equals(action)) { auditAction = "UPDATE"; auditNew = "COMPLETED"; session.setAttribute("successMessage", "Đã báo cáo hoàn thành yêu cầu!"); }
+                    else if ("schedule".equals(action)) { auditAction = "UPDATE"; auditNew = "SCHEDULED"; session.setAttribute("successMessage", "Đã lên lịch hẹn thành công!"); }
                     AuditLogHelper.log(auditLogDAO, request, "requests", requestId,
                         auditAction, "PENDING", auditNew, operatorId);
                 } catch (Exception ex) { /* ignore audit failure */ }

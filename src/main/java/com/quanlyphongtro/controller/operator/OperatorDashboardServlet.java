@@ -93,9 +93,9 @@ public class OperatorDashboardServlet extends BaseServlet {
         req.setAttribute("ticketCountInProgress", ticketCountInProgress);
         req.setAttribute("ticketCountDone", ticketCountDone);
 
-        // 3. Lấy Lịch hẹn hôm nay
-        List<com.quanlyphongtro.model.Request> todaysAppointments = dashboardDAO.getTodaysAppointments(operatorId);
-        req.setAttribute("todaysAppointments", todaysAppointments);
+        // 3. Lấy Lịch hẹn sắp tới
+        List<com.quanlyphongtro.model.Request> upcomingAppointments = dashboardDAO.getUpcomingAppointments(operatorId);
+        req.setAttribute("upcomingAppointments", upcomingAppointments);
 
         req.getRequestDispatcher("/WEB-INF/views/operator/dashboard.jsp").forward(req, resp);
     }

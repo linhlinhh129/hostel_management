@@ -1,4 +1,4 @@
-"""# CONTEXT.md Feature Đăng nhập
+# CONTEXT.md Feature Đăng nhập
 # Người viết: @Phạm Anh Tú | Ngày: 2026-06-11
 
 ## 1. PROBLEM STATEMENT
@@ -23,6 +23,14 @@
   * Cơ chế đếm số lần sai sẽ theo dõi theo từng `username` cụ thể trên bộ nhớ tạm (RAM).
   * Khi tài khoản bị khóa do nhập sai 5 lần, hệ thống bắt buộc phải cập nhật trường `status` dưới Database thành `LOCKED`. Tài khoản sẽ bị vô hiệu hóa hoàn toàn cho đến khi Admin mở khóa.
   * Hệ thống sẽ hiển thị thông báo lỗi trực tiếp trên giao diện JSP bằng thẻ `<c:if>`.
+* **Ràng buộc Nghiệp vụ - Chính sách Mật khẩu (Business Constraints - Password Policy):** 
+  * **Độ dài:** Tối thiểu 8 ký tự (lưu ý: nhiều hệ thống hiện nay yêu cầu 10–12 ký tự, dự án có thể cân nhắc nâng cấp sau).
+  * **Chữ hoa:** Có ít nhất 1 chữ cái viết hoa (A-Z).
+  * **Chữ thường:** Có ít nhất 1 chữ cái viết thường (a-z).
+  * **Chữ số:** Có ít nhất 1 chữ số (0-9).
+  * **Ký tự đặc biệt:** Có ít nhất 1 ký tự đặc biệt (!, @, #, $, %, ^, &, *, v.v.).
+  * **Khoảng trắng:** Tuyệt đối không được chứa khoảng trắng (space).
+  * **Bảo mật chéo:** Mật khẩu mới không được trùng với tên đăng nhập (username) hoặc email của người dùng.
 * **Ràng buộc Phạm vi (Scope Constraints):**
   * **Nằm ngoài phạm vi (Out of Scope):** Tính năng "Quên mật khẩu" (Forgot Password) và "Đăng nhập bằng bên thứ ba" (Google) không được xử lý trong chu kỳ phát triển này. Tính năng "Admin mở khóa tài khoản" cũng nằm ở module Quản lý người dùng.
 
@@ -33,4 +41,3 @@
 ## 6. OPEN QUESTIONS
 * **Ghi log bảo mật:** Khi tài khoản bị đổi trạng thái thành `LOCKED`, hệ thống có cần lưu lại IP và thời điểm vào một bảng Log riêng biệt để Audit không, hay chỉ cần ghi file log hệ thống là đủ?
 * **Cơ chế thông báo cho Admin:** Khi một tài khoản bị khóa vì sai mật khẩu 5 lần, hệ thống có cần gửi tự động một email hoặc thông báo (Notification) nội bộ cho Admin biết để họ chủ động liên hệ hỗ trợ người dùng không?
-"""

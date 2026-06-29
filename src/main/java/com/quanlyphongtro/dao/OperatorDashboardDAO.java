@@ -46,17 +46,19 @@ public class OperatorDashboardDAO {
     }
 
     /**
-     * Lấy danh sách các yêu cầu có lịch hẹn trong ngày hôm nay.
+     * Lấy danh sách các yêu cầu có lịch hẹn sắp tới.
      */
-    public java.util.List<com.quanlyphongtro.model.Request> getTodaysAppointments(int operatorId) {
+    public java.util.List<com.quanlyphongtro.model.Request> getUpcomingAppointments(int operatorId) {
         java.util.List<com.quanlyphongtro.model.Request> list = new java.util.ArrayList<>();
         String sql = "SELECT rq.request_id, rq.title, r.code AS room_code, rq.rejection_reason " +
                      "FROM requests rq " +
                      "LEFT JOIN users u ON rq.sender_id = u.user_id " +
                      "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                     "WHERE rq.deleted_at IS NULL AND rq.assigned_staff_id = ? " +
+                     "WHERE rq.deleted_at IS NULL " +
+                     "AND (rq.assigned_staff_id = ? OR rq.status = 'PENDING') " +
                      "AND rq.status IN ('PENDING', 'IN_PROGRESS') " +
-                     "AND rq.rejection_reason LIKE CONVERT(varchar, GETDATE(), 23) + '%'"; 
+                     "AND rq.rejection_reason IS NOT NULL AND rq.rejection_reason != '' " +
+                     "ORDER BY rq.rejection_reason ASC"; 
         
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

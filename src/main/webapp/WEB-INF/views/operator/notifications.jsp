@@ -33,57 +33,28 @@
 
                 <c:choose>
                   <c:when test="${not empty notifications}">
-                    <div class="table-responsive">
-                      <table class="table-mintlify">
-                        <thead>
-                          <tr>
-                            <th class="d-none d-md-table-cell" style="width: 15%">Mã TB</th>
-                            <th style="width: 15%">Phạm vi</th>
-                            <th style="width: 50%">Tiêu đề</th>
-                            <th style="width: 15%">Ngày gửi</th>
-                            <th style="width: 5%"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <c:forEach var="item" items="${notifications}">
-                            <tr>
-                              <td class="d-none d-md-table-cell" style="font-family: monospace; font-size: 0.8125rem;">
-                                <c:out value="${item.code}" />
-                              </td>
-                              <td>
-                                <c:choose>
-                                  <c:when test="${item.targetType == 'ALL'}">
-                                    <span class="badge-hms badge-danger">Toàn hệ thống</span>
-                                  </c:when>
-                                  <c:otherwise>
-                                    <span class="badge-hms badge-info">Khu trọ</span>
-                                  </c:otherwise>
-                                </c:choose>
-                              </td>
-                              <td>
-                                <div style="font-weight: 600; margin-bottom: 4px;">
-                                  <c:out value="${item.title}" />
+                    <div class="d-flex flex-column gap-3 mb-4">
+                      <c:forEach var="item" items="${notifications}">
+                        <div class="p-4" style="border: 1px solid var(--hms-border, #e2e8f0); border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                          <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div class="flex-grow-1">
+                                <h6 class="m-0" style="font-weight: 600; font-size: 16px; color: #1e293b;"><c:out value="${item.title}" /></h6>
+                                <div class="text-muted mt-1" style="font-size: 12px;">
+                                    <fmt:formatDate value="${item.sentAtAsDate}" pattern="dd/MM/yyyy HH:mm" />
                                 </div>
-                                <!-- Nội dung chi tiết ẩn mặc định (sẽ dùng collapse hoặc modal) -->
-                                <div id="noti-content-${item.id}" class="d-none mt-2 text-muted"
-                                  style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; padding: 12px; background: var(--hms-bg-subtle); border-radius: 8px;">
-                                  <c:out value="${item.content}" />
-                                </div>
-                              </td>
-                              <td style="font-size: 0.8125rem; color: var(--hms-text-muted);">
-                                <fmt:formatDate value="${item.sentAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
-                              </td>
-                              <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-secondary toggle-content-btn"
+                            </div>
+                            <button type="button" class="btn btn-sm toggle-content-btn"
                                   data-target="noti-content-${item.id}"
-                                  style="border-radius: 8px; padding: 4px 8px; font-size: 12px;">
+                                  style="border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 500; white-space: nowrap; border: 1px solid #cbd5e1; color: #475569; background: #fff; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
                                   Chi tiết
-                                </button>
-                              </td>
-                            </tr>
-                          </c:forEach>
-                        </tbody>
-                      </table>
+                            </button>
+                          </div>
+                          
+                          <div id="noti-content-${item.id}" class="d-none mt-3 pt-3" style="border-top: 1px solid #e2e8f0;">
+                              <div style="font-size: 14.5px; line-height: 1.6; color: #334155; white-space: pre-wrap; font-family: 'Inter', sans-serif;"><c:out value="${item.content}" /></div>
+                          </div>
+                        </div>
+                      </c:forEach>
                     </div>
 
                     <div
