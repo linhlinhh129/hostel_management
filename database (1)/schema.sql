@@ -234,6 +234,7 @@ BEGIN
         attachment_urls2    NVARCHAR(MAX)       NULL, -- Comma-separated list of image/file URLs
         assigned_staff_id   INT                 NULL,
         rejection_reason    NVARCHAR(500)       NULL,
+		appoint_schedule	DATETIME2			NULL, 
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         deleted_at          DATETIME2           NULL,
