@@ -26,7 +26,7 @@
                     </h1>
                     <p>Chi tiết hoạt động thao tác trong hệ thống</p>
                 </div>
-                <a href="javascript:history.back()" class="quick-action-btn">← Danh sách</a>
+                <a href="javascript:history.back()" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Danh sách</a>
             </div>
 
             <%-- ─── Content grid ─────────────────────────────────────────── --%>

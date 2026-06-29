@@ -17,9 +17,6 @@
 
             <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
-                    <a href="${ctx}/manager/service-prices" class="text-decoration-none text-muted mb-2 d-inline-block">
-                        &larr; Quay lại danh sách
-                    </a>
                     <h1>Lịch sử thay đổi giá</h1>
                     <p>
                         Loại phí: 
@@ -34,6 +31,7 @@
                         </strong>
                     </p>
                 </div>
+                <a href="${ctx}/manager/service-prices" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Quay lại danh sách</a>
             </div>
 
             <div class="data-surface">

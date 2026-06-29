@@ -78,7 +78,7 @@
                           </tr>
                           <tr>
                             <td style="padding:6px 0;color:var(--hms-text-muted)">Số CCCD/CMND</td>
-                            <td style="padding:6px 0;font-family:monospace">
+                            <td style="padding:6px 0">
                               <c:out value="${dependent.identityNumber}" />
                             </td>
                           </tr>

@@ -155,7 +155,7 @@
                                   <tr data-href="${ctx}/manager/payments/${payment.paymentId}">
                                     <td>
                                       <a href="${ctx}/manager/payments/${payment.paymentId}"
-                                        style="font-weight:600;font-family:monospace;display:block;margin-bottom:2px">
+                                        style="font-weight:600;display:block;margin-bottom:2px">
                                         <c:out value="${payment.transactionCode}" />
                                       </a>
                                       <c:choose>

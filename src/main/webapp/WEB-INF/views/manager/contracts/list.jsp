@@ -14,6 +14,7 @@
           <div class="main-wrapper">
             <jsp:include page="/WEB-INF/views/layout/topbar.jsp" />
             <main class="page-content">
+              <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
               <div
                 class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
@@ -81,7 +82,7 @@
                             <tr data-href="${ctx}/manager/contracts/detail?id=${c.contractId}">
                               <td>
                                 <a href="${ctx}/manager/contracts/detail?id=${c.contractId}"
-                                  style="font-weight:600;font-family:monospace">
+                                  style="font-weight:600">
                                   <c:out value="${c.code}" />
                                 </a>
                               </td>

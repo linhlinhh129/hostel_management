@@ -152,6 +152,18 @@ public class ContractServlet extends BaseServlet {
 
                 contractService.createContract(contract, user.getId());
 
+                try {
+                    AuditLogHelper.log(auditLogDAO, req,
+                        "contracts",
+                        contract.getContractId(),
+                        "CREATE",
+                        null,
+                        contract.getCode(),
+                        user.getId());
+                } catch (Exception ex) {
+                    logger.warn("AuditLog failed after contract create id={}", contract.getContractId(), ex);
+                }
+
                 // Redirect to the detail page of the newly created contract
                 resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contract.getContractId());
             } catch (Exception e) {

@@ -17,9 +17,9 @@
 
         <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
           <div>
-            <a href="${ctx}/manager/invoices/${invoice.invoiceId}" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại chi tiết</a>
             <h1>Chỉnh Sửa Hóa Đơn: <c:out value="${invoice.invoiceCode}" /></h1>
           </div>
+          <a href="${ctx}/manager/invoices/${invoice.invoiceId}" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Quay lại chi tiết</a>
         </div>
 
         <div class="data-surface p-4" style="max-width: 800px;">
