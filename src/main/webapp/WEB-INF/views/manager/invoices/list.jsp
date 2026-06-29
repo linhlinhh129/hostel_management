@@ -94,7 +94,7 @@
                                   <tr data-href="${ctx}/manager/invoices/${invoice.invoiceId}">
                                     <td>
                                       <a href="${ctx}/manager/invoices/${invoice.invoiceId}"
-                                        style="font-weight:600;font-family:monospace">
+                                        style="font-weight:600">
                                         <c:out value="${invoice.invoiceCode}" />
                                       </a>
                                     </td>

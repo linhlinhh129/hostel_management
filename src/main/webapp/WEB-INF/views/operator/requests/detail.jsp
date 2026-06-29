@@ -122,16 +122,16 @@
                                 <c:remove var="successMessage" scope="session" />
                             </c:if>
 
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span></span>
+                                <a href="${pageContext.request.contextPath}/operator/requests"
+                                    class="btn-mintlify-secondary text-decoration-none"
+                                    style="position:relative;z-index:1">← Quay lại danh sách</a>
+                            </div>
+
                             <div class="row">
                                 <!-- Cột 2: Center Prose (8 columns) -->
                                 <div class="col-lg-8 center-prose">
-                                    <div class="mb-4">
-                                        <a href="${pageContext.request.contextPath}/operator/requests"
-                                            class="text-decoration-none"
-                                            style="color: var(--color-steel); font-size: 14px; font-weight: 500;">&larr;
-                                            Quay lại danh sách</a>
-                                    </div>
-
                                     <div class="d-flex align-items-center gap-2 mb-2">
                                         <span class="mintlify-badge-type">${reqDetail.category}</span>
                                     </div>
@@ -162,40 +162,8 @@
 
                                 <!-- Cột 3: Right Panel / TOC (4 columns) -->
                                 <div class="col-lg-4 right-panel">
-                                    <div class="mintlify-section-header">Hành động</div>
-                                    <div class="mb-5">
-                                        <c:if test="${reqDetail.status == 'PENDING'}">
-                                            <form action="${pageContext.request.contextPath}/operator/requests/detail"
-                                                method="POST" class="m-0">
-                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                                <input type="hidden" name="id" value="${reqDetail.requestId}" />
-                                                <input type="hidden" name="action" value="accept" />
-                                                <button type="submit" class="mintlify-btn-primary w-100"
-                                                    style="padding: 10px; border-radius: 6px; font-weight: 500;"
-                                                    onclick="return confirm('Bạn có chắc chắn muốn nhận xử lý yêu cầu này?')">Xác nhận tiếp nhận</button>
-                                            </form>
-                                            <button type="button" class="mintlify-btn-secondary w-100 mt-2"
-                                                onclick="openRejectModal()">Từ chối</button>
-                                        </c:if>
-
-                                        <c:if
-                                            test="${reqDetail.status == 'IN_PROGRESS' && reqDetail.assignedStaffId == sessionScope.currentUser.id}">
-                                            <button type="button" class="mintlify-btn-primary w-100"
-                                                style="background-color: var(--color-brand-green); color: var(--color-primary); border: none;"
-                                                onclick="openCompleteModal()">Báo cáo hoàn thành</button>
-                                        </c:if>
-
-                                        <c:if
-                                            test="${reqDetail.status != 'PENDING' && (reqDetail.status != 'IN_PROGRESS' || reqDetail.assignedStaffId != sessionScope.currentUser.id)}">
-                                            <div class="text-center p-3 rounded"
-                                                style="background-color: var(--color-surface); border: 1px solid var(--color-hairline-soft); color: var(--color-steel); font-size: 13px;">
-                                                Không có hành động khả dụng.
-                                            </div>
-                                        </c:if>
-                                    </div>
-
-                                    <div class="mintlify-section-header">Thông tin chi tiết</div>
-                                    <div>
+                                    <div class="mintlify-section-header">Thông tin</div>
+                                    <div class="mb-4">
                                         <div class="mintlify-property-row">
                                             <div class="mintlify-property-label">Trạng thái</div>
                                             <div class="mintlify-property-value mt-1">
@@ -230,6 +198,51 @@
                                                 <fmt:formatDate value="${reqDetail.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                                             </div>
                                         </div>
+                                        <c:if test="${not empty reqDetail.assignedStaffId}">
+                                            <div class="mintlify-property-row">
+                                                <div class="mintlify-property-label">Nhân viên tiếp nhận</div>
+                                                <div class="mintlify-property-value">${reqDetail.assignedStaffId}</div>
+                                            </div>
+                                        </c:if>
+                                        <c:if test="${reqDetail.status == 'REJECTED' && not empty reqDetail.rejectionReason}">
+                                            <div class="mintlify-property-row" style="border-bottom: none;">
+                                                <div class="mintlify-property-label text-danger">Lý do từ chối</div>
+                                                <div class="mintlify-property-value text-danger"
+                                                    style="font-weight: 400; font-size: 13px; margin-top: 4px;">
+                                                    ${reqDetail.rejectionReason}</div>
+                                            </div>
+                                        </c:if>
+                                        <c:if test="${reqDetail.status == 'COMPLETED' && not empty reqDetail.rejectionReason}">
+                                            <div class="mintlify-property-row" style="border-bottom: none;">
+                                                <div class="mintlify-property-label" style="color: var(--color-brand-annotate);">Ghi chú hoàn thành</div>
+                                                <div class="mintlify-property-value"
+                                                    style="font-weight: 400; font-size: 13px; margin-top: 4px;">
+                                                    ${reqDetail.rejectionReason}</div>
+                                            </div>
+                                        </c:if>
+                                    </div>
+
+                                    <div class="mintlify-section-header">Hành động</div>
+                                    <div class="mb-5">
+                                        <c:if test="${reqDetail.status == 'PENDING'}">
+                                            <form action="${pageContext.request.contextPath}/operator/requests/detail"
+                                                method="POST" class="m-0">
+                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                <input type="hidden" name="id" value="${reqDetail.requestId}" />
+                                                <input type="hidden" name="action" value="accept" />
+                                                <button type="submit" class="mintlify-btn-primary w-100"
+                                                    style="padding: 10px; border-radius: 6px; font-weight: 500;"
+                                                    onclick="return confirm('Bạn có chắc chắn muốn nhận xử lý yêu cầu này?')">Xác nhận tiếp nhận</button>
+                                            </form>
+                                            <button type="button" class="mintlify-btn-secondary w-100 mt-2"
+                                                onclick="openRejectModal()">Từ chối</button>
+                                        </c:if>
+
+                                        <c:if test="${reqDetail.status == 'IN_PROGRESS' && reqDetail.assignedStaffId == sessionScope.currentUser.id}">
+                                            <button type="button" class="mintlify-btn-primary w-100"
+                                                style="background-color: var(--color-brand-green); color: var(--color-primary); border: none;"
+                                                onclick="openCompleteModal()">Báo cáo hoàn thành</button>
+                                        </c:if>
 
                                         <c:if test="${reqDetail.status == 'PENDING' || reqDetail.status == 'IN_PROGRESS'}">
                                             <div class="mt-4 p-4" style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
@@ -239,16 +252,13 @@
                                                     </div>
                                                     <span style="font-size: 14px; font-weight: 600; color: #0f172a;">Lên lịch sửa chữa</span>
                                                 </div>
-                                                
                                                 <form action="${pageContext.request.contextPath}/operator/requests/detail" method="POST" class="m-0">
                                                     <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                                     <input type="hidden" name="id" value="${reqDetail.requestId}" />
                                                     <input type="hidden" name="action" value="schedule" />
-                                                    
                                                     <div class="position-relative mb-3">
                                                         <input type="datetime-local" name="appointmentDate" class="form-control shadow-sm" style="border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 14px; color: #334155; width: 100%; transition: all 0.2s; outline: none;" required onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.2)';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';" />
                                                     </div>
-                                                    
                                                     <button type="submit" class="w-100 btn d-flex align-items-center justify-content-center gap-2" style="background: #0ea5e9; color: white; border: none; padding: 10px; font-weight: 500; font-size: 14px; border-radius: 8px; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);" onmouseover="this.style.background='#0284c7'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0ea5e9'; this.style.transform='translateY(0)';">
                                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                                         Xác nhận lịch hẹn
@@ -256,30 +266,24 @@
                                                 </form>
                                             </div>
                                         </c:if>
-                                        <c:if test="${not empty reqDetail.assignedStaffId}">
-                                            <div class="mintlify-property-row">
-                                                <div class="mintlify-property-label">Nhân viên tiếp nhận</div>
-                                                <div class="mintlify-property-value" style="font-family: 'Geist Mono', monospace;">
-                                                    ID: ${reqDetail.assignedStaffId}</div>
-                                            </div>
-                                        </c:if>
-                                        <c:if
-                                            test="${reqDetail.status == 'REJECTED' && not empty reqDetail.rejectionReason}">
-                                            <div class="mintlify-property-row" style="border-bottom: none;">
-                                                <div class="mintlify-property-label text-danger">Lý do từ chối</div>
-                                                <div class="mintlify-property-value text-danger"
-                                                    style="font-weight: 400; font-size: 13px; margin-top: 4px;">
-                                                    ${reqDetail.rejectionReason}</div>
-                                            </div>
-                                        </c:if>
-                                        <c:if
-                                            test="${reqDetail.status == 'COMPLETED' && not empty reqDetail.rejectionReason}">
-                                            <div class="mintlify-property-row" style="border-bottom: none;">
-                                                <div class="mintlify-property-label" style="color: var(--color-brand-annotate);">Ghi
-                                                    chú hoàn thành</div>
-                                                <div class="mintlify-property-value"
-                                                    style="font-weight: 400; font-size: 13px; margin-top: 4px;">
-                                                    ${reqDetail.rejectionReason}</div>
+
+                                        <c:if test="${reqDetail.status != 'PENDING' && (reqDetail.status != 'IN_PROGRESS' || reqDetail.assignedStaffId != sessionScope.currentUser.id)}">
+                                            <div class="text-center p-3 rounded"
+                                                style="background-color: var(--color-surface); border: 1px solid var(--color-hairline-soft); color: var(--color-steel); font-size: 13px;">
+                                                <c:choose>
+                                                    <c:when test="${reqDetail.status == 'IN_PROGRESS'}">
+                                                        <span class="mintlify-badge-status-inprogress" style="display:inline-block;margin-bottom:6px">Đang xử lý</span>
+                                                        <p style="margin:0;font-size:0.8125rem">Yêu cầu đang được xử lý bởi nhân sự.</p>
+                                                    </c:when>
+                                                    <c:when test="${reqDetail.status == 'COMPLETED'}">
+                                                        <span class="mintlify-badge-status-done" style="display:inline-block;margin-bottom:6px">Hoàn thành</span>
+                                                        <p style="margin:0;font-size:0.8125rem">Yêu cầu đã được xử lý thành công.</p>
+                                                    </c:when>
+                                                    <c:when test="${reqDetail.status == 'REJECTED'}">
+                                                        <span class="mintlify-badge-status-rejected" style="display:inline-block;margin-bottom:6px">Đã từ chối</span>
+                                                    </c:when>
+                                                    <c:otherwise>Không có hành động khả dụng.</c:otherwise>
+                                                </c:choose>
                                             </div>
                                         </c:if>
                                     </div>

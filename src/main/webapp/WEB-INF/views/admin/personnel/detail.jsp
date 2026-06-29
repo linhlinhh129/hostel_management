@@ -19,7 +19,6 @@
                 <div>
                     <h1><c:out value="${user.fullName}"/></h1>
                     <p>
-            ·
                         <c:choose>
                             <c:when test="${user.role == 'MANAGER'}">Ban Quản lý</c:when>
                             <c:when test="${user.role == 'OPERATOR'}">Nhân viên vận hành</c:when>
@@ -27,43 +26,43 @@
                         </c:choose>
                     </p>
                 </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="${ctx}/admin/personnel/${user.id}/edit" class="quick-action-btn">Sửa thông tin</a>
-
-                    <c:if test="${user.status == 'ACTIVE'}">
-                        <form method="post" action="${ctx}/admin/personnel/${user.id}/status" style="margin:0">
-                            <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                            <input type="hidden" name="status" value="INACTIVE"/>
-                            <button type="submit" class="quick-action-btn" style="color:var(--hms-danger)"
-                                    onclick="return confirm('Khóa tài khoản này?')">Khóa tài khoản</button>
-                        </form>
-                    </c:if>
-                    <c:if test="${user.status != 'ACTIVE'}">
-                        <form method="post" action="${ctx}/admin/personnel/${user.id}/status" style="margin:0">
-                            <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                            <input type="hidden" name="status" value="ACTIVE"/>
-                            <button type="submit" class="quick-action-btn" style="color:var(--hms-success)"
-                                    onclick="return confirm('Mở khóa tài khoản này?')">Mở khóa</button>
-                        </form>
-                        <form method="post" action="${ctx}/admin/personnel/${user.id}/delete" style="margin:0"
-                              onsubmit="return confirm('Bạn có chắc chắn muốn XÓA nhân sự này không?\nHành động này không thể hoàn tác!')">
-                            <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                            <button type="submit" class="quick-action-btn"
-                                    style="color:var(--hms-danger)">
-                                Xóa nhân sự
-                            </button>
-                        </form>
-                    </c:if>
-
-                    <a href="${ctx}/admin/personnel" class="quick-action-btn">← Danh sách</a>
-                </div>
+                <a href="${ctx}/admin/personnel" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Danh sách</a>
             </div>
 
             <div class="row g-3">
                 <!-- Thông tin cá nhân -->
                 <div class="col-lg-6">
                     <div class="widget-surface">
-                        <div class="widget-surface-header"><h3>Thông tin cá nhân</h3></div>
+                        <div class="widget-surface-header">
+                            <h3>Thông tin cá nhân</h3>
+                            <div class="d-flex gap-2 align-items-center">
+                                <a href="${ctx}/admin/personnel/${user.id}/edit"
+                                   class="btn-mintlify-secondary text-decoration-none"
+                                   style="padding:4px 12px;font-size:0.8125rem">Sửa</a>
+
+                                <c:if test="${user.status == 'ACTIVE'}">
+                                    <form method="post" action="${ctx}/admin/personnel/${user.id}/status" style="margin:0">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                                        <input type="hidden" name="status" value="INACTIVE"/>
+                                        <button type="submit"
+                                                class="btn btn-outline-warning"
+                                                style="padding:4px 12px;font-size:0.8125rem"
+                                                onclick="return confirm('Khóa tài khoản này?')">Khóa</button>
+                                    </form>
+                                </c:if>
+                                <c:if test="${user.status != 'ACTIVE'}">
+                                    <form method="post" action="${ctx}/admin/personnel/${user.id}/status" style="margin:0">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                                        <input type="hidden" name="status" value="ACTIVE"/>
+                                        <button type="submit"
+                                                class="btn btn-outline-success"
+                                                style="padding:4px 12px;font-size:0.8125rem"
+                                                onclick="return confirm('Mở khóa tài khoản này?')">Mở khóa</button>
+                                    </form>
+                                    
+                                </c:if>
+                            </div>
+                        </div>
                         <div class="widget-surface-body">
                             <table style="width:100%;font-size:0.875rem;border-collapse:collapse">
                                 <tr>

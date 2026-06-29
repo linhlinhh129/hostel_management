@@ -451,4 +451,37 @@ public class FacilityDAO extends BaseDAO {
         }
         return list;
     }
+
+    /**
+     * Đếm số phòng đang có người thuê (tenant_id IS NOT NULL) trong một cơ sở.
+     */
+    public int countOccupiedRooms(int facilityId) {
+        String sql = "SELECT COUNT(*) FROM dbo.rooms " +
+                     "WHERE facility_id = ? AND tenant_id IS NOT NULL AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, facilityId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            logger.error("FacilityDAO.countOccupiedRooms failed for facilityId={}", facilityId, e);
+        }
+        return 0;
+    }
+
+    /**
+     * Chuyển toàn bộ phòng của cơ sở sang trạng thái INACTIVE.
+     */
+    public void deactivateAllRooms(int facilityId) {
+        String sql = "UPDATE dbo.rooms SET status = 'INACTIVE', updated_at = GETDATE() " +
+                     "WHERE facility_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, facilityId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            logger.error("FacilityDAO.deactivateAllRooms failed for facilityId={}", facilityId, e);
+        }
+    }
 }

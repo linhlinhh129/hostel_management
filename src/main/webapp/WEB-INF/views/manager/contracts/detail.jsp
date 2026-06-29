@@ -91,11 +91,12 @@
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
            style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
-          <a href="${ctx}/manager/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
           <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
           <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
         </div>
-        <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+        <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
+          <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+          <div class="d-flex gap-2 align-items-center flex-wrap">
           <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
             <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -125,6 +126,7 @@
             In Hợp Đồng / Lưu PDF
           </button>
         </div>
+        </div><%-- end flex-column wrapper --%>
       </div>
 
       <div class="document-viewer-wrapper mt-4">

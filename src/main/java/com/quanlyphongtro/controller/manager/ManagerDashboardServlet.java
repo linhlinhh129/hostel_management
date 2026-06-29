@@ -34,8 +34,9 @@ public class ManagerDashboardServlet extends BaseServlet {
 
         int managerId = currentUser.getId();
 
-        String facilityName = "Chưa phân công";
-        String facilityCode = "—";
+        String facilityName   = "Chưa phân công";
+        String facilityCode   = "—";
+        String facilityStatus = "";
 
         int totalRooms = 0;
         int occupiedRooms = 0;
@@ -53,7 +54,7 @@ public class ManagerDashboardServlet extends BaseServlet {
 
         List<Map<String, Object>> recentTickets = new ArrayList<>();
 
-        String facilitySql = "SELECT TOP 1 name, code FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL";
+        String facilitySql = "SELECT TOP 1 name, code, status FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL";
 
         String totalRoomsSql = "SELECT COUNT(*) FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         
@@ -94,8 +95,9 @@ public class ManagerDashboardServlet extends BaseServlet {
                 ps.setInt(1, managerId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        facilityName = rs.getString("name");
-                        facilityCode = rs.getString("code");
+                        facilityName   = rs.getString("name");
+                        facilityCode   = rs.getString("code");
+                        facilityStatus = rs.getString("status");
                     }
                 }
             }
@@ -223,8 +225,9 @@ public class ManagerDashboardServlet extends BaseServlet {
             logger.error("Failed to load manager dashboard statistics for manager={}", managerId, e);
         }
 
-        req.setAttribute("facilityName", facilityName);
-        req.setAttribute("facilityCode", facilityCode);
+        req.setAttribute("facilityName",   facilityName);
+        req.setAttribute("facilityCode",   facilityCode);
+        req.setAttribute("facilityStatus", facilityStatus);
 
         req.setAttribute("totalRooms", totalRooms);
         req.setAttribute("occupiedRooms", occupiedRooms);

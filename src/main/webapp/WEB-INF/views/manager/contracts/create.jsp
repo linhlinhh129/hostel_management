@@ -9,38 +9,54 @@
 
 <style>
   .form-section-title {
-    font-size: 1.1rem;
+    font-size: 1.0625rem;
     font-weight: 700;
     color: var(--hms-text-main);
-    margin-bottom: 1.5rem;
+    margin: 0 0 1.25rem 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--hms-border);
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--hms-border);
   }
   .form-section-title svg {
-    color: var(--hms-primary);
+    color: var(--hms-accent);
+    flex-shrink: 0;
+  }
+  .contract-section {
+    background: #fff;
+    border: 1px solid var(--hms-border);
+    border-radius: var(--hms-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--hms-text-secondary);
+    margin-bottom: 0.375rem;
   }
   .form-control, .form-select {
     border-radius: 8px;
-    padding: 0.6rem 1rem;
+    padding: 0.5625rem 0.875rem;
     border: 1px solid #e2e8f0;
-    transition: all 0.2s;
+    font-size: 0.9375rem;
+    transition: border-color .2s, box-shadow .2s;
   }
   .form-control:focus, .form-select:focus {
-    border-color: var(--hms-primary);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    border-color: var(--hms-accent);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+    outline: none;
   }
   .sticky-sidebar {
     position: sticky;
     top: 80px;
   }
   .info-box {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: 12px;
-    padding: 20px;
+    background: linear-gradient(135deg,rgba(59,130,246,.05),rgba(59,130,246,.1));
+    border: 1px solid rgba(59,130,246,.2);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
     color: var(--hms-text-secondary);
   }
 </style>
@@ -56,13 +72,10 @@
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
            style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
-          <a href="${ctx}/manager/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; margin-top:-2px"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            Quay lại danh sách
-          </a>
           <h1>Khởi Tạo Hợp Đồng Mới</h1>
           <p>Thiết lập thông tin và các điều khoản cơ bản cho khách thuê phòng</p>
         </div>
+        <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Quay lại danh sách</a>
       </div>
 
       <form method="post" action="${ctx}/manager/contracts/create">
@@ -73,92 +86,92 @@
           <div class="col-lg-8">
             
             <!-- Phần 1: Chọn phòng -->
-            <div class="data-surface mb-4">
+            <div class="contract-section">
               <h4 class="form-section-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 Thông tin Phòng thuê
               </h4>
-              <div class="mb-2">
-                <label class="form-label fw-bold">Chọn Phòng (đang trống) <span class="text-danger">*</span></label>
+              <div class="mb-3">
+                <label class="form-label">Chọn Phòng (đang trống) <span class="text-danger">*</span></label>
                 <select name="roomId" class="form-select" required>
                   <option value="">-- Click để chọn phòng --</option>
                   <c:forEach var="r" items="${availableRooms}">
                     <option value="${r.id}" ${not empty preselectedRoomId && r.id == preselectedRoomId ? 'selected' : ''}>Phòng ${r.code}</option>
                   </c:forEach>
                 </select>
-                <small class="form-text text-muted mt-2 d-block">Lưu ý: Chỉ những phòng đang ở trạng thái <strong>Trống</strong> mới có thể được tạo hợp đồng.</small>
+                <small class="form-text text-muted mt-1 d-block">Lưu ý: Chỉ những phòng đang ở trạng thái <strong>Trống</strong> mới có thể được tạo hợp đồng.</small>
               </div>
             </div>
 
             <!-- Phần 2: Người thuê -->
-            <div class="data-surface mb-4">
+            <div class="contract-section">
               <h4 class="form-section-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 Thông tin Người Thuê Đại Diện (Bên B)
               </h4>
               
-              <div class="row g-4 mb-3">
+              <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                  <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
                   <input type="text" name="tenantFullName" class="form-control" required placeholder="Nhập đầy đủ họ tên"/>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Ngày sinh</label>
+                  <label class="form-label">Ngày sinh</label>
                   <input type="date" name="tenantDob" class="form-control"/>
                 </div>
               </div>
 
-              <div class="row g-4 mb-3">
+              <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">CCCD / CMND <span class="text-danger">*</span></label>
+                  <label class="form-label">CCCD / CMND <span class="text-danger">*</span></label>
                   <input type="text" name="tenantIdentityNumber" class="form-control" required placeholder="Số thẻ căn cước"/>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Số điện thoại</label>
+                  <label class="form-label">Số điện thoại</label>
                   <input type="text" name="tenantPhone" class="form-control" placeholder="09xxxxxxxxx"/>
                 </div>
               </div>
 
-              <div class="row g-4 mb-3">
+              <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Ngày cấp CCCD</label>
+                  <label class="form-label">Ngày cấp CCCD</label>
                   <input type="date" name="tenantIdentityIssueDate" class="form-control"/>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-bold">Nơi cấp</label>
+                  <label class="form-label">Nơi cấp</label>
                   <input type="text" name="tenantIdentityIssuePlace" class="form-control" placeholder="Cục cảnh sát..."/>
                 </div>
               </div>
 
-              <div class="mb-2">
-                <label class="form-label fw-bold">Địa chỉ thường trú</label>
+              <div class="mb-1">
+                <label class="form-label">Địa chỉ thường trú</label>
                 <input type="text" name="tenantPermanentAddress" class="form-control" placeholder="Nhập địa chỉ theo sổ hộ khẩu"/>
               </div>
             </div>
 
             <!-- Phần 3: Chi tiết Hợp đồng -->
-            <div class="data-surface mb-4">
+            <div class="contract-section">
               <h4 class="form-section-title">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Thông tin Hợp đồng
               </h4>
 
-              <div class="mb-4">
-                <label class="form-label fw-bold">Giá thuê (bằng chữ)</label>
+              <div class="mb-3">
+                <label class="form-label">Giá thuê (bằng chữ)</label>
                 <input type="text" name="amountInWords" class="form-control" placeholder="VD: Ba triệu năm trăm nghìn đồng chẵn"/>
               </div>
 
-              <div class="row g-4">
+              <div class="row g-3">
                 <div class="col-md-4">
-                  <label class="form-label fw-bold">Ngày ký <span class="text-danger">*</span></label>
+                  <label class="form-label">Ngày ký <span class="text-danger">*</span></label>
                   <input type="date" name="signedDate" class="form-control" required/>
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label fw-bold">Ngày bắt đầu <span class="text-danger">*</span></label>
+                  <label class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
                   <input type="date" name="startDate" class="form-control" required/>
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label fw-bold">Ngày hết hạn <span class="text-danger">*</span></label>
+                  <label class="form-label">Ngày hết hạn <span class="text-danger">*</span></label>
                   <input type="date" name="endDate" class="form-control" required/>
                 </div>
               </div>

@@ -54,7 +54,6 @@
                             <table class="table-mintlify">
                                 <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Họ tên</th>
                                     <th class="d-none d-md-table-cell">Email</th>
                                     <th class="d-none d-md-table-cell">SĐT</th>
@@ -67,7 +66,6 @@
                                 <tbody>
                                 <c:forEach var="emp" items="${page.items}">
                                     <tr data-href="${ctx}/admin/personnel/${emp.id}">
-                                        <td><a href="${ctx}/admin/personnel/${emp.id}">#<c:out value="${emp.id}"/></a></td>
                                         <td><c:out value="${emp.fullName}"/></td>
                                         <td class="d-none d-md-table-cell"><c:out value="${emp.email}"/></td>
                                         <td class="d-none d-md-table-cell"><c:out value="${emp.phone}"/></td>

@@ -28,15 +28,12 @@
             <!-- Page Content -->
             <main class="page-content">
                 <!-- Header -->
-                <div class="page-header hero-sky-gradient" style="border-radius: var(--hms-radius-lg, 12px); margin-bottom: 1.75rem;">
-                    <h1>Cập nhật chỉ số điện nước</h1>
-                    <p>Nhập mã phòng và các chỉ số điện nước mới nhất.</p>
-                </div>
-                <div class="d-flex justify-content-start mb-4">
-                    <a href="${ctx}/operator/meter-readings" class="mintlify-btn-secondary" style="text-decoration: none;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                        Quay lại danh sách
-                    </a>
+                <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3" style="border-radius: var(--hms-radius-lg, 12px); margin-bottom: 1.75rem;">
+                    <div>
+                        <h1>Cập nhật chỉ số điện nước</h1>
+                        <p>Nhập mã phòng và các chỉ số điện nước mới nhất.</p>
+                    </div>
+                    <a href="${ctx}/operator/meter-readings" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Quay lại danh sách</a>
                 </div>
 
                 <c:if test="${not empty sessionScope.error}">
