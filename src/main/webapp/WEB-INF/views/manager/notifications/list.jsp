@@ -140,11 +140,11 @@
             <%-- Tab Thông báo chung (Gộp cả gửi đến tôi và gửi tới cư dân) --%>
             
             <%-- Sub-tabs/Pills for General tab --%>
-            <ul class="nav nav-pills mb-3" id="notificationSubTabs" role="tablist" style="gap:8px">
+            <ul class="nav nav-pills mb-4 mt-3 ms-2" id="notificationSubTabs" role="tablist" style="gap:12px">
               <li class="nav-item" role="presentation">
                 <a class="nav-link ${type == 'received' ? 'active' : ''}" 
                    href="${ctx}/manager/notifications?tab=general&type=received"
-                   style="font-weight: 600; font-size: 0.8125rem; padding: 8px 16px; border-radius: 6px; 
+                   style="font-weight: 600; font-size: 0.8125rem; padding: 8px 20px; border-radius: 6px; 
                           transition: all 0.2s;
                           ${type == 'received' ? 'background: var(--hms-accent-deep); color: #fff;' : 'background: var(--hms-surface); color: var(--hms-text-muted); border: 1px solid var(--hms-border);'}">
                   Gửi đến tôi
@@ -153,7 +153,7 @@
               <li class="nav-item" role="presentation">
                 <a class="nav-link ${type == 'sent' ? 'active' : ''}" 
                    href="${ctx}/manager/notifications?tab=general&type=sent"
-                   style="font-weight: 600; font-size: 0.8125rem; padding: 8px 16px; border-radius: 6px; 
+                   style="font-weight: 600; font-size: 0.8125rem; padding: 8px 20px; border-radius: 6px; 
                           transition: all 0.2s;
                           ${type == 'sent' ? 'background: var(--hms-accent-deep); color: #fff;' : 'background: var(--hms-surface); color: var(--hms-text-muted); border: 1px solid var(--hms-border);'}">
                   Gửi tới cư dân

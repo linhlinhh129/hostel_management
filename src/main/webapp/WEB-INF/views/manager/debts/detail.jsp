@@ -25,10 +25,10 @@
                     <a href="${ctx}/manager/invoices/${debt.invoiceId}" class="btn-mintlify-primary text-decoration-none">Xem hóa đơn gốc</a>
                     <c:choose>
                         <c:when test="${debt.status == 'UNPAID'}">
-                            <span class="badge" style="background-color: var(--hms-warning-color, #f59e0b); font-size: 1rem; padding: 8px 16px;">Chưa thanh toán</span>
+                            <span class="badge" style="background: var(--hms-warning-color, #f59e0b) !important; color: #ffffff !important; border: 1px solid var(--hms-warning-color, #f59e0b) !important; backdrop-filter: none !important; font-size: 1rem; padding: 8px 16px;">Chưa thanh toán</span>
                         </c:when>
                         <c:when test="${debt.status == 'OVERDUE'}">
-                            <span class="badge" style="background-color: var(--hms-danger-color, #ef4444); font-size: 1rem; padding: 8px 16px;">Quá hạn</span>
+                            <span class="badge" style="background: var(--hms-danger-color, #ef4444) !important; color: #ffffff !important; border: 1px solid var(--hms-danger-color, #ef4444) !important; backdrop-filter: none !important; font-size: 1rem; padding: 8px 16px;">Quá hạn</span>
                         </c:when>
                     </c:choose>
                 </div>
