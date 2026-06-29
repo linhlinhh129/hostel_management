@@ -297,7 +297,17 @@ public class AdminFacilityServlet extends BaseServlet {
             return;
         }
 
+        int occupiedRooms = facilityDAO.countOccupiedRooms(id);
+        if (occupiedRooms > 0) {
+            setFlashMessage(req, "error",
+                "Không thể vô hiệu hóa cơ sở vì hiện có " + occupiedRooms +
+                " phòng đang được thuê. Vui lòng kết thúc tất cả hợp đồng trước.");
+            resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
+            return;
+        }
+
         facilityDAO.updateStatus(id, "INACTIVE");
+        facilityDAO.deactivateAllRooms(id);
 
         UserSessionDTO currentUser = getCurrentUser(req);
         try {

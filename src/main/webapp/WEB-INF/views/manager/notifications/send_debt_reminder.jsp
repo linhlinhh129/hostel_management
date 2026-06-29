@@ -89,7 +89,7 @@
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:12px 16px;color:var(--hms-text-muted)">Số điện thoại</td>
-                  <td style="padding:12px 16px;font-family:monospace"><c:out value="${invoice.tenantPhone}"/></td>
+                  <td style="padding:12px 16px"><c:out value="${invoice.tenantPhone}"/></td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:12px 16px;color:var(--hms-text-muted)">Tổng tiền cần đóng</td>

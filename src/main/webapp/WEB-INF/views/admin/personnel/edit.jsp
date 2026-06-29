@@ -20,7 +20,7 @@
                         <h1>Chỉnh sửa nhân sự</h1>
                         <p><c:out value="${user.fullName}"/> — #<c:out value="${user.id}"/></p>
                     </div>
-                    <a href="${ctx}/admin/personnel/${user.id}" class="quick-action-btn">← Quay lại</a>
+                    <a href="${ctx}/admin/personnel/${user.id}" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Quay lại</a>
                 </div>
             </div>
 

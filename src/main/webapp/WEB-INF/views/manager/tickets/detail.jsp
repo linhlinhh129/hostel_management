@@ -57,10 +57,11 @@
 
                 <div class="row g-3">
 
-                  <%-- Cột chính: nội dung + lịch sử --%>
-                    <div class="col-lg-8">
+                  <%-- Cột chính: nội dung + hình ảnh + lịch sử --%>
+                  <div class="col-lg-8">
 
                       <%-- Nội dung yêu cầu --%>
+                      <div class="widget-surface mb-3">
                         <div class="widget-surface-header">
                           <h3>Nội dung yêu cầu</h3>
                           <span class="badge-hms badge-neutral">
@@ -73,9 +74,7 @@
                               <c:when test="${ticket.category == 'CLEANING'}">Vệ sinh</c:when>
                               <c:when test="${ticket.category == 'COMPLAINT'}">Khiếu nại / Phản ánh</c:when>
                               <c:when test="${ticket.category == 'OTHER'}">Khác</c:when>
-                              <c:otherwise>
-                                <c:out value="${ticket.category}" />
-                              </c:otherwise>
+                              <c:otherwise><c:out value="${ticket.category}" /></c:otherwise>
                             </c:choose>
                           </span>
                         </div>
@@ -84,9 +83,9 @@
                             <c:out value="${ticket.content}" />
                           </div>
                         </div>
-                    </div>
+                      </div>
 
-                    <%-- Hình ảnh minh chứng (trước & sau) --%>
+                      <%-- Hình ảnh minh chứng --%>
                       <c:if test="${not empty ticket.attachmentUrls1 or not empty ticket.attachmentUrls2}">
                         <div class="widget-surface mb-3">
                           <div class="widget-surface-header">
@@ -96,8 +95,7 @@
                             <div class="row g-3">
                               <div class="col-md-6">
                                 <div class="border rounded p-3 bg-light h-100">
-                                  <h6 class="text-danger mb-2" style="font-weight:600">Ảnh sự cố (Trước khi sửa)
-                                  </h6>
+                                  <h6 class="text-danger mb-2" style="font-weight:600">Ảnh sự cố (Trước khi sửa)</h6>
                                   <c:choose>
                                     <c:when test="${not empty ticket.attachmentUrls1}">
                                       <div class="d-flex flex-wrap gap-2">
@@ -105,15 +103,14 @@
                                           <c:set var="trimmedUrl" value="${fn:trim(url)}" />
                                           <c:if test="${not empty trimmedUrl}">
                                             <c:choose>
-                                              <c:when
-                                                test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
+                                              <c:when test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
                                                 <img src="${trimmedUrl}" class="img-thumbnail rounded"
-                                                  style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer"
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
                                                   onclick="window.open(this.src)" />
                                               </c:when>
                                               <c:otherwise>
                                                 <img src="${ctx}/uploads/${trimmedUrl}" class="img-thumbnail rounded"
-                                                  style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer"
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
                                                   onclick="window.open(this.src)" />
                                               </c:otherwise>
                                             </c:choose>
@@ -129,8 +126,7 @@
                               </div>
                               <div class="col-md-6">
                                 <div class="border rounded p-3 bg-light h-100">
-                                  <h6 class="text-success mb-2" style="font-weight:600">Ảnh kết quả (Sau khi sửa)
-                                  </h6>
+                                  <h6 class="text-success mb-2" style="font-weight:600">Ảnh kết quả (Sau khi sửa)</h6>
                                   <c:choose>
                                     <c:when test="${not empty ticket.attachmentUrls2}">
                                       <div class="d-flex flex-wrap gap-2">
@@ -138,15 +134,14 @@
                                           <c:set var="trimmedUrl" value="${fn:trim(url)}" />
                                           <c:if test="${not empty trimmedUrl}">
                                             <c:choose>
-                                              <c:when
-                                                test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
+                                              <c:when test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
                                                 <img src="${trimmedUrl}" class="img-thumbnail rounded"
-                                                  style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer"
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
                                                   onclick="window.open(this.src)" />
                                               </c:when>
                                               <c:otherwise>
                                                 <img src="${ctx}/uploads/${trimmedUrl}" class="img-thumbnail rounded"
-                                                  style="max-height:160px; max-width:100%; object-fit:cover; cursor:pointer"
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
                                                   onclick="window.open(this.src)" />
                                               </c:otherwise>
                                             </c:choose>
@@ -166,57 +161,48 @@
                       </c:if>
 
                       <%-- Lịch sử xử lý --%>
-                        <div class="widget-surface">
-                          <div class="widget-surface-header">
-                            <h3>Lịch sử xử lý</h3>
-                          </div>
-                          <div class="widget-surface-body">
-                            <c:choose>
-                              <c:when test="${not empty ticket.history}">
-                                <div class="timeline" style="position:relative;padding-left:28px">
-                                  <c:forEach var="h" items="${ticket.history}">
-                                    <div style="position:relative;padding-bottom:20px">
-                                      <div
-                                        style="position:absolute;left:-28px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--hms-accent-deep);border:2px solid white;box-shadow:0 0 0 2px var(--hms-accent-deep)">
-                                      </div>
-                                      <div
-                                        style="background:var(--hms-surface-2);border-radius:var(--hms-radius);padding:10px 14px">
-                                        <div class="d-flex justify-content-between align-items-start gap-2">
-                                          <strong style="font-size:0.875rem">
-                                            <c:out value="${h.action}" />
-                                          </strong>
-                                          <span
-                                            style="font-size:0.75rem;color:var(--hms-text-muted);white-space:nowrap">
-                                            <c:out value="${h.performedAt}" />
-                                          </span>
-                                        </div>
-                                        <div style="font-size:0.8125rem;color:var(--hms-text-muted);margin-top:2px">
-                                          Bởi <strong>
-                                            <c:out value="${h.performedBy}" />
-                                          </strong>
-                                        </div>
-                                        <c:if test="${not empty h.note}">
-                                          <div
-                                            style="font-size:0.8125rem;margin-top:6px;color:var(--hms-ink);border-top:1px solid var(--hms-border);padding-top:6px">
-                                            <c:out value="${h.note}" />
-                                          </div>
-                                        </c:if>
-                                      </div>
-                                    </div>
-                                  </c:forEach>
-                                </div>
-                              </c:when>
-                              <c:otherwise>
-                                <p class="text-muted" style="font-size:0.875rem;margin:0">Chưa có lịch sử xử lý.</p>
-                              </c:otherwise>
-                            </c:choose>
-                          </div>
+                      <div class="widget-surface">
+                        <div class="widget-surface-header">
+                          <h3>Lịch sử xử lý</h3>
                         </div>
+                        <div class="widget-surface-body">
+                          <c:choose>
+                            <c:when test="${not empty ticket.history}">
+                              <div class="timeline" style="position:relative;padding-left:28px">
+                                <c:forEach var="h" items="${ticket.history}">
+                                  <div style="position:relative;padding-bottom:20px">
+                                    <div style="position:absolute;left:-28px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--hms-accent-deep);border:2px solid white;box-shadow:0 0 0 2px var(--hms-accent-deep)"></div>
+                                    <div style="background:var(--hms-surface-2);border-radius:var(--hms-radius);padding:10px 14px">
+                                      <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <strong style="font-size:0.875rem"><c:out value="${h.action}" /></strong>
+                                        <span style="font-size:0.75rem;color:var(--hms-text-muted);white-space:nowrap">
+                                          <c:out value="${h.performedAt}" />
+                                        </span>
+                                      </div>
+                                      <div style="font-size:0.8125rem;color:var(--hms-text-muted);margin-top:2px">
+                                        Bởi <strong><c:out value="${h.performedBy}" /></strong>
+                                      </div>
+                                      <c:if test="${not empty h.note}">
+                                        <div style="font-size:0.8125rem;margin-top:6px;color:var(--hms-ink);border-top:1px solid var(--hms-border);padding-top:6px">
+                                          <c:out value="${h.note}" />
+                                        </div>
+                                      </c:if>
+                                    </div>
+                                  </div>
+                                </c:forEach>
+                              </div>
+                            </c:when>
+                            <c:otherwise>
+                              <p class="text-muted" style="font-size:0.875rem;margin:0">Chưa có lịch sử xử lý.</p>
+                            </c:otherwise>
+                          </c:choose>
+                        </div>
+                      </div>
 
-                </div><%-- end col-lg-8 --%>
+                  </div><%-- end col-lg-8 --%>
 
                   <%-- Cột phụ: thông tin + hành động --%>
-                    <div class="col-lg-4">
+                  <div class="col-lg-4">
 
                       <%-- Thông tin --%>
                         <div class="widget-surface mb-3">

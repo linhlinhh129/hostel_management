@@ -92,12 +92,12 @@ BEGIN TRY
     -- ============================================================
     IF NOT EXISTS (SELECT 1 FROM dbo.facilities WHERE code = N'CG')
     INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, electricity_price, water_price, internet_fee, service_fee)
-    VALUES (N'CG', N'Ký túc xá Cầu Giấy', N'Số 10 Trần Thái Tông, Cầu Giấy, Hà Nội', 5, 8, N'ACTIVE', @manager01_id, NULL, 4000, 30000, 100000, 50000);
+    VALUES (N'CG', N'Ký túc xá Cầu Giấy', N'Số 10 Trần Thái Tông, Cầu Giấy, Hà Nội', 2, 2, N'ACTIVE', @manager01_id, NULL, 4000, 30000, 100000, 50000);
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.facilities WHERE code = N'MD')
     INSERT INTO dbo.facilities (code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, electricity_price, water_price, internet_fee, service_fee)
-    VALUES (N'MD', N'Nhà trọ Mỹ Đình', N'Số 25 Lê Đức Thọ, Nam Từ Liêm, Hà Nội', 4, 6, N'ACTIVE', @manager02_id, NULL, 4200, 32000, 120000, 60000);
+    VALUES (N'MD', N'Nhà trọ Mỹ Đình', N'Số 25 Lê Đức Thọ, Nam Từ Liêm, Hà Nội', 2, 2, N'ACTIVE', @manager02_id, NULL, 4200, 32000, 120000, 60000);
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.facilities WHERE code = N'HM')
@@ -130,7 +130,7 @@ BEGIN TRY
 
     IF NOT EXISTS (SELECT 1 FROM dbo.rooms WHERE code = N'CG0104')
     INSERT INTO dbo.rooms (facility_id, code, area, status, tenant_id, deposit_amount, contract_start_date, contract_end_date, room_fee)
-    VALUES (@facility_cg, N'CG0104', 26.00, N'MAINTENANCE', NULL, 0, NULL, NULL, 2800000);
+    VALUES (@facility_cg, N'CG0104', 26.00, N'AVAILABLE', NULL, 0, NULL, NULL, 2800000);
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.rooms WHERE code = N'MD0201')

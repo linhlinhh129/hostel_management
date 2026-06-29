@@ -19,10 +19,11 @@
         <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
              style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
           <div>
-            <a href="${ctx}/manager/invoices" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
             <h1>Chi tiết Hóa Đơn: <c:out value="${invoice.invoiceCode}" /></h1>
           </div>
-          <div class="d-flex gap-2">
+          <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
+            <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
             <c:if test="${invoice.status ne 'PAID'}">
               <a href="${ctx}/manager/notifications?action=report-incorrect&invoiceId=${invoice.invoiceId}" class="btn-mintlify-danger text-decoration-none" style="background-color: var(--hms-danger); color: white; padding: 8px 16px; border-radius: 6px;">Báo cáo sai số</a>
               <a href="${ctx}/manager/invoices/${invoice.invoiceId}/edit" class="btn-mintlify-secondary text-decoration-none">Sửa Hóa Đơn</a>
@@ -33,6 +34,7 @@
             </c:if>
             <button onclick="window.print()" class="btn-mintlify-primary">Xuất PDF / In</button>
           </div>
+          </div><%-- end flex-column wrapper --%>
         </div>
 
         <style>

@@ -85,7 +85,7 @@
                                                             data-href="${ctx}/manager/debts?action=detail&id=${debt.invoiceId}">
                                                             <td style="white-space: nowrap;">
                                                                 <a href="${ctx}/manager/debts?action=detail&id=${debt.invoiceId}"
-                                                                    style="font-weight:600;font-family:monospace">
+                                                                    style="font-weight:600">
                                                                     <c:out value="${debt.invoiceCode}" />
                                                                 </a>
                                                             </td>
@@ -116,21 +116,17 @@
                                                             <td>
                                                                 <c:choose>
                                                                     <c:when test="${debt.status == 'UNPAID'}">
-                                                                        <span class="badge"
-                                                                            style="background-color: var(--hms-warning-color, #f59e0b);">Chưa
-                                                                            thanh toán</span>
+                                                                        <span class="badge-hms badge-warning">Chưa thanh toán</span>
                                                                     </c:when>
                                                                     <c:when test="${debt.status == 'OVERDUE'}">
-                                                                        <span class="badge"
-                                                                            style="background-color: var(--hms-danger-color, #ef4444);">Quá
-                                                                            hạn
+                                                                        <span class="badge-hms badge-danger">Quá hạn
                                                                             <c:if test="${debt.overdueDays > 0}">
                                                                                 (${debt.overdueDays} ngày)
                                                                             </c:if>
                                                                         </span>
                                                                     </c:when>
                                                                     <c:otherwise>
-                                                                        <span class="badge bg-secondary">
+                                                                        <span class="badge-hms badge-neutral">
                                                                             <c:out value="${debt.status}" />
                                                                         </span>
                                                                     </c:otherwise>

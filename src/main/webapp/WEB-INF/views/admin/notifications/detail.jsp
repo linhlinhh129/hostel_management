@@ -19,7 +19,7 @@
                     <h1><c:out value="${notification.title}"/></h1>
                     <p>Mã: <c:out value="${notification.code}"/></p>
                 </div>
-                <a href="${ctx}/admin/notifications" class="quick-action-btn">← Danh sách</a>
+                <a href="${ctx}/admin/notifications" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Danh sách</a>
             </div>
 
             <div class="row g-3">

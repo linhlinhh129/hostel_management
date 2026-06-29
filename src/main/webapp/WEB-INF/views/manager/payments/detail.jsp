@@ -20,12 +20,8 @@
                 <div
                   class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3">
                   <div>
-                    <div style="font-size:0.8125rem;color:var(--hms-text-muted);margin-bottom:6px">
-                      <a href="${ctx}/manager/payments" style="color:var(--hms-text-muted);text-decoration:none">← Danh
-                        sách giao dịch</a>
-                    </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                      <h1 style="margin:0;font-family:monospace">
+                      <h1 style="margin:0">
                         <c:out value="${payment.transactionCode}" />
                       </h1>
                       <c:choose>
@@ -46,7 +42,9 @@
                       </strong>
                     </p>
                   </div>
-                  <div class="d-flex gap-2 flex-wrap">
+                  <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
+                    <a href="${ctx}/manager/payments" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+                    <div class="d-flex gap-2 flex-wrap">
                     <c:if test="${payment.status == 'PENDING'}">
                       <form action="${ctx}/manager/payments/${payment.paymentId}/approve" method="POST" class="m-0">
                         <input type="hidden" name="csrfToken" value="${csrfToken}">
@@ -90,9 +88,8 @@
                       </form>
                     </c:if>
                   </div>
+                  </div><%-- end flex-column wrapper --%>
                 </div>
-
-                <div class="row g-3">
                   <%-- Cột trái: Thông tin giao dịch --%>
                     <div class="col-lg-6">
                       <div class="widget-surface h-100">
@@ -181,7 +178,7 @@
                                   <tr style="border-bottom:1px solid var(--hms-border)">
                                     <td style="padding:10px 16px;color:var(--hms-text-muted)">Mã hóa đơn</td>
                                     <td
-                                      style="padding:10px 16px;text-align:right;font-weight:500;font-family:monospace;">
+                                      style="padding:10px 16px;text-align:right;font-weight:500;">
                                       <c:out value="${payment.invoiceCode}" />
                                     </td>
                                   </tr>
