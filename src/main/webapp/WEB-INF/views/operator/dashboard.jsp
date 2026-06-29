@@ -198,7 +198,7 @@
                                                                         <circle cx="12" cy="12" r="10"></circle>
                                                                         <polyline points="12 6 12 12 16 14"></polyline>
                                                                     </svg>
-                                                                    ${req.rejectionReason}
+                                                                    ${req.formattedAppointmentDate}
                                                                 </td>
                                                                 <td class="text-end">
                                                                     <a href="${ctx}/operator/requests/detail?id=${req.requestId}" class="btn-mintlify-secondary text-decoration-none" style="padding: 4px 12px; font-size: 12px;">Xử lý</a>

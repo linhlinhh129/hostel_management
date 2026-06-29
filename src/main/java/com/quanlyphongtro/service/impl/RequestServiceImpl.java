@@ -39,7 +39,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public boolean acceptRequest(int requestId, int operatorId) {
         // Only accept if status is currently PENDING
-        return requestDAO.updateRequestStatus(requestId, "IN_PROGRESS", "PENDING", operatorId, null);
+        return requestDAO.updateRequestStatus(requestId, "ASSIGNED", "PENDING", operatorId, null);
     }
 
     @Override
