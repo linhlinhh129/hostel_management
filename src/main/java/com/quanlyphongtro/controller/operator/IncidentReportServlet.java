@@ -109,7 +109,7 @@ public class IncidentReportServlet extends HttpServlet {
                     if (attachmentUrls.length() > 0) {
                         attachmentUrls.append(",");
                     }
-                    attachmentUrls.append(request.getContextPath()).append("/uploads/").append(uniqueFileName);
+                    attachmentUrls.append("/uploads/").append(uniqueFileName);
                 }
             }
 

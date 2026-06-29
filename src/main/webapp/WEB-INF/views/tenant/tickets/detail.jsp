@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Chi tiết yêu cầu - Cổng cư dân"/>
 <c:set var="pageRole" value="TENANT"/>
@@ -39,7 +40,14 @@
                             <c:if test="${not empty ticket.attachmentUrls1}">
                                 <div class="mt-4 pt-3" style="border-top: 1px solid var(--hms-border-soft);">
                                     <h4 style="font-size: 0.875rem; color: var(--hms-stone); margin-bottom: 0.75rem;">Đính kèm:</h4>
-                                    <img src="${ctx}${ticket.attachmentUrls1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
+                                    <c:set var="img1" value="${ticket.attachmentUrls1}" />
+                                    <c:set var="finalImg1">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(img1, ctx)}">${img1}</c:when>
+                                            <c:otherwise>${ctx}${img1}</c:otherwise>
+                                        </c:choose>
+                                    </c:set>
+                                    <img src="${finalImg1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
                                 </div>
                             </c:if>
                         </div>
@@ -54,7 +62,14 @@
                                 <div class="d-flex flex-wrap gap-2 mt-2">
                                     <c:forTokens items="${ticket.attachmentUrls2}" delims="," var="imgUrl">
                                         <c:if test="${not empty imgUrl.trim()}">
-                                            <img src="${ctx}${imgUrl.trim()}" alt="Kết quả xử lý" style="max-width: 200px; height: auto; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
+                                            <c:set var="trimmedUrl" value="${imgUrl.trim()}" />
+                                            <c:set var="finalImg2">
+                                                <c:choose>
+                                                    <c:when test="${fn:startsWith(trimmedUrl, ctx)}">${trimmedUrl}</c:when>
+                                                    <c:otherwise>${ctx}${trimmedUrl}</c:otherwise>
+                                                </c:choose>
+                                            </c:set>
+                                            <img src="${finalImg2}" alt="Kết quả xử lý" style="max-width: 200px; height: auto; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
                                         </c:if>
                                     </c:forTokens>
                                 </div>

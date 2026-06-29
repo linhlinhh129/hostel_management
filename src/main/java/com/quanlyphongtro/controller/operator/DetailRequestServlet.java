@@ -112,7 +112,7 @@ public class DetailRequestServlet extends HttpServlet {
                     if ("after_images".equals(part.getName()) && part.getSize() > 0) {
                         String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(part);
                         part.write(uploadPath + java.io.File.separator + fileName);
-                        fileNames.add(request.getContextPath() + "/uploads/requests/" + fileName);
+                        fileNames.add("/uploads/requests/" + fileName);
                     }
                 }
                 

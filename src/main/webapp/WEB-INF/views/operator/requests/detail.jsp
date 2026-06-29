@@ -1,7 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-            <!DOCTYPE html>
+    <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+    <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+    <!DOCTYPE html>
             <html lang="vi">
 
             <head>
@@ -151,9 +152,15 @@
                                                 Ảnh đính kèm (${images.size()})</h4>
                                             <div class="d-flex flex-wrap gap-3">
                                                 <c:forEach var="img" items="${images}">
-                                                    <img src="${img}" alt="Attachment"
+                                                    <c:set var="finalImg">
+                                                        <c:choose>
+                                                            <c:when test="${fn:startsWith(img, pageContext.request.contextPath)}">${img}</c:when>
+                                                            <c:otherwise>${pageContext.request.contextPath}${img}</c:otherwise>
+                                                        </c:choose>
+                                                    </c:set>
+                                                    <img src="${finalImg}" alt="Attachment"
                                                         style="width: 120px; height: 120px; object-fit: cover; cursor: pointer; border-radius: 8px; border: 1px solid var(--color-hairline-soft); box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
-                                                        onclick="openLightbox('${img}')" />
+                                                        onclick="openLightbox('${finalImg}')" />
                                                 </c:forEach>
                                             </div>
                                         </div>
