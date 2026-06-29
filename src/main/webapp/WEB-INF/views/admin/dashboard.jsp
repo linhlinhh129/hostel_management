@@ -195,8 +195,7 @@
                 <!-- Hoạt động gần đây + Thống kê nhân sự -->
                 <div class="col-lg-4">
                     <!-- Thống kê nhân sự -->
-                    <div class="widget-surface mb-3">
-                        <div class="widget-surface-header">
+                    <div class="widget-surface mb-3">                        <div class="widget-surface-header">
                             <h3>Thống kê nhân sự</h3>
                             <a href="${ctx}/admin/personnel"
                                style="font-size:0.8125rem;color:var(--hms-accent-deep);font-weight:600;text-decoration:none">
@@ -282,9 +281,50 @@
                             </c:choose>
                         </div>
                     </div>
+                    <!-- Tỷ lệ phòng trống / đang thuê -->
+                    <div class="widget-surface mt-3">
+                        <div class="widget-surface-header">
+                            <h3>Tỷ lệ phòng trống / đang thuê</h3>
+                            <a href="${ctx}/admin/facilities"
+                               style="font-size:0.8125rem;color:var(--hms-accent-deep);font-weight:600;text-decoration:none">
+                                Xem cơ sở →
+                            </a>
+                        </div>
+                        <div class="widget-surface-body">
+                            <div class="d-flex justify-content-between align-items-center mb-1"
+                                 style="font-size:0.875rem;font-weight:500">
+                                <span>Đang thuê</span>
+                                <span style="font-weight:700"><c:out value="${occupancyRate}"/>%</span>
+                            </div>
+                            <div style="height:10px;background:var(--hms-border);border-radius:99px;overflow:hidden;margin-bottom:1rem">
+                                <div style="height:100%;
+                                            width:${occupancyRate}%;
+                                            background:linear-gradient(90deg,var(--hms-success),var(--hms-accent));
+                                            border-radius:99px;
+                                            transition:width 0.6s ease"></div>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span style="display:inline-flex;align-items:center;gap:6px;
+                                             background:var(--hms-success-bg,#ecfdf5);color:var(--hms-success);
+                                             border:1px solid var(--hms-success);
+                                             border-radius:99px;padding:4px 14px;font-size:0.8125rem;font-weight:600">
+                                    <span style="width:8px;height:8px;border-radius:50%;background:var(--hms-success);display:inline-block"></span>
+                                    <fmt:formatNumber value="${occupiedRooms}"/> thuê
+                                </span>
+                                <span style="display:inline-flex;align-items:center;gap:6px;
+                                             background:var(--hms-surface-2);color:var(--hms-stone);
+                                             border:1px solid var(--hms-border);
+                                             border-radius:99px;padding:4px 14px;font-size:0.8125rem;font-weight:600">
+                                    <span style="width:8px;height:8px;border-radius:50%;background:var(--hms-stone);display:inline-block"></span>
+                                    <fmt:formatNumber value="${availableRooms}"/> trống
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div><!-- /row -->
+
         </main>
     </div>
 </div>
