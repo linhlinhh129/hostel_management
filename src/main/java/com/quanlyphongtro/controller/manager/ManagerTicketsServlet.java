@@ -102,7 +102,8 @@ public class ManagerTicketsServlet extends BaseServlet {
         List<Map<String, Object>> tickets = new ArrayList<>();
         int totalTickets = 0;
 
-        StringBuilder whereClause = new StringBuilder(" WHERE f.manager_id = ? AND req.deleted_at IS NULL AND u.role = ?");
+        StringBuilder whereClause = new StringBuilder(
+                " WHERE f.manager_id = ? AND req.deleted_at IS NULL AND u.role = ?");
         List<Object> params = new ArrayList<>();
         params.add(currentUser.getId());
         params.add(type);
@@ -122,13 +123,16 @@ public class ManagerTicketsServlet extends BaseServlet {
         String countSql = "SELECT COUNT(*) FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL" + whereClause.toString();
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL"
+                + whereClause.toString();
 
-        String selectSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, r.room_id, r.code AS room_code, f.name AS facility_name " +
+        String selectSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, r.room_id, r.code AS room_code, f.name AS facility_name "
+                +
                 "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL" + whereClause.toString() +
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL"
+                + whereClause.toString() +
                 " ORDER BY req.request_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
@@ -192,7 +196,8 @@ public class ManagerTicketsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/tickets/list.jsp").forward(req, resp);
     }
 
-    private void handleDetail(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleDetail(int ticketId, HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -202,12 +207,15 @@ public class ManagerTicketsServlet extends BaseServlet {
         Map<String, Object> ticket = null;
         List<Map<String, Object>> operators = new ArrayList<>();
 
-        String ticketSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, u.phone AS sender_phone, " +
-                "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, o.full_name AS assigned_operator_name " +
+        String ticketSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, u.phone AS sender_phone, "
+                +
+                "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, o.full_name AS assigned_operator_name "
+                +
                 "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL " +
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL "
+                +
                 "LEFT JOIN dbo.users o ON req.assigned_staff_id = o.user_id " +
                 "WHERE req.request_id = ? AND req.deleted_at IS NULL";
 
@@ -218,7 +226,8 @@ public class ManagerTicketsServlet extends BaseServlet {
                     if (rs.next()) {
                         int managerId = rs.getInt("manager_id");
                         if (managerId != currentUser.getId()) {
-                            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không quản lý cơ sở của yêu cầu này.");
+                            resp.sendError(HttpServletResponse.SC_FORBIDDEN,
+                                    "Bạn không quản lý cơ sở của yêu cầu này.");
                             return;
                         }
 
@@ -266,7 +275,8 @@ public class ManagerTicketsServlet extends BaseServlet {
                             h2.put("note", "Đã tiếp nhận và đưa vào hàng chờ xử lý.");
                             historyList.add(h2);
 
-                            if ("ASSIGNED".equals(status) || "IN_PROGRESS".equals(status) || "DONE".equals(status) || "RESOLVED".equals(status)) {
+                            if ("ASSIGNED".equals(status) || "IN_PROGRESS".equals(status) || "DONE".equals(status)
+                                    || "RESOLVED".equals(status)) {
                                 Map<String, Object> h3 = new HashMap<>();
                                 h3.put("action", "Phân công xử lý");
                                 h3.put("performedAt", ticket.get("updatedAt"));
@@ -304,7 +314,8 @@ public class ManagerTicketsServlet extends BaseServlet {
             }
 
             // Query operators list assigned to the same facility
-            int facilityId = ticket != null && ticket.get("facilityId") != null ? (Integer) ticket.get("facilityId") : -1;
+            int facilityId = ticket != null && ticket.get("facilityId") != null ? (Integer) ticket.get("facilityId")
+                    : -1;
             String opsSql;
             if (facilityId > 0) {
                 opsSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
@@ -346,7 +357,7 @@ public class ManagerTicketsServlet extends BaseServlet {
     private void handleReceive(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String sql = "UPDATE dbo.requests SET status = 'RECEIVED', updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticketId);
             ps.executeUpdate();
             setFlashMessage(req, "success", "Tiếp nhận yêu cầu thành công!");
@@ -368,7 +379,7 @@ public class ManagerTicketsServlet extends BaseServlet {
         int operatorId = Integer.parseInt(operatorIdStr);
         String sql = "UPDATE dbo.requests SET status = 'ASSIGNED', assigned_staff_id = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, operatorId);
             ps.setInt(2, ticketId);
             ps.executeUpdate();
@@ -390,7 +401,7 @@ public class ManagerTicketsServlet extends BaseServlet {
 
         String sql = "UPDATE dbo.requests SET status = 'REJECTED', rejection_reason = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reason.trim());
             ps.setInt(2, ticketId);
             ps.executeUpdate();

@@ -372,3 +372,5 @@ UNION ALL SELECT 'audit_logs',  COUNT(*) FROM dbo.audit_logs
 UNION ALL SELECT 'contracts',  COUNT(*) FROM dbo.contracts;
 GO
 
+
+ư
