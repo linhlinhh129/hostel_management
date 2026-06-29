@@ -58,6 +58,12 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </c:if>
+                <c:if test="${param.error == 'password_duplicate'}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Mật khẩu mới không được trùng với mật khẩu cũ.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
                 <c:if test="${param.error == 'invalid_phone'}">
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).
