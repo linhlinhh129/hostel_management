@@ -33,28 +33,40 @@
 
                 <c:choose>
                   <c:when test="${not empty notifications}">
-                    <div class="d-flex flex-column gap-3 mb-4">
-                      <c:forEach var="item" items="${notifications}">
-                        <div class="p-4" style="border: 1px solid var(--hms-border, #e2e8f0); border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                          <div class="d-flex justify-content-between align-items-start gap-3">
-                            <div class="flex-grow-1">
-                                <h6 class="m-0" style="font-weight: 600; font-size: 16px; color: #1e293b;"><c:out value="${item.title}" /></h6>
-                                <div class="text-muted mt-1" style="font-size: 12px;">
-                                    <fmt:formatDate value="${item.sentAtAsDate}" pattern="dd/MM/yyyy HH:mm" />
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-sm toggle-content-btn"
-                                  data-target="noti-content-${item.id}"
-                                  style="border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 500; white-space: nowrap; border: 1px solid #cbd5e1; color: #475569; background: #fff; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
-                                  Chi tiết
-                            </button>
-                          </div>
-                          
-                          <div id="noti-content-${item.id}" class="d-none mt-3 pt-3" style="border-top: 1px solid #e2e8f0;">
-                              <div style="font-size: 14.5px; line-height: 1.6; color: #334155; white-space: pre-wrap; font-family: 'Inter', sans-serif;"><c:out value="${item.content}" /></div>
-                          </div>
-                        </div>
-                      </c:forEach>
+                    <div class="table-responsive">
+                      <table class="table-mintlify">
+                        <thead>
+                          <tr>
+                            <th>Mã</th>
+                            <th>Tiêu đề</th>
+                            <th class="d-none d-md-table-cell">Người gửi</th>
+                            <th class="d-none d-md-table-cell">Ngày gửi</th>
+                            <th class="d-none d-md-table-cell">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <c:forEach var="item" items="${notifications}">
+                            <tr>
+                              <td>
+                                <strong><c:out value="${item.code}"/></strong>
+                              </td>
+                              <td style="max-width:320px; font-weight: 500;"><c:out value="${item.title}"/></td>
+                              <td class="d-none d-md-table-cell">
+                                <span class="badge-hms badge-danger">Admin</span>
+                              </td>
+                              <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted)">
+                                <c:out value="${item.createdDateLabel}"/>
+                              </td>
+                              <td class="d-none d-md-table-cell">
+                                <a href="${ctx}/operator/notifications/${item.id}" class="btn-mintlify-secondary text-decoration-none"
+                                      style="padding:4px 12px;font-size:0.8125rem;">
+                                      Xem chi tiết
+                                </a>
+                              </td>
+                            </tr>
+                          </c:forEach>
+                        </tbody>
+                      </table>
                     </div>
 
                     <div
@@ -91,24 +103,6 @@
             </main>
           </div>
         </div>
-        <script>
-          document.addEventListener('DOMContentLoaded', function () {
-            const buttons = document.querySelectorAll('.toggle-content-btn');
-            buttons.forEach(btn => {
-              btn.addEventListener('click', function () {
-                const targetId = this.getAttribute('data-target');
-                const contentDiv = document.getElementById(targetId);
-                if (contentDiv.classList.contains('d-none')) {
-                  contentDiv.classList.remove('d-none');
-                  this.textContent = 'Thu gọn';
-                } else {
-                  contentDiv.classList.add('d-none');
-                  this.textContent = 'Chi tiết';
-                }
-              });
-            });
-          });
-        </script>
         <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
       </body>
 

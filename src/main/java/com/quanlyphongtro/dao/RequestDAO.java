@@ -180,7 +180,7 @@ public class RequestDAO extends BaseDAO {
     }
 
     public boolean completeRequest(int requestId, String notes, String attachmentUrls2) {
-        String sql = "UPDATE requests SET status = 'COMPLETED', rejection_reason = ?, attachment_urls2 = ?, updated_at = GETDATE() WHERE request_id = ?";
+        String sql = "UPDATE requests SET status = 'DONE', rejection_reason = ?, attachment_urls2 = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, notes);
@@ -194,7 +194,7 @@ public class RequestDAO extends BaseDAO {
     }
 
     public boolean updateAppointmentDateText(int requestId, String appointmentDateStr) {
-        String sql = "UPDATE requests SET rejection_reason = ?, updated_at = GETDATE() WHERE request_id = ? AND status IN ('PENDING', 'IN_PROGRESS')";
+        String sql = "UPDATE requests SET status = 'IN_PROGRESS', rejection_reason = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'ASSIGNED'";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, appointmentDateStr);

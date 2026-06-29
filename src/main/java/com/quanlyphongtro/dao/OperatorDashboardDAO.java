@@ -50,7 +50,7 @@ public class OperatorDashboardDAO {
      */
     public java.util.List<com.quanlyphongtro.model.Request> getUpcomingAppointments(int operatorId) {
         java.util.List<com.quanlyphongtro.model.Request> list = new java.util.ArrayList<>();
-        String sql = "SELECT rq.request_id, rq.title, r.code AS room_code, rq.rejection_reason " +
+        String sql = "SELECT rq.request_id, rq.title, r.code AS room_code, rq.rejection_reason, rq.status " +
                      "FROM requests rq " +
                      "LEFT JOIN users u ON rq.sender_id = u.user_id " +
                      "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
@@ -70,6 +70,7 @@ public class OperatorDashboardDAO {
                     req.setTitle(rs.getString("title"));
                     req.setRoomCode(rs.getString("room_code"));
                     req.setRejectionReason(rs.getString("rejection_reason")); 
+                    req.setStatus(rs.getString("status"));
                     list.add(req);
                 }
             }

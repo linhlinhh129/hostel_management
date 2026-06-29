@@ -186,7 +186,7 @@
                                         </c:if>
 
                                         <c:if
-                                            test="${reqDetail.status != 'PENDING' && (reqDetail.status != 'IN_PROGRESS' || reqDetail.assignedStaffId != sessionScope.currentUser.id)}">
+                                            test="${reqDetail.status != 'PENDING' && reqDetail.status != 'ASSIGNED' && (reqDetail.status != 'IN_PROGRESS' || reqDetail.assignedStaffId != sessionScope.currentUser.id)}">
                                             <div class="text-center p-3 rounded"
                                                 style="background-color: var(--color-surface); border: 1px solid var(--color-hairline-soft); color: var(--color-steel); font-size: 13px;">
                                                 Không có hành động khả dụng.
@@ -231,7 +231,7 @@
                                             </div>
                                         </div>
 
-                                        <c:if test="${reqDetail.status == 'PENDING' || reqDetail.status == 'IN_PROGRESS'}">
+                                        <c:if test="${reqDetail.status == 'ASSIGNED' && reqDetail.assignedStaffId == sessionScope.currentUser.id}">
                                             <div class="mt-4 p-4" style="background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
                                                 <div class="d-flex align-items-center gap-2 mb-3">
                                                     <div style="background: #e0f2fe; color: #0284c7; padding: 6px; border-radius: 8px;">
@@ -278,8 +278,16 @@
                                                     ${reqDetail.rejectionReason}</div>
                                             </div>
                                         </c:if>
+                                        <c:if test="${reqDetail.status == 'IN_PROGRESS' && not empty reqDetail.rejectionReason}">
+                                            <div class="mintlify-property-row" style="border-bottom: none;">
+                                                <div class="mintlify-property-label" style="color: var(--color-brand-primary);">Lịch hẹn xử lý</div>
+                                                <div class="mintlify-property-value" style="color: var(--color-brand-primary); font-weight: 500; font-size: 13px; margin-top: 4px;">
+                                                    ${reqDetail.formattedAppointmentDate}
+                                                </div>
+                                            </div>
+                                        </c:if>
                                         <c:if
-                                            test="${reqDetail.status == 'COMPLETED' && not empty reqDetail.rejectionReason}">
+                                            test="${reqDetail.status == 'DONE' && not empty reqDetail.rejectionReason}">
                                             <div class="mintlify-property-row" style="border-bottom: none;">
                                                 <div class="mintlify-property-label" style="color: var(--color-brand-annotate);">Ghi
                                                     chú hoàn thành</div>

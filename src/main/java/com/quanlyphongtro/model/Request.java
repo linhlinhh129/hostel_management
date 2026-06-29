@@ -172,4 +172,16 @@ public class Request {
             default -> status;
         };
     }
+
+    public String getFormattedAppointmentDate() {
+        if (!StatusConstant.REQUEST_IN_PROGRESS.equals(status) || rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            return rejectionReason;
+        }
+        try {
+            LocalDateTime dt = LocalDateTime.parse(rejectionReason.trim());
+            return dt.format(DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy"));
+        } catch (Exception e) {
+            return rejectionReason;
+        }
+    }
 }
