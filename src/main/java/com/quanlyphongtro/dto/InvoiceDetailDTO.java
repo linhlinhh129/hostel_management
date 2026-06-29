@@ -45,6 +45,9 @@ public class InvoiceDetailDTO {
     private String updatedAt;
     private String updatedByName;
     
+    private String electricImg;
+    private String waterImg;
+
     // UI helpers
     private String statusBadgeClass;
     private String statusLabel;
@@ -199,4 +202,10 @@ public class InvoiceDetailDTO {
             }
         }
     }
+
+    public String getElectricImg() { return electricImg; }
+    public void setElectricImg(String electricImg) { this.electricImg = electricImg; }
+
+    public String getWaterImg() { return waterImg; }
+    public void setWaterImg(String waterImg) { this.waterImg = waterImg; }
 }

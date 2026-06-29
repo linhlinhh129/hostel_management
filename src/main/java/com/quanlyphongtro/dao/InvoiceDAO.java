@@ -349,7 +349,7 @@ public class InvoiceDAO extends BaseDAO {
     public InvoiceDetailDTO findById(int managerId, int invoiceId) {
         String sql = "SELECT i.*, r.code AS room_code, u.full_name AS tenant_name, u.phone AS tenant_phone, u.email AS tenant_email, " +
                      "f.name AS facility_name, f.address AS facility_address, " +
-                     "mr_curr.electric AS new_electric, mr_curr.water AS new_water, " +
+                     "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_img, mr_curr.water_img, " +
                      "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, " +
                      "(SELECT TOP 1 water FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_water, " +
                      "(SELECT full_name FROM users WHERE user_id = i.created_by) AS creator_name, " +
@@ -386,6 +386,8 @@ public class InvoiceDAO extends BaseDAO {
                       dto.setFacilityAddress(rs.getString("facility_address"));
                       
                       dto.setRoomFee(rs.getBigDecimal("room_fee"));
+                      dto.setElectricImg(rs.getString("electric_img"));
+                      dto.setWaterImg(rs.getString("water_img"));
                       dto.setMeterId(rs.getObject("meter_id") != null ? rs.getInt("meter_id") : null);
                       
                       int ne = rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0;

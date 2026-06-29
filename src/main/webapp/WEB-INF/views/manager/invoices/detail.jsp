@@ -147,6 +147,42 @@
                 <strong>Ghi chú:</strong> <br/>
                 <c:out value="${invoice.note}" default="Không có ghi chú" />
               </div>
+
+              <c:if test="${not empty invoice.electricImg or not empty invoice.waterImg}">
+                <div class="mt-4 pt-4 border-top">
+                  <h5 class="fw-bold mb-3" style="font-size: 1.1rem; color: var(--hms-text-primary);">Ảnh chỉ số điện nước</h5>
+                  <div class="row g-3">
+                    <c:if test="${not empty invoice.electricImg}">
+                      <div class="col-md-6">
+                        <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                          <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                            Ảnh công tơ điện
+                          </div>
+                          <div class="p-2 text-center">
+                            <a href="${invoice.electricImg}" target="_blank" title="Click để phóng to ảnh">
+                              <img src="${invoice.electricImg}" alt="Ảnh chỉ số điện" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';">
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </c:if>
+                    <c:if test="${not empty invoice.waterImg}">
+                      <div class="col-md-6">
+                        <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                          <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                            Ảnh công tơ nước
+                          </div>
+                          <div class="p-2 text-center">
+                            <a href="${invoice.waterImg}" target="_blank" title="Click để phóng to ảnh">
+                              <img src="${invoice.waterImg}" alt="Ảnh chỉ số nước" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';">
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </c:if>
+                  </div>
+                </div>
+              </c:if>
             </div>
           </div>
           
