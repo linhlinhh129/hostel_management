@@ -96,9 +96,17 @@
                                 <c:out value="${c.endDate}" />
                               </td>
                               <td>
-                                <span class="badge-hms ${c.status == 'ACTIVE' ? 'success' : 'secondary'}">
-                                  <c:out value="${c.status}" />
-                                </span>
+                                <c:choose>
+                                  <c:when test="${c.status == 'ACTIVE'}">
+                                    <span class="badge-hms badge-success">Còn hiệu lực</span>
+                                  </c:when>
+                                  <c:when test="${c.status == 'INACTIVE'}">
+                                    <span class="badge-hms badge-neutral">Hết hiệu lực</span>
+                                  </c:when>
+                                  <c:otherwise>
+                                    <span class="badge-hms badge-neutral"><c:out value="${c.status}" /></span>
+                                  </c:otherwise>
+                                </c:choose>
                               </td>
                               <td class="d-none d-md-table-cell">
                                 <div class="d-inline-flex gap-1 align-items-center">

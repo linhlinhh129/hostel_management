@@ -295,6 +295,13 @@
                     font-weight: 600 !important;
                     border-radius: 6px !important;
                 }
+                .quick-actions {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.75rem;
+                    margin-top: 1.25rem;
+                    margin-bottom: 1.75rem;
+                }
             </style>
 
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
@@ -305,7 +312,7 @@
             </div>
 
             <div class="quick-actions">
-                <a href="${ctx}/manager/notifications/create" class="quick-action-btn primary">Tạo thông báo</a>
+                <a href="${ctx}/manager/notifications/create" class="quick-action-btn">Tạo thông báo</a>
                 <a href="${ctx}/manager/contracts/create" class="quick-action-btn">Tạo hợp đồng mới</a>
                 <a href="${ctx}/manager/rooms" class="quick-action-btn">Danh sách căn hộ</a>
                 <a href="${ctx}/manager/tickets?status=IN_PROGRESS" class="quick-action-btn">Yêu cầu đang xử lý</a>
