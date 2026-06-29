@@ -227,7 +227,7 @@
                                         <div class="mintlify-property-row">
                                             <div class="mintlify-property-label">Ngày tạo</div>
                                             <div class="mintlify-property-value">
-                                                <fmt:formatDate value="${reqDetail.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm" />
+                                                <fmt:formatDate value="${reqDetail.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                                             </div>
                                         </div>
 

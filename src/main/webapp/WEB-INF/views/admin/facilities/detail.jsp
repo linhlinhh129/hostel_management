@@ -139,7 +139,7 @@
                                                 <tr>
                                                     <td style="padding:6px 0;color:var(--hms-text-muted)">Ngày tạo</td>
                                                     <td style="padding:6px 0;font-size:0.8125rem">
-                                                        <c:out value="${facility.createdAt}" />
+                                                        <fmt:formatDate value="${facility.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                                                     </td>
                                                 </tr>
                                             </table>

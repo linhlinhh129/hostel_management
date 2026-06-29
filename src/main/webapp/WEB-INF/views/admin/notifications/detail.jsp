@@ -46,9 +46,9 @@
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Người tạo</td>
                                     <td style="padding:6px 0"><c:out value="${notification.createdByName}"/></td></tr>
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Ngày tạo</td>
-                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.createdAt}"/></td></tr>
+                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.createdAtLabel}"/></td></tr>
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Gửi lúc</td>
-                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.sentAt}"/></td></tr>
+                                    <td style="padding:6px 0;font-size:0.8125rem"><c:out value="${notification.sentAtLabel}"/></td></tr>
                                 <tr><td style="padding:6px 0;color:var(--hms-text-muted)">Đối tượng</td>
                                     <td style="padding:6px 0">
                                         <c:choose>

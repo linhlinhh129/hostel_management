@@ -84,7 +84,7 @@
                                             </c:choose>
                                         </td>
                                         <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted)">
-                                            <c:out value="${notif.createdAt}"/>
+                                            <c:out value="${notif.createdDateLabel}"/>
                                         </td>
                                         <td class="d-none d-md-table-cell"><a href="${ctx}/admin/notifications/${notif.id}">Xem</a></td>
                                     </tr>

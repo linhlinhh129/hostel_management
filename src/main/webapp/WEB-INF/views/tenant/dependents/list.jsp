@@ -31,8 +31,8 @@
                                     <tr>
                                         <th>Họ và tên</th>
                                         <th>Quan hệ</th>
-                                        <th>Ngày sinh</th>
-                                        <th class="text-center">Hành động</th>
+                                        <th class="d-none d-md-table-cell">Ngày sinh</th>
+                                        <th class="d-none d-md-table-cell text-center">Hành động</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -44,10 +44,10 @@
                                             <td>
                                                 <span class="badge-hms badge-neutral"><c:out value="${dep.relationship}"/></span>
                                             </td>
-                                            <td style="font-size:0.875rem;color:var(--hms-stone)">
+                                            <td class="d-none d-md-table-cell" style="font-size:0.875rem;color:var(--hms-stone)">
                                                 <c:out value="${dep.dobLabel}"/>
                                             </td>
-                                            <td class="text-center">
+                                            <td class="d-none d-md-table-cell text-center">
                                                 <a href="${ctx}/tenant/dependents/${dep.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
                                             </td>
                                         </tr>

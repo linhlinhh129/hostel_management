@@ -23,13 +23,13 @@
                             flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
                     <div>
                         <h1>
-                            Xin chào, <c:out value="${sessionScope.currentUser.fullName}"/> 👋
+                            Xin chào, <c:out value="${sessionScope.currentUser.fullName}"/>
                         </h1>
-                        <p>Tổng quan hệ thống quản lý nhà trọ — kỳ <c:out value="${currentPeriodLabel}"/></p>
+                        <p>Tổng quan tháng <c:out value="${currentPeriodLabel}"/></p>
                     </div>
                     <a href="${ctx}/admin/revenue" class="btn-accent"
                        style="position:relative;z-index:1">
-                        📊 Xem báo cáo doanh thu
+                        Báo cáo doanh thu
                     </a>
                 </div>
             </div>
@@ -37,9 +37,7 @@
             <!-- ── KPI Cards (Admin.md §4) ─────────────────────── -->
             <div class="kpi-grid">
                 <!-- Tổng doanh thu tháng — KPI chính mới -->
-                <div class="kpi-surface-card highlight-success"
-                     style="cursor:pointer" onclick="location.href='${ctx}/admin/revenue'">
-                    <div class="kpi-icon" style="font-size:1.125rem">💰</div>
+                <div class="kpi-surface-card highlight-success">
                     <span class="kpi-label">Doanh thu tháng này</span>
                     <span class="kpi-value" style="font-size:1.5rem;letter-spacing:-1.5px">
                         <c:choose>
@@ -49,13 +47,11 @@
                             <c:otherwise>0đ</c:otherwise>
                         </c:choose>
                     </span>
-                    <span class="kpi-trend up">Kỳ <c:out value="${currentPeriodLabel}"/></span>
+                    <span class="kpi-trend up">Tháng <c:out value="${currentPeriodLabel}"/></span>
                 </div>
 
                 <!-- Tổng cơ sở -->
-                <div class="kpi-surface-card"
-                     onclick="location.href='${ctx}/admin/facilities'" style="cursor:pointer">
-                    <div class="kpi-icon">🏢</div>
+                <div class="kpi-surface-card">
                     <span class="kpi-label">Tổng cơ sở</span>
                     <span class="kpi-value">
                         <fmt:formatNumber value="${totalFacilities}" groupingUsed="true"/>
@@ -63,24 +59,9 @@
                     <span class="kpi-trend"><c:out value="${activeFacilities}"/> đang hoạt động</span>
                 </div>
 
-                <!-- Tổng nhân sự -->
-                <div class="kpi-surface-card"
-                     onclick="location.href='${ctx}/admin/personnel'" style="cursor:pointer">
-                    <div class="kpi-icon">🧑‍💼</div>
-                    <span class="kpi-label">Tổng nhân sự</span>
-                    <span class="kpi-value">
-                        <fmt:formatNumber value="${totalPersonnel}" groupingUsed="true"/>
-                    </span>
-                    <span class="kpi-trend">
-                        <c:out value="${managerCount}"/> BQL ·
-                        <c:out value="${operatorCount}"/> Vận hành
-                    </span>
-                </div>
 
                 <!-- Thông báo -->
-                <div class="kpi-surface-card"
-                     onclick="location.href='${ctx}/admin/notifications'" style="cursor:pointer">
-                    <div class="kpi-icon">🔔</div>
+                <div class="kpi-surface-card">
                     <span class="kpi-label">Thông báo</span>
                     <span class="kpi-value">
                         <fmt:formatNumber value="${totalNotifications}" groupingUsed="true"/>
@@ -88,10 +69,8 @@
                 </div>
 
                 <!-- Audit log hôm nay -->
-                <div class="kpi-surface-card"
-                     onclick="location.href='${ctx}/admin/audit-logs'" style="cursor:pointer">
-                    <div class="kpi-icon">📋</div>
-                    <span class="kpi-label">Audit Log hôm nay</span>
+                <div class="kpi-surface-card">
+                    <span class="kpi-label">Nhật ký hôm nay</span>
                     <span class="kpi-value">
                         <fmt:formatNumber value="${todayAuditLogs}" groupingUsed="true"/>
                     </span>
@@ -134,7 +113,7 @@
                                     <line x1="12" y1="1" x2="12" y2="23"/>
                                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                                 </svg>
-                                Doanh thu theo cơ sở — tháng <c:out value="${currentPeriodLabel}"/>
+                                Doanh thu — tháng <c:out value="${currentPeriodLabel}"/>
                             </h3>
                             <a href="${ctx}/admin/revenue"
                                style="font-size:0.8125rem;color:var(--hms-accent-deep);

@@ -27,56 +27,56 @@
 
                 <%-- Filter bar --%>
                   <div class="data-surface">
-                    <form class="filter-bar" method="get" action="${ctx}/manager/payments" id="filterForm">
-                      <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
-                        placeholder="Tìm mã GD, phòng, người thuê..." style="max-width:250px" />
-
-                      <select class="form-select" name="status" style="max-width:180px">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="PENDING" ${status=='PENDING' ? 'selected' : '' }>Chờ duyệt</option>
-                        <option value="SUCCESS" ${status=='SUCCESS' ? 'selected' : '' }>Thành công</option>
-                        <option value="REJECTED" ${status=='REJECTED' ? 'selected' : '' }>Từ chối</option>
-                      </select>
-
-                      <div style="display:flex;gap:8px;align-items:center;border-left:1px solid var(--hms-border);padding-left:12px;margin-left:4px">
-                        <label style="font-size:0.875rem;font-weight:500;white-space:nowrap;color:var(--hms-text-primary)">Từ ngày:</label>
-                        <input type="date" class="form-control" name="fromDate" value="<c:out value='${fromDate}'/>" 
-                          style="max-width:160px" id="fromDate" />
+                    <form method="get" action="${ctx}/manager/payments" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+                      <div class="row g-3 align-items-end">
+                        <div class="col-12 col-md-3">
+                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                          <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
+                            placeholder="Mã GD, phòng, người thuê..." />
+                        </div>
                         
-                        <label style="font-size:0.875rem;font-weight:500;white-space:nowrap;color:var(--hms-text-primary)">Đến ngày:</label>
-                        <input type="date" class="form-control" name="toDate" value="<c:out value='${toDate}'/>" 
-                          style="max-width:160px" id="toDate" />
-                      </div>
-
-                      <div style="display:flex;gap:8px;align-items:center;border-left:1px solid var(--hms-border);padding-left:12px;margin-left:4px">
-                        <label style="font-size:0.875rem;font-weight:500;white-space:nowrap;color:var(--hms-text-primary)">Kỳ:</label>
-                        <select class="form-select" name="month" style="max-width:120px" id="month">
-                          <option value="">Tất cả tháng</option>
-                          <option value="1" ${month=='1' ? 'selected' : '' }>Tháng 1</option>
-                          <option value="2" ${month=='2' ? 'selected' : '' }>Tháng 2</option>
-                          <option value="3" ${month=='3' ? 'selected' : '' }>Tháng 3</option>
-                          <option value="4" ${month=='4' ? 'selected' : '' }>Tháng 4</option>
-                          <option value="5" ${month=='5' ? 'selected' : '' }>Tháng 5</option>
-                          <option value="6" ${month=='6' ? 'selected' : '' }>Tháng 6</option>
-                          <option value="7" ${month=='7' ? 'selected' : '' }>Tháng 7</option>
-                          <option value="8" ${month=='8' ? 'selected' : '' }>Tháng 8</option>
-                          <option value="9" ${month=='9' ? 'selected' : '' }>Tháng 9</option>
-                          <option value="10" ${month=='10' ? 'selected' : '' }>Tháng 10</option>
-                          <option value="11" ${month=='11' ? 'selected' : '' }>Tháng 11</option>
-                          <option value="12" ${month=='12' ? 'selected' : '' }>Tháng 12</option>
-                        </select>
+                        <div class="col-12 col-md-2">
+                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
+                          <select class="form-select" name="status">
+                            <option value="">Tất cả</option>
+                            <option value="PENDING" ${status=='PENDING' ? 'selected' : '' }>Chờ duyệt</option>
+                            <option value="SUCCESS" ${status=='SUCCESS' ? 'selected' : '' }>Thành công</option>
+                            <option value="REJECTED" ${status=='REJECTED' ? 'selected' : '' }>Từ chối</option>
+                          </select>
+                        </div>
                         
-                        <select class="form-select" name="year" style="max-width:110px" id="year">
-                          <option value="">Năm</option>
-                          <c:forEach var="y" begin="2020" end="2030">
-                            <option value="${y}" ${year==y.toString() ? 'selected' : '' }>${y}</option>
-                          </c:forEach>
-                        </select>
-                      </div>
+                        <div class="col-12 col-md-4">
+                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Thời gian thanh toán</label>
+                          <div class="input-group">
+                            <input type="date" class="form-control" name="fromDate" value="<c:out value='${fromDate}'/>" id="fromDate" title="Từ ngày" />
+                            <span class="input-group-text bg-light text-muted border-start-0 border-end-0">đến</span>
+                            <input type="date" class="form-control" name="toDate" value="<c:out value='${toDate}'/>" id="toDate" title="Đến ngày" />
+                          </div>
+                        </div>
 
-                      <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-                      <a href="${ctx}/manager/payments" class="btn-mintlify-secondary text-decoration-none">Xóa bộ
-                        lọc</a>
+                        <div class="col-12 col-md-3">
+                          <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Kỳ thanh toán</label>
+                          <div class="input-group">
+                            <select class="form-select" name="month" id="month">
+                              <option value="">Tháng</option>
+                              <c:forEach var="m" begin="1" end="12">
+                                <option value="${m}" ${month==m.toString() ? 'selected' : '' }>T${m}</option>
+                              </c:forEach>
+                            </select>
+                            <select class="form-select" name="year" id="year">
+                              <option value="">Năm</option>
+                              <c:forEach var="y" begin="2020" end="2030">
+                                <option value="${y}" ${year==y.toString() ? 'selected' : '' }>${y}</option>
+                              </c:forEach>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div class="col-12 d-flex justify-content-end gap-2 mt-3 pt-2" style="border-top: 1px dashed var(--hms-border);">
+                          <a href="${ctx}/manager/payments" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa bộ lọc</a>
+                          <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc dữ liệu</button>
+                        </div>
+                      </div>
                     </form>
 
                     <script>
@@ -128,16 +128,16 @@
                                 <tr>
                                   <th>Mã GD</th>
                                   <th>Phòng</th>
-                                  <th>Người thuê</th>
-                                  <th style="text-align:right">Số tiền</th>
-                                  <th>Ngày TT</th>
+                                  <th class="d-none d-md-table-cell">Người thuê</th>
+                                  <th class="d-none d-md-table-cell" style="text-align:right">Số tiền</th>
+                                  <th class="d-none d-md-table-cell">Ngày TT</th>
                                   <th>Trạng thái</th>
-                                  <th>Thao tác</th>
+                                  <th class="d-none d-md-table-cell">Thao tác</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 <c:forEach var="payment" items="${payments}">
-                                  <tr>
+                                  <tr data-href="${ctx}/manager/payments/${payment.paymentId}">
                                     <td>
                                       <a href="${ctx}/manager/payments/${payment.paymentId}"
                                         style="font-weight:600;font-family:monospace;display:block;margin-bottom:2px">
@@ -155,13 +155,13 @@
                                     <td><span class="badge-hms badge-neutral">
                                         <c:out value="${payment.roomCode}" />
                                       </span></td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                       <c:out value="${payment.tenantName}" />
                                     </td>
-                                    <td style="text-align:right;font-weight:600">
+                                    <td class="d-none d-md-table-cell" style="text-align:right;font-weight:600">
                                       <fmt:formatNumber value="${payment.amount}" pattern="#,##0" /> đ
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                       <c:out value="${payment.paymentDate}" />
                                     </td>
                                     <td>
@@ -177,7 +177,7 @@
                                         </c:otherwise>
                                       </c:choose>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                       <a href="${ctx}/manager/payments/${payment.paymentId}"
                                         class="btn-mintlify-secondary text-decoration-none"
                                         style="padding:4px 12px;font-size:0.8125rem">Xem</a>

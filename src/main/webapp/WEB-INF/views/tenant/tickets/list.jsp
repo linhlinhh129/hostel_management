@@ -38,10 +38,10 @@
                                     <thead>
                                     <tr>
                                         <th>Tiêu đề</th>
-                                        <th>Phân loại</th>
-                                        <th>Ngày gửi</th>
+                                        <th class="d-none d-md-table-cell">Phân loại</th>
+                                        <th class="d-none d-md-table-cell">Ngày gửi</th>
                                         <th class="text-center">Trạng thái</th>
-                                        <th class="text-center">Hành động</th>
+                                        <th class="d-none d-md-table-cell text-center">Hành động</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -50,11 +50,11 @@
                                             <td style="font-weight:600;color:var(--hms-ink); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 <c:out value="${ticket.title}"/>
                                             </td>
-                                            <td>
+                                            <td class="d-none d-md-table-cell">
                                                 <span class="badge-hms badge-neutral"><c:out value="${ticket.category}"/></span>
                                             </td>
-                                            <td style="font-size:0.875rem;color:var(--hms-stone)">
-                                                <c:out value="${ticket.createdAt}"/>
+                                            <td class="d-none d-md-table-cell" style="font-size:0.875rem;color:var(--hms-stone)">
+                                                <fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/>
                                             </td>
                                             <td class="text-center">
                                                 <c:choose>
@@ -75,7 +75,7 @@
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
-                                            <td class="text-center">
+                                            <td class="d-none d-md-table-cell text-center">
                                                 <a href="${ctx}/tenant/tickets/${ticket.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
                                             </td>
                                         </tr>

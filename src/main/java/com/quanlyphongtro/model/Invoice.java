@@ -107,6 +107,17 @@ public class Invoice {
 
     public boolean isDeleted() { return deletedAt != null; }
 
+    // Backward compatibility for JSP fmt:formatDate
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return java.sql.Timestamp.valueOf(createdAt);
+    }
+
+    public java.util.Date getUpdatedAtAsDate() {
+        if (updatedAt == null) return null;
+        return java.sql.Timestamp.valueOf(updatedAt);
+    }
+
     public Integer getOldElectricReading() { return oldElectricReading; }
     public void setOldElectricReading(Integer oldElectricReading) { this.oldElectricReading = oldElectricReading; }
 

@@ -48,9 +48,9 @@
                   <tr>
                     <th style="width:14%">Mã TB</th>
                     <th>Tiêu đề</th>
-                    <th style="width:14%">Ngày gửi</th>
+                    <th class="d-none d-md-table-cell" style="width:14%">Ngày gửi</th>
                     <th style="width:10%">Trạng thái</th>
-                    <th style="width:8%"></th>
+                    <th class="d-none d-md-table-cell" style="width:8%"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -74,8 +74,8 @@
                           <c:out value="${notif.summary}"/>
                         </div>
                       </td>
-                      <td style="font-size:0.8125rem;color:var(--hms-text-muted);white-space:nowrap;">
-                        <c:out value="${notif.createdAt}"/>
+                      <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted);white-space:nowrap;">
+                        <c:out value="${notif.createdDateLabel}"/>
                       </td>
                       <td>
                         <c:choose>
@@ -87,7 +87,7 @@
                           </c:otherwise>
                         </c:choose>
                       </td>
-                      <td>
+                      <td class="d-none d-md-table-cell">
                         <a href="${ctx}/tenant/notifications/${notif.id}"
                            class="btn-mintlify-secondary text-decoration-none"
                            style="padding:4px 12px;font-size:0.8125rem;">Xem</a>

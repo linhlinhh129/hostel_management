@@ -1,6 +1,7 @@
 ﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"  uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx"       value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Chi tiết Audit Log - Admin"/>
 <c:set var="pageRole"  value="ADMIN"/>
@@ -67,21 +68,7 @@
                                     <dt style="width:44%;flex-shrink:0;font-size:0.8125rem;
                                                color:var(--hms-text-muted);font-weight:500">Thời gian</dt>
                                     <dd style="margin:0;font-size:0.8125rem;color:var(--hms-text-secondary)">
-                                        <span id="log-time" title="<c:out value='${auditLog.createdAt}'/>">
-                                            <c:out value="${auditLog.createdAt}"/>
-                                        </span>
-                                        <script>
-                                        (function(){
-                                            var raw = '<c:out value="${auditLog.createdAt}"/>';
-                                            try {
-                                                var d = new Date(raw);
-                                                var fmt = d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})
-                                                    + ' lúc '
-                                                    + d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-                                                document.getElementById('log-time').textContent = fmt;
-                                            } catch(e){}
-                                        })();
-                                        </script>
+                                        <fmt:formatDate value="${auditLog.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/>
                                     </dd>
                                 </div>
 

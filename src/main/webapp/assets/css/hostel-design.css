@@ -2348,43 +2348,51 @@ textarea.form-control {
     font-size: 0.875rem;
   }
 
-  /* ── Page header: stack vertically ── */
-  .page-header.d-flex {
+  /* ── Page header: stack vertically on mobile ── */
+  .page-header.d-flex,
+  .page-header.hero-sky-gradient.d-flex {
     flex-direction: column !important;
-    align-items: flex-start !important;
+    align-items: stretch !important;   /* stretch để con có thể dùng margin-left:auto */
     gap: 0.75rem !important;
   }
 
-  /* Đẩy nút action (con trực tiếp của page-header) sang phải */
+  /* Nút / link action trực tiếp trong page-header → đẩy sang phải */
   .page-header.d-flex > a,
-  .page-header.d-flex > button,
+  .page-header.d-flex > button {
+    margin-left: auto;
+    align-self: flex-end;
+  }
+
+  /* Wrapper div chứa nút (ví dụ contracts: d-flex gap-2 align-items-center) */
   .page-header.d-flex > div:last-child:not(:first-child) {
-    align-self: flex-end !important;
+    margin-left: auto;
+    align-self: flex-end;
   }
 
-  /* Wrapper div chứa nút (dùng inline style justify-content) */
-  .page-header [style*="space-between"],
-  .page-header [style*="justify-content:space-between"],
-  .page-header [style*="justify-content: space-between"] {
+  /* Admin pattern: inner div có inline style justify-content:space-between */
+  .page-header > div[style*="space-between"] {
     width: 100%;
+    align-items: flex-end !important;
   }
 
-  .page-header [style*="space-between"] > a,
-  .page-header [style*="space-between"] > button {
-    align-self: flex-end !important;
+  .page-header > div[style*="space-between"] > a,
+  .page-header > div[style*="space-between"] > button {
     margin-left: auto;
   }
 
-  /* hero-sky-gradient inner wrapper: đẩy button cuối sang phải khi wrap */
-  .hero-sky-gradient > div > a:last-child,
-  .hero-sky-gradient > div > button:last-child,
-  .hero-sky-gradient > div > div:last-child:not(:first-child) > a,
-  .hero-sky-gradient > div > div:last-child:not(:first-child) > button {
-    margin-left: auto;
-  }
-
+  /* hero-sky-gradient > div trực tiếp: chiếm full width */
   .hero-sky-gradient > div {
     width: 100%;
+  }
+
+  /* Button/link cuối trong inner wrapper của hero-sky-gradient */
+  .hero-sky-gradient > div > a:last-child,
+  .hero-sky-gradient > div > button:last-child {
+    margin-left: auto;
+  }
+
+  .hero-sky-gradient > div > div:last-child:not(:first-child) {
+    margin-left: auto;
   }
 
   .page-header h1 {

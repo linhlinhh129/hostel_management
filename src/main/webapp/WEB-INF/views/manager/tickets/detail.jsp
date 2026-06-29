@@ -219,7 +219,7 @@
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:9px 14px;color:var(--hms-text-muted)">Ngày gửi</td>
-                  <td style="padding:9px 14px;font-size:0.8125rem"><c:out value="${ticket.createdAt}"/></td>
+                  <td style="padding:9px 14px;font-size:0.8125rem"><fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
                 </tr>
                 <tr>
                   <td style="padding:9px 14px;color:var(--hms-text-muted)">Nhân sự phân công</td>

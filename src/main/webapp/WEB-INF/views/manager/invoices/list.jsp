@@ -32,22 +32,32 @@
 
         <%-- Filter bar --%>
         <div class="data-surface">
-          <form class="filter-bar" method="get" action="${ctx}/manager/invoices">
-            <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
-              placeholder="Tìm mã HĐ, phòng..." style="max-width:250px" />
-
-            <input type="text" class="form-control" name="billingPeriod" value="<c:out value='${billingPeriod}'/>"
-              placeholder="Kỳ (VD: 202606)" style="max-width:140px" />
-
-            <select class="form-select" name="status" style="max-width:180px">
-              <option value="">Tất cả trạng thái</option>
-              <option value="UNPAID" ${status=='UNPAID' ? 'selected' : '' }>Chưa thanh toán</option>
-              <option value="PAID" ${status=='PAID' ? 'selected' : '' }>Đã thanh toán</option>
-              <option value="OVERDUE" ${status=='OVERDUE' ? 'selected' : '' }>Quá hạn</option>
-            </select>
-
-            <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-            <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">Xóa lọc</a>
+          <form method="get" action="${ctx}/manager/invoices" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+            <div class="row g-3 align-items-end">
+              <div class="col-12 col-md-4">
+                <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
+                  placeholder="Mã HĐ, phòng..." />
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Kỳ HĐ</label>
+                <input type="text" class="form-control" name="billingPeriod" value="<c:out value='${billingPeriod}'/>"
+                  placeholder="VD: 202606" />
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
+                <select class="form-select" name="status">
+                  <option value="">Tất cả</option>
+                  <option value="UNPAID" ${status=='UNPAID' ? 'selected' : '' }>Chưa thanh toán</option>
+                  <option value="PAID" ${status=='PAID' ? 'selected' : '' }>Đã thanh toán</option>
+                  <option value="OVERDUE" ${status=='OVERDUE' ? 'selected' : '' }>Quá hạn</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-2 d-flex justify-content-md-end gap-2">
+                <a href="${ctx}/manager/invoices" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+                <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc</button>
+              </div>
+            </div>
           </form>
 
           <%-- Table --%>
@@ -59,16 +69,16 @@
                     <tr>
                       <th>Mã Hóa Đơn</th>
                       <th>Phòng</th>
-                      <th>Kỳ HĐ</th>
-                      <th style="text-align:right">Tổng tiền</th>
-                      <th>Hạn TT</th>
+                      <th class="d-none d-md-table-cell">Kỳ HĐ</th>
+                      <th class="d-none d-md-table-cell" style="text-align:right">Tổng tiền</th>
+                      <th class="d-none d-md-table-cell">Hạn TT</th>
                       <th>Trạng thái</th>
-                      <th>Thao tác</th>
+                      <th class="d-none d-md-table-cell">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     <c:forEach var="invoice" items="${invoices}">
-                      <tr>
+                      <tr data-href="${ctx}/manager/invoices/${invoice.invoiceId}">
                         <td>
                           <a href="${ctx}/manager/invoices/${invoice.invoiceId}"
                             style="font-weight:600;font-family:monospace">
@@ -78,13 +88,13 @@
                         <td><span class="badge-hms badge-neutral">
                             <c:out value="${invoice.roomCode}" />
                           </span></td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                           <c:out value="${invoice.billingPeriod}" />
                         </td>
-                        <td style="text-align:right;font-weight:600">
+                        <td class="d-none d-md-table-cell" style="text-align:right;font-weight:600">
                           <fmt:formatNumber value="${invoice.totalAmount}" pattern="#,##0" /> đ
                         </td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                           <c:out value="${invoice.dueDate}" />
                         </td>
                         <td>
@@ -92,7 +102,7 @@
                             <c:out value="${invoice.statusLabel}" />
                           </span>
                         </td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                           <div class="d-flex gap-1">
                             <a href="${ctx}/manager/invoices/${invoice.invoiceId}"
                               class="btn-mintlify-secondary text-decoration-none"

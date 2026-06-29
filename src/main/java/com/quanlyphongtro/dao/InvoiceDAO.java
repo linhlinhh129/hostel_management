@@ -455,7 +455,8 @@ public class InvoiceDAO extends BaseDAO {
                       }
                       
                       Timestamp updated = rs.getTimestamp("updated_at");
-                      if (updated != null) dto.setUpdatedAt(updated.toString());
+                      if (updated != null) dto.setUpdatedAt(
+                          updated.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
                       dto.setUpdatedByName(""); 
                       
                       return dto;

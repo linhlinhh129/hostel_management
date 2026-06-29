@@ -38,22 +38,32 @@
           </li>
         </ul>
 
-        <form class="filter-bar" method="get" action="${ctx}/manager/tickets">
+        <form method="get" action="${ctx}/manager/tickets" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
           <input type="hidden" name="type" value="${filterType}"/>
-          <select class="form-select" name="status">
-            <option value="">Tất cả trạng thái</option>
-            <option value="NEW"         ${filterStatus == 'NEW'         ? 'selected' : ''}>Mới</option>
-            <option value="RECEIVED"    ${filterStatus == 'RECEIVED'    ? 'selected' : ''}>Tiếp nhận</option>
-            <option value="ASSIGNED"    ${filterStatus == 'ASSIGNED'    ? 'selected' : ''}>Đã phân công</option>
-            <option value="IN_PROGRESS" ${filterStatus == 'IN_PROGRESS' ? 'selected' : ''}>Đang xử lý</option>
-            <option value="RESOLVED"    ${filterStatus == 'RESOLVED'    ? 'selected' : ''}>Hoàn thành</option>
-            <option value="REJECTED"    ${filterStatus == 'REJECTED'    ? 'selected' : ''}>Từ chối</option>
-          </select>
-          <input type="text" class="form-control" name="keyword"
-                 placeholder="Tiêu đề / mã yêu cầu..."
-                 value="<c:out value='${keyword}'/>">
-          <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-          <a href="${ctx}/manager/tickets?type=${filterType}" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-5">
+              <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+              <input type="text" class="form-control" name="keyword"
+                     placeholder="Tiêu đề / mã yêu cầu..."
+                     value="<c:out value='${keyword}'/>">
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
+              <select class="form-select" name="status">
+                <option value="">Tất cả</option>
+                <option value="NEW"         ${filterStatus == 'NEW'         ? 'selected' : ''}>Mới</option>
+                <option value="RECEIVED"    ${filterStatus == 'RECEIVED'    ? 'selected' : ''}>Tiếp nhận</option>
+                <option value="ASSIGNED"    ${filterStatus == 'ASSIGNED'    ? 'selected' : ''}>Đã phân công</option>
+                <option value="IN_PROGRESS" ${filterStatus == 'IN_PROGRESS' ? 'selected' : ''}>Đang xử lý</option>
+                <option value="RESOLVED"    ${filterStatus == 'RESOLVED'    ? 'selected' : ''}>Hoàn thành</option>
+                <option value="REJECTED"    ${filterStatus == 'REJECTED'    ? 'selected' : ''}>Từ chối</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
+              <a href="${ctx}/manager/tickets?type=${filterType}" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+              <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc dữ liệu</button>
+            </div>
+          </div>
         </form>
 
         <c:choose>
@@ -63,14 +73,14 @@
                 <thead>
                   <tr>
                     <th>Mã</th>
-                    <th>Loại</th>
+                    <th class="d-none d-md-table-cell">Loại</th>
                     <th>Tiêu đề</th>
-                    <th>Người gửi</th>
-                    <th>Phòng</th>
-                    <th>Cơ sở</th>
-                    <th>Ngày gửi</th>
+                    <th class="d-none d-md-table-cell">Người gửi</th>
+                    <th class="d-none d-md-table-cell">Phòng</th>
+                    <th class="d-none d-md-table-cell">Cơ sở</th>
+                    <th class="d-none d-md-table-cell">Ngày gửi</th>
                     <th>Trạng thái</th>
-                    <th>Thao tác</th>
+                    <th class="d-none d-md-table-cell">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -81,23 +91,23 @@
                           <c:out value="${ticket.code}"/>
                         </a>
                       </td>
-                      <td>
+                      <td class="d-none d-md-table-cell">
                         <span class="badge-hms badge-neutral"><c:out value="${ticket.category}"/></span>
                       </td>
                       <td style="max-width:220px">
                         <c:out value="${ticket.title}"/>
                       </td>
-                      <td><c:out value="${ticket.senderName}"/></td>
-                      <td>
+                      <td class="d-none d-md-table-cell"><c:out value="${ticket.senderName}"/></td>
+                      <td class="d-none d-md-table-cell">
                         <c:if test="${not empty ticket.roomCode}">
                           <a href="${ctx}/manager/rooms/${ticket.roomId}">
                             <c:out value="${ticket.roomCode}"/>
                           </a>
                         </c:if>
                       </td>
-                      <td><c:out value="${ticket.facilityName}"/></td>
-                      <td style="font-size:0.8125rem;color:var(--hms-text-muted)">
-                        <c:out value="${ticket.createdAt}"/>
+                      <td class="d-none d-md-table-cell"><c:out value="${ticket.facilityName}"/></td>
+                      <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted)">
+                        <fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/>
                       </td>
                       <td>
                         <c:choose>

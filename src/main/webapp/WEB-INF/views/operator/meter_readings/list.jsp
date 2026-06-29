@@ -111,7 +111,7 @@
                                                     <td class="d-none d-md-table-cell">
                                                         <c:choose>
                                                             <c:when test="${not empty item.updatedAt}">
-                                                                <fmt:formatDate value="${item.updatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                                <fmt:formatDate value="${item.updatedAt}" pattern="dd/MM/yyyy HH:mm:ss"/>
                                                             </c:when>
                                                             <c:otherwise>-</c:otherwise>
                                                         </c:choose>
