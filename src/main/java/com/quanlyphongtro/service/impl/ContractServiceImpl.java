@@ -96,4 +96,26 @@ public class ContractServiceImpl implements ContractService {
         }
         roomDAO.update(room);
     }
+
+    @Override
+    public List<Contract> getContractsByTenant(int tenantId) {
+        List<Contract> contracts = contractDAO.findAllByTenantId(tenantId);
+        for (Contract c : contracts) {
+            Optional<Room> r = roomDAO.findById(c.getRoomId());
+            r.ifPresent(c::setRoom);
+        }
+        return contracts;
+    }
+
+    @Override
+    public Contract getContractDetailForTenant(int contractId, int tenantId) {
+        Optional<Contract> opt = contractDAO.findByIdAndTenantId(contractId, tenantId);
+        if (opt.isPresent()) {
+            Contract c = opt.get();
+            Optional<Room> r = roomDAO.findById(c.getRoomId());
+            r.ifPresent(c::setRoom);
+            return c;
+        }
+        return null;
+    }
 }

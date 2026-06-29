@@ -225,4 +225,60 @@ public class ContractDAO extends BaseDAO {
         }
         return -1;
     }
+
+    public List<Contract> findAllByTenantId(int tenantId) {
+        StringBuilder sql = new StringBuilder("SELECT c.* FROM dbo.contracts c " +
+                     "WHERE c.tenant_id = ? AND c.deleted_at IS NULL " +
+                     "ORDER BY c.created_at DESC");
+        List<Contract> contracts = new ArrayList<>();
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            ps.setInt(1, tenantId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    contracts.add(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("findAllByTenantId failed for tenantId={}", tenantId, e);
+        }
+        return contracts;
+    }
+
+    public Optional<Contract> findByIdAndTenantId(int contractId, int tenantId) {
+        String sql = "SELECT c.*, " +
+                     "r.code as r_code, r.room_fee as r_fee, " +
+                     "f.address as f_address, f.electricity_price as f_elec, f.internet_fee as f_net, f.service_fee as f_svc " +
+                     "FROM dbo.contracts c " +
+                     "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                     "WHERE c.contract_id = ? AND c.tenant_id = ? AND c.deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, contractId);
+            ps.setInt(2, tenantId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Contract contract = mapRow(rs);
+                    
+                    com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
+                    room.setCode(rs.getString("r_code"));
+                    room.setRoomFee(rs.getBigDecimal("r_fee"));
+                    contract.setRoom(room);
+                    
+                    com.quanlyphongtro.model.Facility facility = new com.quanlyphongtro.model.Facility();
+                    facility.setAddress(rs.getString("f_address"));
+                    facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
+                    facility.setInternetFee(rs.getBigDecimal("f_net"));
+                    facility.setServiceFee(rs.getBigDecimal("f_svc"));
+                    contract.setFacility(facility);
+                    
+                    return Optional.of(contract);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("findByIdAndTenantId failed for contractId={}, tenantId={}", contractId, tenantId, e);
+        }
+        return Optional.empty();
+    }
 }
