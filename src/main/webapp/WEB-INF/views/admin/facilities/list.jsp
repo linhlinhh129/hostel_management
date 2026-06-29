@@ -19,7 +19,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
                     <div>
                         <h1>Quản lý cơ sở</h1>
-                        <p>Danh sách tất cả cơ sở nhà trọ trong hệ thống</p>
+                        <p>Danh sách cơ sở trọ trong hệ thống</p>
                     </div>
                     <a href="${ctx}/admin/facilities/create" class="quick-action-btn primary" style="position:relative;z-index:1">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

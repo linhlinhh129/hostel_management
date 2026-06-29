@@ -107,7 +107,7 @@ public class AdminDashboardServlet extends BaseServlet {
         List<RevenueActivityDTO> recentActivities = new ArrayList<>();
         try {
             List<AuditLog> recentLogs = auditLogDAO.findRecent(5);
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             for (AuditLog log : recentLogs) {
                 String actor = log.getCreatedByName() != null ? log.getCreatedByName() : "Hệ thống";
                 String desc  = buildActionDescription(log);

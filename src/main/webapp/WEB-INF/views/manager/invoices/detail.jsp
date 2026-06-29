@@ -190,11 +190,11 @@
                 </li>
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Ngày tạo</span>
-                  <span><c:out value="${invoice.createdAt}"/> bởi <c:out value="${invoice.createdByName}"/></span>
+                  <span><fmt:formatDate value="${invoice.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/> bởi <c:out value="${invoice.createdByName}"/></span>
                 </li>
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Cập nhật cuối</span>
-                  <span><c:out value="${invoice.updatedAt}"/></span>
+                  <span><fmt:formatDate value="${invoice.updatedAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/></span>
                 </li>
               </ul>
             </div>

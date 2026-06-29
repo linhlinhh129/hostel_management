@@ -140,13 +140,13 @@
                               <tr style="border-bottom:1px solid var(--hms-border)">
                                 <td style="padding:10px 16px;color:var(--hms-text-muted)">Ngày tạo</td>
                                 <td style="padding:10px 16px;font-size:0.8125rem">
-                                  <c:out value="${room.createdAt}" />
+                                  <fmt:formatDate value="${room.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                                 </td>
                               </tr>
                               <tr>
                                 <td style="padding:10px 16px;color:var(--hms-text-muted)">Cập nhật lúc</td>
                                 <td style="padding:10px 16px;font-size:0.8125rem">
-                                  <c:out value="${room.updatedAt}" />
+                                  <fmt:formatDate value="${room.updatedAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                                 </td>
                               </tr>
                             </table>

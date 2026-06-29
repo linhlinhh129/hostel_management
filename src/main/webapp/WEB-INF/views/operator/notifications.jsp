@@ -71,7 +71,7 @@
                                 </div>
                               </td>
                               <td style="font-size: 0.8125rem; color: var(--hms-text-muted);">
-                                <fmt:formatDate value="${item.sentAtAsDate}" pattern="dd/MM/yyyy HH:mm" />
+                                <fmt:formatDate value="${item.sentAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                               </td>
                               <td class="text-end">
                                 <button type="button" class="btn btn-sm btn-outline-secondary toggle-content-btn"

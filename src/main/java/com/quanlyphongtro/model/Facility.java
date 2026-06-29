@@ -87,6 +87,17 @@ public class Facility {
 
     public boolean isDeleted() { return deletedAt != null; }
 
+    // Backward compatibility for JSP fmt:formatDate
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return java.sql.Timestamp.valueOf(createdAt);
+    }
+
+    public java.util.Date getUpdatedAtAsDate() {
+        if (updatedAt == null) return null;
+        return java.sql.Timestamp.valueOf(updatedAt);
+    }
+
     /**
      * Computed: total rooms = floorCount * roomsPerFloor; 0 if status is DRAFT.
      */

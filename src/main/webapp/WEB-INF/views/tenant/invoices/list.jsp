@@ -48,10 +48,10 @@
                                     <thead>
                                     <tr>
                                         <th>Kỳ thanh toán</th>
-                                        <th>Hạn nộp</th>
+                                        <th class="d-none d-md-table-cell">Hạn nộp</th>
                                         <th class="text-end">Số tiền</th>
                                         <th class="text-center">Trạng thái</th>
-                                        <th class="text-center">Hành động</th>
+                                        <th class="d-none d-md-table-cell text-center">Hành động</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -60,7 +60,7 @@
                                             <td style="font-weight:600;color:var(--hms-ink)">
                                                 <c:out value="${inv.billingPeriod}"/>
                                             </td>
-                                            <td style="font-size:0.875rem;color:var(--hms-stone)">
+                                            <td class="d-none d-md-table-cell" style="font-size:0.875rem;color:var(--hms-stone)">
                                                 <c:out value="${inv.dueDate}"/>
                                             </td>
                                             <td class="text-end" style="font-weight:700;
@@ -83,7 +83,7 @@
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
-                                            <td class="text-center">
+                                            <td class="d-none d-md-table-cell text-center">
                                                 <a href="${ctx}/tenant/invoices/${inv.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
                                             </td>
                                         </tr>

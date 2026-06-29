@@ -86,11 +86,11 @@
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Ngày tạo</td>
-                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.createdAt}"/></td>
+                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.createdAtLabel}"/></td>
                 </tr>
                 <tr>
                   <td style="padding:10px 16px;color:var(--hms-text-muted)">Gửi lúc</td>
-                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.sentAt}"/></td>
+                  <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.sentAtLabel}"/></td>
                 </tr>
               </table>
             </div>

@@ -24,12 +24,19 @@
       </div>
 
       <div class="data-surface">
-        <form class="filter-bar" method="get" action="${ctx}/manager/dependents">
-          <input type="text" class="form-control" name="keyword"
-                 placeholder="Tìm theo tên, quan hệ..."
-                 value="<c:out value='${keyword}'/>">
-          <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
-          <a href="${ctx}/manager/dependents" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+        <form method="get" action="${ctx}/manager/dependents" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-6">
+              <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+              <input type="text" class="form-control" name="keyword"
+                     placeholder="Tìm theo tên, quan hệ..."
+                     value="<c:out value='${keyword}'/>">
+            </div>
+            <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
+              <a href="${ctx}/manager/dependents" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+              <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
+            </div>
+          </div>
         </form>
 
         <c:choose>
@@ -40,11 +47,11 @@
                   <tr>
                     <th>ID</th>
                     <th>Họ tên</th>
-                    <th>Ngày sinh</th>
-                    <th>Giới tính</th>
+                    <th class="d-none d-md-table-cell">Ngày sinh</th>
+                    <th class="d-none d-md-table-cell">Giới tính</th>
                     <th>Quan hệ</th>
-                    <th>Người thuê chính</th>
-                    <th>Thao tác</th>
+                    <th class="d-none d-md-table-cell">Người thuê chính</th>
+                    <th class="d-none d-md-table-cell">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -52,8 +59,8 @@
                     <tr data-href="${ctx}/manager/dependents/${dep.id}">
                       <td style="font-size:0.8125rem;color:var(--hms-text-muted)">${dep.id}</td>
                       <td><strong><c:out value="${dep.fullName}"/></strong></td>
-                      <td style="font-size:0.8125rem"><c:out value="${dep.dob}"/></td>
-                      <td>
+                      <td class="d-none d-md-table-cell" style="font-size:0.8125rem"><c:out value="${dep.dob}"/></td>
+                      <td class="d-none d-md-table-cell">
                         <c:choose>
                           <c:when test="${dep.gender == 'MALE'}">Nam</c:when>
                           <c:when test="${dep.gender == 'FEMALE'}">Nữ</c:when>
@@ -61,12 +68,12 @@
                         </c:choose>
                       </td>
                       <td><c:out value="${dep.relationship}"/></td>
-                      <td>
+                      <td class="d-none d-md-table-cell">
                         <a href="${ctx}/manager/tenants/${dep.tenantId}">
                           <c:out value="${dep.tenantName}"/>
                         </a>
                       </td>
-                      <td>
+                      <td class="d-none d-md-table-cell">
                         <a href="${ctx}/manager/dependents/${dep.id}"
                            class="btn-mintlify-secondary text-decoration-none"
                            style="padding:4px 12px;font-size:0.8125rem">Xem</a>
