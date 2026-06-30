@@ -1,7 +1,6 @@
 package com.quanlyphongtro.service.impl;
 
 import com.quanlyphongtro.dao.ContractDAO;
-import com.quanlyphongtro.dao.FacilityDAO;
 import com.quanlyphongtro.dao.RoomDAO;
 import com.quanlyphongtro.model.Contract;
 import com.quanlyphongtro.model.Facility;
@@ -16,7 +15,6 @@ public class ContractServiceImpl implements ContractService {
 
     private final ContractDAO contractDAO = new ContractDAO();
     private final RoomDAO roomDAO = new RoomDAO();
-    private final FacilityDAO facilityDAO = new FacilityDAO();
 
     @Override
     public List<Contract> getContractsByManager(int managerId, String searchName) {

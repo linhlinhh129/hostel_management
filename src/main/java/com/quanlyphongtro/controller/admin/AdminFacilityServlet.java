@@ -1,15 +1,12 @@
 package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
-import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.dao.FacilityDAO;
 import com.quanlyphongtro.dao.RoomDAO;
 import com.quanlyphongtro.dto.PageDTO;
-import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.exception.NotFoundException;
 import com.quanlyphongtro.exception.ValidationException;
 import com.quanlyphongtro.model.Facility;
-import com.quanlyphongtro.util.AuditLogHelper;
 import com.quanlyphongtro.util.DatabaseUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -25,7 +22,6 @@ import java.util.List;
 public class AdminFacilityServlet extends BaseServlet {
 
     private final FacilityDAO facilityDAO = new FacilityDAO();
-    private final AuditLogDAO auditLogDAO = new AuditLogDAO();
     private final RoomDAO roomDAO = new RoomDAO();
 
     private static final int PAGE_SIZE = 10;
@@ -198,15 +194,7 @@ public class AdminFacilityServlet extends BaseServlet {
         f.setInternetFee(parseBigDecimal(internetStr));
         f.setServiceFee(parseBigDecimal(serviceStr));
 
-        int newId = facilityDAO.insert(f);
-
-        UserSessionDTO currentUser = getCurrentUser(req);
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "facilities", newId,
-                "CREATE", null, code, currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after facility create id={}", newId, ex);
-        }
+        facilityDAO.insert(f);
 
         setFlashMessage(req, "success", "Tạo cơ sở '" + name + "' thành công.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH);
@@ -235,14 +223,6 @@ public class AdminFacilityServlet extends BaseServlet {
         existing.setServiceFee(parseBigDecimal(serviceStr));
 
         facilityDAO.update(existing);
-
-        UserSessionDTO currentUser = getCurrentUser(req);
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "facilities", id,
-                "UPDATE", existing.getCode(), name, currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after facility edit id={}", id, ex);
-        }
 
         setFlashMessage(req, "success", "Cập nhật cơ sở thành công.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
@@ -274,14 +254,6 @@ public class AdminFacilityServlet extends BaseServlet {
             DatabaseUtil.closeQuietly(conn);
         }
 
-        UserSessionDTO currentUser = getCurrentUser(req);
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "facilities", id,
-                "ACTIVATE", "DRAFT", "ACTIVE", currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after facility activate id={}", id, ex);
-        }
-
         setFlashMessage(req, "success", "Kích hoạt cơ sở thành công. Phòng đã được tạo tự động.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
     }
@@ -308,14 +280,6 @@ public class AdminFacilityServlet extends BaseServlet {
 
         facilityDAO.updateStatus(id, "INACTIVE");
         facilityDAO.deactivateAllRooms(id);
-
-        UserSessionDTO currentUser = getCurrentUser(req);
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "facilities", id,
-                "DEACTIVATE", "ACTIVE", "INACTIVE", currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after facility deactivate id={}", id, ex);
-        }
 
         setFlashMessage(req, "success", "Đã vô hiệu hóa cơ sở.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
