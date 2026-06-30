@@ -1,9 +1,7 @@
 package com.quanlyphongtro.controller.operator;
 
-import com.quanlyphongtro.dao.FacilityDAO;
 import com.quanlyphongtro.dao.NotificationDAO;
 import com.quanlyphongtro.dto.UserSessionDTO;
-import com.quanlyphongtro.model.Facility;
 import com.quanlyphongtro.model.Notification;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,13 +12,11 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @WebServlet(urlPatterns = {"/operator/notifications", "/operator/notifications/*"})
 public class NotificationListServlet extends HttpServlet {
 
     private final NotificationDAO notificationDAO = new NotificationDAO();
-    private final FacilityDAO facilityDAO = new FacilityDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -860,7 +860,6 @@ public class ManagerNotificationsServlet extends BaseServlet {
             int operatorId = Integer.parseInt(operatorIdStr.trim());
 
             int meterId = -1;
-            String facilityCode = "";
             boolean isAuthorized = false;
 
             // Verify manager and get details
@@ -877,7 +876,6 @@ public class ManagerNotificationsServlet extends BaseServlet {
                         if (mId == currentUser.getId()) {
                             isAuthorized = true;
                             meterId = rs.getInt("meter_id");
-                            facilityCode = rs.getString("facility_code");
                         }
                     }
                 }
@@ -1047,7 +1045,6 @@ public class ManagerNotificationsServlet extends BaseServlet {
         try {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
             int roomId = -1;
-            int facilityId = -1;
             boolean isAuthorized = false;
 
             // Verify manager and get details
@@ -1064,7 +1061,6 @@ public class ManagerNotificationsServlet extends BaseServlet {
                         if (mId == currentUser.getId()) {
                             isAuthorized = true;
                             roomId = rs.getInt("room_id");
-                            facilityId = rs.getInt("facility_id");
                         }
                     }
                 }

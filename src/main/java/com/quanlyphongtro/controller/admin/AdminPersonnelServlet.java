@@ -1,7 +1,6 @@
 package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
-import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.dao.FacilityDAO;
 import com.quanlyphongtro.dao.PersonnelDAO;
 import com.quanlyphongtro.dto.PageDTO;
@@ -10,7 +9,6 @@ import com.quanlyphongtro.exception.NotFoundException;
 import com.quanlyphongtro.exception.ValidationException;
 import com.quanlyphongtro.model.Facility;
 import com.quanlyphongtro.model.User;
-import com.quanlyphongtro.util.AuditLogHelper;
 import com.quanlyphongtro.util.EmailService;
 import com.quanlyphongtro.util.PasswordUtil;
 import jakarta.servlet.ServletException;
@@ -28,7 +26,6 @@ public class AdminPersonnelServlet extends BaseServlet {
 
     private final PersonnelDAO personnelDAO = new PersonnelDAO();
     private final FacilityDAO  facilityDAO  = new FacilityDAO();
-    private final AuditLogDAO  auditLogDAO  = new AuditLogDAO();
 
     private static final int PAGE_SIZE = 20;
     private static final String BASE_PATH = "/admin/personnel";
@@ -285,15 +282,6 @@ public class AdminPersonnelServlet extends BaseServlet {
             logger.warn("Email send failed for new user id={}", newId, ex);
         }
 
-        UserSessionDTO currentUser = getCurrentUser(req);
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "users", newId,
-                "CREATE_EMPLOYEE", null, email,
-                currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after personnel create id={}", newId, ex);
-        }
-
         setFlashMessage(req, "success", "Tạo nhân sự '" + fullName + "' thành công.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + newId);
     }
@@ -390,14 +378,6 @@ public class AdminPersonnelServlet extends BaseServlet {
             }
         }
 
-        // ── Snapshot cũ — phải lấy TRƯỚC khi set bất cứ thứ gì lên existing ──
-        String oldRole       = existing.getRole();
-        String oldFullName   = existing.getFullName();
-        Integer oldFacilityId = personnelDAO.findFacilityIdForUser(id);
-        String oldFacilityName = oldFacilityId != null
-            ? facilityDAO.findById(oldFacilityId).map(f -> f.getName()).orElse(String.valueOf(oldFacilityId))
-            : "—";
-
         // ── Cập nhật thông tin user ──────────────────────────────────────
         existing.setFullName(fullName);
         existing.setEmail(email);
@@ -428,29 +408,6 @@ public class AdminPersonnelServlet extends BaseServlet {
             }
         }
 
-        // ── Audit log ────────────────────────────────────────────────────
-        UserSessionDTO currentUser = getCurrentUser(req);
-        try {
-            // Lookup tên cơ sở mới
-            String newFacilityName = newFacilityId != null
-                ? facilityDAO.findById(newFacilityId).map(f -> f.getName()).orElse(String.valueOf(newFacilityId))
-                : "—";
-
-            // Snapshot trước (dùng biến đã capture trước khi update)
-            String oldSnapshot = oldFullName
-                + " | role=" + oldRole
-                + " | facilityId=" + oldFacilityName;
-            // Snapshot sau
-            String newSnapshot = fullName
-                + " | role=" + role
-                + " | facilityId=" + newFacilityName;
-            AuditLogHelper.log(auditLogDAO, req, "users", id,
-                "UPDATE_EMPLOYEE", oldSnapshot, newSnapshot,
-                currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after personnel update id={}", id, ex);
-        }
-
         setFlashMessage(req, "success", "Cập nhật nhân sự '" + fullName + "' thành công.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
     }
@@ -468,24 +425,13 @@ public class AdminPersonnelServlet extends BaseServlet {
             .orElseThrow(NotFoundException::new);
 
         String newStatus;
-        String action;
         if ("ACTIVE".equals(user.getStatus())) {
             newStatus = "INACTIVE";
-            action = "LOCK_EMPLOYEE";
         } else {
             newStatus = "ACTIVE";
-            action = "UNLOCK_EMPLOYEE";
         }
 
         personnelDAO.updateStatus(id, newStatus);
-
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "users", id,
-                action, user.getStatus(), newStatus,
-                currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after toggle status id={}", id, ex);
-        }
 
         String msg = "ACTIVE".equals(newStatus)
             ? "Đã mở khóa tài khoản nhân sự."
@@ -519,14 +465,6 @@ public class AdminPersonnelServlet extends BaseServlet {
             setFlashMessage(req, "error", "Xóa nhân sự thất bại. Vui lòng thử lại.");
             resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
             return;
-        }
-
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "users", id,
-                "DELETE_EMPLOYEE", user.getUsername(), null,
-                currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after personnel delete id={}", id, ex);
         }
 
         setFlashMessage(req, "success", "Đã xóa nhân sự '" + user.getFullName() + "' thành công.");
