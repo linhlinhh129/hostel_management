@@ -50,13 +50,13 @@
     padding: 20mm 25mm; /* Tăng lề trái phải lên 25mm */
     background: white;
     box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    font-family: 'Times New Roman', serif;
+    font-family: var(--hms-font);
     font-size: 12pt;
     line-height: 1.5;
     color: #000;
   }
   .a4-container h1, .a4-container h2, .a4-container h3, .a4-container h4, .a4-container h5, .a4-container h6 {
-    font-family: 'Times New Roman', serif;
+    font-family: var(--hms-font);
     font-weight: bold;
     text-align: center;
     color: #000;
@@ -117,7 +117,17 @@
            style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
           <a href="${ctx}/tenant/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
-          <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
+          <h1>
+            Chi tiết Hợp đồng: <c:out value="${contract.code}"/>
+            <c:choose>
+              <c:when test="${contract.status == 'ACTIVE'}">
+                <span class="badge-hms badge-success ms-2">Đang hiệu lực</span>
+              </c:when>
+              <c:otherwise>
+                <span class="badge-hms badge-neutral ms-2">Đã kết thúc</span>
+              </c:otherwise>
+            </c:choose>
+          </h1>
           <p>Phòng: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
         </div>
         <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
@@ -182,15 +192,14 @@
           <p class="text-bold mt-4" style="text-decoration: underline">Điều 2: Giá thuê và hình thức thanh toán</p>
           <p>Giá thuê: <strong><fmt:formatNumber value="${contract.room.roomFee}" pattern="#,##0"/> đ/tháng</strong></p>
           <p>Bằng chữ: <strong><c:out value="${contract.amountInWords}"/></strong></p>
-          <p>Phòng số: <strong><c:out value="${contract.room.code}"/></strong></p>
-          <p>Tầng: <strong><c:out value="${contract.room.code}"/></strong></p>
+          <p>Phòng số: <strong><c:out value="${contract.room.roomLabel}"/></strong></p>
+          <p>Tầng: <strong><c:out value="${contract.room.floorLabel}"/></strong></p>
           <p>Hình thức thanh toán: Tiền mặt hoặc chuyển khoản vào đầu tháng, từ ngày 01 đến ngày 05 hàng tháng.</p>
           <p>Hợp đồng có giá trị kể từ <strong><c:out value="${contract.startDate}"/></strong> đến <strong><c:out value="${contract.endDate}"/></strong></p>
           <p>Tiền điện: <strong><fmt:formatNumber value="${contract.facility.electricityPrice}" pattern="#,##0"/> đ/số</strong>, tính theo chỉ số công tơ, thanh toán vào cuối các tháng.</p>
           <p>Tiền Internet: <strong><fmt:formatNumber value="${contract.facility.internetFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
           <p>Tiền dịch vụ: <strong><fmt:formatNumber value="${contract.facility.serviceFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
-          <p>Bên B đặt cọc cho bên A số tiền là: <strong>3.000.000 đ</strong></p>
-          <p>Bằng chữ: <strong>Ba triệu đồng chẵn</strong></p>
+          <p>Bên B đặt cọc cho bên A số tiền là: <strong><fmt:formatNumber value="${contract.room.depositAmount}" pattern="#,##0"/> đ</strong></p>
           <ul>
             <li>Tiền cọc sẽ được hoàn trả đầy đủ cho bên thuê khi hợp đồng này kết thúc và bên thuê hoàn trả đầy đủ chi phí thuê, bao gồm tiền phòng, điện, nước, phí dịch vụ và các chi phí khác liên quan.</li>
             <li>Trường hợp bên B hủy hợp đồng trước thời hạn, bên B sẽ không được hoàn trả số tiền đã đặt cọc.</li>

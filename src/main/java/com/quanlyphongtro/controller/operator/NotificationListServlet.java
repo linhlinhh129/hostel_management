@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @WebServlet(urlPatterns = {"/operator/notifications", "/operator/notifications/*"})
 public class NotificationListServlet extends HttpServlet {
