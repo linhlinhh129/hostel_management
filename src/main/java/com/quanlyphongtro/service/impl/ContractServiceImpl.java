@@ -1,7 +1,6 @@
 package com.quanlyphongtro.service.impl;
 
 import com.quanlyphongtro.dao.ContractDAO;
-import com.quanlyphongtro.dao.FacilityDAO;
 import com.quanlyphongtro.dao.RoomDAO;
 import com.quanlyphongtro.model.Contract;
 import com.quanlyphongtro.model.Facility;
@@ -16,7 +15,6 @@ public class ContractServiceImpl implements ContractService {
 
     private final ContractDAO contractDAO = new ContractDAO();
     private final RoomDAO roomDAO = new RoomDAO();
-    private final FacilityDAO facilityDAO = new FacilityDAO();
 
     @Override
     public List<Contract> getContractsByManager(int managerId, String searchName) {
@@ -95,5 +93,27 @@ public class ContractServiceImpl implements ContractService {
             room.setTenantId(contract.getTenantId());
         }
         roomDAO.update(room);
+    }
+
+    @Override
+    public List<Contract> getContractsByTenant(int tenantId) {
+        List<Contract> contracts = contractDAO.findAllByTenantId(tenantId);
+        for (Contract c : contracts) {
+            Optional<Room> r = roomDAO.findById(c.getRoomId());
+            r.ifPresent(c::setRoom);
+        }
+        return contracts;
+    }
+
+    @Override
+    public Contract getContractDetailForTenant(int contractId, int tenantId) {
+        Optional<Contract> opt = contractDAO.findByIdAndTenantId(contractId, tenantId);
+        if (opt.isPresent()) {
+            Contract c = opt.get();
+            Optional<Room> r = roomDAO.findById(c.getRoomId());
+            r.ifPresent(c::setRoom);
+            return c;
+        }
+        return null;
     }
 }

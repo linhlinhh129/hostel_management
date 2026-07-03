@@ -1,150 +1,136 @@
-# PLAN.md — Kế hoạch Thực thi Admin Dashboard
+# PLAN: Kế hoạch Thực thi Admin Dashboard
 
-**Status:** Planning
-**Date:** 2026-06-19
-**Priority:** High
-**Estimated Duration:** 3–4 tuần
+**Status:** Completed  
+**Date:** 2026-07-03  
+**Priority:** High  
+**Estimated Duration:** 1-2 weeks
 
 ---
 
 ## 1. Tổng quan Giải pháp
 
-Admin Dashboard là màn hình tổng hợp dữ liệu từ nhiều module — không có business logic riêng, chủ yếu là aggregation query và caching.
+Admin Dashboard là màn hình tổng quan read-only, tổng hợp dữ liệu từ 5 module: Cơ sở, Nhân sự, Doanh thu, Thông báo và Audit Log. Hiển thị dưới dạng KPI Cards + Widgets theo mô hình JSP/Servlet thuần, không dùng AJAX hay real-time.
 
 **Kiến trúc:**
-- Backend API: 1 endpoint duy nhất `GET /api/v1/dashboard` trả về toàn bộ dữ liệu
-- Caching: Cache response tối đa 60 giây (in-memory hoặc Redis)
-- Frontend UI: KPI Cards, widgets thống kê, bảng hoạt động gần đây, bảng doanh thu theo cơ sở
-- Resilience: Partial failure — nếu một nguồn lỗi, trả về null cho phần đó thay vì 500
+- `AdminDashboardServlet` — thu thập dữ liệu từ các DAO, forward sang JSP
+- `dashboard.jsp` — render giao diện từ attributes Servlet truyền sang
+- Mỗi DAO được gọi độc lập trong try/catch riêng để đảm bảo partial failure handling
+- Không có Service layer riêng cho Dashboard (query trực tiếp từ DAO)
 
 ---
 
 ## 2. Giai đoạn Thực thi
 
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Tuần 1)
+### Giai đoạn 1: Backend — Servlet & DAO (Ngày 1-2)
 
-**Mục tiêu:** Xác định câu query, thiết kế response, caching strategy
+**Mục tiêu:** Implement `AdminDashboardServlet` thu thập đủ dữ liệu
 
 **Công việc:**
-- Xác định các aggregation query cần thiết (doanh thu, nhân sự, cơ sở, audit log)
-- Thiết kế response schema đầy đủ
-- Chọn cơ chế cache (in-memory vs Redis)
-- Xác định timeout và fallback cho từng nguồn dữ liệu
+- Implement các DAO method cần thiết nếu chưa có
+- Implement `AdminDashboardServlet.doGet()`
+- Xử lý partial failure (try/catch riêng từng block)
+- Set attributes cho JSP
 
 **Deliverables:**
-- Response schema
-- Query plan
-- Caching design document
+- `AdminDashboardServlet.java` hoàn chỉnh
+- Các DAO methods: `getMonthlyRevenueTotal`, `getFacilityRevenues`, `findRecent`, `countToday`, `countAll`, `countByRole`
 
 ---
 
-### Giai đoạn 2: Backend Development (Tuần 2)
+### Giai đoạn 2: Frontend — JSP (Ngày 3-4)
 
-**Mục tiêu:** Implement API và business logic
+**Mục tiêu:** Implement `dashboard.jsp` hiển thị đầy đủ các widget
 
 **Công việc:**
-- Implement DashboardService (aggregate từ FacilityService, EmployeeService, RevenueService, AuditLogService, NotificationService)
-- Implement caching layer
-- Implement partial failure handling
-- Implement authorization (ADMIN only)
-- Implement `GET /api/v1/dashboard` controller
+- Implement Hero section (lời chào + label tháng hiện tại)
+- Implement 4 KPI Cards
+- Implement Quick Actions (Thêm cơ sở, Thêm nhân sự, Tạo thông báo)
+- Implement widget Doanh thu theo cơ sở (bảng 4 cột)
+- Implement widget Thống kê nhân sự
+- Implement widget Hoạt động gần đây
+- Implement empty states cho từng widget
 
-**Key Features:**
-- KPI aggregation
-- Facility stats (total, active, draft, inactive)
-- Employee stats (total, manager, operator)
-- Recent activities (top 10 audit logs)
-- Revenue by facility (current month, PAID only)
+**Deliverables:**
+- `dashboard.jsp` hoàn chỉnh
+- Empty state fragments tái sử dụng
 
 ---
 
-### Giai đoạn 3: Frontend Development (Tuần 3)
+### Giai đoạn 3: Testing & Hoàn thiện (Ngày 5)
 
-**Mục tiêu:** Implement UI Dashboard
+**Mục tiêu:** Kiểm tra toàn bộ luồng và đảm bảo chất lượng
 
 **Công việc:**
-- KPI Cards component (5 cards)
-- Facility stats widget
-- Employee stats widget
-- Recent activities table
-- Revenue by facility table
-- Navigation links từ mỗi widget/card
-- Empty state và error state cho từng widget
+- Test với dữ liệu đầy đủ (happy path)
+- Test với dữ liệu rỗng (empty state)
+- Test partial failure (giả lập DAO lỗi)
+- Test phân quyền (MANAGER, OPERATOR không truy cập được)
+- Kiểm tra responsive design
 
 ---
 
-### Giai đoạn 4: Testing & Deployment (Tuần 4)
+## 3. Dependencies & Constraints
 
-**Mục tiêu:** Testing, UAT, deployment
+### Phụ thuộc bên trong
+- `FacilityDAO.count()` — đã có
+- `PersonnelDAO.countAll()`, `countByRole()` — đã có
+- `NotificationDAO.count()` — đã có
+- `AuditLogDAO.countToday()`, `findRecent()` — đã có
+- `RevenueDAO.getMonthlyRevenueTotal()`, `getFacilityRevenues()` — đã có
 
-**Công việc:**
-- Unit tests cho DashboardService
-- Integration tests cho API endpoint
-- Performance tests (response time < 1s)
-- UAT
-- Deployment
+### Phụ thuộc bên ngoài
+- `AuthenticationFilter` — kiểm tra đăng nhập
+- `RoleFilter` — kiểm tra quyền ADMIN
 
----
-
-## 3. Key Technical Challenges
-
-### Aggregation Performance
-- Dashboard gọi nhiều service/query cùng lúc — cần chạy song song (async/parallel)
-- Dùng cache 60 giây để giảm tải database
-
-### Partial Failure Handling
-- Nếu một service timeout hoặc lỗi, không được trả về 500
-- Mỗi phần dữ liệu phải có fallback về `null` hoặc `0`
-
-### Cache Invalidation
-- Cache không cần invalidate theo sự kiện — TTL 60 giây là đủ cho dashboard overview
-- Không cache theo user (tất cả admin thấy cùng dữ liệu)
+### Technical Constraints
+- Không dùng AJAX, không dùng WebSocket
+- Không dùng React/TypeScript
+- SQL phải đi qua DAO — không viết SQL trong Servlet
+- Session-based auth — không dùng JWT
 
 ---
 
-## 4. Dependencies
+## 4. Success Criteria
 
-### Phụ thuộc vào các module đã có
-- FacilityService — thống kê cơ sở
-- EmployeeService — thống kê nhân sự
-- RevenueService (viewRevenue) — doanh thu tháng
-- AuditLogService — hoạt động gần đây
-- NotificationService — tổng thông báo
+### Functional
+- ✓ 4 KPI Cards hiển thị đúng dữ liệu
+- ✓ Widget doanh thu hiển thị đúng theo tháng hiện tại
+- ✓ Widget nhân sự hiển thị tổng/manager/operator
+- ✓ Widget hoạt động gần đây hiển thị 5 bản ghi mới nhất
+- ✓ Empty state hiển thị đúng khi không có dữ liệu
+- ✓ Quick Actions điều hướng đúng trang
+- ✓ Partial failure không làm hỏng toàn bộ trang
 
-### Điều kiện tiên quyết
-- Tất cả các module trên phải được implement trước hoặc song song
-- Database schema đã có đủ bảng cần thiết
+### Non-Functional
+- ✓ Response time < 1 giây (P95)
+- ✓ Không có SQL trong Servlet
+- ✓ Không có lỗi compile/runtime
+- ✓ Responsive design hoạt động
 
 ---
 
 ## 5. Risk Management
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Query aggregation chậm | High | Chạy song song, cache 60s |
-| Một service lỗi làm hỏng toàn Dashboard | High | Partial failure pattern |
-| Dữ liệu stale do cache | Low | TTL 60s là chấp nhận được với overview |
-| Nhiều Admin truy cập đồng thời | Medium | Cache dùng chung, không per-user |
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| DAO method chưa có | Thấp | Trung bình | Kiểm tra trước khi bắt đầu, bổ sung nếu thiếu |
+| Query chậm | Thấp | Cao | Dùng try/catch riêng, partial failure fallback |
+| Data không đồng bộ giữa DAO | Thấp | Thấp | Mỗi widget độc lập, không phụ thuộc nhau |
+| Partial failure không xử lý đúng | Thấp | Cao | Test riêng từng scenario |
 
 ---
 
-## 6. Success Criteria
+## 6. Trạng thái Hiện tại
 
-- ✓ Dashboard load đủ 5 KPI Cards
-- ✓ Thống kê cơ sở và nhân sự chính xác
-- ✓ Hoạt động gần đây hiển thị đúng 10 bản ghi mới nhất
-- ✓ Doanh thu theo cơ sở đúng tháng hiện tại, chỉ tính PAID
-- ✓ Partial failure không làm trắng toàn bộ Dashboard
-- ✓ Response time < 1 giây (P95)
-- ✓ UAT passed
-
----
-
-## 7. Timeline
-
-- **Tuần 1:** Thiết kế & chuẩn bị
-- **Tuần 2:** Backend development
-- **Tuần 3:** Frontend development
-- **Tuần 4:** Testing & deployment
-
-**Tổng:** 4 tuần
+| Hạng mục | Trạng thái |
+|---|---|
+| `AdminDashboardServlet` | ✅ Hoàn thành |
+| `dashboard.jsp` — KPI Cards | ✅ Hoàn thành |
+| `dashboard.jsp` — Widget doanh thu | ✅ Hoàn thành |
+| `dashboard.jsp` — Widget nhân sự | ✅ Hoàn thành |
+| `dashboard.jsp` — Widget hoạt động | ✅ Hoàn thành |
+| `dashboard.jsp` — Quick Actions | ✅ Hoàn thành |
+| Partial failure handling | ✅ Hoàn thành |
+| Empty states | ✅ Hoàn thành |
+| SQL trong DAO (không trong Servlet) | ✅ Hoàn thành |
+| Phân quyền qua RoleFilter | ✅ Hoàn thành |

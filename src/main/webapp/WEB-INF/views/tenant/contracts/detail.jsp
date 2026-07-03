@@ -1,12 +1,37 @@
-
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Chi tiết Hợp đồng ${contract.code} - BQL"/>
-<c:set var="pageRole" value="MANAGER"/>
+<c:set var="pageTitle" value="Chi tiết Hợp đồng ${contract.code}"/>
+<c:set var="pageRole" value="TENANT"/>
 <c:set var="activeMenu" value="contracts"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
+
+<%-- PII Masking thực hiện phía server (constitution.md SEC-05, business.md 4.2) --%>
+<%
+    com.quanlyphongtro.model.Contract _c = (com.quanlyphongtro.model.Contract) request.getAttribute("contract");
+    String _rawCccd  = (_c != null) ? _c.getTenantIdentityNumber() : null;
+    String _rawPhone = (_c != null) ? _c.getTenantPhone() : null;
+
+    // CCCD/CMND: giữ 3 ký tự đầu + ***** + 4 số cuối → 079*****1234
+    String _maskedCccd = "---";
+    if (_rawCccd != null && _rawCccd.length() >= 7) {
+        _maskedCccd = _rawCccd.substring(0, 3) + "*****" + _rawCccd.substring(_rawCccd.length() - 4);
+    } else if (_rawCccd != null && !_rawCccd.isEmpty()) {
+        _maskedCccd = _rawCccd;
+    }
+
+    // SĐT: giữ 2 số đầu + ***** + 3 số cuối → 09*****678
+    String _maskedPhone = "---";
+    if (_rawPhone != null && _rawPhone.length() >= 5) {
+        _maskedPhone = _rawPhone.substring(0, 2) + "*****" + _rawPhone.substring(_rawPhone.length() - 3);
+    } else if (_rawPhone != null && !_rawPhone.isEmpty()) {
+        _maskedPhone = _rawPhone;
+    }
+
+    request.setAttribute("maskedCccd",  _maskedCccd);
+    request.setAttribute("maskedPhone", _maskedPhone);
+%>
 
 <style>
   /* Styling cho container hiển thị hợp đồng trên màn hình */
@@ -91,34 +116,22 @@
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
            style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
-          <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
-          <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
+          <a href="${ctx}/tenant/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
+          <h1>
+            Chi tiết Hợp đồng: <c:out value="${contract.code}"/>
+            <c:choose>
+              <c:when test="${contract.status == 'ACTIVE'}">
+                <span class="badge-hms badge-success ms-2">Đang hiệu lực</span>
+              </c:when>
+              <c:otherwise>
+                <span class="badge-hms badge-neutral ms-2">Đã kết thúc</span>
+              </c:otherwise>
+            </c:choose>
+          </h1>
+          <p>Phòng: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
         </div>
-        <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
-          <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
-          <div class="d-flex gap-2 align-items-center flex-wrap">
-          <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
-            <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-              </svg>
-              Tạo tài khoản người thuê
-            </a>
-          </c:if>
-          <c:if test="${contract.status == 'INACTIVE'}">
-            <form action="${ctx}/manager/contracts/delete?id=${contract.contractId}" method="post" style="display:inline; margin:0;"
-                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?');">
-              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-              <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500; height: 38px; border-radius: var(--hms-radius-full, 9999px);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-                Xóa hợp đồng
-              </button>
-            </form>
-          </c:if>
+        <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+          <%-- Chỉ hiển thị nút In — người thuê không có quyền tạo, xóa hợp đồng (BR-03) --%>
           <button onclick="window.print()" class="btn-mintlify-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
               <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>
@@ -126,7 +139,6 @@
             In Hợp Đồng / Lưu PDF
           </button>
         </div>
-        </div><%-- end flex-column wrapper --%>
       </div>
 
       <div class="document-viewer-wrapper mt-4">
@@ -155,8 +167,10 @@
             <p>Ông/Bà: <strong><c:out value="${contract.tenantFullName}"/></strong></p>
             <p>Sinh ngày: <strong><c:out value="${contract.tenantDob}"/></strong></p>
             <p>Nơi đăng ký hộ khẩu thường trú: <strong><c:out value="${contract.tenantPermanentAddress}"/></strong></p>
-            <p>Số CMND/CCCD: <strong><c:out value="${contract.tenantIdentityNumber}"/></strong>, cấp ngày <strong><c:out value="${contract.tenantIdentityIssueDate}"/></strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
-            <p>Số điện thoại: <strong><c:out value="${contract.tenantPhone}"/></strong></p>
+            <%-- CCCD/CMND đã được mask phía server (business.md 4.2) --%>
+            <p>Số CMND/CCCD: <strong><c:out value="${maskedCccd}"/></strong>, cấp ngày <strong><c:out value="${contract.tenantIdentityIssueDate}"/></strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
+            <%-- SĐT đã được mask phía server (business.md 4.2) --%>
+            <p>Số điện thoại: <strong><c:out value="${maskedPhone}"/></strong></p>
           </div>
 
           <p>Sau khi bàn bạc trên tinh thần dân chủ, hai bên cùng có lợi, cùng thống nhất như sau:</p>

@@ -4,19 +4,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
+import java.util.ResourceBundle;
 
 public class VNPayConfig {
-    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_ReturnUrl = "http://localhost:8080/HostelManagement/tenant/invoices/vnpay-return"; // adjust context path if needed
-    public static String vnp_TmnCode = "9J47G09W"; // Replace with your TmnCode
-    public static String secretKey = "97MPGGLK9UAIP8U69GGZNPNI0KUFVZAN"; // Replace with your Secret Key
-    public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+    private static final ResourceBundle config = ResourceBundle.getBundle("vnpay");
+
+    public static final String vnp_PayUrl    = config.getString("vnpay.payUrl");
+    public static final String vnp_ReturnUrl = config.getString("vnpay.returnUrl");
+    public static final String vnp_TmnCode   = config.getString("vnpay.tmnCode");
+    public static final String secretKey     = config.getString("vnpay.secretKey");
+    public static final String vnp_ApiUrl    = config.getString("vnpay.apiUrl");
 
     public static String hmacSHA512(final String key, final String data) {
         try {

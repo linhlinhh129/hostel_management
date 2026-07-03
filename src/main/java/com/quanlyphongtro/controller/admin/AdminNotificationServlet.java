@@ -1,14 +1,12 @@
 package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
-import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.dao.NotificationDAO;
 import com.quanlyphongtro.dto.PageDTO;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.exception.NotFoundException;
 import com.quanlyphongtro.exception.ValidationException;
 import com.quanlyphongtro.model.Notification;
-import com.quanlyphongtro.util.AuditLogHelper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +20,6 @@ import java.util.List;
 public class AdminNotificationServlet extends BaseServlet {
 
     private final NotificationDAO notificationDAO = new NotificationDAO();
-    private final AuditLogDAO     auditLogDAO     = new AuditLogDAO();
 
     private static final int PAGE_SIZE = 10;
     private static final String BASE_PATH = "/admin/notifications";
@@ -137,15 +134,7 @@ public class AdminNotificationServlet extends BaseServlet {
         n.setStatus("SENT");
         n.setCreatedBy(currentUser != null ? currentUser.getId() : null);
 
-        int newId = notificationDAO.insert(n);
-
-        try {
-            AuditLogHelper.log(auditLogDAO, req, "notifications", newId,
-                "CREATE", null, code,
-                currentUser != null ? currentUser.getId() : null);
-        } catch (Exception ex) {
-            logger.warn("AuditLog failed after notification create id={}", newId, ex);
-        }
+        notificationDAO.insert(n);
 
         setFlashMessage(req, "success", "Đã gửi thông báo thành công.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH);
