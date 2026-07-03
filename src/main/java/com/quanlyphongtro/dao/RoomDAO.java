@@ -1,5 +1,6 @@
 package com.quanlyphongtro.dao;
 
+import com.quanlyphongtro.dto.RoomOccupancyStatDTO;
 import com.quanlyphongtro.model.Facility;
 import com.quanlyphongtro.model.Room;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -177,5 +178,30 @@ public class RoomDAO extends BaseDAO {
             logger.error("update failed for roomId={}", room.getId(), e);
         }
         return false;
+    }
+
+    /**
+     * Thống kê tình trạng phòng toàn hệ thống cho Admin Dashboard.
+     * @return RoomOccupancyStatDTO chứa tổng phòng, đang thuê, trống, tỷ lệ lấp đầy
+     */
+    public RoomOccupancyStatDTO getOccupancyStats() {
+        String sql = "SELECT " +
+                     "COUNT(*) AS total, " +
+                     "SUM(CASE WHEN tenant_id IS NOT NULL THEN 1 ELSE 0 END) AS occupied, " +
+                     "SUM(CASE WHEN tenant_id IS NULL THEN 1 ELSE 0 END) AS available " +
+                     "FROM dbo.rooms WHERE deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int total = rs.getInt("total");
+                int occupied = rs.getInt("occupied");
+                int available = rs.getInt("available");
+                return new RoomOccupancyStatDTO(total, occupied, available);
+            }
+        } catch (Exception e) {
+            logger.error("RoomDAO.getOccupancyStats failed", e);
+        }
+        return new RoomOccupancyStatDTO(0, 0, 0);
     }
 }
