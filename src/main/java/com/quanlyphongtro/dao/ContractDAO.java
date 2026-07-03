@@ -247,11 +247,13 @@ public class ContractDAO extends BaseDAO {
 
     public Optional<Contract> findByIdAndTenantId(int contractId, int tenantId) {
         String sql = "SELECT c.*, " +
-                     "r.code as r_code, r.room_fee as r_fee, " +
-                     "f.address as f_address, f.electricity_price as f_elec, f.internet_fee as f_net, f.service_fee as f_svc " +
+                     "r.code as r_code, r.room_fee as r_fee, r.deposit_amount as r_deposit, " +
+                     "f.address as f_address, f.electricity_price as f_elec, f.water_price as f_water, f.internet_fee as f_net, f.service_fee as f_svc, " +
+                     "m.full_name as m_name, m.dob as m_dob, m.identity_number as m_id_num, m.phone as m_phone " +
                      "FROM dbo.contracts c " +
                      "JOIN dbo.rooms r ON c.room_id = r.room_id " +
                      "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                     "LEFT JOIN dbo.users m ON f.manager_id = m.user_id " +
                      "WHERE c.contract_id = ? AND c.tenant_id = ? AND c.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -264,14 +266,23 @@ public class ContractDAO extends BaseDAO {
                     com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
                     room.setCode(rs.getString("r_code"));
                     room.setRoomFee(rs.getBigDecimal("r_fee"));
+                    room.setDepositAmount(rs.getBigDecimal("r_deposit"));
                     contract.setRoom(room);
                     
                     com.quanlyphongtro.model.Facility facility = new com.quanlyphongtro.model.Facility();
                     facility.setAddress(rs.getString("f_address"));
                     facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
+                    facility.setWaterPrice(rs.getBigDecimal("f_water"));
                     facility.setInternetFee(rs.getBigDecimal("f_net"));
                     facility.setServiceFee(rs.getBigDecimal("f_svc"));
                     contract.setFacility(facility);
+                    
+                    com.quanlyphongtro.model.User managerObj = new com.quanlyphongtro.model.User();
+                    managerObj.setFullName(rs.getString("m_name"));
+                    managerObj.setDob(toLocalDate(rs, "m_dob"));
+                    managerObj.setIdentityNumber(rs.getString("m_id_num"));
+                    managerObj.setPhone(rs.getString("m_phone"));
+                    contract.setManager(managerObj);
                     
                     return Optional.of(contract);
                 }
