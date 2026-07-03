@@ -59,7 +59,7 @@ public class AdminDashboardServlet extends BaseServlet {
         req.setAttribute("totalFacilities",  totalFacilities);
         req.setAttribute("activeFacilities", activeFacilities);
 
-        // Personnel counts
+        // Personnel counts (cho widget nhân sự, không dùng trong KPI)
         int totalPersonnel = 0;
         int managerCount   = 0;
         int operatorCount  = 0;
@@ -117,34 +117,6 @@ public class AdminDashboardServlet extends BaseServlet {
             logger.warn("Dashboard: failed to load recent activities", e);
         }
         req.setAttribute("recentActivities", recentActivities);
-
-        // Room occupancy stats (toàn hệ thống)
-        int totalRooms    = 0;
-        int occupiedRooms = 0;
-        int availableRooms = 0;
-        try {
-            String sql = "SELECT " +
-                "COUNT(*) AS total, " +
-                "SUM(CASE WHEN tenant_id IS NOT NULL THEN 1 ELSE 0 END) AS occupied, " +
-                "SUM(CASE WHEN tenant_id IS NULL THEN 1 ELSE 0 END) AS available " +
-                "FROM dbo.rooms WHERE deleted_at IS NULL";
-            try (java.sql.Connection conn = com.quanlyphongtro.util.DatabaseUtil.getConnection();
-                 java.sql.PreparedStatement ps = conn.prepareStatement(sql);
-                 java.sql.ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    totalRooms     = rs.getInt("total");
-                    occupiedRooms  = rs.getInt("occupied");
-                    availableRooms = rs.getInt("available");
-                }
-            }
-        } catch (Exception e) {
-            logger.warn("Dashboard: failed to load room occupancy", e);
-        }
-        int occupancyRate = totalRooms == 0 ? 0 : (occupiedRooms * 100) / totalRooms;
-        req.setAttribute("totalRooms",     totalRooms);
-        req.setAttribute("occupiedRooms",  occupiedRooms);
-        req.setAttribute("availableRooms", availableRooms);
-        req.setAttribute("occupancyRate",  occupancyRate);
 
         req.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(req, resp);
     }
