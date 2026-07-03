@@ -1,0 +1,34 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: hostel-db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong@Passw0rd"
+    ports:
+      - "1434:1433"
+    volumes:
+      - hostel_sqlserver_data:/var/opt/mssql
+    mem_limit: 2g
+    cpus: "1.5"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hostel-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 1433
+      DB_NAME: HostelManagement
+      DB_USER: sa
+      DB_PASSWORD: "YourStrong@Passw0rd"
+    mem_limit: 768m
+    cpus: "1.0"
+
+volumes:
+  hostel_sqlserver_data:
