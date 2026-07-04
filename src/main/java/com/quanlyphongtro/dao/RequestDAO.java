@@ -26,6 +26,7 @@ public class RequestDAO extends BaseDAO {
         r.setAttachmentUrls2(rs.getString("attachment_urls2"));
         r.setAssignedStaffId(getInteger(rs, "assigned_staff_id"));
         r.setRejectionReason(rs.getString("rejection_reason"));
+        r.setAppointSchedule(toLocalDateTime(rs, "appoint_schedule"));
         r.setCreatedAt(toLocalDateTime(rs, "created_at"));
         r.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
         r.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
@@ -193,15 +194,15 @@ public class RequestDAO extends BaseDAO {
         return false;
     }
 
-    public boolean updateAppointmentDateText(int requestId, String appointmentDateStr) {
-        String sql = "UPDATE requests SET status = 'IN_PROGRESS', rejection_reason = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'ASSIGNED'";
+    public boolean updateAppointmentSchedule(int requestId, java.time.LocalDateTime appointSchedule) {
+        String sql = "UPDATE requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'ASSIGNED'";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, appointmentDateStr);
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(appointSchedule));
             ps.setInt(2, requestId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            logger.error("updateAppointmentDateText failed", e);
+            logger.error("updateAppointmentSchedule failed", e);
         }
         return false;
     }

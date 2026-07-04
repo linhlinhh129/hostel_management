@@ -88,8 +88,7 @@ public class DashboardDAO {
                      "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
                      "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
                      "WHERE rq.deleted_at IS NULL AND rq.assigned_staff_id = ? AND rq.status IN ('PENDING', 'IN_PROGRESS') " +
-                     "AND rq.rejection_reason LIKE CONVERT(varchar, GETDATE(), 23) + '%'"; 
-                     // appointmentDate is saved as text in rejection_reason, e.g. "2026-06-20T14:30"
+                     "AND CAST(rq.appoint_schedule AS DATE) = CAST(GETDATE() AS DATE)"; 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, operatorId);
@@ -99,7 +98,10 @@ public class DashboardDAO {
                     req.setRequestId(rs.getInt("request_id"));
                     req.setTitle(rs.getString("title"));
                     req.setRoomCode(rs.getString("room_code"));
-                    req.setRejectionReason(rs.getString("rejection_reason")); 
+                    java.sql.Timestamp ts = rs.getTimestamp("appoint_schedule");
+                    if (ts != null) {
+                        req.setAppointSchedule(ts.toLocalDateTime());
+                    }
                     list.add(req);
                 }
             }

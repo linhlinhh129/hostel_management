@@ -102,7 +102,7 @@
                                             <td style="padding: 12px 1.25rem; text-align: right; color: var(--hms-danger); font-weight: 500;"><c:out value="${ticket.rejectionReason}"/></td>
                                         </tr>
                                     </c:if>
-                                    <c:if test="${ticket.status == 'IN_PROGRESS' && not empty ticket.rejectionReason}">
+                                    <c:if test="${ticket.status == 'IN_PROGRESS' && not empty ticket.appointSchedule}">
                                         <tr>
                                             <td style="padding: 12px 1.25rem; color: var(--hms-info);">Lịch hẹn xử lý</td>
                                             <td style="padding: 12px 1.25rem; text-align: right; color: var(--hms-info); font-weight: 600;"><c:out value="${ticket.formattedAppointmentDate}"/></td>

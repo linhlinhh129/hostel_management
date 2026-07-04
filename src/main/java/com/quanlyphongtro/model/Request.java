@@ -23,6 +23,8 @@ public class Request {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
+    private LocalDateTime appointSchedule;
+
     // View-specific additional fields (for JOINs)
     private String senderName;
     private String roomCode;
@@ -86,6 +88,9 @@ public class Request {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public LocalDateTime getAppointSchedule() { return appointSchedule; }
+    public void setAppointSchedule(LocalDateTime appointSchedule) { this.appointSchedule = appointSchedule; }
 
     public String getSenderName() { return senderName; }
     public void setSenderName(String senderName) { this.senderName = senderName; }
@@ -174,14 +179,27 @@ public class Request {
     }
 
     public String getFormattedAppointmentDate() {
-        if (!StatusConstant.REQUEST_IN_PROGRESS.equals(status) || rejectionReason == null || rejectionReason.trim().isEmpty()) {
+        if (!StatusConstant.REQUEST_IN_PROGRESS.equals(status) || appointSchedule == null) {
             return rejectionReason;
         }
         try {
-            LocalDateTime dt = LocalDateTime.parse(rejectionReason.trim());
-            return dt.format(DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy"));
+            return appointSchedule.format(DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy"));
         } catch (Exception e) {
             return rejectionReason;
         }
+    }
+
+    public String getAppointScheduleForInput() {
+        if (appointSchedule != null) {
+            return appointSchedule.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+        }
+        return "";
+    }
+
+    public String getDashboardAppointmentTime() {
+        if (appointSchedule != null) {
+            return appointSchedule.format(DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy"));
+        }
+        return "";
     }
 }

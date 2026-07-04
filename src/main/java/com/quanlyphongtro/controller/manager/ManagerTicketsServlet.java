@@ -254,6 +254,11 @@ public class ManagerTicketsServlet extends BaseServlet {
                         ticket.put("rejectionReason", rs.getString("rejection_reason"));
                         ticket.put("attachmentUrls1", rs.getString("attachment_urls1"));
                         ticket.put("attachmentUrls2", rs.getString("attachment_urls2"));
+                        Timestamp appointAt = rs.getTimestamp("appoint_schedule");
+                        if (appointAt != null) {
+                            ticket.put("appointSchedule", appointAt.toLocalDateTime().toString().replace("T", " "));
+                            ticket.put("appointScheduleFormatted", appointAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")));
+                        }
 
                         // Generate history timeline
                         List<Map<String, Object>> historyList = new ArrayList<>();

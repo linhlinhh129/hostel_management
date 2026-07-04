@@ -54,7 +54,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public boolean scheduleAppointmentText(int requestId, String appointmentDateStr) {
-        return requestDAO.updateAppointmentDateText(requestId, appointmentDateStr);
+    public boolean scheduleAppointment(int requestId, java.time.LocalDateTime appointSchedule) {
+        return requestDAO.updateAppointmentSchedule(requestId, appointSchedule);
     }
 }

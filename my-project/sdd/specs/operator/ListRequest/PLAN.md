@@ -21,3 +21,25 @@ Thiết kế trang Danh sách yêu cầu sửa chữa cho nhân viên Vận hàn
   - **Table:** Bảng danh sách hiển thị các cột: Mã YC, Tiêu đề, Phòng, Thể loại, Ngày tạo, Trạng thái, Hành động. Sử dụng class `custom-table` và `table-hover` đồng bộ với trang Điên nước.
   - **Pagination:** Khối phân trang bên dưới bảng.
   - **Empty State:** Hiển thị thông báo "Không có yêu cầu nào phù hợp" nếu danh sách rỗng.
+
+## 4. Kế hoạch khắc phục lỗi hiển thị ảnh đính kèm Yêu cầu (Ticket) trên màn hình Manager
+Theo rà soát, Database lưu trữ đường dẫn ảnh ở dạng `/uploads/tickets/tên_file.jpg` hoàn toàn hợp lệ (không có lỗi Database). Tuy nhiên, có lỗi ở màn hình Xem chi tiết của Manager (`manager/tickets/detail.jsp`):
+
+### Nguyên nhân lỗi (Root Cause):
+Lập trình viên trước đó đã hardcode thêm chuỗi `/uploads/` vào thẻ `<img>` của Manager:
+```jsp
+<img src="${ctx}/uploads/${trimmedUrl}" ...
+```
+Do `trimmedUrl` vốn dĩ đã có `/uploads/...`, nên URL sinh ra bị lặp thành `/hostel-management/uploads//uploads/...` dẫn tới ảnh bị vỡ (Broken Image). Trong khi bên Tenant và Operator dùng hàm kiểm tra an toàn hơn nên không bị lỗi này.
+
+### Phương án sửa lỗi (Implementation Plan):
+**[MODIFY] `manager/tickets/detail.jsp`**
+Sửa lại thẻ hiển thị ảnh ở màn hình Manager tương tự như Operator/Tenant bằng đoạn `<c:choose>` để loại bỏ lỗi lặp đường dẫn `/uploads/`:
+
+```jsp
+<c:choose>
+  <c:when test="${fn:startsWith(trimmedUrl, ctx)}">${trimmedUrl}</c:when>
+  <c:otherwise>${ctx}${trimmedUrl}</c:otherwise>
+</c:choose>
+```
+*Việc này sẽ xử lý dứt điểm lỗi hiển thị ảnh mà KHÔNG tác động tới cấu trúc hay dữ liệu trong Database như lệnh cấm đã đưa ra.*

@@ -16,5 +16,5 @@ public interface RequestService {
     boolean acceptRequest(int requestId, int operatorId);
     boolean rejectRequest(int requestId, int operatorId, String reason);
     boolean completeRequest(int requestId, String notes, String attachmentUrls2);
-    boolean scheduleAppointmentText(int requestId, String appointmentDateStr);
+    boolean scheduleAppointment(int requestId, java.time.LocalDateTime appointSchedule);
 }

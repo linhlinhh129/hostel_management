@@ -109,7 +109,13 @@
                                                   onclick="window.open(this.src)" />
                                               </c:when>
                                               <c:otherwise>
-                                                <img src="${ctx}/uploads/${trimmedUrl}" class="img-thumbnail rounded"
+                                                <c:set var="finalImg">
+                                                  <c:choose>
+                                                    <c:when test="${fn:startsWith(trimmedUrl, ctx)}">${trimmedUrl}</c:when>
+                                                    <c:otherwise>${ctx}${trimmedUrl}</c:otherwise>
+                                                  </c:choose>
+                                                </c:set>
+                                                <img src="${finalImg}" class="img-thumbnail rounded"
                                                   style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
                                                   onclick="window.open(this.src)" />
                                               </c:otherwise>
@@ -140,7 +146,13 @@
                                                   onclick="window.open(this.src)" />
                                               </c:when>
                                               <c:otherwise>
-                                                <img src="${ctx}/uploads/${trimmedUrl}" class="img-thumbnail rounded"
+                                                <c:set var="finalImg2">
+                                                  <c:choose>
+                                                    <c:when test="${fn:startsWith(trimmedUrl, ctx)}">${trimmedUrl}</c:when>
+                                                    <c:otherwise>${ctx}${trimmedUrl}</c:otherwise>
+                                                  </c:choose>
+                                                </c:set>
+                                                <img src="${finalImg2}" class="img-thumbnail rounded"
                                                   style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
                                                   onclick="window.open(this.src)" />
                                               </c:otherwise>
@@ -274,6 +286,14 @@
                                   <fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                                 </td>
                               </tr>
+                              <c:if test="${not empty ticket.appointSchedule}">
+                              <tr style="border-bottom:1px solid var(--hms-border)">
+                                <td style="padding:9px 14px;color:var(--hms-text-muted)">Lịch hẹn</td>
+                                <td style="padding:9px 14px;font-weight:600;color:var(--hms-info)">
+                                  <c:out value="${ticket.appointScheduleFormatted}" />
+                                </td>
+                              </tr>
+                              </c:if>
                               <tr>
                                 <td style="padding:9px 14px;color:var(--hms-text-muted)">Nhân sự phân công</td>
                                 <td style="padding:9px 14px">

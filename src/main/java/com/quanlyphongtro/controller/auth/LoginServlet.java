@@ -41,7 +41,7 @@ public class LoginServlet extends BaseServlet {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
 
-        if (username == null || password == null || username.isBlank() || password.length() < 7) {
+        if (username == null || password == null || username.isBlank() || password.length() < 8) {
             req.setAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không hợp lệ.");
             req.setAttribute("username", username);
             req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);

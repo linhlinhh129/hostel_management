@@ -221,7 +221,7 @@
                                                 </div>
                                             </div>
                                         </c:if>
-                                        <c:if test="${reqDetail.status == 'IN_PROGRESS' && not empty reqDetail.rejectionReason}">
+                                        <c:if test="${reqDetail.status == 'IN_PROGRESS' && not empty reqDetail.appointSchedule}">
                                             <div class="mintlify-property-row" style="border-bottom: none;">
                                                 <div class="mintlify-property-label" style="color: var(--color-brand-primary);">Lịch hẹn xử lý</div>
                                                 <div class="mintlify-property-value" style="color: var(--color-brand-primary); font-weight: 500; font-size: 13px; margin-top: 4px;">
@@ -270,7 +270,7 @@
                                                         <span style="font-size: 14px; font-weight: 600; color: #0f172a;">Lên lịch sửa chữa</span>
                                                     </div>
                                                     
-                                                    <c:if test="${not empty reqDetail.rejectionReason}">
+                                                    <c:if test="${not empty reqDetail.appointSchedule}">
                                                         <div class="alert alert-info py-2 px-3 mb-3" style="font-size: 13px; border-radius: 8px; border-color: #bae6fd; background-color: #f0f9ff; color: #0369a1;">
                                                             <strong>Đã có lịch hẹn.</strong> Bạn có thể thay đổi lịch bên dưới.
                                                         </div>
@@ -281,7 +281,7 @@
                                                         <input type="hidden" name="id" value="${reqDetail.requestId}" />
                                                         <input type="hidden" name="action" value="schedule" />
                                                         <div class="position-relative mb-3">
-                                                            <input type="datetime-local" name="appointmentDate" value="${reqDetail.rejectionReason}" class="form-control shadow-sm" style="border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 14px; color: #334155; width: 100%; transition: all 0.2s; outline: none;" required onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.2)';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';" />
+                                                            <input type="datetime-local" name="appointmentDate" value="${reqDetail.appointScheduleForInput}" class="form-control shadow-sm" style="border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 14px; color: #334155; width: 100%; transition: all 0.2s; outline: none;" required onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.2)';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';" />
                                                         </div>
                                                         <button type="submit" class="w-100 btn d-flex align-items-center justify-content-center gap-2" style="background: #0ea5e9; color: white; border: none; padding: 10px; font-weight: 500; font-size: 14px; border-radius: 8px; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);" onmouseover="this.style.background='#0284c7'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0ea5e9'; this.style.transform='translateY(0)';">
                                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>

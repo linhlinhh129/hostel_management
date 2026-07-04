@@ -90,8 +90,15 @@ public class DetailRequestServlet extends HttpServlet {
                     doGet(request, response);
                     return;
                 }
-                // Save it as plain string in rejection_reason
-                success = requestService.scheduleAppointmentText(requestId, appointmentDateStr);
+                // Parse date and schedule properly
+                try {
+                    java.time.LocalDateTime appointSchedule = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+                    success = requestService.scheduleAppointment(requestId, appointSchedule);
+                } catch (Exception e) {
+                    request.setAttribute("error", "Định dạng ngày hẹn không hợp lệ.");
+                    doGet(request, response);
+                    return;
+                }
             } else if ("complete".equals(action)) {
                 String notes = request.getParameter("notes");
                 String noImageCheckbox = request.getParameter("no_image_checkbox");
