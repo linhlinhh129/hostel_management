@@ -5,7 +5,6 @@ import com.quanlyphongtro.dto.SystemRevenueDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ public class RevenueDAO extends BaseDAO {
 
         String sql = "SELECT " +
             "SUM(CASE WHEN status = 'PAID' THEN total_amount ELSE 0 END) AS total_revenue, " +
+            "SUM(CASE WHEN status IN ('UNPAID', 'OVERDUE') THEN total_amount ELSE 0 END) AS total_outstanding, " +
             "COUNT(CASE WHEN status = 'PAID'   THEN 1 END) AS paid_count, " +
             "COUNT(CASE WHEN status = 'UNPAID' THEN 1 END) AS unpaid_count, " +
             "COUNT(CASE WHEN status = 'OVERDUE' THEN 1 END) AS overdue_count, " +
@@ -48,6 +48,8 @@ public class RevenueDAO extends BaseDAO {
 
         SystemRevenueDTO dto = new SystemRevenueDTO();
         dto.setTotalRevenue(BigDecimal.ZERO);
+        dto.setTotalOutstanding(BigDecimal.ZERO);
+        dto.setTotalBilledAmount(BigDecimal.ZERO);
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -57,6 +59,9 @@ public class RevenueDAO extends BaseDAO {
                 if (rs.next()) {
                     BigDecimal rev = rs.getBigDecimal("total_revenue");
                     dto.setTotalRevenue(rev != null ? rev : BigDecimal.ZERO);
+                    BigDecimal out = rs.getBigDecimal("total_outstanding");
+                    dto.setTotalOutstanding(out != null ? out : BigDecimal.ZERO);
+                    dto.setTotalBilledAmount(dto.getTotalRevenue().add(dto.getTotalOutstanding()));
                     dto.setPaidCount(rs.getInt("paid_count"));
                     dto.setUnpaidCount(rs.getInt("unpaid_count"));
                     dto.setOverdueCount(rs.getInt("overdue_count"));
@@ -70,25 +75,13 @@ public class RevenueDAO extends BaseDAO {
             logger.error("RevenueDAO.getSystemRevenue failed for period={}", period, e);
         }
 
-        // Compute growth rate vs previous month
-        LocalDate current = LocalDate.of(year, month, 1);
-        LocalDate prev = current.minusMonths(1);
-        BigDecimal prevTotal = getMonthlyRevenueTotal(
-            String.format("%02d/%d", prev.getMonthValue(), prev.getYear()));
-        if (prevTotal != null && prevTotal.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal growth = dto.getTotalRevenue()
-                .subtract(prevTotal)
-                .multiply(BigDecimal.valueOf(100))
-                .divide(prevTotal, 0, RoundingMode.HALF_UP);
-            dto.setGrowthRate(growth.intValue());
-        }
-
         return dto;
     }
 
     private static final String FACILITY_REVENUE_SQL =
         "SELECT f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
         "  COALESCE(SUM(CASE WHEN i.status = 'PAID' THEN i.total_amount ELSE 0 END), 0) AS total_revenue, " +
+        "  COALESCE(SUM(CASE WHEN i.status IN ('UNPAID', 'OVERDUE') THEN i.total_amount ELSE 0 END), 0) AS total_outstanding, " +
         "  COUNT(CASE WHEN i.status = 'PAID'   THEN 1 END) AS paid_count, " +
         "  COUNT(CASE WHEN i.status = 'UNPAID' THEN 1 END) AS unpaid_count, " +
         "  COUNT(CASE WHEN i.status = 'OVERDUE' THEN 1 END) AS overdue_count, " +
@@ -135,24 +128,15 @@ public class RevenueDAO extends BaseDAO {
                     dto.setFacilityName(rs.getString("facility_name"));
                     BigDecimal rev = rs.getBigDecimal("total_revenue");
                     dto.setTotalRevenue(rev != null ? rev : BigDecimal.ZERO);
+                    BigDecimal out = rs.getBigDecimal("total_outstanding");
+                    dto.setTotalOutstanding(out != null ? out : BigDecimal.ZERO);
+                    dto.setTotalBilledAmount(dto.getTotalRevenue().add(dto.getTotalOutstanding()));
                     dto.setPaidCount(rs.getInt("paid_count"));
                     dto.setUnpaidCount(rs.getInt("unpaid_count"));
                     dto.setOverdueCount(rs.getInt("overdue_count"));
                     int total = rs.getInt("total_count");
                     if (total > 0) {
                         dto.setCollectionRate((int) Math.round(100.0 * dto.getPaidCount() / total));
-                    }
-                    // Compute per-facility growth rate vs previous month
-                    LocalDate current = LocalDate.of(year, month, 1);
-                    LocalDate prev = current.minusMonths(1);
-                    BigDecimal prevRev = getFacilityMonthlyRevenue(
-                        dto.getFacilityId(), prev.getMonthValue(), prev.getYear());
-                    if (prevRev != null && prevRev.compareTo(BigDecimal.ZERO) != 0) {
-                        BigDecimal growth = dto.getTotalRevenue()
-                            .subtract(prevRev)
-                            .multiply(BigDecimal.valueOf(100))
-                            .divide(prevRev, 0, RoundingMode.HALF_UP);
-                        dto.setGrowthRate(growth.intValue());
                     }
                     list.add(dto);
                 }
@@ -178,76 +162,66 @@ public class RevenueDAO extends BaseDAO {
     }
 
     /**
-     * Returns revenue stats for the last N months (for trend chart).
+     * Returns revenue stats for the last N months (for by-period view).
+     * Single query, no N+1, no growth rate calculation.
      */
     public List<FacilityRevenueStatDTO> getRevenueTrend(int months) {
         List<FacilityRevenueStatDTO> list = new ArrayList<>();
         LocalDate now = LocalDate.now();
-        for (int i = months - 1; i >= 0; i--) {
-            LocalDate d = now.minusMonths(i);
-            int month = d.getMonthValue();
-            int year = d.getYear();
-            String period = String.format("%02d/%d", month, year);
+        LocalDate startDate = now.minusMonths(months - 1).withDayOfMonth(1);
 
-            // Aggregate all facilities for this month
-            String sql = "SELECT " +
-                "COALESCE(SUM(CASE WHEN i.status = 'PAID' THEN i.total_amount ELSE 0 END), 0) AS total_revenue, " +
-                "COUNT(CASE WHEN i.status = 'PAID'   THEN 1 END) AS paid_count, " +
-                "COUNT(CASE WHEN i.status = 'UNPAID' THEN 1 END) AS unpaid_count, " +
-                "COUNT(CASE WHEN i.status = 'OVERDUE' THEN 1 END) AS overdue_count " +
-                "FROM dbo.invoices i " +
-                "WHERE i.deleted_at IS NULL AND MONTH(i.created_at) = ? AND YEAR(i.created_at) = ?";
+        String sql = "SELECT " +
+            "MONTH(created_at) AS m, YEAR(created_at) AS y, " +
+            "COALESCE(SUM(CASE WHEN status = 'PAID'    THEN total_amount ELSE 0 END), 0) AS total_revenue, " +
+            "COALESCE(SUM(CASE WHEN status IN ('UNPAID', 'OVERDUE') THEN total_amount ELSE 0 END), 0) AS total_outstanding, " +
+            "COUNT(CASE WHEN status = 'PAID'    THEN 1 END) AS paid_count, " +
+            "COUNT(CASE WHEN status = 'UNPAID'  THEN 1 END) AS unpaid_count, " +
+            "COUNT(CASE WHEN status = 'OVERDUE' THEN 1 END) AS overdue_count " +
+            "FROM dbo.invoices " +
+            "WHERE deleted_at IS NULL AND created_at >= ? " +
+            "GROUP BY YEAR(created_at), MONTH(created_at)";
 
-            try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, month);
-                ps.setInt(2, year);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        FacilityRevenueStatDTO dto = new FacilityRevenueStatDTO();
-                        dto.setFacilityCode(period);
-                        dto.setFacilityName(period);
-                        BigDecimal rev = rs.getBigDecimal("total_revenue");
-                        dto.setTotalRevenue(rev != null ? rev : BigDecimal.ZERO);
-                        dto.setPaidCount(rs.getInt("paid_count"));
-                        dto.setUnpaidCount(rs.getInt("unpaid_count"));
-                        dto.setOverdueCount(rs.getInt("overdue_count"));
-                        list.add(dto);
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("RevenueDAO.getRevenueTrend failed for month={} year={}", month, year, e);
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Returns total paid revenue for a specific facility in a given month/year.
-     */
-    private BigDecimal getFacilityMonthlyRevenue(int facilityId, int month, int year) {
-        String sql = "SELECT COALESCE(SUM(i.total_amount), 0) " +
-            "FROM dbo.invoices i " +
-            "JOIN dbo.rooms r ON r.room_id = i.room_id " +
-            "WHERE i.deleted_at IS NULL AND i.status = 'PAID' " +
-            "AND r.facility_id = ? " +
-            "AND MONTH(i.created_at) = ? AND YEAR(i.created_at) = ?";
+        java.util.Map<String, FacilityRevenueStatDTO> map = new java.util.HashMap<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, facilityId);
-            ps.setInt(2, month);
-            ps.setInt(3, year);
+            ps.setDate(1, java.sql.Date.valueOf(startDate));
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    BigDecimal val = rs.getBigDecimal(1);
-                    return val != null ? val : BigDecimal.ZERO;
+                while (rs.next()) {
+                    String period = String.format("%02d/%d", rs.getInt("m"), rs.getInt("y"));
+                    FacilityRevenueStatDTO dto = new FacilityRevenueStatDTO();
+                    dto.setFacilityCode(period);
+                    BigDecimal rev = rs.getBigDecimal("total_revenue");
+                    dto.setTotalRevenue(rev != null ? rev : BigDecimal.ZERO);
+                    BigDecimal out = rs.getBigDecimal("total_outstanding");
+                    dto.setTotalOutstanding(out != null ? out : BigDecimal.ZERO);
+                    dto.setTotalBilledAmount(dto.getTotalRevenue().add(dto.getTotalOutstanding()));
+                    dto.setPaidCount(rs.getInt("paid_count"));
+                    dto.setUnpaidCount(rs.getInt("unpaid_count"));
+                    dto.setOverdueCount(rs.getInt("overdue_count"));
+                    map.put(period, dto);
                 }
             }
         } catch (Exception e) {
-            logger.error("RevenueDAO.getFacilityMonthlyRevenue failed facilityId={} month={} year={}",
-                facilityId, month, year, e);
+            logger.error("RevenueDAO.getRevenueTrend failed", e);
         }
-        return BigDecimal.ZERO;
+
+        for (int i = 0; i < months; i++) {
+            LocalDate d = now.minusMonths(i);
+            String period = String.format("%02d/%d", d.getMonthValue(), d.getYear());
+            FacilityRevenueStatDTO dto = map.get(period);
+            if (dto == null) {
+                dto = new FacilityRevenueStatDTO();
+                dto.setFacilityCode(period);
+                dto.setTotalRevenue(BigDecimal.ZERO);
+                dto.setTotalOutstanding(BigDecimal.ZERO);
+                dto.setTotalBilledAmount(BigDecimal.ZERO);
+                dto.setPaidCount(0);
+                dto.setUnpaidCount(0);
+                dto.setOverdueCount(0);
+            }
+            list.add(dto);
+        }
+        return list;
     }
 
     /**

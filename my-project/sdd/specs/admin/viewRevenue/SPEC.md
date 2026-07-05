@@ -116,15 +116,6 @@ THE SYSTEM SHALL từ chối truy cập chức năng báo cáo doanh thu.
 
 WHEN Admin xem báo cáo doanh thu
 
-THE SYSTEM SHALL ghi nhận Audit Log bao gồm:
-- User ID
-- Thời gian truy cập
-- Khoảng thời gian được lọc
-
-### 3.3 Lọc thời gian
-WHEN Admin cung cấp fromDate và toDate
-
-THE SYSTEM SHALL lọc dữ liệu theo Invoice Created Date (created_at) nằm trong khoảng thời gian được chọn.
 ## 4. API Contract
 
 ### Lấy báo cáo doanh thu
@@ -137,8 +128,6 @@ Query Parameters
 
 | Tham số | Kiểu | Bắt buộc | Mô tả |
 |---------|------|----------|-------|
-| fromDate | string (YYYY-MM-DD) | Không | Ngày bắt đầu |
-| toDate | string (YYYY-MM-DD) | Không | Ngày kết thúc |
 | page | number | Không | Số trang (0-based, mặc định 0) |
 | size | number | Không | Số bản ghi/trang (mặc định 10) |
 | groupBy | string | Không    | MONTH (mặc định MONTH) |
@@ -285,7 +274,6 @@ GET /api/v1/reports/revenue?fromDate=2026-01-01&toDate=2026-06-30&groupBy=MONTH
   - UNPAID
   - OVERDUE
 * Các hóa đơn có trạng thái CANCELLED hoặc DELETED không được tính vào báo cáo.
-* Ghi nhận Audit Log cho thao tác xem báo cáo
 * Giá trị hợp lệ của groupBy hiện tại là MONTH.
 ## 6. Out of Scope
 
