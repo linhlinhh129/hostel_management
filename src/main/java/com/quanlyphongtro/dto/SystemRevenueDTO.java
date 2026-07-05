@@ -9,8 +9,16 @@ public class SystemRevenueDTO {
     private int overdueCount;
     private int collectionRate; // percentage
     private int growthRate;     // vs previous period
+    private BigDecimal totalOutstanding;
+    private BigDecimal totalBilledAmount;
 
     public SystemRevenueDTO() {}
+
+    public BigDecimal getTotalOutstanding() { return totalOutstanding; }
+    public void setTotalOutstanding(BigDecimal totalOutstanding) { this.totalOutstanding = totalOutstanding; }
+
+    public BigDecimal getTotalBilledAmount() { return totalBilledAmount; }
+    public void setTotalBilledAmount(BigDecimal totalBilledAmount) { this.totalBilledAmount = totalBilledAmount; }
 
     public BigDecimal getTotalRevenue() { return totalRevenue; }
     public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
