@@ -46,27 +46,41 @@ THE SYSTEM SHALL chỉ trả về các bản ghi có loại hành động khớp
 WHEN Admin lọc nhật ký theo khoảng thời gian
 THE SYSTEM SHALL chỉ trả về các bản ghi được tạo trong khoảng thời gian được chỉ định.
 
-WHEN Admin lọc nhật ký theo createdBy
-THE SYSTEM SHALL chỉ trả về các bản ghi do người dùng được chỉ định thực hiện.
+WHEN Admin lọc nhật ký theo người thực hiện (actor)
+THE SYSTEM SHALL trả về các bản ghi có tên người thực hiện (full_name) khớp một phần với từ khóa.
+
+WHEN Admin lọc nhật ký theo vai trò (role)
+THE SYSTEM SHALL chỉ trả về các bản ghi do người dùng có vai trò tương ứng thực hiện.
+
+WHEN không có bộ lọc vai trò nào được chọn
+THE SYSTEM SHALL mặc định chỉ hiển thị nhật ký do MANAGER và OPERATOR thực hiện.
 
 WHEN không có bản ghi nhật ký nào khớp với điều kiện lọc
-THE SYSTEM SHALL trả về danh sách rỗng và thông báo "Không có dữ liệu".
+THE SYSTEM SHALL trả về danh sách rỗng để UI hiển thị trạng thái "Không có dữ liệu".
 
 ### 3.2 Hiển thị nội dung nhật ký
 
 WHILE hiển thị danh sách nhật ký
-THE SYSTEM SHALL hiển thị tối thiểu các thông tin sau:
+THE SYSTEM SHALL hiển thị các thông tin cơ bản sau trên bảng:
+
+* Mã nhật ký (Log ID)
+* Thời gian (Created At)
+* Người thực hiện (Created By)
+* Đối tượng (Entity Type & Tên)
+* Hành động (Action)
+
+WHILE hiển thị chi tiết bản ghi nhật ký
+THE SYSTEM SHALL hiển thị đầy đủ các thông tin:
 
 * Mã nhật ký
-* Loại đối tượng (Entity Type)
-* Mã đối tượng (Entity ID)
-* Loại hành động (Action)
+* Thời gian
+* Người thực hiện
+* Tên đối tượng và Loại đối tượng (Entity ID)
+* Hành động
 * Giá trị trước thay đổi (Old Value)
 * Giá trị sau thay đổi (New Value)
 * Địa chỉ IP
 * Ghi chú (Comment)
-* Người thực hiện (Created By)
-* Thời điểm thực hiện (Created At)
 
 WHEN hiển thị bản ghi nhật ký
 THE SYSTEM SHALL hiển thị oldValue và newValue theo quy tắc sau:
@@ -81,7 +95,7 @@ WHEN tham số lọc không hợp lệ được gửi lên
 THE SYSTEM SHALL trả về HTTP 400 với lỗi INVALID_FILTER.
 
 WHEN fromDate lớn hơn toDate
-THE SYSTEM SHALL trả về HTTP 400 với lỗi INVALID_DATE_RANGE.
+THE SYSTEM SHALL xử lý an toàn và trả về danh sách rỗng (không ném lỗi 400).
 
 ### 3.4 Phân quyền
 
@@ -92,102 +106,29 @@ WHILE người dùng chưa đăng nhập
 THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 ---
 
-## 4. API Contract
+## 4. Giao tiếp Dữ liệu (SSR)
 
-### Endpoint
+Tính năng này được triển khai theo kiến trúc Server-Side Rendering (SSR) sử dụng Servlet và JSP.
 
-GET /api/v1/audit-logs
+### Request Lọc dữ liệu
 
-### Request
+**HTTP Method:** GET
+**URL:** `/admin/audit-logs`
 
-Query Parameters:
+**Query Parameters:**
+* `actor` (string, optional): Tên người thực hiện (khớp một phần).
+* `role` (string, optional): Vai trò người thực hiện (VD: MANAGER, OPERATOR).
+* `entityType` (string, optional): Phân loại chức năng/đối tượng (facilities, rooms, users...).
+* `action` (string, optional): Loại hành động (CREATE, UPDATE, DELETE...).
+* `dateFrom` (string, optional): Từ ngày (YYYY-MM-DD).
+* `dateTo` (string, optional): Đến ngày (YYYY-MM-DD).
+* `page` (int, optional): Trang hiện tại (mặc định 1).
 
-```json
-{
-  "entityType": "string",
-  "action": "string",
-  "createdBy": 1,
-  "fromDate": "2026-01-01",
-  "toDate": "2026-01-31",
-  "page": 0,
-  "size": 10
-}
-```
+### Phản hồi
 
-### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "auditLogId": 1,
-        "entityType": "Tenant",
-        "entityId": 15,
-        "action": "UPDATE",
-        "oldValue": "...",
-        "newValue": "...",
-        "ipAddress": "192.168.1.1",
-        "comment": "Update tenant information",
-        "createdBy": 1,
-        "createdAt": "2026-06-01T10:00:00"
-      }
-    ],
-    "page": 0,
-    "size": 10,
-    "totalElements": 100,
-    "totalPages": 10
-  }
-}
-```
-
-### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_FILTER",
-    "message": "Tham số lọc không hợp lệ"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_DATE_RANGE",
-    "message": "Khoảng thời gian không hợp lệ: fromDate không được lớn hơn toDate"
-  }
-}
-```
-
-### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
+*   **Thành công (200):** Forward dữ liệu danh sách `List<AuditLog>` (kèm thông tin phân trang) xuống view `/WEB-INF/views/admin/audit-logs/list.jsp` để render HTML.
+*   **Chi tiết (200):** Khi truy cập `/admin/audit-logs/{id}`, hệ thống query chi tiết (bao gồm việc parse `oldValue`, `newValue`) và forward xuống `/WEB-INF/views/admin/audit-logs/detail.jsp`.
+*   **Lỗi 403/401:** Quản lý tập trung qua Filter/Interceptor, redirect về trang đăng nhập hoặc hiển thị lỗi không có quyền truy cập.
 ---
 
 ## 5. Technical Constraints
