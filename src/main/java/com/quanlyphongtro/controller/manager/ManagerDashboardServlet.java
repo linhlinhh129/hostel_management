@@ -47,6 +47,13 @@ public class ManagerDashboardServlet extends BaseServlet {
         int sentNotifications = 0;
         int occupancyRate = 0;
 
+        int activeContracts = 0;
+        int unpaidInvoices = 0;
+        int overdueInvoices = 0;
+        int pendingPayments = 0;
+        java.math.BigDecimal monthlyRevenue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalOutstanding = java.math.BigDecimal.ZERO;
+
         int ticketCountNew = 0;
         int ticketCountInProgress = 0;
         int ticketCountDone = 0;
@@ -70,9 +77,40 @@ public class ManagerDashboardServlet extends BaseServlet {
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
                 "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL " +
-                "WHERE f.manager_id = ? AND req.deleted_at IS NULL AND req.status IN ('NEW', 'RECEIVED', 'ASSIGNED', 'IN_PROGRESS')";
+                "WHERE f.manager_id = ? AND req.deleted_at IS NULL AND req.status IN ('NEW', 'PENDING', 'RECEIVED', 'ASSIGNED', 'IN_PROGRESS')";
 
         String sentNotificationsSql = "SELECT COUNT(*) FROM dbo.notifications WHERE created_by = ? AND deleted_at IS NULL";
+
+        String activeContractsSql = "SELECT COUNT(*) FROM dbo.contracts c " +
+                "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND c.deleted_at IS NULL AND c.status = 'ACTIVE'";
+
+        String unpaidInvoicesSql = "SELECT COUNT(*) FROM dbo.invoices i " +
+                "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status = 'UNPAID'";
+
+        String overdueInvoicesSql = "SELECT COUNT(*) FROM dbo.invoices i " +
+                "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status = 'OVERDUE'";
+
+        String pendingPaymentsSql = "SELECT COUNT(*) FROM dbo.payments p " +
+                "JOIN dbo.rooms r ON p.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND p.deleted_at IS NULL AND p.status = 'PENDING'";
+
+        String monthlyRevenueSql = "SELECT SUM(i.total_amount) FROM dbo.invoices i " +
+                "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status = 'PAID' " +
+                "AND MONTH(i.created_at) = MONTH(GETDATE()) AND YEAR(i.created_at) = YEAR(GETDATE())";
+
+        String totalOutstandingSql = "SELECT SUM(i.total_amount) FROM dbo.invoices i " +
+                "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status IN ('UNPAID', 'OVERDUE')";
 
         String ticketStatsSql = "SELECT req.status, COUNT(*) AS count FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
@@ -150,6 +188,50 @@ public class ManagerDashboardServlet extends BaseServlet {
                 }
             }
 
+            // 4b. Active contracts & financial stats
+            try (PreparedStatement ps = conn.prepareStatement(activeContractsSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) activeContracts = rs.getInt(1);
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement(unpaidInvoicesSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) unpaidInvoices = rs.getInt(1);
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement(overdueInvoicesSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) overdueInvoices = rs.getInt(1);
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement(pendingPaymentsSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) pendingPayments = rs.getInt(1);
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement(monthlyRevenueSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        java.math.BigDecimal val = rs.getBigDecimal(1);
+                        if (val != null) monthlyRevenue = val;
+                    }
+                }
+            }
+            try (PreparedStatement ps = conn.prepareStatement(totalOutstandingSql)) {
+                ps.setInt(1, managerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        java.math.BigDecimal val = rs.getBigDecimal(1);
+                        if (val != null) totalOutstanding = val;
+                    }
+                }
+            }
+
             // 5. Ticket stats by status
             try (PreparedStatement ps = conn.prepareStatement(ticketStatsSql)) {
                 ps.setInt(1, managerId);
@@ -157,7 +239,7 @@ public class ManagerDashboardServlet extends BaseServlet {
                     while (rs.next()) {
                         String status = rs.getString("status");
                         int count = rs.getInt("count");
-                        if ("NEW".equals(status)) {
+                        if ("NEW".equals(status) || "PENDING".equals(status)) {
                             ticketCountNew += count;
                         } else if ("RECEIVED".equals(status) || "ASSIGNED".equals(status) || "IN_PROGRESS".equals(status)) {
                             ticketCountInProgress += count;
@@ -189,7 +271,7 @@ public class ManagerDashboardServlet extends BaseServlet {
                         String status = rs.getString("status");
                         String statusLabel = status;
                         String statusBadgeClass = "badge-neutral";
-                        if ("NEW".equals(status)) {
+                        if ("NEW".equals(status) || "PENDING".equals(status)) {
                             statusLabel = "Mới";
                             statusBadgeClass = "badge-info";
                         } else if ("RECEIVED".equals(status)) {
@@ -237,6 +319,13 @@ public class ManagerDashboardServlet extends BaseServlet {
         req.setAttribute("pendingTickets", pendingTickets);
         req.setAttribute("sentNotifications", sentNotifications);
         req.setAttribute("occupancyRate", occupancyRate);
+
+        req.setAttribute("activeContracts", activeContracts);
+        req.setAttribute("unpaidInvoices", unpaidInvoices);
+        req.setAttribute("overdueInvoices", overdueInvoices);
+        req.setAttribute("pendingPayments", pendingPayments);
+        req.setAttribute("monthlyRevenue", monthlyRevenue);
+        req.setAttribute("totalOutstanding", totalOutstanding);
 
         req.setAttribute("ticketCountNew", ticketCountNew);
         req.setAttribute("ticketCountInProgress", ticketCountInProgress);
