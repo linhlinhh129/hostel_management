@@ -20,7 +20,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
                     <div>
                         <h1>Nhật ký kiểm tra</h1>
-                        <p>Hoạt động thao tác của Manager và Operator</p>
+                        <p>Hoạt động thao tác</p>
                     </div>
                     <a href="${ctx}/admin/audit-logs" class="quick-action-btn" style="position:relative;z-index:1">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -32,47 +32,62 @@
             </div>
 
             <div class="data-surface">
-                <!-- Filter bar -->
-                <form class="filter-bar" method="get" action="${ctx}/admin/audit-logs">
-                    <input type="text" class="form-control" name="actor"
-                           placeholder="Tên người thực hiện..."
-                           value="<c:out value='${filterActor}'/>"
-                           style="max-width:200px">
-                    <select class="form-select" name="role" style="max-width:150px">
-                        <option value="">Vai trò</option>
-                        <option value="MANAGER"  ${filterRole == 'MANAGER'  ? 'selected' : ''}>Manager</option>
-                        <option value="OPERATOR" ${filterRole == 'OPERATOR' ? 'selected' : ''}>Operator</option>
-                    </select>
-                    <select class="form-select" name="entityType" style="max-width:160px">
-                        <option value="">Chức năng</option>
-                        <option value="facilities"     ${filterEntityType == 'facilities'     ? 'selected' : ''}>Cơ sở</option>
-                        <option value="rooms"          ${filterEntityType == 'rooms'          ? 'selected' : ''}>Phòng</option>
-                        <option value="users"          ${filterEntityType == 'users'          ? 'selected' : ''}>Nhân sự</option>
-                        <option value="notifications"  ${filterEntityType == 'notifications'  ? 'selected' : ''}>Thông báo</option>
-                        <option value="invoices"       ${filterEntityType == 'invoices'       ? 'selected' : ''}>Hóa đơn</option>
-                        <option value="payments"       ${filterEntityType == 'payments'       ? 'selected' : ''}>Thanh toán</option>
-                    </select>
-                    <select class="form-select" name="action" style="max-width:160px">
-                        <option value="">Hành động</option>
-                        <option value="CREATE"          ${filterAction == 'CREATE'          ? 'selected' : ''}>Tạo mới</option>
-                        <option value="UPDATE"          ${filterAction == 'UPDATE'          ? 'selected' : ''}>Cập nhật</option>
-                        <option value="DELETE"          ${filterAction == 'DELETE'          ? 'selected' : ''}>Xóa</option>
-                        <option value="ACTIVATE"        ${filterAction == 'ACTIVATE'        ? 'selected' : ''}>Kích hoạt</option>
-                        <option value="DEACTIVATE"      ${filterAction == 'DEACTIVATE'      ? 'selected' : ''}>Vô hiệu hóa</option>
-                        <option value="LOCK_EMPLOYEE"   ${filterAction == 'LOCK_EMPLOYEE'   ? 'selected' : ''}>Khóa tài khoản</option>
-                        <option value="UNLOCK_EMPLOYEE" ${filterAction == 'UNLOCK_EMPLOYEE' ? 'selected' : ''}>Mở khóa</option>
-                        <option value="UPDATE_ELECTRICITY" ${filterAction == 'UPDATE_ELECTRICITY' ? 'selected' : ''}>Cập nhật số điện</option>
-                        <option value="UPDATE_WATER"    ${filterAction == 'UPDATE_WATER'    ? 'selected' : ''}>Cập nhật số nước</option>
-                        <option value="CREATE_EMPLOYEE" ${filterAction == 'CREATE_EMPLOYEE' ? 'selected' : ''}>Tạo nhân sự</option>
-                    </select>
-                    <input type="date" class="form-control" name="dateFrom"
-                           value="<c:out value='${filterDateFrom}'/>" style="max-width:160px"
-                           title="Từ ngày">
-                    <input type="date" class="form-control" name="dateTo"
-                           value="<c:out value='${filterDateTo}'/>" style="max-width:160px"
-                           title="Đến ngày">
-                    <button type="submit" class="btn-mintlify-secondary">Lọc</button>
-                    <a href="${ctx}/admin/audit-logs" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+                <!-- Filter bar (Thiết kế tối ưu theo ảnh mẫu) -->
+                <form method="get" action="${ctx}/admin/audit-logs" style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                    <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                        
+                        <!-- Tìm kiếm -->
+                        <div style="flex:1; min-width:200px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
+                            <input type="text" class="form-control" name="actor"
+                                   placeholder="Tên người thực hiện..."
+                                   value="<c:out value='${filterActor}'/>" style="width:100%">
+                        </div>
+
+                        <!-- Vai trò -->
+                        <div style="flex:1; min-width:150px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Vai trò</label>
+                            <select class="form-select" name="role" style="width:100%">
+                                <option value="">Tất cả</option>
+                                <option value="MANAGER"  ${filterRole == 'MANAGER'  ? 'selected' : ''}>Manager</option>
+                                <option value="OPERATOR" ${filterRole == 'OPERATOR' ? 'selected' : ''}>Operator</option>
+                            </select>
+                        </div>
+
+                        <!-- Đối tượng -->
+                        <div style="flex:1; min-width:150px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Đối tượng</label>
+                            <select class="form-select" name="entityType" style="width:100%">
+                                <option value="">Tất cả</option>
+                                <option value="facilities"     ${filterEntityType == 'facilities'     ? 'selected' : ''}>Cơ sở</option>
+                                <option value="rooms"          ${filterEntityType == 'rooms'          ? 'selected' : ''}>Phòng</option>
+                                <option value="users"          ${filterEntityType == 'users'          ? 'selected' : ''}>Nhân sự</option>
+                                <option value="notifications"  ${filterEntityType == 'notifications'  ? 'selected' : ''}>Thông báo</option>
+                                <option value="invoices"       ${filterEntityType == 'invoices'       ? 'selected' : ''}>Hóa đơn</option>
+                                <option value="payments"       ${filterEntityType == 'payments'       ? 'selected' : ''}>Thanh toán</option>
+                            </select>
+                        </div>
+                        
+
+
+                        <!-- Thời gian -->
+                        <div style="flex:1.5; min-width:200px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Thời gian</label>
+                            <div style="display:flex; align-items:stretch; border:1px solid var(--hms-border-soft); border-radius:6px; overflow:hidden;">
+                                <input type="date" class="form-control" name="dateFrom"
+                                       value="<c:out value='${filterDateFrom}'/>" style="border:none; border-radius:0; flex:1; min-width:0; padding-left:8px; padding-right:8px;">
+                                <div style="background:#f8f9fa; padding:0 8px; display:flex; align-items:center; border-left:1px solid var(--hms-border-soft); border-right:1px solid var(--hms-border-soft); color:#6c757d; font-size:13px; white-space:nowrap;">đến</div>
+                                <input type="date" class="form-control" name="dateTo"
+                                       value="<c:out value='${filterDateTo}'/>" style="border:none; border-radius:0; flex:1; min-width:0; padding-left:8px; padding-right:8px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Nút hành động -->
+                    <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:20px;">
+                        <a href="${ctx}/admin/audit-logs" style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s">Xóa bộ lọc</a>
+                        <button type="submit" style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s">Lọc dữ liệu</button>
+                    </div>
                 </form>
 
                 <c:choose>

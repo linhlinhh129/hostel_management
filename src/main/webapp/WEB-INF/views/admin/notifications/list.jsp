@@ -31,12 +31,24 @@
             </div>
 
             <div class="data-surface">
-                <!-- Tìm kiếm -->
-                <form class="filter-bar" method="get" action="${ctx}/admin/notifications">
-                    <input type="text" class="form-control" name="keyword" placeholder="Tiêu đề thông báo..."
-                           value="<c:out value='${keyword}'/>">
-                    <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
-                    <a href="${ctx}/admin/notifications" class="btn-mintlify-secondary text-decoration-none">Xóa bộ lọc</a>
+                <!-- Filter bar (Thiết kế tối ưu theo mẫu) -->
+                <form method="get" action="${ctx}/admin/notifications" style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                    <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                        
+                        <!-- Tìm kiếm -->
+                        <div style="flex:1; min-width:200px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
+                            <input type="text" class="form-control" name="keyword"
+                                   placeholder="Tiêu đề thông báo..."
+                                   value="<c:out value='${keyword}'/>" style="width:100%">
+                        </div>
+                    </div>
+                    
+                    <!-- Nút hành động -->
+                    <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:20px;">
+                        <a href="${ctx}/admin/notifications" style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s">Xóa bộ lọc</a>
+                        <button type="submit" style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s">Tìm kiếm</button>
+                    </div>
                 </form>
 
                 <c:choose>
