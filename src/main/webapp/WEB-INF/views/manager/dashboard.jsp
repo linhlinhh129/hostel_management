@@ -311,64 +311,97 @@
                 <p><c:out value="${facilityName}"/> (<c:out value="${facilityCode}"/>) · Tổng quan vận hành cơ sở</p>
             </div>
 
-            <div class="quick-actions">
-                <a href="${ctx}/manager/notifications/create" class="quick-action-btn">Tạo thông báo</a>
-                <a href="${ctx}/manager/contracts/create" class="quick-action-btn">Tạo hợp đồng mới</a>
-                <a href="${ctx}/manager/rooms" class="quick-action-btn">Danh sách căn hộ</a>
-                <a href="${ctx}/manager/tickets?status=IN_PROGRESS" class="quick-action-btn">Yêu cầu đang xử lý</a>
+            <div class="mb-4">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: #0f172a; margin-top: 1.5rem; margin-bottom: 0.75rem;">Phím tắt Vận hành</h3>
+                <div class="quick-actions" style="margin-top: 0; margin-bottom: 0.75rem;">
+                    <a href="${ctx}/manager/rooms" class="quick-action-btn primary">Danh sách căn hộ</a>
+                    <a href="${ctx}/manager/tenants" class="quick-action-btn">Quản lý người thuê</a>
+                    <a href="${ctx}/manager/tickets" class="quick-action-btn">Danh sách yêu cầu</a>
+                    <a href="${ctx}/manager/notifications/create" class="quick-action-btn">Tạo thông báo</a>
+                </div>
             </div>
 
-            <div class="kpi-grid">
+            <div class="mb-4">
+                <h3 style="font-size: 0.95rem; font-weight: 600; color: #0f172a; margin-top: 1rem; margin-bottom: 0.75rem;">Phím tắt Tài chính</h3>
+                <div class="quick-actions" style="margin-top: 0; margin-bottom: 1.5rem;">
+                    <a href="${ctx}/manager/contracts/create" class="quick-action-btn primary">Tạo hợp đồng mới</a>
+                    <a href="${ctx}/manager/invoices?action=create" class="quick-action-btn">Tạo hóa đơn mới</a>
+                    <a href="${ctx}/manager/payments" class="quick-action-btn">Lịch sử giao dịch</a>
+                    <a href="${ctx}/manager/service-prices" class="quick-action-btn">Thiết lập giá dịch vụ</a>
+                    <a href="${ctx}/manager/debts" class="quick-action-btn">Báo cáo công nợ</a>
+                </div>
+            </div>
+
+            <h2 style="font-size: 1.1rem; font-weight: 600; color: #0f172a; margin-top: 1.75rem; margin-bottom: 0.75rem;">Thông số Vận hành</h2>
+            <div class="kpi-grid mb-4">
                 <div class="kpi-surface-card"><span class="kpi-label">Tổng phòng</span><span class="kpi-value"><fmt:formatNumber value="${totalRooms}" groupingUsed="true"/></span></div>
                 <div class="kpi-surface-card"><span class="kpi-label">Đang thuê</span><span class="kpi-value"><fmt:formatNumber value="${occupiedRooms}" groupingUsed="true"/></span></div>
                 <div class="kpi-surface-card"><span class="kpi-label">Phòng trống</span><span class="kpi-value"><fmt:formatNumber value="${vacantRooms}" groupingUsed="true"/></span></div>
                 <div class="kpi-surface-card"><span class="kpi-label">Người thuê</span><span class="kpi-value"><fmt:formatNumber value="${totalTenants}" groupingUsed="true"/></span></div>
-                <div class="kpi-surface-card"><span class="kpi-label">Người phụ thuộc</span><span class="kpi-value"><fmt:formatNumber value="${totalDependents}" groupingUsed="true"/></span></div>
-                <div class="kpi-surface-card highlight-warning"><span class="kpi-label">Yêu cầu đang xử lý</span><span class="kpi-value"><fmt:formatNumber value="${pendingTickets}" groupingUsed="true"/></span></div>
-                <div class="kpi-surface-card"><span class="kpi-label">Thông báo đã gửi</span><span class="kpi-value"><fmt:formatNumber value="${sentNotifications}" groupingUsed="true"/></span></div>
+                <div class="kpi-surface-card"><span class="kpi-label">Hợp đồng hiệu lực</span><span class="kpi-value"><fmt:formatNumber value="${activeContracts}" groupingUsed="true"/></span></div>
+            </div>
+
+            <h2 style="font-size: 1.1rem; font-weight: 600; color: #0f172a; margin-top: 1.75rem; margin-bottom: 0.75rem;">Thông số Tài chính</h2>
+            <div class="kpi-grid">
+                <div class="kpi-surface-card"><span class="kpi-label">Doanh thu tháng này</span><span class="kpi-value"><fmt:formatNumber value="${monthlyRevenue}" pattern="#,##0"/> đ</span></div>
+                <div class="kpi-surface-card"><span class="kpi-label">Tổng công nợ</span><span class="kpi-value"><fmt:formatNumber value="${totalOutstanding}" pattern="#,##0"/> đ</span></div>
+                <div class="kpi-surface-card"><span class="kpi-label">Hóa đơn chưa thanh toán</span><span class="kpi-value"><fmt:formatNumber value="${unpaidInvoices}" groupingUsed="true"/></span></div>
+                <div class="kpi-surface-card"><span class="kpi-label">Hóa đơn quá hạn</span><span class="kpi-value"><fmt:formatNumber value="${overdueInvoices}" groupingUsed="true"/></span></div>
+                <div class="kpi-surface-card highlight-warning"><span class="kpi-label">Giao dịch chờ duyệt</span><span class="kpi-value"><fmt:formatNumber value="${pendingPayments}" groupingUsed="true"/></span></div>
             </div>
 
             <div class="widget-surface-surface-grid">
-                <div class="widget-surface-surface widget-surface-surface-span-6">
-                    <div class="widget-surface-surface-header"><h3>Tỷ lệ phòng trống / đang thuê</h3></div>
-                    <div class="widget-surface-surface-body">
-                        <div class="d-flex justify-content-between mb-2"><span>Đang thuê</span><strong><c:out value="${occupancyRate}"/>%</strong></div>
-                        <div class="progress-hms mb-3"><div class="progress-hms-bar" style="width:${occupancyRate}%"></div></div>
-                        <div class="occupancy-badges">
-                            <span class="badge-hms badge-success occupancy-badge">
-                                <span class="dot-indicator bg-success"></span>
-                                <fmt:formatNumber value="${occupiedRooms}" groupingUsed="true"/> thuê
-                            </span>
-                            <span class="badge-hms badge-neutral occupancy-badge">
-                                <span class="dot-indicator bg-secondary"></span>
-                                <fmt:formatNumber value="${vacantRooms}" groupingUsed="true"/> trống
-                            </span>
+                <div class="widget-surface-surface widget-surface-surface-span-12">
+                    <div class="widget-surface-surface-header">
+                        <h3>Hiệu suất lấp đầy & Thống kê yêu cầu</h3>
+                        <a href="${ctx}/manager/tickets" class="widget-surface-surface-link">Xem tất cả yêu cầu</a>
+                    </div>
+                    <div class="widget-surface-surface-body" style="padding: 1.5rem !important;">
+                        <div class="row align-items-center">
+                            <!-- Left: Occupancy Rate -->
+                            <div class="col-12 col-md-6 pr-md-4" style="border-right: 1px solid #e2e8f0;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span style="font-size: 0.875rem; font-weight: 500; color: #475569;">Tỷ lệ lấp đầy phòng</span>
+                                    <strong style="color: #0f172a; font-size: 1rem;"><c:out value="${occupancyRate}"/>%</strong>
+                                </div>
+                                <div class="progress-hms mb-3" style="height: 8px !important; margin-bottom: 0.75rem !important;"><div class="progress-hms-bar" style="width:${occupancyRate}%"></div></div>
+                                <div class="d-flex gap-3">
+                                    <span style="font-size: 0.8125rem; color: #166534; font-weight: 600; display: inline-flex; align-items: center; gap: 0.375rem;">
+                                        <span class="dot-indicator bg-success" style="width: 8px; height: 8px;"></span>
+                                        <fmt:formatNumber value="${occupiedRooms}" groupingUsed="true"/> Đang thuê
+                                    </span>
+                                    <span style="font-size: 0.8125rem; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 0.375rem;">
+                                        <span class="dot-indicator bg-secondary" style="width: 8px; height: 8px;"></span>
+                                        <fmt:formatNumber value="${vacantRooms}" groupingUsed="true"/> Phòng trống
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Right: Ticket status stats -->
+                            <div class="col-12 col-md-6 pl-md-4 mt-3 mt-md-0">
+                                <div style="font-size: 0.875rem; font-weight: 500; color: #475569; margin-bottom: 0.75rem; padding-left: 0.5rem;">Yêu cầu theo trạng thái</div>
+                                <div class="status-badge-grid" style="grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                                    <span class="badge-hms badge-info status-summary-badge" style="padding: 0.5rem 0.75rem !important; border-radius: 8px !important;">
+                                        <span>Mới</span>
+                                        <span class="badge-count" style="font-size: 0.75rem; font-weight: 700; padding: 0.125rem 0.375rem;"><c:out value="${ticketCountNew}"/></span>
+                                    </span>
+                                    <span class="badge-hms badge-warning status-summary-badge" style="padding: 0.5rem 0.75rem !important; border-radius: 8px !important;">
+                                        <span>Đang xử lý</span>
+                                        <span class="badge-count" style="font-size: 0.75rem; font-weight: 700; padding: 0.125rem 0.375rem;"><c:out value="${ticketCountInProgress}"/></span>
+                                    </span>
+                                    <span class="badge-hms badge-success status-summary-badge" style="padding: 0.5rem 0.75rem !important; border-radius: 8px !important;">
+                                        <span>Hoàn thành</span>
+                                        <span class="badge-count" style="font-size: 0.75rem; font-weight: 700; padding: 0.125rem 0.375rem;"><c:out value="${ticketCountDone}"/></span>
+                                    </span>
+                                    <span class="badge-hms badge-danger status-summary-badge" style="padding: 0.5rem 0.75rem !important; border-radius: 8px !important;">
+                                        <span>Từ chối</span>
+                                        <span class="badge-count" style="font-size: 0.75rem; font-weight: 700; padding: 0.125rem 0.375rem;"><c:out value="${ticketCountRejected}"/></span>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="widget-surface-surface widget-surface-surface-span-6">
-                    <div class="widget-surface-surface-header"><h3>Yêu cầu theo trạng thái</h3><a href="${ctx}/manager/tickets" class="widget-surface-surface-link">Xem tất cả</a></div>
-                    <div class="widget-surface-surface-body">
-                        <div class="status-badge-grid">
-                            <span class="badge-hms badge-info status-summary-badge">
-                                <span>Mới</span>
-                                <span class="badge-count"><c:out value="${ticketCountNew}"/></span>
-                            </span>
-                            <span class="badge-hms badge-warning status-summary-badge">
-                                <span>Đang xử lý</span>
-                                <span class="badge-count"><c:out value="${ticketCountInProgress}"/></span>
-                            </span>
-                            <span class="badge-hms badge-success status-summary-badge">
-                                <span>Hoàn thành</span>
-                                <span class="badge-count"><c:out value="${ticketCountDone}"/></span>
-                            </span>
-                            <span class="badge-hms badge-danger status-summary-badge">
-                                <span>Từ chối</span>
-                                <span class="badge-count"><c:out value="${ticketCountRejected}"/></span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
+
                 <div class="widget-surface-surface widget-surface-surface-span-12">
                     <div class="widget-surface-surface-header"><h3>Yêu cầu mới nhất</h3></div>
                     <div class="widget-surface-surface-body p-0">
@@ -378,7 +411,7 @@
                                     <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Phòng</th><th>Ngày gửi</th><th>Trạng thái</th></tr></thead>
                                     <tbody>
                                     <c:forEach var="ticket" items="${recentTickets}">
-                                        <tr>
+                                        <tr data-href="${ctx}/manager/tickets/${ticket.id}">
                                             <td><a href="${ctx}/manager/tickets/${ticket.id}"><c:out value="${ticket.code}"/></a></td>
                                             <td><c:out value="${ticket.title}"/></td>
                                             <td><c:out value="${ticket.roomCode}"/></td>
