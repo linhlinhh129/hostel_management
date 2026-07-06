@@ -77,7 +77,8 @@ public class ManagerDashboardServlet extends BaseServlet {
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
                 "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL " +
-                "WHERE f.manager_id = ? AND req.deleted_at IS NULL AND req.status IN ('NEW', 'PENDING', 'RECEIVED', 'ASSIGNED', 'IN_PROGRESS')";
+                "WHERE f.manager_id = ? AND req.deleted_at IS NULL AND req.status IN ('NEW', 'PENDING', 'RECEIVED', 'ASSIGNED', 'IN_PROGRESS') " +
+                "AND (u.role = 'OPERATOR' OR (u.role = 'TENANT' AND req.assigned_staff_id = f.manager_id))";
 
         String sentNotificationsSql = "SELECT COUNT(*) FROM dbo.notifications WHERE created_by = ? AND deleted_at IS NULL";
 
@@ -117,6 +118,7 @@ public class ManagerDashboardServlet extends BaseServlet {
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
                 "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL " +
                 "WHERE f.manager_id = ? AND req.deleted_at IS NULL " +
+                "AND (u.role = 'OPERATOR' OR (u.role = 'TENANT' AND req.assigned_staff_id = f.manager_id)) " +
                 "GROUP BY req.status";
 
         String recentTicketsSql = "SELECT req.request_id, req.code, req.title, req.status, req.created_at, r.code AS room_code, u.role AS sender_role " +
@@ -125,6 +127,7 @@ public class ManagerDashboardServlet extends BaseServlet {
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
                 "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL " +
                 "WHERE f.manager_id = ? AND req.deleted_at IS NULL " +
+                "AND (u.role = 'OPERATOR' OR (u.role = 'TENANT' AND req.assigned_staff_id = f.manager_id)) " +
                 "ORDER BY req.request_id DESC OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY";
 
         try (Connection conn = DatabaseUtil.getConnection()) {
