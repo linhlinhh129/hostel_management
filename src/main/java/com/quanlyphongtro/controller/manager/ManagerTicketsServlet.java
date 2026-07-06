@@ -5,9 +5,11 @@ import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -23,6 +25,11 @@ import java.util.Map;
         "/manager/tickets",
         "/manager/tickets/*"
 })
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
+        maxFileSize = 1024 * 1024 * 10,       // 10MB
+        maxRequestSize = 1024 * 1024 * 50     // 50MB
+)
 public class ManagerTicketsServlet extends BaseServlet {
 
     @Override
@@ -61,6 +68,10 @@ public class ManagerTicketsServlet extends BaseServlet {
                     handleAssign(ticketId, req, resp);
                 } else if ("reject".equals(action)) {
                     handleReject(ticketId, req, resp);
+                } else if ("schedule".equals(action)) {
+                    handleSchedule(ticketId, req, resp);
+                } else if ("complete".equals(action)) {
+                    handleComplete(ticketId, req, resp);
                 } else {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
@@ -107,6 +118,11 @@ public class ManagerTicketsServlet extends BaseServlet {
         List<Object> params = new ArrayList<>();
         params.add(currentUser.getId());
         params.add(type);
+
+        if ("TENANT".equals(type)) {
+            whereClause.append(" AND req.assigned_staff_id = ?");
+            params.add(currentUser.getId());
+        }
 
         if (status != null && !status.trim().isEmpty()) {
             whereClause.append(" AND req.status = ?");
@@ -263,49 +279,113 @@ public class ManagerTicketsServlet extends BaseServlet {
                         // Generate history timeline
                         List<Map<String, Object>> historyList = new ArrayList<>();
                         String sender = rs.getString("sender_name");
+                        String senderRole = rs.getString("sender_role");
                         String status = rs.getString("status");
 
-                        Map<String, Object> h1 = new HashMap<>();
-                        h1.put("action", "Gửi yêu cầu");
-                        h1.put("performedAt", ticket.get("createdAt"));
-                        h1.put("performedBy", sender);
-                        h1.put("note", "Khởi tạo yêu cầu hỗ trợ hệ thống.");
-                        historyList.add(h1);
+                        if ("OPERATOR".equals(senderRole)) {
+                            // KEEP ORIGINAL LOGIC FOR OPERATOR TICKETS
+                            Map<String, Object> h1 = new HashMap<>();
+                            h1.put("action", "Gửi yêu cầu");
+                            h1.put("performedAt", ticket.get("createdAt"));
+                            h1.put("performedBy", sender);
+                            h1.put("note", "Khởi tạo yêu cầu hỗ trợ hệ thống.");
+                            historyList.add(h1);
 
-                        if (!"NEW".equals(status) && !"PENDING".equals(status)) {
-                            Map<String, Object> h2 = new HashMap<>();
-                            h2.put("action", "Tiếp nhận yêu cầu");
-                            h2.put("performedAt", ticket.get("updatedAt"));
-                            h2.put("performedBy", "Ban Quản lý");
-                            h2.put("note", "Đã tiếp nhận và đưa vào hàng chờ xử lý.");
-                            historyList.add(h2);
+                            if (!"NEW".equals(status) && !"PENDING".equals(status)) {
+                                Map<String, Object> h2 = new HashMap<>();
+                                h2.put("action", "Tiếp nhận yêu cầu");
+                                h2.put("performedAt", ticket.get("updatedAt"));
+                                h2.put("performedBy", "Ban Quản lý");
+                                h2.put("note", "Đã tiếp nhận và đưa vào hàng chờ xử lý.");
+                                historyList.add(h2);
 
-                            if ("ASSIGNED".equals(status) || "IN_PROGRESS".equals(status) || "DONE".equals(status)
-                                    || "RESOLVED".equals(status)) {
+                                if ("ASSIGNED".equals(status) || "IN_PROGRESS".equals(status) || "DONE".equals(status)
+                                        || "RESOLVED".equals(status)) {
+                                    Map<String, Object> h3 = new HashMap<>();
+                                    h3.put("action", "Phân công xử lý");
+                                    h3.put("performedAt", ticket.get("updatedAt"));
+                                    h3.put("performedBy", "Ban Quản lý");
+                                    h3.put("note", "Phân công cho nhân viên: " + rs.getString("assigned_operator_name"));
+                                    historyList.add(h3);
+                                }
+
+                                if ("DONE".equals(status) || "RESOLVED".equals(status)) {
+                                    Map<String, Object> h4 = new HashMap<>();
+                                    h4.put("action", "Hoàn thành yêu cầu");
+                                    h4.put("performedAt", ticket.get("updatedAt"));
+                                    h4.put("performedBy", rs.getString("assigned_operator_name"));
+                                    h4.put("note", "Đã sửa chữa / hoàn thành xử lý sự cố.");
+                                    historyList.add(h4);
+                                }
+
+                                if ("REJECTED".equals(status)) {
+                                    Map<String, Object> h5 = new HashMap<>();
+                                    h5.put("action", "Từ chối yêu cầu");
+                                    h5.put("performedAt", ticket.get("updatedAt"));
+                                    h5.put("performedBy", "Ban Quản lý");
+                                    h5.put("note", "Lý do: " + rs.getString("rejection_reason"));
+                                    historyList.add(h5);
+                                }
+                            }
+                        } else {
+                            // NEW SIMPLIFIED LOGIC FOR RESIDENT/TENANT TICKETS
+                            Map<String, Object> h1 = new HashMap<>();
+                            h1.put("action", "Gửi yêu cầu");
+                            h1.put("performedAt", ticket.get("createdAt"));
+                            h1.put("performedBy", sender);
+                            h1.put("note", "Khởi tạo yêu cầu hỗ trợ hệ thống.");
+                            historyList.add(h1);
+
+                            if ("RECEIVED".equals(status)) {
+                                Map<String, Object> h2 = new HashMap<>();
+                                h2.put("action", "Tiếp nhận yêu cầu");
+                                h2.put("performedAt", ticket.get("updatedAt"));
+                                h2.put("performedBy", "Ban Quản lý");
+                                h2.put("note", "Đã tiếp nhận yêu cầu.");
+                                historyList.add(h2);
+                            } else if ("IN_PROGRESS".equals(status)) {
+                                Map<String, Object> h2 = new HashMap<>();
+                                h2.put("action", "Đang xử lý");
+                                h2.put("performedAt", ticket.get("updatedAt"));
+                                h2.put("performedBy", "Ban Quản lý");
+                                String sched = (String) ticket.get("appointScheduleFormatted");
+                                if (sched != null && !sched.isEmpty()) {
+                                    h2.put("note", "Lịch hẹn xử lý: " + sched);
+                                } else {
+                                    h2.put("note", "Đang tiến hành xử lý yêu cầu.");
+                                }
+                                historyList.add(h2);
+                            } else if ("DONE".equals(status) || "RESOLVED".equals(status)) {
+                                if (ticket.get("appointScheduleFormatted") != null) {
+                                    Map<String, Object> h2 = new HashMap<>();
+                                    h2.put("action", "Đang xử lý");
+                                    h2.put("performedAt", ticket.get("appointSchedule"));
+                                    h2.put("performedBy", "Ban Quản lý");
+                                    h2.put("note", "Lịch hẹn xử lý: " + ticket.get("appointScheduleFormatted"));
+                                    historyList.add(h2);
+                                }
                                 Map<String, Object> h3 = new HashMap<>();
-                                h3.put("action", "Phân công xử lý");
+                                h3.put("action", "Đã hoàn thành");
                                 h3.put("performedAt", ticket.get("updatedAt"));
                                 h3.put("performedBy", "Ban Quản lý");
-                                h3.put("note", "Phân công cho nhân viên: " + rs.getString("assigned_operator_name"));
+                                String notes = rs.getString("rejection_reason");
+                                h3.put("note", (notes != null && !notes.trim().isEmpty()) ? notes : "Yêu cầu đã được xử lý hoàn tất.");
                                 historyList.add(h3);
-                            }
-
-                            if ("DONE".equals(status) || "RESOLVED".equals(status)) {
-                                Map<String, Object> h4 = new HashMap<>();
-                                h4.put("action", "Hoàn thành yêu cầu");
-                                h4.put("performedAt", ticket.get("updatedAt"));
-                                h4.put("performedBy", rs.getString("assigned_operator_name"));
-                                h4.put("note", "Đã sửa chữa / hoàn thành xử lý sự cố.");
-                                historyList.add(h4);
-                            }
-
-                            if ("REJECTED".equals(status)) {
-                                Map<String, Object> h5 = new HashMap<>();
-                                h5.put("action", "Từ chối yêu cầu");
-                                h5.put("performedAt", ticket.get("updatedAt"));
-                                h5.put("performedBy", "Ban Quản lý");
-                                h5.put("note", "Lý do: " + rs.getString("rejection_reason"));
-                                historyList.add(h5);
+                            } else if ("REJECTED".equals(status)) {
+                                Map<String, Object> h2 = new HashMap<>();
+                                h2.put("action", "Từ chối yêu cầu");
+                                h2.put("performedAt", ticket.get("updatedAt"));
+                                h2.put("performedBy", "Ban Quản lý");
+                                String reason = rs.getString("rejection_reason");
+                                h2.put("note", "Lý do: " + ((reason != null && !reason.trim().isEmpty()) ? reason : "Không có lý do cụ thể."));
+                                historyList.add(h2);
+                            } else if ("CANCELLED".equals(status)) {
+                                Map<String, Object> h2 = new HashMap<>();
+                                h2.put("action", "Đã hủy yêu cầu");
+                                h2.put("performedAt", ticket.get("updatedAt"));
+                                h2.put("performedBy", sender);
+                                h2.put("note", "Cư dân đã chủ động hủy yêu cầu.");
+                                historyList.add(h2);
                             }
                         }
                         ticket.put("history", historyList);
@@ -416,5 +496,85 @@ public class ManagerTicketsServlet extends BaseServlet {
             setFlashMessage(req, "danger", "Lỗi từ chối yêu cầu: " + e.getMessage());
         }
         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+    }
+
+    private void handleSchedule(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String appointmentDateStr = req.getParameter("appointmentDate");
+        String sql = "UPDATE dbo.requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (appointmentDateStr != null && !appointmentDateStr.trim().isEmpty()) {
+                java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+                ps.setTimestamp(1, Timestamp.valueOf(ldt));
+            } else {
+                ps.setNull(1, java.sql.Types.TIMESTAMP);
+            }
+            ps.setInt(2, ticketId);
+            ps.executeUpdate();
+            setFlashMessage(req, "success", "Bắt đầu xử lý yêu cầu thành công!");
+        } catch (Exception e) {
+            logger.error("Failed to start processing ticket={}", ticketId, e);
+            setFlashMessage(req, "danger", "Lỗi cập nhật trạng thái: " + e.getMessage());
+        }
+        resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+    }
+
+    private void handleComplete(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String notes = req.getParameter("notes");
+        if (notes == null || notes.trim().isEmpty()) {
+            setFlashMessage(req, "danger", "Ghi chú hoàn thành không được để trống.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
+
+        List<String> fileNames = new ArrayList<>();
+        try {
+            String uploadPath = req.getServletContext().getRealPath("") + java.io.File.separator + "uploads" + java.io.File.separator + "requests";
+            java.io.File uploadDir = new java.io.File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            for (Part part : req.getParts()) {
+                if ("after_images".equals(part.getName()) && part.getSize() > 0) {
+                    String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(part);
+                    part.write(uploadPath + java.io.File.separator + fileName);
+                    fileNames.add("/uploads/requests/" + fileName);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error uploading completion images", e);
+        }
+
+        String attachmentUrls2 = fileNames.isEmpty() ? null : String.join(",", fileNames);
+
+        String sql = "UPDATE dbo.requests SET status = 'DONE', rejection_reason = ?, attachment_urls2 = ?, updated_at = GETDATE() WHERE request_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, notes.trim());
+            if (attachmentUrls2 != null) {
+                ps.setString(2, attachmentUrls2);
+            } else {
+                ps.setNull(2, java.sql.Types.VARCHAR);
+            }
+            ps.setInt(3, ticketId);
+            ps.executeUpdate();
+            setFlashMessage(req, "success", "Xác nhận hoàn thành yêu cầu thành công!");
+        } catch (Exception e) {
+            logger.error("Failed to complete ticket={}", ticketId, e);
+            setFlashMessage(req, "danger", "Lỗi cập nhật hoàn thành: " + e.getMessage());
+        }
+        resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+    }
+
+    private String getFileName(Part part) {
+        String contentDisp = part.getHeader("content-disposition");
+        String[] tokens = contentDisp.split(";");
+        for (String token : tokens) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf("=") + 2, token.length() - 1);
+            }
+        }
+        return "";
     }
 }
