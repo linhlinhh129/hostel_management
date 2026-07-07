@@ -158,7 +158,6 @@
                         <th class="d-none d-md-table-cell">Diện tích</th>
                         <th>Trạng thái</th>
                         <th>Chủ thuê</th>
-                        <th class="d-none d-md-table-cell">Số người ở</th>
                         <th class="d-none d-md-table-cell">Thao tác</th>
                       </tr>
                     </thead>
@@ -210,17 +209,7 @@
                               </c:otherwise>
                             </c:choose>
                           </td>
-                          <td class="d-none d-md-table-cell">
-                            <%-- Số người ở: 1 (chủ thuê) + people_count nếu có --%>
-                            <c:choose>
-                              <c:when test="${not empty room.tenantId}">
-                                <span class="badge-hms badge-neutral">≥1</span>
-                              </c:when>
-                              <c:otherwise>
-                                <span class="text-muted" style="font-size:0.8125rem">0</span>
-                              </c:otherwise>
-                            </c:choose>
-                          </td>
+
                           <td class="d-none d-md-table-cell">
                             <a href="${ctx}/manager/rooms/${room.id}"
                                class="btn-mintlify-secondary text-decoration-none"
