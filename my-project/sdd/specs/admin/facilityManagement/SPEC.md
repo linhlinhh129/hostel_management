@@ -335,674 +335,93 @@ Ví dụ:
 
 ---
 
-## 4. API Contract
-
-### 4.1 Tạo cơ sở
-
-```http
-POST /api/v1/facilities
-```
-
-#### Request
-
-```json
-{
-  "facilityCode": "hl",
-  "facilityName": "Nhà trọ Hòa Lạc",
-  "address": "Xã Hòa Lạc",
-  "maxFloors": 5,
-  "maxRoomsPerFloor": 4
-}
-```
-
-#### Response 201
-
-```json
-{
-  "success": true,
-  "data": {
-    "facilityId": 1,
-    "facilityCode": "HL",
-    "facilityName": "Nhà trọ Hòa Lạc",
-    "address": "Xã Hòa Lạc",
-    "maxFloors": 5,
-    "maxRoomsPerFloor": 4,
-    "totalRooms": 0,
-    "status": "DRAFT"
-  }
-}
-```
-
-#### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_CODE_REQUIRED",
-    "message": "Mã cơ sở là bắt buộc"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_CODE_LENGTH_INVALID",
-    "message": "Mã cơ sở phải từ 2 đến 10 ký tự"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_NAME_TOO_LONG",
-    "message": "Tên cơ sở không được vượt quá 255 ký tự"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ADDRESS_TOO_LONG",
-    "message": "Địa chỉ không được vượt quá 500 ký tự"
-  }
-}
-```
-
-#### Response 409
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_CODE_ALREADY_EXISTS",
-    "message": "Mã cơ sở đã tồn tại"
-  }
-}
-```
-
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-### 4.2 Lấy danh sách cơ sở
-Endpoint:
-GET /api/v1/facilities
-
-Query params:
-keyword: string, không bắt buộc
-status: DRAFT | ACTIVE | INACTIVE, không bắt buộc
-page: number, không bắt buộc
-size: number, không bắt buộc
-
-#### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "facilityId": 1,
-        "facilityCode": "HL",
-        "facilityName": "Nhà trọ Hòa Lạc",
-        "address": "Xã Hòa Lạc",
-        "maxFloors": 5,
-        "maxRoomsPerFloor": 4,
-        "totalRooms": 20,
-        "manager": {
-          "employeeId": "EMP001",
-          "fullName": "Nguyen Van A"
-        },
-        "status": "ACTIVE"
-      }
-    ],
-    "page": 0,
-    "size": 10,
-    "totalElements": 1,
-    "totalPages": 1
-  }
-}
-```
-
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-### 4.3 Xem chi tiết cơ sở
-Endpoint:
-GET /api/v1/facilities/{facilityId}
-
-#### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "facilityId": 1,
-    "facilityCode": "HL",
-    "facilityName": "Nhà trọ Hòa Lạc",
-    "address": "Xã Hòa Lạc",
-    "maxFloors": 5,
-    "maxRoomsPerFloor": 4,
-    "totalRooms": 20,
-    "manager": {
-      "employeeId": "EMP001",
-      "fullName": "Nguyen Van A"
-    },
-    "status": "ACTIVE",
-    "createdAt": "2026-06-10T10:00:00",
-    "updatedAt": "2026-06-10T10:00:00"
-  }
-}
-```
-
-#### Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_NOT_FOUND",
-    "message": "Không tìm thấy cơ sở"
-  }
-}
-```
-
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-### 4.4 Cập nhật cơ sở
-Endpoint:
-PATCH /api/v1/facilities/{facilityId}
-
-Request khi cơ sở ở trạng thái DRAFT:
-
-```json
-{
-  "facilityCode": "hl",
-  "facilityName": "Nhà trọ Hòa Lạc 2",
-  "address": "Xã Hòa Lạc, Hà Nội",
-  "maxFloors": 6,
-  "maxRoomsPerFloor": 12
-}
-```
-
-Request khi cơ sở ở trạng thái ACTIVE:
-
-```json
-{
-  "facilityName": "Nhà trọ Hòa Lạc - Cơ sở 1"
-}
-```
-
-#### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "facilityId": 1,
-    "facilityCode": "HL",
-    "facilityName": "Nhà trọ Hòa Lạc 2",
-    "address": "Xã Hòa Lạc, Hà Nội",
-    "maxFloors": 6,
-    "maxRoomsPerFloor": 12,
-    "totalRooms": 0,
-    "status": "DRAFT",
-    "updatedAt": "2026-06-10T11:00:00"
-  }
-}
-```
-
-#### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_CODE_IMMUTABLE",
-    "message": "Không được chỉnh sửa mã cơ sở sau khi cơ sở đã ACTIVE"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_CODE_LENGTH_INVALID",
-    "message": "Mã cơ sở phải từ 2 đến 10 ký tự"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_NAME_TOO_LONG",
-    "message": "Tên cơ sở không được vượt quá 255 ký tự"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ADDRESS_TOO_LONG",
-    "message": "Địa chỉ không được vượt quá 500 ký tự"
-  }
-}
-```
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-#### Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_NOT_FOUND",
-    "message": "Không tìm thấy cơ sở"
-  }
-}
-```
-
-### 4.5 Kích hoạt cơ sở
-Endpoint:
-PATCH /api/v1/facilities/{facilityId}/activate
-
-Mục đích: chuyển cơ sở từ DRAFT sang ACTIVE và tự động sinh danh sách phòng.
-#### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "facilityId": 1,
-    "facilityCode": "HL",
-    "facilityName": "Nhà trọ Hòa Lạc",
-    "address": "Xã Hòa Lạc",
-    "maxFloors": 5,
-    "maxRoomsPerFloor": 4,
-    "totalRooms": 20,
-    "status": "ACTIVE"
-  }
-}
-```
-
-#### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_INVALID_STATUS_FOR_ACTIVATION",
-    "message": "Chỉ cơ sở DRAFT mới được kích hoạt"
-  }
-}
-```
-
-#### Response 400 (cấu hình không hợp lệ)
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_INVALID_CONFIGURATION",
-    "message": "Cấu hình cơ sở không hợp lệ để sinh phòng"
-  }
-}
-```
-
-#### Response 500
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ROOM_GENERATION_FAILED",
-    "message": "Kích hoạt cơ sở thất bại do không thể sinh danh sách phòng"
-  }
-}
-```
-
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-#### Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_NOT_FOUND",
-    "message": "Không tìm thấy cơ sở"
-  }
-}
-```
-
-### 4.6 Vô hiệu hóa cơ sở
-Endpoint:
-PATCH /api/v1/facilities/{facilityId}/deactivate
-
-#### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "facilityId": 1,
-    "facilityCode": "HL",
-    "facilityName": "Nhà trọ Hòa Lạc",
-    "address": "Xã Hòa Lạc",
-    "maxFloors": 5,
-    "maxRoomsPerFloor": 4,
-    "totalRooms": 20,
-    "status": "INACTIVE"
-  }
-}
-```
-
-#### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_INVALID_STATUS_FOR_DEACTIVATION",
-    "message": "Chỉ cơ sở ACTIVE mới được vô hiệu hóa"
-  }
-}
-```
-
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-#### Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_NOT_FOUND",
-    "message": "Không tìm thấy cơ sở"
-  }
-}
-```
-
-### 4.7 Lấy danh sách cơ sở ACTIVE cho Quản lý Phòng
-Endpoint:
-GET /api/v1/facilities/active
-
-Mục đích: API này phục vụ feature Quản lý Phòng, dùng để lấy danh sách cơ sở ACTIVE.
-#### Response 200
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "facilityId": 1,
-      "facilityCode": "HL",
-      "facilityName": "Nhà trọ Hòa Lạc",
-      "address": "Xã Hòa Lạc",
-      "maxFloors": 5,
-      "maxRoomsPerFloor": 4,
-      "totalRooms": 20,
-      "status": "ACTIVE"
-    }
-  ]
-}
-```
-
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
-
-### 4.8 Lấy danh sách phòng đã sinh theo cơ sở
-Endpoint:
-GET /api/v1/facilities/{facilityId}/rooms
-
-Mục đích: API này phục vụ màn hình Quản lý Phòng, dùng để lấy danh sách phòng đã được sinh tự động khi cơ sở ACTIVE.
-#### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "facilityId": 1,
-    "facilityCode": "HL",
-    "facilityName": "Nhà trọ Hòa Lạc",
-    "rooms": [
-      {
-        "roomId": 1
-        "roomCode": "HL0101",
-        "floor": 1,
-        "roomNumber": 1,
-        "status": "AVAILABLE"
-      },
-      {
-        "roomId": 2,
-        "roomCode": "HL0102",
-        "floor": 1,
-        "roomNumber": 2,
-        "status": "AVAILABLE"
-      },
-      {
-        "roomId": 4,
-        "roomCode": "HL0504",
-        "floor": 5,
-        "roomNumber": 4,
-        "status": "AVAILABLE"
-      }
-    ]
-  }
-}
-```
-
-#### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_ROOMS_NOT_GENERATED",
-    "message": "Chỉ cơ sở ACTIVE hoặc INACTIVE mới có danh sách phòng đã sinh"
-  }
-}
-```
-
-#### Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FACILITY_NOT_FOUND",
-    "message": "Không tìm thấy cơ sở"
-  }
-}
-```
-
-#### Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
-
-#### Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
+## 4. Servlet Contract
+
+### 4.1 Servlet Entry Point
+
+| Thuộc tính | Giá trị |
+|---|---|
+| **Servlet** | `AdminFacilityServlet` |
+| **URL Pattern** | `GET/POST /admin/facilities` — danh sách / tạo mới |
+| **URL Pattern** | `GET /admin/facilities/create` — form tạo |
+| **URL Pattern** | `GET /admin/facilities/{id}` — chi tiết |
+| **URL Pattern** | `GET /admin/facilities/{id}/edit` — form chỉnh sửa |
+| **URL Pattern** | `POST /admin/facilities/{id}/edit` — lưu chỉnh sửa |
+| **URL Pattern** | `POST /admin/facilities/{id}/activate` — kích hoạt |
+| **URL Pattern** | `POST /admin/facilities/{id}/deactivate` — vô hiệu hóa |
+| **URL Pattern** | `POST /admin/facilities/{id}/rooms/{roomId}/area` — cập nhật diện tích phòng |
+| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
 ---
+
+### 4.2 Request Attributes — Danh sách (list.jsp)
+
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `page` | `PageDTO<Facility>` | `FacilityDAO.findAll(keyword, status, page, 10)` | Dữ liệu phân trang, `PAGE_SIZE = 10` |
+| `keyword` | `String` | Query param `keyword` | Giữ lại giá trị tìm kiếm trên form |
+| `selectedStatus` | `String` | Query param `status` | Giữ lại filter trạng thái (`DRAFT`, `ACTIVE`, `INACTIVE`) |
+
+---
+
+### 4.3 Request Attributes — Chi tiết (detail.jsp)
+
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `facility` | `Facility` | `FacilityDAO.findById(id)` | Thông tin đầy đủ cơ sở |
+| `rooms` | `List<Room>` | `FacilityDAO.findRoomsByFacilityId(id)` | Chỉ set khi `status != DRAFT` |
+
+---
+
+### 4.4 Request Attributes — Form tạo/sửa (create.jsp / edit.jsp)
+
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `facility` | `Facility` | `FacilityDAO.findById(id)` | Chỉ có ở form edit |
+| `errorMessage` | `String` | `ValidationException.getMessage()` | Thông báo lỗi khi submit thất bại |
+
+---
+
+### 4.5 Validation — POST /admin/facilities/create
+
+| Field (form param) | Điều kiện hợp lệ | Lỗi ném ra |
+|---|---|---|
+| `code` | Không rỗng, khớp `[A-Za-z]{2,10}` | `ValidationException` |
+| `code` | Chưa tồn tại trong DB | `ValidationException` |
+| `name` | Không rỗng | `ValidationException` |
+| `address` | Không rỗng | `ValidationException` |
+| `floorCount` | Số nguyên, `1–99` | `ValidationException` |
+| `roomsPerFloor` | Số nguyên, `1–99` | `ValidationException` |
+| Mã code | Tự động `toUpperCase()` trước khi lưu | — |
+
+---
+
+### 4.6 Trạng thái cơ sở và hành vi
+
+| Trạng thái | Cho phép sửa code/địa chỉ/tầng/phòng | Cho phép sửa tên | Sinh phòng | Kích hoạt | Vô hiệu hóa |
+|---|---|---|---|---|---|
+| `DRAFT` | ✅ | ✅ | ❌ | ✅ | ❌ |
+| `ACTIVE` | ❌ | ✅ | ✅ (đã sinh) | ❌ | ✅ |
+| `INACTIVE` | ❌ | ❌ | ✅ (đã sinh) | ❌ | ❌ |
+
+**Activate:** transaction gồm `updateStatus(ACTIVE)` + `generateRooms()` — rollback nếu lỗi.
+
+**Deactivate:** chặn nếu còn phòng đang thuê (`countOccupiedRooms > 0`).
+
+---
+
+### 4.7 Xử lý lỗi
+
+| Tình huống | Hành vi |
+|---|---|
+| Chưa đăng nhập | Redirect về `/login` (xử lý bởi `BaseServlet`) |
+| Role không phải ADMIN | HTTP 403 Forbidden |
+| `{id}` không tồn tại | `NotFoundException` → HTTP 404 |
+| Validation thất bại (POST) | Forward về `create.jsp` / `edit.jsp` với `errorMessage` |
+| Lỗi không xác định | Flash message `error`, redirect về `/admin/facilities` |
+
+---
+
 
 ## 5. Technical Constraints
 

@@ -12,7 +12,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -221,6 +220,45 @@ public class AdminFacilityServlet extends BaseServlet {
         existing.setWaterPrice(parseBigDecimal(waterStr));
         existing.setInternetFee(parseBigDecimal(internetStr));
         existing.setServiceFee(parseBigDecimal(serviceStr));
+
+        if (!"ACTIVE".equals(existing.getStatus())) {
+            String code = trim(req.getParameter("code"));
+            String floorStr = trim(req.getParameter("floorCount"));
+            String roomStr = trim(req.getParameter("roomsPerFloor"));
+
+            if (code.isEmpty()) throw new ValidationException("Mã cơ sở không được để trống.");
+            if (!code.matches("[A-Za-z]{2,10}")) {
+                throw new ValidationException("Mã cơ sở chỉ gồm 2-10 chữ cái A-Z.");
+            }
+            code = code.toUpperCase();
+            
+            if (floorStr.isEmpty()) throw new ValidationException("Số tầng không được để trống.");
+            if (roomStr.isEmpty()) throw new ValidationException("Số phòng mỗi tầng không được để trống.");
+
+            int floorCount, roomsPerFloor;
+            try {
+                floorCount = Integer.parseInt(floorStr);
+                if (floorCount < 1 || floorCount > 99)
+                    throw new ValidationException("Số tầng phải từ 1 đến 99.");
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Số tầng không hợp lệ.");
+            }
+            try {
+                roomsPerFloor = Integer.parseInt(roomStr);
+                if (roomsPerFloor < 1 || roomsPerFloor > 99)
+                    throw new ValidationException("Số phòng mỗi tầng phải từ 1 đến 99.");
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Số phòng mỗi tầng không hợp lệ.");
+            }
+
+            if (!existing.getCode().equalsIgnoreCase(code) && facilityDAO.countByCode(code, id) > 0) {
+                throw new ValidationException("Mã cơ sở '" + code + "' đã tồn tại.");
+            }
+
+            existing.setCode(code);
+            existing.setFloorCount(floorCount);
+            existing.setRoomsPerFloor(roomsPerFloor);
+        }
 
         facilityDAO.update(existing);
 
