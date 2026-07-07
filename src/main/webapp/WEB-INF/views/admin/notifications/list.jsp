@@ -70,7 +70,7 @@
                                 <c:forEach var="notif" items="${page.items}">
                                     <tr data-href="${ctx}/admin/notifications/${notif.id}">
                                         <td><a href="${ctx}/admin/notifications/${notif.id}"><c:out value="${notif.code}"/></a></td>
-                                        <td style="max-width:300px"><c:out value="${notif.title}"/></td>
+                                        <td style="max-width:280px;white-space:normal;word-break:break-word"><c:out value="${notif.title}"/></td>
                                         <td class="d-none d-md-table-cell"><c:out value="${notif.createdByName}"/></td>
                                         <td class="d-none d-md-table-cell">
                                             <c:choose>

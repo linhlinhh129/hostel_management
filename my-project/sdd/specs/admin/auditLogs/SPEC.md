@@ -106,29 +106,90 @@ WHILE người dùng chưa đăng nhập
 THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 ---
 
-## 4. Giao tiếp Dữ liệu (SSR)
+## 4. Servlet Contract
 
-Tính năng này được triển khai theo kiến trúc Server-Side Rendering (SSR) sử dụng Servlet và JSP.
+### 4.1 Servlet Entry Point
 
-### Request Lọc dữ liệu
+| Thuộc tính | Giá trị |
+|---|---|
+| **Servlet** | `AdminAuditLogServlet` |
+| **URL Pattern** | `GET /admin/audit-logs` — danh sách |
+| **URL Pattern** | `GET /admin/audit-logs/{id}` — chi tiết |
+| **Forward đến (list)** | `/WEB-INF/views/admin/audit-logs/list.jsp` |
+| **Forward đến (detail)** | `/WEB-INF/views/admin/audit-logs/detail.jsp` |
+| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
-**HTTP Method:** GET
-**URL:** `/admin/audit-logs`
+---
 
-**Query Parameters:**
-* `actor` (string, optional): Tên người thực hiện (khớp một phần).
-* `role` (string, optional): Vai trò người thực hiện (VD: MANAGER, OPERATOR).
-* `entityType` (string, optional): Phân loại chức năng/đối tượng (facilities, rooms, users...).
-* `action` (string, optional): Loại hành động (CREATE, UPDATE, DELETE...).
-* `dateFrom` (string, optional): Từ ngày (YYYY-MM-DD).
-* `dateTo` (string, optional): Đến ngày (YYYY-MM-DD).
-* `page` (int, optional): Trang hiện tại (mặc định 1).
+### 4.2 Query Parameters (GET /admin/audit-logs)
 
-### Phản hồi
+| Tham số | Kiểu | Bắt buộc | Mô tả |
+|---|---|---|---|
+| `actor` | `String` | Không | Tên người thực hiện — khớp một phần (`LIKE %actor%`) |
+| `role` | `String` | Không | Vai trò người thực hiện (`MANAGER`, `OPERATOR`). Mặc định lọc `IN ('MANAGER','OPERATOR')` nếu bỏ trống |
+| `entityType` | `String` | Không | Loại đối tượng (`facilities`, `rooms`, `users`, `notifications`, `invoices`, `payments`) |
+| `action` | `String` | Không | Loại hành động (`CREATE`, `UPDATE`, `DELETE`, `ACTIVATE`...) |
+| `dateFrom` | `String` | Không | Từ ngày, định dạng `YYYY-MM-DD` |
+| `dateTo` | `String` | Không | Đến ngày, định dạng `YYYY-MM-DD` |
+| `page` | `int` | Không | Trang hiện tại, mặc định `1` |
 
-*   **Thành công (200):** Forward dữ liệu danh sách `List<AuditLog>` (kèm thông tin phân trang) xuống view `/WEB-INF/views/admin/audit-logs/list.jsp` để render HTML.
-*   **Chi tiết (200):** Khi truy cập `/admin/audit-logs/{id}`, hệ thống query chi tiết (bao gồm việc parse `oldValue`, `newValue`) và forward xuống `/WEB-INF/views/admin/audit-logs/detail.jsp`.
-*   **Lỗi 403/401:** Quản lý tập trung qua Filter/Interceptor, redirect về trang đăng nhập hoặc hiển thị lỗi không có quyền truy cập.
+---
+
+### 4.3 Request Attributes — Danh sách (list.jsp)
+
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `auditLogs` | `List<AuditLog>` | `AuditLogDAO.findAll(actor, role, entityType, action, dateFrom, dateTo, page, 10)` | Danh sách nhật ký trang hiện tại |
+| `totalCount` | `int` | `AuditLogDAO.count(actor, role, entityType, action, dateFrom, dateTo)` | Tổng số bản ghi khớp filter |
+| `currentPage` | `int` | Parse từ query param `page` | Trang hiện tại |
+| `hasNextPage` | `boolean` | `currentPage * PAGE_SIZE < totalCount` | Có trang kế tiếp không |
+| `filterActor` | `String` | Query param `actor` | Giữ lại giá trị filter trên form |
+| `filterRole` | `String` | Query param `role` | Giữ lại giá trị filter trên form |
+| `filterEntityType` | `String` | Query param `entityType` | Giữ lại giá trị filter trên form |
+| `filterAction` | `String` | Query param `action` | Giữ lại giá trị filter trên form |
+| `filterDateFrom` | `String` | Query param `dateFrom` | Giữ lại giá trị filter trên form |
+| `filterDateTo` | `String` | Query param `dateTo` | Giữ lại giá trị filter trên form |
+
+**Hằng số:** `PAGE_SIZE = 10`
+
+---
+
+### 4.4 Request Attributes — Chi tiết (detail.jsp)
+
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `auditLog` | `AuditLog` | `AuditLogDAO.findById(id)` | Bản ghi nhật ký đầy đủ, kèm `entityName` được lookup |
+
+---
+
+### 4.5 AuditLog Model
+
+| Field | Type | Mô tả |
+|---|---|---|
+| `id` | `int` | ID bản ghi (`audit_log_id`) |
+| `entityType` | `String` | Loại đối tượng (`facilities`, `rooms`, `users`...) |
+| `entityId` | `Integer` | ID đối tượng bị tác động |
+| `entityName` | `String` | Tên hiển thị của đối tượng (lookup batch, nullable) |
+| `action` | `String` | Hành động (`CREATE`, `UPDATE`, `DELETE`...) |
+| `oldValue` | `String` | Giá trị trước thay đổi (null với CREATE) |
+| `newValue` | `String` | Giá trị sau thay đổi (null với DELETE) |
+| `ipAddress` | `String` | Địa chỉ IP thực hiện |
+| `comment` | `String` | Ghi chú bổ sung (nullable) |
+| `createdBy` | `Integer` | `user_id` người thực hiện |
+| `createdByName` | `String` | `full_name` người thực hiện (từ JOIN `dbo.users`) |
+| `createdAt` | `LocalDateTime` | Thời gian thực hiện |
+
+---
+
+### 4.6 Xử lý lỗi
+
+| Tình huống | Hành vi |
+|---|---|
+| Chưa đăng nhập | Redirect về `/login` (xử lý bởi `BaseServlet`) |
+| Role không phải ADMIN | HTTP 403 Forbidden |
+| `{id}` không tồn tại | `NotFoundException` → HTTP 404 |
+| Path không hợp lệ | HTTP 404 |
+| DAO lỗi (exception) | Log `ERROR`, forward về `list.jsp` với thông báo lỗi |
 ---
 
 ## 5. Technical Constraints

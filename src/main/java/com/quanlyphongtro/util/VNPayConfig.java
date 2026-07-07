@@ -5,16 +5,15 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import java.util.ResourceBundle;
 
 public class VNPayConfig {
-    private static final ResourceBundle config = ResourceBundle.getBundle("vnpay");
+    private static final com.quanlyphongtro.dao.SystemConfigDAO configDAO = new com.quanlyphongtro.dao.SystemConfigDAO();
 
-    public static final String vnp_PayUrl    = config.getString("vnpay.payUrl");
-    public static final String vnp_ReturnUrl = config.getString("vnpay.returnUrl");
-    public static final String vnp_TmnCode   = config.getString("vnpay.tmnCode");
-    public static final String secretKey     = config.getString("vnpay.secretKey");
-    public static final String vnp_ApiUrl    = config.getString("vnpay.apiUrl");
+    public static String getVnp_PayUrl() { return configDAO.getConfigValue("vnpay.payUrl"); }
+    public static String getVnp_ReturnUrl() { return configDAO.getConfigValue("vnpay.returnUrl"); }
+    public static String getVnp_TmnCode() { return configDAO.getConfigValue("vnpay.tmnCode"); }
+    public static String getSecretKey() { return configDAO.getConfigValue("vnpay.secretKey"); }
+    public static String getVnp_ApiUrl() { return configDAO.getConfigValue("vnpay.apiUrl"); }
 
     public static String hmacSHA512(final String key, final String data) {
         try {

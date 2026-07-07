@@ -50,9 +50,8 @@ Dashboard là màn hình trung tâm.
 Hiển thị:
 - Tổng doanh thu tháng
 - Tổng số cơ sở
-- Tổng số nhân sự
 - Tổng số thông báo
-- Tổng số Audit Log hôm nay
+- Tổng số nhật ký hôm nay
 
 ---
 
@@ -71,7 +70,7 @@ Hiển thị:
 
 ### Hoạt động gần đây
 
-Hiển thị 10 hoạt động mới nhất:
+Hiển thị 5 hoạt động mới nhất:
 
 - Thời gian
 - Người thực hiện

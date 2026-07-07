@@ -367,6 +367,25 @@ END
 GO
 
 -- ============================================================
+-- 12. SYSTEM CONFIG TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.system_config', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.system_config (
+        config_key      NVARCHAR(100)   NOT NULL,
+        config_value    NVARCHAR(500)   NOT NULL,
+        updated_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
+        updated_by      INT             NULL,
+
+        CONSTRAINT PK_system_config
+            PRIMARY KEY (config_key),
+        CONSTRAINT FK_system_config_users
+            FOREIGN KEY (updated_by) REFERENCES dbo.users(user_id)
+    );
+END
+GO
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 SET ANSI_NULLS ON;
