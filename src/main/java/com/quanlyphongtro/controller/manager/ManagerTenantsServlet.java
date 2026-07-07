@@ -42,7 +42,7 @@ public class ManagerTenantsServlet extends BaseServlet {
 
         if (servletPath.startsWith("/manager/dependents")) {
             if (pathInfo == null || "/".equals(pathInfo)) {
-                handleDependentList(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants");
             } else {
                 String[] parts = pathInfo.split("/");
                 if (parts.length == 2) {
@@ -439,23 +439,50 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
         
-        // Query tenantId first to redirect back
+        // Query tenantId and verify that this dependent belongs to a tenant managed by this manager
         int tenantId = 0;
-        String findTenantSql = "SELECT tenant_id FROM dbo.dependents WHERE dependent_id = ?";
+        String tenantStatus = "";
+        String verifySql = 
+            "SELECT d.tenant_id, u.status AS tenant_status FROM dbo.dependents d " +
+            "JOIN dbo.users u ON d.tenant_id = u.user_id " +
+            "WHERE d.dependent_id = ? AND d.deleted_at IS NULL " +
+            "AND ( " +
+            "    EXISTS ( " +
+            "        SELECT 1 FROM dbo.rooms r " +
+            "        JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+            "        WHERE r.tenant_id = u.user_id AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL " +
+            "    ) " +
+            "    OR EXISTS ( " +
+            "        SELECT 1 FROM dbo.contracts c " +
+            "        JOIN dbo.rooms cr ON c.room_id = cr.room_id " +
+            "        JOIN dbo.facilities f ON cr.facility_id = f.facility_id " +
+            "        WHERE c.tenant_id = u.user_id AND f.manager_id = ? AND c.deleted_at IS NULL AND cr.deleted_at IS NULL AND f.deleted_at IS NULL " +
+            "    ) " +
+            ")";
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(findTenantSql)) {
+             PreparedStatement ps = conn.prepareStatement(verifySql)) {
             ps.setInt(1, dependentId);
+            ps.setInt(2, currentUser.getId());
+            ps.setInt(3, currentUser.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     tenantId = rs.getInt("tenant_id");
+                    tenantStatus = rs.getString("tenant_status");
                 }
             }
         } catch (Exception e) {
-            logger.error("Failed to find tenant for dependent deletion", e);
+            logger.error("Failed to verify dependent ownership for removal", e);
         }
 
         if (tenantId == 0) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        if (!"ACTIVE".equals(tenantStatus)) {
+            setFlashMessage(req, "danger", "Hợp đồng thuê đã kết thúc. Không thể xóa người phụ thuộc.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
             return;
         }
 
@@ -537,65 +564,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
     }
 
-    private void handleDependentList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UserSessionDTO currentUser = getCurrentUser(req);
-        if (currentUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
-            return;
-        }
 
-        String keyword = req.getParameter("keyword");
-        List<Map<String, Object>> dependents = new ArrayList<>();
-
-        StringBuilder query = new StringBuilder(
-            "SELECT d.*, u.full_name AS tenant_name, u.user_id AS tenant_id, u.username AS tenant_code " +
-            "FROM dbo.dependents d " +
-            "JOIN dbo.users u ON d.tenant_id = u.user_id " +
-            "JOIN dbo.rooms r ON u.user_id = r.tenant_id " +
-            "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-            "WHERE f.manager_id = ? AND d.deleted_at IS NULL AND u.deleted_at IS NULL"
-        );
-        List<Object> params = new ArrayList<>();
-        params.add(currentUser.getId());
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            String likeParam = "%" + keyword.trim() + "%";
-            query.append(" AND (d.full_name LIKE ? OR d.relationship LIKE ? OR u.full_name LIKE ?)");
-            params.add(likeParam);
-            params.add(likeParam);
-            params.add(likeParam);
-        }
-        query.append(" ORDER BY d.dependent_id DESC");
-
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> dep = new HashMap<>();
-                    dep.put("id", rs.getInt("dependent_id"));
-                    dep.put("fullName", rs.getString("full_name"));
-                    dep.put("relationship", rs.getString("relationship"));
-                    dep.put("phone", rs.getString("phone"));
-                    dep.put("gender", rs.getString("gender"));
-                    Date dob = rs.getDate("dob");
-                    dep.put("dob", dob != null ? dob.toString() : null);
-                    dep.put("tenantId", rs.getInt("tenant_id"));
-                    dep.put("tenantName", rs.getString("tenant_name"));
-                    dep.put("tenantCode", rs.getString("tenant_code"));
-                    dependents.add(dep);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Failed to query dependents list", e);
-        }
-
-        req.setAttribute("dependents", dependents);
-        req.setAttribute("keyword", keyword);
-        req.getRequestDispatcher("/WEB-INF/views/manager/dependents/list.jsp").forward(req, resp);
-    }
 
     private void handleDependentDetail(int dependentId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
@@ -607,17 +576,29 @@ public class ManagerTenantsServlet extends BaseServlet {
         Map<String, Object> dependent = null;
 
         String query = 
-            "SELECT d.*, u.full_name AS tenant_name, u.user_id AS tenant_id, u.username AS tenant_code " +
+            "SELECT d.*, u.full_name AS tenant_name, u.user_id AS tenant_id, u.username AS tenant_code, u.status AS tenant_status " +
             "FROM dbo.dependents d " +
             "JOIN dbo.users u ON d.tenant_id = u.user_id " +
-            "JOIN dbo.rooms r ON u.user_id = r.tenant_id " +
-            "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-            "WHERE d.dependent_id = ? AND f.manager_id = ? AND d.deleted_at IS NULL AND u.deleted_at IS NULL";
+            "WHERE d.dependent_id = ? AND d.deleted_at IS NULL AND u.deleted_at IS NULL " +
+            "AND ( " +
+            "    EXISTS ( " +
+            "        SELECT 1 FROM dbo.rooms r " +
+            "        JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+            "        WHERE r.tenant_id = u.user_id AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL " +
+            "    ) " +
+            "    OR EXISTS ( " +
+            "        SELECT 1 FROM dbo.contracts c " +
+            "        JOIN dbo.rooms cr ON c.room_id = cr.room_id " +
+            "        JOIN dbo.facilities f ON cr.facility_id = f.facility_id " +
+            "        WHERE c.tenant_id = u.user_id AND f.manager_id = ? AND c.deleted_at IS NULL AND cr.deleted_at IS NULL AND f.deleted_at IS NULL " +
+            "    ) " +
+            ")";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, dependentId);
             ps.setInt(2, currentUser.getId());
+            ps.setInt(3, currentUser.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     dependent = new HashMap<>();
@@ -631,6 +612,7 @@ public class ManagerTenantsServlet extends BaseServlet {
                     dependent.put("tenantId", rs.getInt("tenant_id"));
                     dependent.put("tenantName", rs.getString("tenant_name"));
                     dependent.put("tenantCode", rs.getString("tenant_code"));
+                    dependent.put("tenantStatus", rs.getString("tenant_status"));
                     dependent.put("identityNumber", rs.getString("identity_number"));
                     dependent.put("permanentAddress", rs.getString("permanent_address"));
                 }
@@ -700,19 +682,34 @@ public class ManagerTenantsServlet extends BaseServlet {
 
         // Verify that this dependent belongs to a tenant managed by this manager
         String verifySql = 
-            "SELECT d.tenant_id FROM dbo.dependents d " +
-            "JOIN dbo.rooms r ON d.tenant_id = r.tenant_id " +
-            "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-            "WHERE d.dependent_id = ? AND f.manager_id = ? AND d.deleted_at IS NULL";
+            "SELECT d.tenant_id, u.status AS tenant_status FROM dbo.dependents d " +
+            "JOIN dbo.users u ON d.tenant_id = u.user_id " +
+            "WHERE d.dependent_id = ? AND d.deleted_at IS NULL " +
+            "AND ( " +
+            "    EXISTS ( " +
+            "        SELECT 1 FROM dbo.rooms r " +
+            "        JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+            "        WHERE r.tenant_id = u.user_id AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL " +
+            "    ) " +
+            "    OR EXISTS ( " +
+            "        SELECT 1 FROM dbo.contracts c " +
+            "        JOIN dbo.rooms cr ON c.room_id = cr.room_id " +
+            "        JOIN dbo.facilities f ON cr.facility_id = f.facility_id " +
+            "        WHERE c.tenant_id = u.user_id AND f.manager_id = ? AND c.deleted_at IS NULL AND cr.deleted_at IS NULL AND f.deleted_at IS NULL " +
+            "    ) " +
+            ")";
 
         int tenantId = 0;
+        String tenantStatus = "";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(verifySql)) {
             ps.setInt(1, dependentId);
             ps.setInt(2, currentUser.getId());
+            ps.setInt(3, currentUser.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     tenantId = rs.getInt("tenant_id");
+                    tenantStatus = rs.getString("tenant_status");
                 }
             }
         } catch (Exception e) {
@@ -721,6 +718,16 @@ public class ManagerTenantsServlet extends BaseServlet {
 
         if (tenantId == 0) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        if (!"ACTIVE".equals(tenantStatus)) {
+            setFlashMessage(req, "danger", "Hợp đồng thuê đã kết thúc. Không thể chỉnh sửa thông tin người phụ thuộc.");
+            if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/manager/dependents/" + dependentId);
+            }
             return;
         }
 
