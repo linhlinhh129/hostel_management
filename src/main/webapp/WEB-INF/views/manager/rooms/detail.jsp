@@ -18,19 +18,6 @@
       <%-- Breadcrumb + Header --%>
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
-          <%-- Breadcrumb --%>
-          <div style="font-size:0.8125rem;color:var(--hms-text-muted);margin-bottom:6px">
-            <a href="${ctx}/manager/rooms?showGrid=true" style="color:var(--hms-text-muted);text-decoration:none">
-              Căn hộ / Phòng
-            </a>
-            <span style="margin:0 6px">›</span>
-            <a href="${ctx}/manager/facilities/${room.facilityId}/rooms"
-               style="color:var(--hms-text-muted);text-decoration:none">
-              <c:out value="${room.facilityName}"/>
-            </a>
-            <span style="margin:0 6px">›</span>
-            <strong style="color:var(--hms-ink)"><c:out value="${room.code}"/></strong>
-          </div>
           <h1>Phòng <c:out value="${room.code}"/></h1>
           <div class="d-flex align-items-center gap-2 mt-1">
             <%-- Trạng thái badge --%>
@@ -86,6 +73,17 @@
                     <c:choose>
                       <c:when test="${not empty room.area}">
                         <strong><fmt:formatNumber value="${room.area}" maxFractionDigits="1"/></strong> m²
+                      </c:when>
+                      <c:otherwise><em class="text-muted">Chưa cập nhật</em></c:otherwise>
+                    </c:choose>
+                  </td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--hms-border)">
+                  <td style="padding:10px 16px;color:var(--hms-text-muted)">Giá phòng</td>
+                  <td style="padding:10px 16px">
+                    <c:choose>
+                      <c:when test="${not empty room.roomFee}">
+                        <strong><fmt:formatNumber value="${room.roomFee}" pattern="#,###"/></strong> VNĐ
                       </c:when>
                       <c:otherwise><em class="text-muted">Chưa cập nhật</em></c:otherwise>
                     </c:choose>
@@ -199,11 +197,22 @@
                        style="padding:6px 14px;font-size:0.8125rem">
                       Thông tin chi tiết
                     </a>
-                    <a href="${ctx}/manager/contracts?tenantId=${room.tenantId}"
-                       class="btn-mintlify-secondary text-decoration-none"
-                       style="padding:6px 14px;font-size:0.8125rem">
-                      Xem hợp đồng
-                    </a>
+                    <c:choose>
+                      <c:when test="${not empty activeContractId}">
+                        <a href="${ctx}/manager/contracts/detail?id=${activeContractId}"
+                           class="btn-mintlify-secondary text-decoration-none"
+                           style="padding:6px 14px;font-size:0.8125rem">
+                          Xem hợp đồng
+                        </a>
+                      </c:when>
+                      <c:otherwise>
+                        <a href="${ctx}/manager/contracts?searchName=${room.tenantName}"
+                           class="btn-mintlify-secondary text-decoration-none"
+                           style="padding:6px 14px;font-size:0.8125rem">
+                          Xem hợp đồng
+                        </a>
+                      </c:otherwise>
+                    </c:choose>
                   </div>
                 </c:when>
 

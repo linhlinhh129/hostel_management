@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -312,11 +311,14 @@ public class ManagerRoomsServlet extends BaseServlet {
                     Timestamp uAt = rs.getTimestamp("updated_at");
                     room.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString() : "—");
                     room.put("updatedAt", uAt != null ? uAt.toLocalDateTime().toString() : "—");
+                    room.put("createdAtAsDate", cAt);
+                    room.put("updatedAtAsDate", uAt);
                     room.put("tenantId", rs.getInt("tenant_id"));
                     if (rs.wasNull()) {
                         room.put("tenantId", null);
                     }
-                    if (room.get("tenantId") == null && "OCCUPIED".equals(room.get("status"))) {
+                    // Load activeContractId cho mọi phòng OCCUPIED (dù có hay không có tenantId)
+                    if ("OCCUPIED".equals(room.get("status"))) {
                         String activeContractSql = "SELECT TOP 1 contract_id FROM dbo.contracts WHERE room_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY contract_id DESC";
                         try (PreparedStatement psContract = conn.prepareStatement(activeContractSql)) {
                             psContract.setInt(1, roomId);
@@ -343,6 +345,10 @@ public class ManagerRoomsServlet extends BaseServlet {
                     }
                     room.put("floor", floorStr);
                     room.put("roomNumber", numberStr);
+
+                    // roomFee
+                    java.math.BigDecimal roomFee = rs.getBigDecimal("room_fee");
+                    room.put("roomFee", roomFee);
                 }
             }
         } catch (Exception e) {
