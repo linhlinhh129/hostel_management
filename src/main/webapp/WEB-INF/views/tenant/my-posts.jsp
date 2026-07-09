@@ -15,11 +15,17 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Bài viết của tôi</h2>
-                <a href="${ctx}/tenant/post/create" class="btn btn-primary">
-                    <i class="bi bi-pencil-square me-2"></i> Đăng bài viết
-                </a>
+            <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="position:relative;z-index:1">
+                    <h1>Bài viết của tôi</h1>
+                    <p>Quản lý các bài viết cộng đồng bạn đã đăng</p>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1">
+                    <a href="${ctx}/tenant/post/create" class="btn-accent">
+                        <i class="bi bi-pencil-square"></i> Đăng bài viết
+                    </a>
+                </div>
             </div>
 
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">

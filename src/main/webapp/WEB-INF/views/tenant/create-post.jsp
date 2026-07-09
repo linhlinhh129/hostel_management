@@ -14,44 +14,106 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="d-flex align-items-center mb-4">
-                <a href="${ctx}/tenant/news-feed" class="btn btn-icon btn-light me-3 shadow-sm">
-                    <i class="bi bi-arrow-left"></i>
-                </a>
-                <h2 class="mb-0">Đăng bài viết mới</h2>
+            <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3"
+                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="position:relative;z-index:1">
+                    <h1>Đăng bài viết mới</h1>
+                    <p>Chia sẻ thông tin, kinh nghiệm hoặc đóng góp ý kiến với cộng đồng</p>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1">
+                    <a href="${ctx}/tenant/news-feed" class="btn-accent">
+                        Trở về bảng tin
+                    </a>
+                </div>
             </div>
 
-            <div class="card shadow-sm col-md-8 col-lg-6 mx-auto border-0">
-                <div class="card-body p-4">
+            <style>
+                .post-card {
+                    background: #fff;
+                    border-radius: 16px;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                    padding: 32px;
+                    margin: 0 auto;
+                    max-width: 850px;
+                    border: 1px solid #e5e5e5;
+                }
+                .form-control-custom {
+                    border-radius: 12px;
+                    border: 1px solid #e5e5e5;
+                    padding: 14px 16px;
+                    background-color: #fcfcfc;
+                    transition: all 0.2s ease;
+                    font-size: 1rem;
+                }
+                .form-control-custom:focus {
+                    border-color: #00d4a4;
+                    box-shadow: 0 0 0 3px rgba(0, 212, 164, 0.1);
+                    background-color: #fff;
+                    outline: none;
+                }
+                .btn-submit-custom {
+                    border-radius: 12px;
+                    background-color: #0a0a0a;
+                    color: #fff;
+                    padding: 14px 24px;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                    border: none;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .btn-submit-custom:hover {
+                    background-color: #1a1a1a;
+                    color: #fff;
+                    transform: translateY(-1px);
+                }
+                .upload-btn-outline {
+                    border-radius: 10px;
+                    border: 1px solid #e5e5e5;
+                    background: #fff;
+                    color: #0a0a0a;
+                    transition: all 0.2s ease;
+                    padding: 8px 16px;
+                }
+                .upload-btn-outline:hover {
+                    background: #f7f7f7;
+                    border-color: #d5d5d5;
+                    color: #0a0a0a;
+                }
+            </style>
+
+            <div class="post-card">
+                <div class="p-2">
                     <form action="${ctx}/tenant/post/create" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                        <div class="mb-3">
-                            <label for="title" class="form-label fw-bold">Tiêu đề <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-lg bg-light" id="title" name="title" required placeholder="Nhập tiêu đề bài viết..." maxlength="250">
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-bold" style="color: #0a0a0a;">Tiêu đề <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-custom w-100" id="title" name="title" required placeholder="Nhập tiêu đề bài viết..." maxlength="250">
                         </div>
-                        <div class="mb-3">
-                            <label for="content" class="form-label fw-bold">Nội dung <span class="text-danger">*</span></label>
-                            <textarea class="form-control bg-light" id="content" name="content" rows="6" required placeholder="Bạn muốn chia sẻ điều gì?"></textarea>
+                        <div class="mb-4">
+                            <label for="content" class="form-label fw-bold" style="color: #0a0a0a;">Nội dung <span class="text-danger">*</span></label>
+                            <textarea class="form-control form-control-custom w-100" id="content" name="content" rows="6" required placeholder="Bạn muốn chia sẻ điều gì?"></textarea>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Hình ảnh đính kèm</label>
+                            <label class="form-label fw-bold" style="color: #0a0a0a;">Hình ảnh đính kèm</label>
                             <div class="d-flex flex-wrap gap-2 mb-2">
                                 <!-- Chụp ảnh từ Camera (Mobile) -->
                                 <div class="position-relative">
-                                    <input type="file" id="cameraInput" name="images" accept="image/*" capture="environment" class="d-none">
-                                    <label for="cameraInput" class="btn btn-outline-primary fw-medium">
+                                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="d-none">
+                                    <label for="cameraInput" class="btn upload-btn-outline fw-medium mb-0">
                                         <i class="bi bi-phone me-1"></i> Camera điện thoại
                                     </label>
                                 </div>
                                 <!-- Chụp ảnh từ Webcam (PC) -->
-                                <button type="button" class="btn btn-outline-info fw-medium" id="btnOpenWebcam">
+                                <button type="button" class="btn upload-btn-outline fw-medium" id="btnOpenWebcam">
                                     <i class="bi bi-webcam me-1"></i> Webcam máy tính
                                 </button>
                                 <!-- Chọn từ thư viện -->
                                 <div class="position-relative">
                                     <input type="file" id="fileInput" name="images" accept="image/png, image/jpeg, image/webp" class="d-none">
-                                    <label for="fileInput" class="btn btn-outline-secondary fw-medium">
+                                    <label for="fileInput" class="btn upload-btn-outline fw-medium mb-0">
                                         <i class="bi bi-images me-1"></i> Tải ảnh lên
                                     </label>
                                 </div>
@@ -61,7 +123,7 @@
                         </div>
 
                         <div class="d-grid mt-5">
-                            <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            <button type="submit" class="btn-submit-custom shadow-sm w-100">
                                 <i class="bi bi-send-fill me-2"></i> Gửi bài viết
                             </button>
                         </div>
@@ -120,7 +182,11 @@
         }
     }
 
-    document.getElementById('cameraInput').addEventListener('change', handleFileSelect);
+    document.getElementById('cameraInput').addEventListener('change', function(event) {
+        var fileInput = document.getElementById('fileInput');
+        fileInput.files = event.target.files;
+        handleFileSelect(event);
+    });
     document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 
     // Webcam Logic

@@ -258,7 +258,7 @@ public class CommunityPostDAO extends BaseDAO {
      * Tạo bài viết mới. Cột image_url cho phép null.
      */
     public CommunityPost createPost(CommunityPost post) {
-        String sql = "INSERT INTO community_posts (title, content, image_url, author_id, status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO community_posts (title, content, image_url, author_id, status, reviewed_by) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, post.getTitle());
@@ -266,6 +266,11 @@ public class CommunityPostDAO extends BaseDAO {
             ps.setString(3, post.getImageUrl());
             ps.setInt(4, post.getAuthorId());
             ps.setString(5, post.getStatus() == null ? "PENDING" : post.getStatus());
+            if (post.getReviewedBy() != null) {
+                ps.setInt(6, post.getReviewedBy());
+            } else {
+                ps.setNull(6, java.sql.Types.INTEGER);
+            }
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {

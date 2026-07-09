@@ -18,16 +18,15 @@ import java.util.Collection;
 import java.util.UUID;
 
 @WebServlet(name = "TenantCreatePostServlet", urlPatterns = "/tenant/post/create")
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
-        maxFileSize = 1024 * 1024 * 10,       // 10MB
-        maxRequestSize = 1024 * 1024 * 50     // 50MB
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50 // 50MB
 )
 public class TenantCreatePostServlet extends BaseServlet {
 
     private final CommunityPostService postService = new CommunityPostServiceImpl();
 
-    private static final String[] ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/jpg"};
+    private static final String[] ALLOWED_TYPES = { "image/jpeg", "image/png", "image/webp", "image/jpg" };
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -66,7 +65,7 @@ public class TenantCreatePostServlet extends BaseServlet {
                     String originalFileName = getSubmittedFileName(part);
                     String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
                     part.write(uploadPath + File.separator + fileName);
-                    imageUrl = "uploads/" + fileName;
+                    imageUrl = "/uploads/" + fileName;
                     break; // Chỉ lấy ảnh đầu tiên (image_url là NVARCHAR(500), không phải MAX)
                 }
             }
@@ -86,9 +85,11 @@ public class TenantCreatePostServlet extends BaseServlet {
     }
 
     private boolean isAllowedType(String contentType) {
-        if (contentType == null) return false;
+        if (contentType == null)
+            return false;
         for (String allowed : ALLOWED_TYPES) {
-            if (allowed.equalsIgnoreCase(contentType)) return true;
+            if (allowed.equalsIgnoreCase(contentType))
+                return true;
         }
         return false;
     }

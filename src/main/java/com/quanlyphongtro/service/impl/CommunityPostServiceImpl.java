@@ -39,7 +39,8 @@ public class CommunityPostServiceImpl implements CommunityPostService {
     }
 
     @Override
-    public int createPost(CommunityPostCreateDTO dto, Part imagePart, int authorId, String uploadPath, String userRole) throws Exception {
+    public int createPost(CommunityPostCreateDTO dto, Part imagePart, int authorId, String uploadPath, String userRole)
+            throws Exception {
         if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
             throw new ValidationException("Tiêu đề không được để trống.");
         }
@@ -56,11 +57,13 @@ public class CommunityPostServiceImpl implements CommunityPostService {
                 throw new ValidationException("Dung lượng ảnh tối đa là 5MB.");
             }
             String contentType = imagePart.getContentType();
-            if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png") && !contentType.equals("image/jpg"))) {
+            if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png")
+                    && !contentType.equals("image/jpg"))) {
                 throw new ValidationException("Định dạng ảnh không hợp lệ (chỉ hỗ trợ JPG/JPEG/PNG).");
             }
             File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) uploadDir.mkdirs();
+            if (!uploadDir.exists())
+                uploadDir.mkdirs();
 
             String fileName = UUID.randomUUID().toString() + "_" + getSubmittedFileName(imagePart);
             Path filePath = Paths.get(uploadPath, fileName);
@@ -73,7 +76,7 @@ public class CommunityPostServiceImpl implements CommunityPostService {
         post.setContent(dto.getContent());
         post.setImageUrl(imageUrl);
         post.setAuthorId(authorId);
-        
+
         post.setStatus("PENDING");
         if ("TENANT".equals(userRole)) {
             Integer managerId = communityPostDAO.getManagerByTenant(authorId);
@@ -106,6 +109,8 @@ public class CommunityPostServiceImpl implements CommunityPostService {
         post.setContent(content.trim());
         post.setImageUrl(imageUrl != null && !imageUrl.isEmpty() ? imageUrl : null);
         post.setStatus("PENDING");
+        Integer managerId = communityPostDAO.getManagerByTenant(tenantId);
+        post.setReviewedBy(managerId);
 
         return postDAO.createPost(post);
     }
