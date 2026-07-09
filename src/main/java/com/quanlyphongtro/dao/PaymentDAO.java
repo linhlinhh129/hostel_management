@@ -58,7 +58,7 @@ public class PaymentDAO extends BaseDAO {
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+            "LEFT JOIN users u ON p.created_by = u.user_id " +
             "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -156,7 +156,7 @@ public class PaymentDAO extends BaseDAO {
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+            "LEFT JOIN users u ON p.created_by = u.user_id " +
             "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -231,7 +231,7 @@ public class PaymentDAO extends BaseDAO {
                      "FROM payments p " +
                      "INNER JOIN rooms r ON p.room_id = r.room_id " +
                      "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+                     "LEFT JOIN users u ON p.created_by = u.user_id " +
                      "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
                      "WHERE p.payment_id = ? AND p.deleted_at IS NULL AND f.manager_id = ?";
         

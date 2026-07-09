@@ -34,7 +34,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-@WebServlet(name = "TenantPaymentReturnServlet", urlPatterns = {"/tenant/invoices/vnpay-return", "/tenant/payment/return"})
+@WebServlet(name = "TenantPaymentReturnServlet", urlPatterns = { "/tenant/invoices/vnpay-return",
+        "/tenant/payment/return" })
 public class TenantPaymentReturnServlet extends BaseServlet {
 
     @Override
@@ -43,7 +44,8 @@ public class TenantPaymentReturnServlet extends BaseServlet {
             Map<String, String> fields = new HashMap<>();
             for (Enumeration<String> params = req.getParameterNames(); params.hasMoreElements();) {
                 String fieldName = URLEncoder.encode(params.nextElement(), StandardCharsets.US_ASCII.toString());
-                String fieldValue = URLEncoder.encode(req.getParameter(fieldName), StandardCharsets.US_ASCII.toString());
+                String fieldValue = URLEncoder.encode(req.getParameter(fieldName),
+                        StandardCharsets.US_ASCII.toString());
                 if ((fieldValue != null) && (fieldValue.length() > 0)) {
                     fields.put(fieldName, fieldValue);
                 }
@@ -56,7 +58,7 @@ public class TenantPaymentReturnServlet extends BaseServlet {
             if (fields.containsKey("vnp_SecureHash")) {
                 fields.remove("vnp_SecureHash");
             }
-            
+
             // Hash validation
             List<String> fieldNames = new ArrayList<>(fields.keySet());
             Collections.sort(fieldNames);
@@ -74,7 +76,7 @@ public class TenantPaymentReturnServlet extends BaseServlet {
                     }
                 }
             }
-            
+
             String signValue = VNPayConfig.hmacSHA512(VNPayConfig.getSecretKey(), hashData.toString());
             boolean isValid = signValue.equals(vnp_SecureHash);
 
@@ -88,7 +90,9 @@ public class TenantPaymentReturnServlet extends BaseServlet {
                 int invoiceId = Integer.parseInt(invoiceIdStr);
 
                 String vnp_TransactionNo = req.getParameter("vnp_TransactionNo");
-                String paymentCode = (vnp_TransactionNo != null && !vnp_TransactionNo.trim().isEmpty()) ? vnp_TransactionNo.trim() : txnRef;
+                String paymentCode = (vnp_TransactionNo != null && !vnp_TransactionNo.trim().isEmpty())
+                        ? vnp_TransactionNo.trim()
+                        : txnRef;
 
                 if ("00".equals(responseCode)) {
                     // KÍCH HOẠT JDBC TRANSACTION CHỐT SỔ ĐỒNG BỘ
@@ -115,20 +119,22 @@ public class TenantPaymentReturnServlet extends BaseServlet {
     private boolean executePaymentTransaction(int invoiceId, BigDecimal amount, String txnRef) {
         // We must query room_id from invoice to insert into payments correctly
         String getRoomSql = "SELECT room_id FROM invoices WHERE invoice_id = ?";
-        // Correct query based on schema.sql: payments(code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_at, updated_at)
+        // Correct query based on schema.sql: payments(code, invoice_id, room_id,
+        // status, payment_date, payment_method, payment_amount, created_at, updated_at)
         String insertPayment = "INSERT INTO payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_at, updated_at) "
-                             + "VALUES (?, ?, ?, 'PENDING', GETDATE(), 'VNPAY', ?, GETDATE(), GETDATE())";
-        
+                + "VALUES (?, ?, ?, 'PENDING', GETDATE(), 'VNPAY', ?, GETDATE(), GETDATE())";
+
         Connection conn = null;
         try {
             conn = DatabaseUtil.getConnection();
-            conn.setAutoCommit(false); 
+            conn.setAutoCommit(false);
 
             int roomId = -1;
             try (PreparedStatement psGet = conn.prepareStatement(getRoomSql)) {
                 psGet.setInt(1, invoiceId);
                 try (ResultSet rs = psGet.executeQuery()) {
-                    if (rs.next()) roomId = rs.getInt("room_id");
+                    if (rs.next())
+                        roomId = rs.getInt("room_id");
                 }
             }
 
@@ -148,17 +154,24 @@ public class TenantPaymentReturnServlet extends BaseServlet {
 
             // Do NOT update invoice status here. It must be approved by the manager.
 
-            conn.commit(); 
+            conn.commit();
             return true;
         } catch (Exception e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
             e.printStackTrace();
             return false;
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (Exception e) {}
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                }
             }
         }
     }
