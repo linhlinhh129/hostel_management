@@ -166,6 +166,22 @@
                         </svg>
                         Công nợ
                     </a>
+                    <div class="sidebar-section">Bảng tin</div>
+                    <a href="${ctx}/manager/articles" class="sidebar-link${menu == 'articles' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        Bài viết
+                    </a>
+                    <a href="${ctx}/manager/news-feed" class="sidebar-link${menu == 'news-feed' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 11a9 9 0 0 1 9 9" />
+                            <path d="M4 4a16 16 0 0 1 16 16" />
+                            <circle cx="5" cy="19" r="1" />
+                        </svg>
+                        Bảng tin
+                    </a>
                 </c:if>
 
                 <c:if test="${role == 'TENANT'}">
