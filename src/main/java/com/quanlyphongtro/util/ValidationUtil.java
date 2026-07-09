@@ -28,4 +28,30 @@ public class ValidationUtil {
         }
         return VN_IDENTITY_PATTERN.matcher(identityNumber.trim()).matches();
     }
+
+    /**
+     * Kiểm tra định dạng đuôi file (SEC-07).
+     * Chỉ chấp nhận: PDF, JPG, JPEG, PNG.
+     */
+    public static boolean isValidFileType(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return false;
+        }
+        String lower = fileName.trim().toLowerCase();
+        return lower.endsWith(".pdf") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png");
+    }
+
+    /**
+     * Kiểm tra kiểu MIME của file (SEC-07).
+     */
+    public static boolean isValidMimeType(String contentType) {
+        if (contentType == null || contentType.trim().isEmpty()) {
+            return false;
+        }
+        String lower = contentType.trim().toLowerCase();
+        return "application/pdf".equals(lower) || 
+               "image/jpeg".equals(lower) || 
+               "image/jpg".equals(lower) || 
+               "image/png".equals(lower);
+    }
 }

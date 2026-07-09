@@ -26,10 +26,12 @@
                                                 <c:out value="${selectedMonths}" /> tháng
                                             </strong> gần nhất</p>
                                     </div>
-                                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:relative;z-index:1">
+                                    <div
+                                        style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:relative;z-index:1">
                                         <form method="get" action="${ctx}/admin/revenue/by-period"
                                             style="display:flex;gap:8px;align-items:center;margin:0;padding:0">
-                                            <select class="form-select" name="months" style="width:120px;padding:7px 10px;font-size:0.875rem">
+                                            <select class="form-select" name="months"
+                                                style="width:120px;padding:7px 10px;font-size:0.875rem">
                                                 <option value="3" ${selectedMonths==3 ? 'selected' : '' }>3 tháng
                                                 </option>
                                                 <option value="6" ${selectedMonths==6 ? 'selected' : '' }>6 tháng
@@ -49,14 +51,32 @@
                                 </div>
                             </div>
                             <style>
-                                .row-highlight { background: var(--hms-accent-bg); }
+                                .row-highlight {
+                                    background: var(--hms-accent-bg);
+                                }
+
                                 @media (max-width: 768px) {
-                                    .period-tbl { font-size: 0.75rem; }
+                                    .period-tbl {
+                                        font-size: 0.75rem;
+                                    }
+
                                     .period-tbl th,
-                                    .period-tbl td { padding: 0.5rem 0.375rem; }
-                                    .period-tbl .amt-main { font-size: 0.8125rem !important; font-weight: 700 !important; }
-                                    .period-tbl .amt-sub  { font-size: 0.625rem !important; }
-                                    .period-tbl .col-month { font-size: 0.8125rem !important; }
+                                    .period-tbl td {
+                                        padding: 0.5rem 0.375rem;
+                                    }
+
+                                    .period-tbl .amt-main {
+                                        font-size: 0.8125rem !important;
+                                        font-weight: 700 !important;
+                                    }
+
+                                    .period-tbl .amt-sub {
+                                        font-size: 0.625rem !important;
+                                    }
+
+                                    .period-tbl .col-month {
+                                        font-size: 0.8125rem !important;
+                                    }
                                 }
                             </style>
 
@@ -80,36 +100,52 @@
                                                 <tbody>
                                                     <c:forEach var="p" items="${periodRevenues}" varStatus="st">
                                                         <tr class="${st.first ? 'row-highlight' : ''}">
-                                                            <td class="col-month" style="font-weight:700;font-size:0.9375rem;white-space:nowrap">
+                                                            <td class="col-month"
+                                                                style="font-weight:700;font-size:0.9375rem;white-space:nowrap">
                                                                 <c:out value="${p.facilityCode}" />
                                                                 <c:if test="${st.first}">
-                                                                    <span class="badge-hms badge-accent ms-1" style="font-size:0.5625rem">Mới</span>
+                                                                    <span class="badge-hms badge-accent ms-1"
+                                                                        style="font-size:0.5625rem">Mới</span>
                                                                 </c:if>
                                                             </td>
                                                             <td>
-                                                                <div class="amt-main" style="font-weight:800;font-size:1rem;white-space:nowrap">
-                                                                    <fmt:formatNumber value="${p.totalRevenue}" pattern="#,##0" /> đ
+                                                                <div class="amt-main"
+                                                                    style="font-weight:800;font-size:1rem;white-space:nowrap">
+                                                                    <fmt:formatNumber value="${p.totalRevenue}"
+                                                                        pattern="#,##0" /> đ
                                                                 </div>
-                                                                <div class="amt-sub" style="font-size:0.75rem;color:var(--hms-stone);margin-top:2px">
-                                                                    <span style="font-weight:600;color:var(--hms-success)">${p.paidCount}</span> HĐ
+                                                                <div class="amt-sub"
+                                                                    style="font-size:0.75rem;color:var(--hms-stone);margin-top:2px">
+                                                                    <span
+                                                                        style="font-weight:600;color:var(--hms-success)">${p.paidCount}</span>
+                                                                    HĐ
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <div class="amt-main" style="font-weight:600;color:var(--hms-warning);white-space:nowrap">
-                                                                    <fmt:formatNumber value="${p.totalOutstanding}" pattern="#,##0" /> đ
+                                                                <div class="amt-main"
+                                                                    style="font-weight:600;color:var(--hms-warning);white-space:nowrap">
+                                                                    <fmt:formatNumber value="${p.totalOutstanding}"
+                                                                        pattern="#,##0" /> đ
                                                                 </div>
-                                                                <c:set var="unpaidTotal" value="${p.unpaidCount + p.overdueCount}" />
-                                                                <div class="amt-sub" style="font-size:0.75rem;color:var(--hms-stone);margin-top:2px">
+                                                                <c:set var="unpaidTotal"
+                                                                    value="${p.unpaidCount + p.overdueCount}" />
+                                                                <div class="amt-sub"
+                                                                    style="font-size:0.75rem;color:var(--hms-stone);margin-top:2px">
                                                                     <c:choose>
                                                                         <c:when test="${unpaidTotal > 0}">
-                                                                            ${unpaidTotal} HĐ<c:if test="${p.overdueCount > 0}"> · <span style="color:var(--hms-danger);font-weight:600">${p.overdueCount} trễ</span></c:if>
+                                                                            ${unpaidTotal} HĐ<c:if
+                                                                                test="${p.overdueCount > 0}"> · <span
+                                                                                    style="color:var(--hms-danger);font-weight:600">${p.overdueCount}
+                                                                                    trễ</span></c:if>
                                                                         </c:when>
                                                                         <c:otherwise>0 HĐ</c:otherwise>
                                                                     </c:choose>
                                                                 </div>
                                                             </td>
-                                                            <td style="font-weight:700;color:var(--hms-accent-deep);white-space:nowrap">
-                                                                <fmt:formatNumber value="${p.totalBilledAmount}" pattern="#,##0" /> đ
+                                                            <td
+                                                                style="font-weight:700;color:var(--hms-accent-deep);white-space:nowrap">
+                                                                <fmt:formatNumber value="${p.totalBilledAmount}"
+                                                                    pattern="#,##0" /> đ
                                                             </td>
                                                         </tr>
                                                     </c:forEach>

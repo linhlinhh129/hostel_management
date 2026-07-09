@@ -308,6 +308,24 @@ BEGIN TRY
     VALUES (N'ROOM', @room_cg0101, N'CREATE_ROOM', NULL, N'CG0101', N'127.0.0.1', N'Tạo dữ liệu phòng CG0101', @admin_id);
 
 
+    -- ============================================================
+    -- 11. SYSTEM CONFIG
+    -- ============================================================
+    IF NOT EXISTS (SELECT 1 FROM dbo.system_config WHERE config_key = N'email.host')
+    BEGIN
+        INSERT INTO dbo.system_config (config_key, config_value) VALUES
+            (N'email.host',      N'smtp.gmail.com'),
+            (N'email.port',      N'587'),
+            (N'email.username',  N'a2k55ndu@gmail.com'),
+            (N'email.password',  N'khul ujup nmzr bcvu'),
+            (N'email.from',      N'a2k55ndu@gmail.com'),
+            (N'vnpay.payUrl',    N'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'),
+            (N'vnpay.returnUrl', N'http://localhost:8080/HostelManagement/tenant/invoices/vnpay-return'),
+            (N'vnpay.tmnCode',   N'9J47G09W'),
+            (N'vnpay.secretKey', N'97MPGGLK9UAIP8U69GGZNPNI0KUFVZAN'),
+            (N'vnpay.apiUrl',    N'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction');
+    END
+
     COMMIT TRANSACTION;
     PRINT N'Seed data inserted successfully.';
 END TRY
@@ -369,6 +387,7 @@ UNION ALL SELECT 'payments',    COUNT(*) FROM dbo.payments
 UNION ALL SELECT 'requests',    COUNT(*) FROM dbo.requests
 UNION ALL SELECT 'notifications', COUNT(*) FROM dbo.notifications
 UNION ALL SELECT 'audit_logs',  COUNT(*) FROM dbo.audit_logs
-UNION ALL SELECT 'contracts',  COUNT(*) FROM dbo.contracts;
+UNION ALL SELECT 'contracts',  COUNT(*) FROM dbo.contracts
+UNION ALL SELECT 'system_config', COUNT(*) FROM dbo.system_config;
 GO
 

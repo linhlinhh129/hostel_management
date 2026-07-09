@@ -50,9 +50,10 @@
                             Tiêu đề thông báo <span class="text-danger">*</span>
                         </label>
                         <input type="text" class="form-control" id="title" name="title"
-                               required maxlength="250"
+                               required maxlength="100"
                                placeholder="VD: Thông báo bảo trì thang máy..."
                                value="<c:out value='${dto.title}'/>">
+                        <div class="form-text">Tối đa 100 ký tự</div>
                     </div>
 
                     <!-- Nội dung -->
@@ -61,9 +62,9 @@
                             Nội dung <span class="text-danger">*</span>
                         </label>
                         <textarea class="form-control" id="content" name="content"
-                                  rows="7" required maxlength="5000"
+                                  rows="7" required maxlength="1000"
                                   placeholder="Nội dung thông báo chi tiết..."><c:out value="${dto.content}"/></textarea>
-                        <div class="form-text">Tối đa 5000 ký tự</div>
+                        <div class="form-text">Tối đa 1000 ký tự</div>
                     </div>
 
                     <div class="d-flex gap-2 mt-3">

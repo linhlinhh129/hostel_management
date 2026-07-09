@@ -102,78 +102,74 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi FORBIDDEN.
 
 ---
 
-## 4. API Contract
+## 4. Servlet Contract
 
-### 4.1 Lấy dữ liệu Dashboard
+### 4.1 Servlet Entry Point
 
-```http
-GET /api/v1/dashboard
-```
+| Thuộc tính | Giá trị |
+|---|---|
+| **Servlet** | `AdminDashboardServlet` |
+| **URL Pattern** | `GET /admin/dashboard` |
+| **Forward đến** | `/WEB-INF/views/admin/dashboard.jsp` |
+| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
-#### Response 200
+---
 
-```json
-{
-  "success": true,
-  "data": {
-    "kpi": {
-      "monthlyRevenue": 50000000,
-      "totalFacilities": 5,
-      "totalNotifications": 30,
-      "todayAuditLogs": 8
-    },
-    "facilityStats": {
-      "total": 5,
-      "active": 3
-    },
-    "employeeStats": {
-      "total": 12,
-      "managerCount": 3,
-      "operatorCount": 9
-    },
-    "recentActivities": [
-      {
-        "actorName": "Nguyễn Văn A",
-        "actionDescription": "Cập nhật cơ sở",
-        "timeLabel": "19/06/2026 09:30:00"
-      }
-    ],
-    "revenueByFacility": [
-      {
-        "facilityCode": "CG",
-        "facilityName": "Ký túc xá Cầu Giấy",
-        "totalRevenue": 0,
-        "unpaidCount": 0,
-        "overdueCount": 0
-      }
-    ]
-  }
-}
-```
+### 4.2 Request Attributes
 
-#### Response 401
+Servlet set các attribute sau trước khi forward sang JSP:
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `currentPeriodLabel` | `String` | `LocalDate.now()` | Kỳ hiện tại, định dạng `"MM/yyyy"` |
+| `monthlyRevenue` | `BigDecimal` | `RevenueDAO.getMonthlyRevenueTotal(period)` | Tổng doanh thu tháng (hóa đơn PAID) |
+| `totalFacilities` | `int` | `FacilityDAO.count("", "")` | Tổng số cơ sở (tất cả trạng thái) |
+| `activeFacilities` | `int` | `FacilityDAO.count("", "ACTIVE")` | Số cơ sở đang ACTIVE |
+| `totalPersonnel` | `int` | `PersonnelDAO.countAll()` | Tổng nhân sự (MANAGER + OPERATOR) |
+| `managerCount` | `int` | `PersonnelDAO.countByRole("MANAGER")` | Số nhân sự vai trò MANAGER |
+| `operatorCount` | `int` | `PersonnelDAO.countByRole("OPERATOR")` | Số nhân sự vai trò OPERATOR |
+| `totalNotifications` | `int` | `NotificationDAO.count("")` | Tổng thông báo `target_type = 'ALL'` |
+| `todayAuditLogs` | `int` | `AuditLogDAO.countToday()` | Số nhật ký trong ngày hôm nay |
+| `facilityRevenueStats` | `List<FacilityRevenueStatDTO>` | `RevenueDAO.getFacilityRevenues(period)` | Doanh thu theo từng cơ sở ACTIVE |
+| `recentActivities` | `List<RevenueActivityDTO>` | `AuditLogDAO.findRecent(5)` | Tối đa 5 hoạt động mới nhất |
 
-#### Response 403
+---
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
+### 4.3 FacilityRevenueStatDTO
+
+| Field | Type | Mô tả |
+|---|---|---|
+| `facilityId` | `int` | ID cơ sở |
+| `facilityCode` | `String` | Mã cơ sở (VD: `"CG"`) |
+| `facilityName` | `String` | Tên cơ sở |
+| `totalRevenue` | `BigDecimal` | Doanh thu đã thu (PAID) |
+| `totalOutstanding` | `BigDecimal` | Dư nợ (UNPAID + OVERDUE) |
+| `totalBilledAmount` | `BigDecimal` | Tổng phát sinh = `totalRevenue + totalOutstanding` |
+| `paidCount` | `int` | Số hóa đơn PAID |
+| `unpaidCount` | `int` | Số hóa đơn UNPAID |
+| `overdueCount` | `int` | Số hóa đơn OVERDUE |
+| `collectionRate` | `int` | Tỷ lệ thu (%) |
+
+---
+
+### 4.4 RevenueActivityDTO
+
+| Field | Type | Mô tả |
+|---|---|---|
+| `actorName` | `String` | Tên người thực hiện (fallback: `"Hệ thống"`) |
+| `actionDescription` | `String` | Mô tả hành động (VD: `"Tạo mới cơ sở"`) |
+| `timeLabel` | `String` | Thời gian định dạng `"dd/MM/yyyy HH:mm:ss"` |
+
+---
+
+### 4.5 Xử lý lỗi
+
+| Tình huống | Hành vi |
+|---|---|
+| Chưa đăng nhập | Redirect về `/login` (xử lý bởi `BaseServlet`) |
+| Role không phải ADMIN | HTTP 403 Forbidden |
+| Một DAO lỗi (exception) | Log `WARN`, giữ giá trị `0` / list rỗng — các phần còn lại vẫn hiển thị bình thường |
+| Không có dữ liệu | Hiển thị `0` hoặc list rỗng, không throw exception |
 
 ---
 

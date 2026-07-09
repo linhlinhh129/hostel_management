@@ -53,7 +53,7 @@ public class ForgotPasswordApiServlet extends HttpServlet {
         }
 
         // 3. Validation
-        if (email == null || email.isBlank() || !email.contains("@")) {
+        if (email == null || email.isBlank() || !email.contains("@") || email.length() > 100) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print("{\"success\":false,\"error\":{\"code\":\"INVALID_EMAIL\",\"message\":\"Sai định dạng email\"}}");
             out.flush();

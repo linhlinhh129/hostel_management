@@ -31,21 +31,44 @@
             </div>
 
             <div class="data-surface">
-                <form class="filter-bar" method="get" action="${ctx}/admin/personnel">
-                    <input type="text" class="form-control" name="keyword" placeholder="Họ tên, email, SĐT..."
-                            value="<c:out value='${keyword}'/>">
-                    <select class="form-select" name="role" style="max-width:180px">
-                        <option value="">Tất cả vai trò</option>
-                        <option value="MANAGER"      ${selectedRole == 'MANAGER'      ? 'selected' : ''}>Ban Quản lý</option>
-                        <option value="OPERATOR"     ${selectedRole == 'OPERATOR'     ? 'selected' : ''}>Nhân viên vận hành</option>
-                    </select>
-                    <select class="form-select" name="status" style="max-width:160px">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="ACTIVE"   ${selectedStatus == 'ACTIVE'   ? 'selected' : ''}>Hoạt động</option>
-                        <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Ngừng hoạt động</option>
-                    </select>
-                    <button type="submit" class="btn-mintlify-secondary">Tìm kiếm</button>
-                    <a href="${ctx}/admin/personnel" class="btn-mintlify-secondary text-decoration-none">Xóa</a>
+                <!-- Filter bar (Thiết kế tối ưu theo mẫu) -->
+                <form method="get" action="${ctx}/admin/personnel" style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                    <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                        
+                        <!-- Tìm kiếm -->
+                        <div style="flex:2; min-width:200px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
+                            <input type="text" class="form-control" name="keyword"
+                                   placeholder="Họ tên, email, SĐT..."
+                                   value="<c:out value='${keyword}'/>" style="width:100%">
+                        </div>
+
+                        <!-- Vai trò -->
+                        <div style="flex:1; min-width:150px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Vai trò</label>
+                            <select class="form-select" name="role" style="width:100%">
+                                <option value="">Tất cả</option>
+                                <option value="MANAGER"      ${selectedRole == 'MANAGER'      ? 'selected' : ''}>Ban Quản lý</option>
+                                <option value="OPERATOR"     ${selectedRole == 'OPERATOR'     ? 'selected' : ''}>Nhân viên vận hành</option>
+                            </select>
+                        </div>
+
+                        <!-- Trạng thái -->
+                        <div style="flex:1; min-width:150px;">
+                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
+                            <select class="form-select" name="status" style="width:100%">
+                                <option value="">Tất cả</option>
+                                <option value="ACTIVE"   ${selectedStatus == 'ACTIVE'   ? 'selected' : ''}>Hoạt động</option>
+                                <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Ngừng hoạt động</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Nút hành động -->
+                    <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:20px;">
+                        <a href="${ctx}/admin/personnel" style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s">Xóa bộ lọc</a>
+                        <button type="submit" style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s">Tìm kiếm</button>
+                    </div>
                 </form>
 
                 <c:choose>
@@ -55,28 +78,28 @@
                                 <thead>
                                 <tr>
                                     <th>Họ tên</th>
-                                    <th class="d-none d-md-table-cell">Email</th>
-                                    <th class="d-none d-md-table-cell">SĐT</th>
-                                    <th class="d-none d-md-table-cell">Vai trò</th>
-                                    <th class="d-none d-md-table-cell">Cơ sở phụ trách</th>
+                                    <th class="d-none d-lg-table-cell">Email</th>
+                                    <th class="d-none d-lg-table-cell">SĐT</th>
+                                    <th class="d-none d-lg-table-cell">Vai trò</th>
+                                    <th class="d-none d-lg-table-cell">Cơ sở phụ trách</th>
                                     <th>Trạng thái</th>
-                                    <th class="d-none d-md-table-cell">Thao tác</th>
+                                    <th class="d-none d-lg-table-cell">Thao tác</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <c:forEach var="emp" items="${page.items}">
                                     <tr data-href="${ctx}/admin/personnel/${emp.id}">
                                         <td><c:out value="${emp.fullName}"/></td>
-                                        <td class="d-none d-md-table-cell"><c:out value="${emp.email}"/></td>
-                                        <td class="d-none d-md-table-cell"><c:out value="${emp.phone}"/></td>
-                                        <td class="d-none d-md-table-cell">
+                                        <td class="d-none d-lg-table-cell"><c:out value="${emp.email}"/></td>
+                                        <td class="d-none d-lg-table-cell"><c:out value="${emp.phone}"/></td>
+                                        <td class="d-none d-lg-table-cell">
                                             <c:choose>
                                                 <c:when test="${emp.role == 'MANAGER'}"><span class="badge-hms badge-info">Ban Quản lý</span></c:when>
                                                 <c:when test="${emp.role == 'OPERATOR'}"><span class="badge-hms badge-neutral">Nhân viên vận hành</span></c:when>
                                                 <c:otherwise><c:out value="${emp.role}"/></c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td class="d-none d-md-table-cell">
+                                        <td class="d-none d-lg-table-cell">
                                             <c:choose>
                                                 <c:when test="${not empty emp.facilityNames}">
                                                     <c:forEach var="fname" items="${emp.facilityNames}" varStatus="st">
@@ -92,7 +115,7 @@
                                                 <c:otherwise><span class="badge-hms badge-danger">Ngừng hoạt động</span></c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td class="d-none d-md-table-cell">
+                                        <td class="d-none d-lg-table-cell">
                                             <a href="${ctx}/admin/personnel/${emp.id}" class="me-2">Chi tiết</a>
                                         </td>
                                     </tr>

@@ -16,7 +16,7 @@
 
             <div class="page-header hero-sky-gradient">
                 <h1>Thêm cơ sở mới</h1>
-                <p>Tạo cơ sở nhà trọ — trạng thái mặc định là DRAFT, kích hoạt để sinh phòng tự động</p>
+                <p>Tạo cơ sở nhà trọ </p>
             </div>
 
             <div class="data-surface" style="max-width:720px">

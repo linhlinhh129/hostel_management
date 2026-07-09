@@ -46,27 +46,41 @@ THE SYSTEM SHALL chỉ trả về các bản ghi có loại hành động khớp
 WHEN Admin lọc nhật ký theo khoảng thời gian
 THE SYSTEM SHALL chỉ trả về các bản ghi được tạo trong khoảng thời gian được chỉ định.
 
-WHEN Admin lọc nhật ký theo createdBy
-THE SYSTEM SHALL chỉ trả về các bản ghi do người dùng được chỉ định thực hiện.
+WHEN Admin lọc nhật ký theo người thực hiện (actor)
+THE SYSTEM SHALL trả về các bản ghi có tên người thực hiện (full_name) khớp một phần với từ khóa.
+
+WHEN Admin lọc nhật ký theo vai trò (role)
+THE SYSTEM SHALL chỉ trả về các bản ghi do người dùng có vai trò tương ứng thực hiện.
+
+WHEN không có bộ lọc vai trò nào được chọn
+THE SYSTEM SHALL mặc định chỉ hiển thị nhật ký do MANAGER và OPERATOR thực hiện.
 
 WHEN không có bản ghi nhật ký nào khớp với điều kiện lọc
-THE SYSTEM SHALL trả về danh sách rỗng và thông báo "Không có dữ liệu".
+THE SYSTEM SHALL trả về danh sách rỗng để UI hiển thị trạng thái "Không có dữ liệu".
 
 ### 3.2 Hiển thị nội dung nhật ký
 
 WHILE hiển thị danh sách nhật ký
-THE SYSTEM SHALL hiển thị tối thiểu các thông tin sau:
+THE SYSTEM SHALL hiển thị các thông tin cơ bản sau trên bảng:
+
+* Mã nhật ký (Log ID)
+* Thời gian (Created At)
+* Người thực hiện (Created By)
+* Đối tượng (Entity Type & Tên)
+* Hành động (Action)
+
+WHILE hiển thị chi tiết bản ghi nhật ký
+THE SYSTEM SHALL hiển thị đầy đủ các thông tin:
 
 * Mã nhật ký
-* Loại đối tượng (Entity Type)
-* Mã đối tượng (Entity ID)
-* Loại hành động (Action)
+* Thời gian
+* Người thực hiện
+* Tên đối tượng và Loại đối tượng (Entity ID)
+* Hành động
 * Giá trị trước thay đổi (Old Value)
 * Giá trị sau thay đổi (New Value)
 * Địa chỉ IP
 * Ghi chú (Comment)
-* Người thực hiện (Created By)
-* Thời điểm thực hiện (Created At)
 
 WHEN hiển thị bản ghi nhật ký
 THE SYSTEM SHALL hiển thị oldValue và newValue theo quy tắc sau:
@@ -81,7 +95,7 @@ WHEN tham số lọc không hợp lệ được gửi lên
 THE SYSTEM SHALL trả về HTTP 400 với lỗi INVALID_FILTER.
 
 WHEN fromDate lớn hơn toDate
-THE SYSTEM SHALL trả về HTTP 400 với lỗi INVALID_DATE_RANGE.
+THE SYSTEM SHALL xử lý an toàn và trả về danh sách rỗng (không ném lỗi 400).
 
 ### 3.4 Phân quyền
 
@@ -92,102 +106,90 @@ WHILE người dùng chưa đăng nhập
 THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 ---
 
-## 4. API Contract
+## 4. Servlet Contract
 
-### Endpoint
+### 4.1 Servlet Entry Point
 
-GET /api/v1/audit-logs
+| Thuộc tính | Giá trị |
+|---|---|
+| **Servlet** | `AdminAuditLogServlet` |
+| **URL Pattern** | `GET /admin/audit-logs` — danh sách |
+| **URL Pattern** | `GET /admin/audit-logs/{id}` — chi tiết |
+| **Forward đến (list)** | `/WEB-INF/views/admin/audit-logs/list.jsp` |
+| **Forward đến (detail)** | `/WEB-INF/views/admin/audit-logs/detail.jsp` |
+| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
-### Request
+---
 
-Query Parameters:
+### 4.2 Query Parameters (GET /admin/audit-logs)
 
-```json
-{
-  "entityType": "string",
-  "action": "string",
-  "createdBy": 1,
-  "fromDate": "2026-01-01",
-  "toDate": "2026-01-31",
-  "page": 0,
-  "size": 10
-}
-```
+| Tham số | Kiểu | Bắt buộc | Mô tả |
+|---|---|---|---|
+| `actor` | `String` | Không | Tên người thực hiện — khớp một phần (`LIKE %actor%`) |
+| `role` | `String` | Không | Vai trò người thực hiện (`MANAGER`, `OPERATOR`). Mặc định lọc `IN ('MANAGER','OPERATOR')` nếu bỏ trống |
+| `entityType` | `String` | Không | Loại đối tượng (`facilities`, `rooms`, `users`, `notifications`, `invoices`, `payments`) |
+| `action` | `String` | Không | Loại hành động (`CREATE`, `UPDATE`, `DELETE`, `ACTIVATE`...) |
+| `dateFrom` | `String` | Không | Từ ngày, định dạng `YYYY-MM-DD` |
+| `dateTo` | `String` | Không | Đến ngày, định dạng `YYYY-MM-DD` |
+| `page` | `int` | Không | Trang hiện tại, mặc định `1` |
 
-### Response 200
+---
 
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "auditLogId": 1,
-        "entityType": "Tenant",
-        "entityId": 15,
-        "action": "UPDATE",
-        "oldValue": "...",
-        "newValue": "...",
-        "ipAddress": "192.168.1.1",
-        "comment": "Update tenant information",
-        "createdBy": 1,
-        "createdAt": "2026-06-01T10:00:00"
-      }
-    ],
-    "page": 0,
-    "size": 10,
-    "totalElements": 100,
-    "totalPages": 10
-  }
-}
-```
+### 4.3 Request Attributes — Danh sách (list.jsp)
 
-### Response 400
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `auditLogs` | `List<AuditLog>` | `AuditLogDAO.findAll(actor, role, entityType, action, dateFrom, dateTo, page, 10)` | Danh sách nhật ký trang hiện tại |
+| `totalCount` | `int` | `AuditLogDAO.count(actor, role, entityType, action, dateFrom, dateTo)` | Tổng số bản ghi khớp filter |
+| `currentPage` | `int` | Parse từ query param `page` | Trang hiện tại |
+| `hasNextPage` | `boolean` | `currentPage * PAGE_SIZE < totalCount` | Có trang kế tiếp không |
+| `filterActor` | `String` | Query param `actor` | Giữ lại giá trị filter trên form |
+| `filterRole` | `String` | Query param `role` | Giữ lại giá trị filter trên form |
+| `filterEntityType` | `String` | Query param `entityType` | Giữ lại giá trị filter trên form |
+| `filterAction` | `String` | Query param `action` | Giữ lại giá trị filter trên form |
+| `filterDateFrom` | `String` | Query param `dateFrom` | Giữ lại giá trị filter trên form |
+| `filterDateTo` | `String` | Query param `dateTo` | Giữ lại giá trị filter trên form |
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_FILTER",
-    "message": "Tham số lọc không hợp lệ"
-  }
-}
-```
+**Hằng số:** `PAGE_SIZE = 10`
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_DATE_RANGE",
-    "message": "Khoảng thời gian không hợp lệ: fromDate không được lớn hơn toDate"
-  }
-}
-```
+---
 
-### Response 403
+### 4.4 Request Attributes — Chi tiết (detail.jsp)
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền truy cập chức năng này"
-  }
-}
-```
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `auditLog` | `AuditLog` | `AuditLogDAO.findById(id)` | Bản ghi nhật ký đầy đủ, kèm `entityName` được lookup |
 
-### Response 401
+---
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
+### 4.5 AuditLog Model
 
+| Field | Type | Mô tả |
+|---|---|---|
+| `id` | `int` | ID bản ghi (`audit_log_id`) |
+| `entityType` | `String` | Loại đối tượng (`facilities`, `rooms`, `users`...) |
+| `entityId` | `Integer` | ID đối tượng bị tác động |
+| `entityName` | `String` | Tên hiển thị của đối tượng (lookup batch, nullable) |
+| `action` | `String` | Hành động (`CREATE`, `UPDATE`, `DELETE`...) |
+| `oldValue` | `String` | Giá trị trước thay đổi (null với CREATE) |
+| `newValue` | `String` | Giá trị sau thay đổi (null với DELETE) |
+| `ipAddress` | `String` | Địa chỉ IP thực hiện |
+| `comment` | `String` | Ghi chú bổ sung (nullable) |
+| `createdBy` | `Integer` | `user_id` người thực hiện |
+| `createdByName` | `String` | `full_name` người thực hiện (từ JOIN `dbo.users`) |
+| `createdAt` | `LocalDateTime` | Thời gian thực hiện |
+
+---
+
+### 4.6 Xử lý lỗi
+
+| Tình huống | Hành vi |
+|---|---|
+| Chưa đăng nhập | Redirect về `/login` (xử lý bởi `BaseServlet`) |
+| Role không phải ADMIN | HTTP 403 Forbidden |
+| `{id}` không tồn tại | `NotFoundException` → HTTP 404 |
+| Path không hợp lệ | HTTP 404 |
+| DAO lỗi (exception) | Log `ERROR`, forward về `list.jsp` với thông báo lỗi |
 ---
 
 ## 5. Technical Constraints

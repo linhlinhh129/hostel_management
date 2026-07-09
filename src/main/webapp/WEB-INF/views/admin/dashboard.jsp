@@ -78,20 +78,20 @@
             </div>
 
             <!-- ── Quick Actions ────────────────────────────────── -->
-            <div class="d-flex flex-wrap gap-2 mb-4">
-                <a href="${ctx}/admin/facilities/create"     class="quick-action-btn primary">
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:1.5rem; align-items:center;">
+                <a href="${ctx}/admin/facilities/create" class="quick-action-btn primary" style="white-space:nowrap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
                     Thêm cơ sở
                 </a>
-                <a href="${ctx}/admin/personnel/create"      class="quick-action-btn primary">
+                <a href="${ctx}/admin/personnel/create" class="quick-action-btn primary" style="white-space:nowrap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
                     Thêm nhân sự
                 </a>
-                <a href="${ctx}/admin/notifications/create"  class="quick-action-btn">
+                <a href="${ctx}/admin/notifications/create" class="quick-action-btn primary" style="white-space:nowrap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                     </svg>
@@ -125,37 +125,36 @@
                             <c:choose>
                                 <c:when test="${not empty facilityRevenueStats}">
                                     <div class="table-responsive">
-                                        <table class="table-mintlify">
+                                        <table class="table-mintlify" style="font-size:0.8125rem">
                                             <thead>
                                             <tr>
-                                                <th>Cơ sở</th>
-                                                <th>Doanh thu đã thu</th>
-                                                <th>Chưa thanh toán</th>
-                                                <th>Quá hạn</th>
+                                                <th style="min-width:120px">Cơ sở</th>
+                                                <th style="min-width:110px;text-align:right">Đã thu</th>
+                                                <th style="text-align:center">Chưa TT</th>
+                                                <th style="text-align:center">Quá hạn</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             <c:forEach var="stat" items="${facilityRevenueStats}">
                                                 <tr>
-                                                    <td>
+                                                    <td style="max-width:140px">
                                                         <a href="${ctx}/admin/facilities/${stat.facilityId}"
-                                                           style="font-weight:600">
+                                                           style="font-weight:700;font-size:0.8125rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                                                             <c:out value="${stat.facilityCode}"/>
                                                         </a>
-                                                        <div style="font-size:0.75rem;color:var(--hms-stone)">
+                                                        <div style="font-size:0.6875rem;color:var(--hms-stone);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">
                                                             <c:out value="${stat.facilityName}"/>
                                                         </div>
                                                     </td>
-                                                    <td style="font-weight:700">
-                                                        <fmt:formatNumber value="${stat.totalRevenue}"
-                                                                          pattern="#,##0"/> đ
+                                                    <td style="font-weight:700;text-align:right;white-space:nowrap">
+                                                        <fmt:formatNumber value="${stat.totalRevenue}" pattern="#,##0"/>đ
                                                     </td>
-                                                    <td>
+                                                    <td style="text-align:center">
                                                         <span class="badge-hms badge-warning">
                                                             <c:out value="${stat.unpaidCount}"/>
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td style="text-align:center">
                                                         <span class="badge-hms ${stat.overdueCount > 0 ? 'badge-danger' : 'badge-neutral'}">
                                                             <c:out value="${stat.overdueCount}"/>
                                                         </span>

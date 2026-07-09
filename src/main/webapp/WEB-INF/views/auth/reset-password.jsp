@@ -27,10 +27,10 @@
                         <label for="newPassword" class="form-label-modern">Mật khẩu mới</label>
                         <div class="input-group" style="position: relative;">
                             <input type="password" class="form-control" id="newPassword"
-                                   name="newPassword" required minlength="8"
-                                   pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}"
-                                   title="Ít nhất 8 ký tự, bao gồm 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt (@#$%^&+=!)"
-                                   autocomplete="new-password" placeholder="Ít nhất 8 ký tự"
+                                   name="newPassword" required minlength="8" maxlength="50"
+                                   pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,50}"
+                                   title="Từ 8 đến 50 ký tự, bao gồm 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt (@#$%^&+=!)"
+                                   autocomplete="new-password" placeholder="Từ 8 đến 50 ký tự"
                                    style="border-radius: 16px; padding: 0.75rem 1rem; padding-right: 3rem;">
                             <button type="button" class="btn btn-outline-secondary toggle-password"
                                     style="position: absolute; right: 0; top: 0; height: 100%; border: none; background: transparent; z-index: 10; border-radius: 0 16px 16px 0;"
@@ -38,14 +38,14 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
                         </div>
-                        <small class="text-muted" style="font-size: 0.8rem; margin-top: 0.5rem; display: block;">Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt.</small>
+                        <small class="text-muted" style="font-size: 0.8rem; margin-top: 0.5rem; display: block;">Mật khẩu phải từ 8 đến 50 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt.</small>
                     </div>
 
                     <div class="mb-4">
                         <label for="confirmPassword" class="form-label-modern">Xác nhận mật khẩu</label>
                         <div class="input-group" style="position: relative;">
                             <input type="password" class="form-control" id="confirmPassword"
-                                   name="confirmPassword" required minlength="8"
+                                   name="confirmPassword" required minlength="8" maxlength="50"
                                    autocomplete="new-password" placeholder="Nhập lại mật khẩu mới"
                                    style="border-radius: 16px; padding: 0.75rem 1rem; padding-right: 3rem;">
                             <button type="button" class="btn btn-outline-secondary toggle-password"
