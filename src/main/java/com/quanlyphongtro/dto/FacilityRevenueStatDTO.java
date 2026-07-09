@@ -12,8 +12,16 @@ public class FacilityRevenueStatDTO {
     private int overdueCount;
     private int collectionRate; // percentage
     private int growthRate;     // vs previous period
+    private BigDecimal totalOutstanding;
+    private BigDecimal totalBilledAmount;
 
     public FacilityRevenueStatDTO() {}
+
+    public BigDecimal getTotalOutstanding() { return totalOutstanding; }
+    public void setTotalOutstanding(BigDecimal totalOutstanding) { this.totalOutstanding = totalOutstanding; }
+
+    public BigDecimal getTotalBilledAmount() { return totalBilledAmount; }
+    public void setTotalBilledAmount(BigDecimal totalBilledAmount) { this.totalBilledAmount = totalBilledAmount; }
 
     public int getFacilityId() { return facilityId; }
     public void setFacilityId(int facilityId) { this.facilityId = facilityId; }

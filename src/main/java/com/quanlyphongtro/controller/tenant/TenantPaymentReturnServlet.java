@@ -75,7 +75,7 @@ public class TenantPaymentReturnServlet extends BaseServlet {
                 }
             }
             
-            String signValue = VNPayConfig.hmacSHA512(VNPayConfig.secretKey, hashData.toString());
+            String signValue = VNPayConfig.hmacSHA512(VNPayConfig.getSecretKey(), hashData.toString());
             boolean isValid = signValue.equals(vnp_SecureHash);
 
             if (isValid) {

@@ -116,164 +116,115 @@ THE SYSTEM SHALL từ chối truy cập chức năng báo cáo doanh thu.
 
 WHEN Admin xem báo cáo doanh thu
 
-THE SYSTEM SHALL ghi nhận Audit Log bao gồm:
-- User ID
-- Thời gian truy cập
-- Khoảng thời gian được lọc
+## 4. Servlet Contract
 
-### 3.3 Lọc thời gian
-WHEN Admin cung cấp fromDate và toDate
+### 4.1 Servlet Entry Point
 
-THE SYSTEM SHALL lọc dữ liệu theo Invoice Created Date (created_at) nằm trong khoảng thời gian được chọn.
-## 4. API Contract
+| Thuộc tính | Giá trị |
+|---|---|
+| **Servlet** | `AdminRevenueServlet` |
+| **URL Pattern** | `GET /admin/revenue` — tổng quan (index) |
+| **URL Pattern** | `GET /admin/revenue/by-facility` — doanh thu theo cơ sở |
+| **URL Pattern** | `GET /admin/revenue/by-period` — doanh thu theo kỳ |
+| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
-### Lấy báo cáo doanh thu
+---
 
-Endpoint
+### 4.2 Query Parameters
 
-GET /api/v1/reports/revenue
+**GET /admin/revenue và /admin/revenue/by-facility**
 
-Query Parameters
+| Tham số | Kiểu | Mô tả |
+|---|---|---|
+| `period` | `String` | Kỳ cần xem. Chấp nhận `"YYYY-MM"` (input[type=month]) hoặc `"MM/yyyy"`. Mặc định tháng hiện tại |
+| `page` | `int` | Chỉ dùng ở `by-facility`, mặc định `1` |
 
-| Tham số | Kiểu | Bắt buộc | Mô tả |
-|---------|------|----------|-------|
-| fromDate | string (YYYY-MM-DD) | Không | Ngày bắt đầu |
-| toDate | string (YYYY-MM-DD) | Không | Ngày kết thúc |
-| page | number | Không | Số trang (0-based, mặc định 0) |
-| size | number | Không | Số bản ghi/trang (mặc định 10) |
-| groupBy | string | Không    | MONTH (mặc định MONTH) |
+**GET /admin/revenue/by-period**
 
+| Tham số | Kiểu | Mô tả |
+|---|---|---|
+| `months` | `int` | Số tháng gần nhất cần hiển thị, mặc định `12` |
 
-Response 200
+---
 
-```json
-{
-  "success": true,
-  "data": {
-    "summary": {
-      "totalRevenue": 50000000,
-      "totalOutstanding": 12000000,
-      "totalBilledAmount": 62000000
-    },
-    "periods": [
-      {
-        "period": "2026-01",
-        "revenue": 10000000,
-        "outstanding": 2000000,
-        "totalBilledAmount": 12000000
-      }
-    ],
-    "items": [
-      {
-        "facilityId": 1,
-        "facilityName": "Cơ sở A",
-        "totalInvoices": 20,
-        "revenue": 20000000,
-        "outstanding": 5000000,
-        "totalBilledAmount": 25000000
-      }
-    ],
-    "page": 0,
-    "size": 10,
-    "totalElements": 1,
-    "totalPages": 1
-  }
-}
-```
+### 4.3 Request Attributes — Tổng quan (index.jsp)
 
-Response 200 (không có dữ liệu)
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `systemRevenue` | `SystemRevenueDTO` | `RevenueService.getSystemRevenue(period)` | KPI tổng hợp toàn hệ thống |
+| `facilityRevenues` | `List<FacilityRevenueStatDTO>` | `RevenueService.getFacilityRevenues(period)` | Doanh thu từng cơ sở (không phân trang) |
+| `periodRevenues` | `List<FacilityRevenueStatDTO>` | `RevenueService.getRevenueTrend(6)` | Xu hướng 6 tháng gần nhất |
+| `selectedPeriod` | `String` | Resolve từ param `period` | Kỳ đang chọn, format `"MM/yyyy"` |
 
-```json
-{
-  "success": true,
-  "data": {
-    "summary": {
-      "totalRevenue": 0,
-      "totalOutstanding": 0,
-      "totalBilledAmount": 0
-    },
-    "periods": [],
-    "items": [],
-    "page": 0,
-    "size": 10,
-    "totalElements": 0,
-    "totalPages": 0
-  }
-}
-```
+---
 
-Response 400
+### 4.4 Request Attributes — Theo cơ sở (by-facility.jsp)
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_DATE_RANGE",
-    "message": "Khoảng thời gian không hợp lệ"
-  }
-}
-```
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `page` | `PageDTO<FacilityRevenueStatDTO>` | `RevenueService.getFacilityRevenuesPaged(period, page, 10)` | Dữ liệu phân trang, `PAGE_SIZE = 10` |
+| `facilityRevenues` | `List<FacilityRevenueStatDTO>` | Từ `page.items` | Danh sách cơ sở trang hiện tại |
+| `selectedPeriod` | `String` | Resolve từ param `period` | Kỳ đang chọn |
 
-Response 401
+---
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Vui lòng đăng nhập để tiếp tục"
-  }
-}
-```
+### 4.5 Request Attributes — Theo kỳ (by-period.jsp)
 
-Response 403
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+|---|---|---|---|
+| `periodRevenues` | `List<FacilityRevenueStatDTO>` | `RevenueService.getRevenueTrend(months)` | Danh sách kỳ, mỗi item là 1 tháng |
+| `selectedMonths` | `int` | Parse từ param `months` | Số tháng đang chọn |
 
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Không có quyền xem báo cáo doanh thu"
-  }
-}
-```
-GET /api/v1/reports/revenue?fromDate=2026-01-01&toDate=2026-06-30&groupBy=MONTH
-{
-  "success": true,
-  "data": {
-    "summary": {
-      "totalRevenue": 50000000,
-      "totalOutstanding": 12000000,
-      "totalBilledAmount": 62000000
-    },
+---
 
-    "periods": [
-      {
-        "period": "2026-01",
-        "revenue": 10000000,
-        "outstanding": 2000000,
-        "totalBilledAmount": 12000000
-      },
-      {
-        "period": "2026-02",
-        "revenue": 15000000,
-        "outstanding": 3000000,
-        "totalBilledAmount": 18000000
-      }
-    ],
+### 4.6 SystemRevenueDTO
 
-    "items": [
-      {
-        "facilityId": 1,
-        "facilityName": "Cơ sở A",
-        "totalInvoices": 20,
-        "revenue": 20000000,
-        "outstanding": 5000000,
-        "totalBilledAmount": 25000000
-      }
-    ]
-  }
-}
+| Field | Type | Mô tả |
+|---|---|---|
+| `totalRevenue` | `BigDecimal` | Tổng đã thu (hóa đơn PAID) |
+| `totalOutstanding` | `BigDecimal` | Tổng dư nợ (UNPAID + OVERDUE) |
+| `totalBilledAmount` | `BigDecimal` | Tổng phát sinh = `totalRevenue + totalOutstanding` |
+| `paidCount` | `int` | Số hóa đơn PAID |
+| `unpaidCount` | `int` | Số hóa đơn UNPAID |
+| `overdueCount` | `int` | Số hóa đơn OVERDUE |
+| `collectionRate` | `int` | Tỷ lệ thu (%) |
+
+---
+
+### 4.7 FacilityRevenueStatDTO
+
+| Field | Type | Mô tả |
+|---|---|---|
+| `facilityId` | `int` | ID cơ sở |
+| `facilityCode` | `String` | Mã cơ sở hoặc kỳ tháng (dùng cho by-period) |
+| `facilityName` | `String` | Tên cơ sở |
+| `totalRevenue` | `BigDecimal` | Doanh thu đã thu (PAID) |
+| `totalOutstanding` | `BigDecimal` | Dư nợ (UNPAID + OVERDUE) |
+| `totalBilledAmount` | `BigDecimal` | Tổng phát sinh |
+| `paidCount` | `int` | Số hóa đơn PAID |
+| `unpaidCount` | `int` | Số hóa đơn UNPAID |
+| `overdueCount` | `int` | Số hóa đơn OVERDUE |
+| `collectionRate` | `int` | Tỷ lệ thu (%) |
+
+---
+
+### 4.8 Xử lý period
+
+`resolvePeriod()` chấp nhận 2 format:
+- `"YYYY-MM"` từ `<input type="month">` → convert sang `"MM/yyyy"`
+- `"MM/yyyy"` → dùng trực tiếp
+- Bỏ trống hoặc không hợp lệ → fallback tháng hiện tại
+
+---
+
+### 4.9 Xử lý lỗi
+
+| Tình huống | Hành vi |
+|---|---|
+| Chưa đăng nhập | Redirect về `/login` (xử lý bởi `BaseServlet`) |
+| Role không phải ADMIN | HTTP 403 Forbidden |
+| Path không hợp lệ | HTTP 404 |
+
 ## 5. Technical Constraints
 
 * Thời gian phản hồi tối đa: 500ms (P95)
@@ -285,7 +236,6 @@ GET /api/v1/reports/revenue?fromDate=2026-01-01&toDate=2026-06-30&groupBy=MONTH
   - UNPAID
   - OVERDUE
 * Các hóa đơn có trạng thái CANCELLED hoặc DELETED không được tính vào báo cáo.
-* Ghi nhận Audit Log cho thao tác xem báo cáo
 * Giá trị hợp lệ của groupBy hiện tại là MONTH.
 ## 6. Out of Scope
 

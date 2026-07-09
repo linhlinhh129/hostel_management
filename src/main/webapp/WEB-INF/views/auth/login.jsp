@@ -25,6 +25,7 @@
                         <input type="text" class="form-control" id="username" name="username"
                                value="<c:out value='${username}'/>"
                                placeholder="Nhập tên đăng nhập" required autocomplete="username"
+                               maxlength="50"
                                style="border-radius: 16px; padding: 0.75rem 1rem;">
                     </div>
                     <div class="mb-4">
@@ -32,6 +33,7 @@
                         <div class="position-relative">
                             <input type="password" class="form-control" id="password" name="password"
                                    placeholder="Nhập mật khẩu" required autocomplete="current-password"
+                                   maxlength="50"
                                    style="border-radius: 16px; padding: 0.75rem 2.5rem 0.75rem 1rem;">
                             <span id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--hms-text-muted);">
                                 <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

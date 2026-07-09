@@ -5,33 +5,20 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.InputStream;
 import java.util.Properties;
 
 public final class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
-    private static final Properties emailProps = new Properties();
-
-    static {
-        try (InputStream in = EmailService.class.getClassLoader().getResourceAsStream("email.properties")) {
-            if (in != null) {
-                emailProps.load(in);
-                logger.info("Loaded email.properties successfully");
-            } else {
-                logger.warn("email.properties not found on classpath");
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load email.properties", e);
-        }
-    }
+    private static final com.quanlyphongtro.dao.SystemConfigDAO configDAO = new com.quanlyphongtro.dao.SystemConfigDAO();
 
     private EmailService() {}
 
     private static Session getEmailSession() {
-        String host = emailProps.getProperty("email.host");
-        String port = emailProps.getProperty("email.port", "587");
-        String smtpUser = emailProps.getProperty("email.username");
-        String smtpPass = emailProps.getProperty("email.password");
+        String host = configDAO.getConfigValue("email.host");
+        String port = configDAO.getConfigValue("email.port");
+        if (port == null) port = "587";
+        String smtpUser = configDAO.getConfigValue("email.username");
+        String smtpPass = configDAO.getConfigValue("email.password");
 
         if (host == null || smtpUser == null || smtpPass == null) {
             logger.error("[EmailService] Config incomplete — host={}, user={}, pass={}",
@@ -71,8 +58,9 @@ public final class EmailService {
                 Session session = getEmailSession();
                 if (session == null) return;
                 
-                String smtpUser = emailProps.getProperty("email.username");
-                String from = emailProps.getProperty("email.from", smtpUser);
+                String smtpUser = configDAO.getConfigValue("email.username");
+                String from = configDAO.getConfigValue("email.from");
+                if (from == null) from = smtpUser;
 
                 logger.info("Attempting to send temp password email to {}", maskEmail(toEmail));
 
@@ -98,8 +86,9 @@ public final class EmailService {
                 Session session = getEmailSession();
                 if (session == null) return;
                 
-                String smtpUser = emailProps.getProperty("email.username");
-                String from = emailProps.getProperty("email.from", smtpUser);
+                String smtpUser = configDAO.getConfigValue("email.username");
+                String from = configDAO.getConfigValue("email.from");
+                if (from == null) from = smtpUser;
 
                 logger.info("Attempting to send reset password email to {}", maskEmail(toEmail));
 

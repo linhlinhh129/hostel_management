@@ -40,6 +40,7 @@
                         <label for="email" class="form-label">Địa chỉ Email</label>
                         <input type="email" class="form-control" id="email" name="email"
                                placeholder="email@example.com"
+                               maxlength="100"
                                required autocomplete="email">
                     </div>
 

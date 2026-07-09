@@ -34,7 +34,7 @@ public class ForgotPasswordServlet extends BaseServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String email = req.getParameter("email");
 
-        if (email == null || email.isBlank()) {
+        if (email == null || email.isBlank() || email.length() > 100) {
             req.setAttribute("errorMessage", "Vui lòng nhập địa chỉ email hợp lệ.");
             req.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp").forward(req, resp);
             return;

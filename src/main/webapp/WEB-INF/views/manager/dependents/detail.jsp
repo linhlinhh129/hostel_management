@@ -22,12 +22,20 @@
                 <div>
                   <h1>
                     <c:out value="${dependent.fullName}" />
+                    <c:choose>
+                      <c:when test="${dependent.tenantStatus == 'ACTIVE'}">
+                        <span class="badge-hms badge-success ms-2" style="font-size:0.875rem; vertical-align: middle;">Đang cư trú</span>
+                      </c:when>
+                      <c:otherwise>
+                        <span class="badge-hms badge-neutral ms-2" style="font-size:0.875rem; vertical-align: middle;">Lưu trữ (Đã trả phòng)</span>
+                      </c:otherwise>
+                    </c:choose>
                   </h1>
                   <p>Người phụ thuộc của <a href="${ctx}/manager/tenants/${dependent.tenantId}">
                       <c:out value="${dependent.tenantName}" />
                     </a></p>
                 </div>
-                <a href="${ctx}/manager/dependents" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+                <a href="${ctx}/manager/tenants/${dependent.tenantId}" class="btn-mintlify-secondary text-decoration-none">← Hồ sơ cư dân</a>
               </div>
 
               <div class="row g-3">
@@ -117,82 +125,105 @@
                           </div>
                         </div>
 
-                        <%-- Cập nhật thông tin --%>
-                          <div class="widget-surface mb-3">
-                            <div class="widget-surface-header">
-                              <h3>Cập nhật thông tin</h3>
-                            </div>
-                            <div class="widget-surface-body">
-                              <form method="post" action="${ctx}/manager/dependents/${dependent.id}/edit">
-                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                <div class="mb-3">
-                                  <label for="edit_fullName" class="form-label">Họ tên <span
-                                      class="text-danger">*</span></label>
-                                  <input type="text" class="form-control" id="edit_fullName" name="fullName" required
-                                    maxlength="200" value="<c:out value='${dependent.fullName}'/>">
+                        <c:choose>
+                          <c:when test="${dependent.tenantStatus == 'ACTIVE'}">
+                            <%-- Cập nhật thông tin --%>
+                              <div class="widget-surface mb-3">
+                                <div class="widget-surface-header">
+                                  <h3>Cập nhật thông tin</h3>
                                 </div>
-                                <div class="mb-3">
-                                  <label for="edit_relationship" class="form-label">Quan hệ <span
-                                      class="text-danger">*</span></label>
-                                  <input type="text" class="form-control" id="edit_relationship" name="relationship"
-                                    required maxlength="100" value="<c:out value='${dependent.relationship}'/>">
+                                <div class="widget-surface-body">
+                                  <form method="post" action="${ctx}/manager/dependents/${dependent.id}/edit">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                    <div class="mb-3">
+                                      <label for="edit_fullName" class="form-label">Họ tên <span
+                                          class="text-danger">*</span></label>
+                                      <input type="text" class="form-control" id="edit_fullName" name="fullName" required
+                                        maxlength="200" value="<c:out value='${dependent.fullName}'/>">
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="edit_relationship" class="form-label">Quan hệ <span
+                                          class="text-danger">*</span></label>
+                                      <input type="text" class="form-control" id="edit_relationship" name="relationship"
+                                        required maxlength="100" value="<c:out value='${dependent.relationship}'/>">
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="edit_phone" class="form-label">Số điện thoại</label>
+                                      <input type="tel" class="form-control" id="edit_phone" name="phone" maxlength="20"
+                                        value="<c:out value='${dependent.phone}'/>">
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="edit_identityNumber" class="form-label">Số CCCD/CMND</label>
+                                      <input type="text" class="form-control" id="edit_identityNumber" name="identityNumber"
+                                        maxlength="50" value="<c:out value='${dependent.identityNumber}'/>"
+                                        placeholder="Nhập số CCCD/CMND (tùy chọn)">
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                      <div class="col-sm-6">
+                                        <label for="edit_gender" class="form-label">Giới tính</label>
+                                        <select class="form-select" id="edit_gender" name="gender">
+                                          <option value="">-- Chọn --</option>
+                                          <option value="MALE" ${dependent.gender=='MALE' ? 'selected' : '' }>Nam</option>
+                                          <option value="FEMALE" ${dependent.gender=='FEMALE' ? 'selected' : '' }>Nữ
+                                          </option>
+                                          <option value="OTHER" ${dependent.gender=='OTHER' ? 'selected' : '' }>Khác
+                                          </option>
+                                        </select>
+                                      </div>
+                                      <div class="col-sm-6">
+                                        <label for="edit_dob" class="form-label">Ngày sinh</label>
+                                        <input type="date" class="form-control" id="edit_dob" name="dob"
+                                          value="<c:out value='${dependent.dob}'/>">
+                                      </div>
+                                    </div>
+                                    <button type="submit" class="quick-action-btn primary">
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" style="margin-right:4px">
+                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                        <polyline points="17 21 17 13 7 13 7 21" />
+                                        <polyline points="7 3 7 8 15 8" />
+                                      </svg>
+                                      Lưu thay đổi
+                                    </button>
+                                  </form>
                                 </div>
-                                <div class="mb-3">
-                                  <label for="edit_phone" class="form-label">Số điện thoại</label>
-                                  <input type="tel" class="form-control" id="edit_phone" name="phone" maxlength="20"
-                                    value="<c:out value='${dependent.phone}'/>">
-                                </div>
-                                <div class="mb-3">
-                                  <label for="edit_identityNumber" class="form-label">Số CCCD/CMND</label>
-                                  <input type="text" class="form-control" id="edit_identityNumber" name="identityNumber"
-                                    maxlength="50" value="<c:out value='${dependent.identityNumber}'/>"
-                                    placeholder="Nhập số CCCD/CMND (tùy chọn)">
-                                </div>
-                                <div class="row g-3 mb-3">
-                                  <div class="col-sm-6">
-                                    <label for="edit_gender" class="form-label">Giới tính</label>
-                                    <select class="form-select" id="edit_gender" name="gender">
-                                      <option value="">-- Chọn --</option>
-                                      <option value="MALE" ${dependent.gender=='MALE' ? 'selected' : '' }>Nam</option>
-                                      <option value="FEMALE" ${dependent.gender=='FEMALE' ? 'selected' : '' }>Nữ
-                                      </option>
-                                      <option value="OTHER" ${dependent.gender=='OTHER' ? 'selected' : '' }>Khác
-                                      </option>
-                                    </select>
-                                  </div>
-                                  <div class="col-sm-6">
-                                    <label for="edit_dob" class="form-label">Ngày sinh</label>
-                                    <input type="date" class="form-control" id="edit_dob" name="dob"
-                                      value="<c:out value='${dependent.dob}'/>">
-                                  </div>
-                                </div>
-                                <button type="submit" class="quick-action-btn primary">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.5" style="margin-right:4px">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                  </svg>
-                                  Lưu thay đổi
-                                </button>
-                              </form>
-                            </div>
-                          </div>
+                              </div>
 
-                          <%-- Xóa người phụ thuộc --%>
-                            <div class="data-surface"
-                              style="border-left:4px solid var(--hms-danger);padding:1rem 1.25rem">
-                              <h6 style="font-weight:600;color:var(--hms-danger);margin-bottom:0.5rem">Xóa người phụ
-                                thuộc</h6>
-                              <p class="text-muted" style="font-size:0.8125rem;margin-bottom:0.75rem">
-                                Thao tác này sẽ xóa vĩnh viễn hồ sơ người phụ thuộc này.
-                              </p>
-                              <form method="post" action="${ctx}/manager/dependents/${dependent.id}/remove"
-                                onsubmit="return confirm('Bạn có chắc muốn xóa người phụ thuộc này?')">
-                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                <button type="submit" class="btn btn-danger btn-sm">Xóa người phụ thuộc</button>
-                              </form>
+                              <%-- Xóa người phụ thuộc --%>
+                                <div class="data-surface"
+                                  style="border-left:4px solid var(--hms-danger);padding:1rem 1.25rem">
+                                  <h6 style="font-weight:600;color:var(--hms-danger);margin-bottom:0.5rem">Xóa người phụ
+                                    thuộc</h6>
+                                  <p class="text-muted" style="font-size:0.8125rem;margin-bottom:0.75rem">
+                                    Thao tác này sẽ xóa vĩnh viễn hồ sơ người phụ thuộc này.
+                                  </p>
+                                  <form method="post" action="${ctx}/manager/dependents/${dependent.id}/remove"
+                                    onsubmit="return confirm('Bạn có chắc muốn xóa người phụ thuộc này?')">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Xóa người phụ thuộc</button>
+                                  </form>
+                                </div>
+                          </c:when>
+                          <c:otherwise>
+                            <%-- Lưu trữ cảnh báo --%>
+                            <div class="widget-surface mb-3" style="border-left: 4px solid var(--hms-warning, #f59e0b); background: #fffdf5; padding: 1.25rem;">
+                              <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" style="flex-shrink: 0; margin-top: 0.1rem;">
+                                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                  <line x1="12" y1="9" x2="12" y2="13"/>
+                                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                                <div>
+                                  <h4 style="margin: 0 0 0.35rem 0; font-size: 1.05rem; font-weight: 600; color: #854d0e;">Hồ sơ lưu trữ (Chỉ đọc)</h4>
+                                  <p style="margin: 0; font-size: 0.875rem; color: #78350f; line-height: 1.5;">
+                                    Người thuê chính <strong><c:out value="${dependent.tenantName}"/></strong> đã ngừng thuê phòng.
+                                    Hồ sơ thông tin người phụ thuộc này hiện ở trạng thái lưu trữ và không thể chỉnh sửa hoặc xóa bỏ.
+                                  </p>
+                                </div>
+                              </div>
                             </div>
+                          </c:otherwise>
+                        </c:choose>
 
                     </div><%-- end col-lg-7 --%>
               </div>
