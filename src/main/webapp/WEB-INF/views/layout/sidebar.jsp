@@ -171,6 +171,25 @@
                         </svg>
                         Dashboard
                     </a>
+                    <div class="sidebar-section">Cộng đồng</div>
+                    <a href="${ctx}/tenant/news-feed" class="sidebar-link${menu == 'news-feed' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        Bản tin cộng đồng
+                    </a>
+
+                    <a href="${ctx}/tenant/my-posts" class="sidebar-link${menu == 'my-posts' ? ' active' : ''}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <line x1="10" y1="9" x2="8" y2="9" />
+                        </svg>
+                        Bài viết của tôi
+                    </a>
                     <div class="sidebar-section">Dịch vụ</div>
                     <a href="${ctx}/tenant/invoices" class="sidebar-link${menu == 'invoices' ? ' active' : ''}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
