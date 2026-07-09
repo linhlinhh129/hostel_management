@@ -576,7 +576,7 @@ public class NotificationDAO extends BaseDAO {
         String roomsSql = "SELECT r.room_id, r.code AS room_code, r.facility_id " +
                 "FROM dbo.rooms r " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                "WHERE f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL " +
+                "WHERE f.manager_id = ? AND r.tenant_id IS NOT NULL AND r.deleted_at IS NULL AND f.deleted_at IS NULL " +
                 "ORDER BY f.name, r.code";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(roomsSql)) {
@@ -612,7 +612,7 @@ public class NotificationDAO extends BaseDAO {
     }
 
     public Integer verifyRoomManagerAndGetFacilityId(int roomId, int managerId) {
-        String sql = "SELECT r.facility_id FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE r.room_id = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
+        String sql = "SELECT r.facility_id FROM dbo.rooms r JOIN dbo.facilities f ON r.facility_id = f.facility_id WHERE r.room_id = ? AND f.manager_id = ? AND r.tenant_id IS NOT NULL AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
