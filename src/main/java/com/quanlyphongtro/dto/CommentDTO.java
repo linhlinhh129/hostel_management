@@ -4,11 +4,19 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 public class CommentDTO {
+ 
     private int id;
     private int postId;
     private int userId;
     private String userName;
     private String userAvatar;
+
+    private Integer commentId;
+    private Integer authorId;
+    private String authorName;
+    private String authorAvatarUrl;
+
+    // Shared fields
     private String content;
     private LocalDateTime createdAt;
 
@@ -38,5 +46,37 @@ public class CommentDTO {
     public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
         return java.sql.Timestamp.valueOf(createdAt);
+    }
+
+    public Integer getCommentId() {
+        return commentId;
+    }
+
+    public void setCommentId(Integer commentId) {
+        this.commentId = commentId;
+    }
+
+    public Integer getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Integer authorId) {
+        this.authorId = authorId;
+    }
+
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
+    public String getAuthorAvatarUrl() {
+        return authorAvatarUrl;
+    }
+
+    public void setAuthorAvatarUrl(String authorAvatarUrl) {
+        this.authorAvatarUrl = authorAvatarUrl;
     }
 }

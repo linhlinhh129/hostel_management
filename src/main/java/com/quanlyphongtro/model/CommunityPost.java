@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 public class CommunityPost {
     private Integer id;
+    
+    private Integer postId;
+    
     private String title;
     private String content;
     private String imageUrl;
@@ -18,6 +21,9 @@ public class CommunityPost {
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
+
+    public Integer getPostId() { return postId; }
+    public void setPostId(Integer postId) { this.postId = postId; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

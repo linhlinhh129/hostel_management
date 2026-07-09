@@ -143,4 +143,14 @@ public class UserServiceImpl implements UserService {
 
         return dto;
     }
+
+    @Override
+    public java.util.List<User> getStaffUsers() {
+        return userDAO.getStaffUsers();
+    }
+
+    @Override
+    public java.util.List<User> getStaffUsersByTenantId(int tenantId) {
+        return userDAO.getStaffUsersByTenantId(tenantId);
+    }
 }

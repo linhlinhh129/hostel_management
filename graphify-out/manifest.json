@@ -1,0 +1,1752 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1783587029.3988101,
+    "ast_hash": "a015c68548a00c4ddee25472967709b6",
+    "semantic_hash": "a015c68548a00c4ddee25472967709b6"
+  },
+  ".specify/extensions/agent-context/scripts/bash/update-agent-context.sh": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "bdf6097522f027cb148774b4cbf46272",
+    "semantic_hash": "bdf6097522f027cb148774b4cbf46272"
+  },
+  ".specify/extensions/agent-context/scripts/powershell/update-agent-context.ps1": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "44dfd05757c3259f4fba1e7ef4b1d885",
+    "semantic_hash": "44dfd05757c3259f4fba1e7ef4b1d885"
+  },
+  ".specify/feature.json": {
+    "mtime": 1782757858.242318,
+    "ast_hash": "e4529beee655c9631b1cac1ba048362c",
+    "semantic_hash": "e4529beee655c9631b1cac1ba048362c"
+  },
+  ".specify/init-options.json": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "4828209343e536c9035893c5ed500d61",
+    "semantic_hash": "4828209343e536c9035893c5ed500d61"
+  },
+  ".specify/integration.json": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "8e8539ef1eaba4877cf17fd03db824b8",
+    "semantic_hash": "8e8539ef1eaba4877cf17fd03db824b8"
+  },
+  ".specify/integrations/agy.manifest.json": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "bf0e1bca0f9e6e97875b30fbd96a8c15",
+    "semantic_hash": "bf0e1bca0f9e6e97875b30fbd96a8c15"
+  },
+  ".specify/integrations/speckit.manifest.json": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "5f336cd428893fe3cc939280577602da",
+    "semantic_hash": "5f336cd428893fe3cc939280577602da"
+  },
+  ".specify/scripts/powershell/check-prerequisites.ps1": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "0476d25fd4ce971357e573b3619b1245",
+    "semantic_hash": "0476d25fd4ce971357e573b3619b1245"
+  },
+  ".specify/scripts/powershell/common.ps1": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "6b05318bce8a55aa8c3e5874e9edb887",
+    "semantic_hash": "6b05318bce8a55aa8c3e5874e9edb887"
+  },
+  ".specify/scripts/powershell/create-new-feature.ps1": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "b8a58778631778eedd999f2d8cbbbc6f",
+    "semantic_hash": "b8a58778631778eedd999f2d8cbbbc6f"
+  },
+  ".specify/scripts/powershell/setup-plan.ps1": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "061793d447d162df2624d2fcb796fbe2",
+    "semantic_hash": "061793d447d162df2624d2fcb796fbe2"
+  },
+  ".specify/scripts/powershell/setup-tasks.ps1": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "4a79fc3111a2143440619c8ffcbd31c0",
+    "semantic_hash": "4a79fc3111a2143440619c8ffcbd31c0"
+  },
+  ".specify/workflows/workflow-registry.json": {
+    "mtime": 1782757684.663016,
+    "ast_hash": "c55dd72f56631d174ad7ff6999626c2b",
+    "semantic_hash": "c55dd72f56631d174ad7ff6999626c2b"
+  },
+  "database (1)/schema.sql": {
+    "mtime": 1783101931.7250166,
+    "ast_hash": "6547fd1aae819cc5b6c640e6f5a682f3",
+    "semantic_hash": "6547fd1aae819cc5b6c640e6f5a682f3"
+  },
+  "database (1)/seed.sql": {
+    "mtime": 1783101931.7255414,
+    "ast_hash": "9d9d7f31fa337b8c3bd917f628449380",
+    "semantic_hash": "9d9d7f31fa337b8c3bd917f628449380"
+  },
+  "pom.xml": {
+    "mtime": 1782306003.5024803,
+    "ast_hash": "42d135b40082bf2841115d7761b24499",
+    "semantic_hash": "42d135b40082bf2841115d7761b24499"
+  },
+  "src/main/java/com/quanlyphongtro/constant/ErrorMessageConstant.java": {
+    "mtime": 1781848199.8594723,
+    "ast_hash": "1f26274688167430cae9fe414e849a45",
+    "semantic_hash": "1f26274688167430cae9fe414e849a45"
+  },
+  "src/main/java/com/quanlyphongtro/constant/RoleConstant.java": {
+    "mtime": 1781848199.8594723,
+    "ast_hash": "704fe1f736463323197c41aef993a4f5",
+    "semantic_hash": "704fe1f736463323197c41aef993a4f5"
+  },
+  "src/main/java/com/quanlyphongtro/constant/StatusConstant.java": {
+    "mtime": 1781848199.8594723,
+    "ast_hash": "cf41bdc612b5bb2344376b073f4640d0",
+    "semantic_hash": "cf41bdc612b5bb2344376b073f4640d0"
+  },
+  "src/main/java/com/quanlyphongtro/controller/BaseServlet.java": {
+    "mtime": 1781848199.8594723,
+    "ast_hash": "dc558440555325798bf302626693e861",
+    "semantic_hash": "dc558440555325798bf302626693e861"
+  },
+  "src/main/java/com/quanlyphongtro/controller/admin/AdminAuditLogServlet.java": {
+    "mtime": 1782306003.5024803,
+    "ast_hash": "00fae97d719220bcbcd48483716767c6",
+    "semantic_hash": "00fae97d719220bcbcd48483716767c6"
+  },
+  "src/main/java/com/quanlyphongtro/controller/admin/AdminDashboardServlet.java": {
+    "mtime": 1783101931.7313364,
+    "ast_hash": "8f09d768b094643db6904f311b0e35ad",
+    "semantic_hash": "8f09d768b094643db6904f311b0e35ad"
+  },
+  "src/main/java/com/quanlyphongtro/controller/admin/AdminFacilityServlet.java": {
+    "mtime": 1783101931.7318819,
+    "ast_hash": "2220ecbda54cf2dae4806e71d4528a38",
+    "semantic_hash": "2220ecbda54cf2dae4806e71d4528a38"
+  },
+  "src/main/java/com/quanlyphongtro/controller/admin/AdminNotificationServlet.java": {
+    "mtime": 1783101931.7324255,
+    "ast_hash": "76e40ab488a10bf93373bd8d098535ac",
+    "semantic_hash": "76e40ab488a10bf93373bd8d098535ac"
+  },
+  "src/main/java/com/quanlyphongtro/controller/admin/AdminPersonnelServlet.java": {
+    "mtime": 1783101931.732957,
+    "ast_hash": "b10612ac816dd11f8c251f08b4257e1b",
+    "semantic_hash": "b10612ac816dd11f8c251f08b4257e1b"
+  },
+  "src/main/java/com/quanlyphongtro/controller/admin/AdminRevenueServlet.java": {
+    "mtime": 1782306003.504485,
+    "ast_hash": "5730ade5fbc132ba4a5630fee3675d9f",
+    "semantic_hash": "5730ade5fbc132ba4a5630fee3675d9f"
+  },
+  "src/main/java/com/quanlyphongtro/controller/admin/AdminRoomServlet.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "2d04855076010a152106db3655b0b7a6",
+    "semantic_hash": "2d04855076010a152106db3655b0b7a6"
+  },
+  "src/main/java/com/quanlyphongtro/controller/api/ForgotPasswordApiServlet.java": {
+    "mtime": 1782306003.504485,
+    "ast_hash": "9131ce5454bb76a6b7889ddf6037365b",
+    "semantic_hash": "9131ce5454bb76a6b7889ddf6037365b"
+  },
+  "src/main/java/com/quanlyphongtro/controller/api/ResetPasswordApiServlet.java": {
+    "mtime": 1782390823.8198528,
+    "ast_hash": "ee37b59b1284b10a2394feafbd5981e8",
+    "semantic_hash": "ee37b59b1284b10a2394feafbd5981e8"
+  },
+  "src/main/java/com/quanlyphongtro/controller/auth/FirstLoginServlet.java": {
+    "mtime": 1782757858.2439878,
+    "ast_hash": "9cc84ec4d2bf8501cb06ea852141887f",
+    "semantic_hash": "9cc84ec4d2bf8501cb06ea852141887f"
+  },
+  "src/main/java/com/quanlyphongtro/controller/auth/ForgotPasswordServlet.java": {
+    "mtime": 1782064888.5483046,
+    "ast_hash": "6a7f6e23ab2232db61e68e1dbb5d919c",
+    "semantic_hash": "6a7f6e23ab2232db61e68e1dbb5d919c"
+  },
+  "src/main/java/com/quanlyphongtro/controller/auth/LoginServlet.java": {
+    "mtime": 1783157864.1105657,
+    "ast_hash": "40f93a2ef18afa82ca1d6328c99c6075",
+    "semantic_hash": "40f93a2ef18afa82ca1d6328c99c6075"
+  },
+  "src/main/java/com/quanlyphongtro/controller/auth/LogoutServlet.java": {
+    "mtime": 1781848199.8594723,
+    "ast_hash": "e9705745a2c15063b6b749c651bfc78f",
+    "semantic_hash": "e9705745a2c15063b6b749c651bfc78f"
+  },
+  "src/main/java/com/quanlyphongtro/controller/auth/ProfileServlet.java": {
+    "mtime": 1782757858.2439878,
+    "ast_hash": "3868675a9650de4cf6dcc6262547b140",
+    "semantic_hash": "3868675a9650de4cf6dcc6262547b140"
+  },
+  "src/main/java/com/quanlyphongtro/controller/auth/ResetPasswordServlet.java": {
+    "mtime": 1782390823.820904,
+    "ast_hash": "8da64cdb15cab7ffabad37b43e92c071",
+    "semantic_hash": "8da64cdb15cab7ffabad37b43e92c071"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/ContractServlet.java": {
+    "mtime": 1782759570.8556025,
+    "ast_hash": "42f096549717e0b21533192c9499cfb6",
+    "semantic_hash": "42f096549717e0b21533192c9499cfb6"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/DebtPageServlet.java": {
+    "mtime": 1782306003.5064893,
+    "ast_hash": "e634bf14fb7ffaf908840a819406a979",
+    "semantic_hash": "e634bf14fb7ffaf908840a819406a979"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/InvoiceDetailServlet.java": {
+    "mtime": 1782397408.5937262,
+    "ast_hash": "3ee95d69a7ff6d21c538fa9d0f4122c3",
+    "semantic_hash": "3ee95d69a7ff6d21c538fa9d0f4122c3"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/InvoiceServlet.java": {
+    "mtime": 1782306003.5064893,
+    "ast_hash": "f89bdf34df28ac97054412b285d7d4b8",
+    "semantic_hash": "f89bdf34df28ac97054412b285d7d4b8"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/ManagerDashboardServlet.java": {
+    "mtime": 1782759570.8561268,
+    "ast_hash": "0a37f788858fba74aba1c1c1ec582d82",
+    "semantic_hash": "0a37f788858fba74aba1c1c1ec582d82"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/ManagerNotificationsServlet.java": {
+    "mtime": 1783101931.732957,
+    "ast_hash": "150a29a9aa527dcde0cf4fe24110be4e",
+    "semantic_hash": "150a29a9aa527dcde0cf4fe24110be4e"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/ManagerRoomsServlet.java": {
+    "mtime": 1782397408.599351,
+    "ast_hash": "8b44c3898975d00dfefd6200df01787c",
+    "semantic_hash": "8b44c3898975d00dfefd6200df01787c"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/ManagerTenantsServlet.java": {
+    "mtime": 1782756807.7774527,
+    "ast_hash": "4bf921b9327f201d6c7ac5d1b3b62dd5",
+    "semantic_hash": "4bf921b9327f201d6c7ac5d1b3b62dd5"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/ManagerTicketsServlet.java": {
+    "mtime": 1783157944.7852235,
+    "ast_hash": "19fdc6727ed5cf0a1f03ede7724bb32a",
+    "semantic_hash": "19fdc6727ed5cf0a1f03ede7724bb32a"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/PaymentDetailServlet.java": {
+    "mtime": 1782306003.5084934,
+    "ast_hash": "ca69d47baacd2e5b12965523b80ca63c",
+    "semantic_hash": "ca69d47baacd2e5b12965523b80ca63c"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/PaymentServlet.java": {
+    "mtime": 1782397408.6003613,
+    "ast_hash": "d19279bcdbb7bc5b60347d93ed8954ad",
+    "semantic_hash": "d19279bcdbb7bc5b60347d93ed8954ad"
+  },
+  "src/main/java/com/quanlyphongtro/controller/manager/ServicePricePageServlet.java": {
+    "mtime": 1782306003.5084934,
+    "ast_hash": "21eb11d0f7b415a9891300c39faadfd4",
+    "semantic_hash": "21eb11d0f7b415a9891300c39faadfd4"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/DetailRequestServlet.java": {
+    "mtime": 1783157900.2241497,
+    "ast_hash": "d9371a700fe8aeaa2b45e96f2fe50e34",
+    "semantic_hash": "d9371a700fe8aeaa2b45e96f2fe50e34"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/EditIncidentServlet.java": {
+    "mtime": 1782306003.5084934,
+    "ast_hash": "5ca377209d7707032a694ff2da57127f",
+    "semantic_hash": "5ca377209d7707032a694ff2da57127f"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/IncidentReportServlet.java": {
+    "mtime": 1782758909.4241488,
+    "ast_hash": "af07c972758bb8413de8ca4956d24591",
+    "semantic_hash": "af07c972758bb8413de8ca4956d24591"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/ListElectricServlet.java": {
+    "mtime": 1782386993.8660734,
+    "ast_hash": "f2834f4af4ccd3604fc7e8b97ea42325",
+    "semantic_hash": "f2834f4af4ccd3604fc7e8b97ea42325"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/ListRequestServlet.java": {
+    "mtime": 1782064888.550304,
+    "ast_hash": "39240358ae0230f79f5c6c800cb52a11",
+    "semantic_hash": "39240358ae0230f79f5c6c800cb52a11"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/MeterReadingHistoryServlet.java": {
+    "mtime": 1782398044.2887118,
+    "ast_hash": "ca9d7060849943d1da2118f622eadf0d",
+    "semantic_hash": "ca9d7060849943d1da2118f622eadf0d"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/MyIncidentListServlet.java": {
+    "mtime": 1782064888.550304,
+    "ast_hash": "030538a1867140ea973a2b385f2bf155",
+    "semantic_hash": "030538a1867140ea973a2b385f2bf155"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/NotificationListServlet.java": {
+    "mtime": 1783101931.732957,
+    "ast_hash": "13069ca7d27a4dbde9823c0d26c3d306",
+    "semantic_hash": "13069ca7d27a4dbde9823c0d26c3d306"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/OperatorDashboardServlet.java": {
+    "mtime": 1782756999.8313444,
+    "ast_hash": "d4492da1644e8e3db74ae99cc1f540ae",
+    "semantic_hash": "d4492da1644e8e3db74ae99cc1f540ae"
+  },
+  "src/main/java/com/quanlyphongtro/controller/operator/UpdateMeterReadingServlet.java": {
+    "mtime": 1782758923.051781,
+    "ast_hash": "d5c3e3c665cbac23f99303ac5ccc393f",
+    "semantic_hash": "d5c3e3c665cbac23f99303ac5ccc393f"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantContractServlet.java": {
+    "mtime": 1783101931.7348545,
+    "ast_hash": "782c7e99940c95bbf4229242311f72a0",
+    "semantic_hash": "782c7e99940c95bbf4229242311f72a0"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantDashboardServlet.java": {
+    "mtime": 1782399959.853997,
+    "ast_hash": "0154c1119e449c7a2e2b222dfe591abb",
+    "semantic_hash": "0154c1119e449c7a2e2b222dfe591abb"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantDependentServlet.java": {
+    "mtime": 1782306003.5122154,
+    "ast_hash": "1a0577244fabb2122871db031d441125",
+    "semantic_hash": "1a0577244fabb2122871db031d441125"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantInvoiceServlet.java": {
+    "mtime": 1782399959.853997,
+    "ast_hash": "29442cdcd981f14d989fb2846779cfc1",
+    "semantic_hash": "29442cdcd981f14d989fb2846779cfc1"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantNotificationServlet.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "aa295a092cdeb8481fd3ce8452ea69d1",
+    "semantic_hash": "aa295a092cdeb8481fd3ce8452ea69d1"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantPaymentReturnServlet.java": {
+    "mtime": 1782399959.8550034,
+    "ast_hash": "d10c7a51a8432ac9c4c742c389867d95",
+    "semantic_hash": "d10c7a51a8432ac9c4c742c389867d95"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantPaymentServlet.java": {
+    "mtime": 1782306003.5122154,
+    "ast_hash": "2542765549ae1fab21882cec7e587049",
+    "semantic_hash": "2542765549ae1fab21882cec7e587049"
+  },
+  "src/main/java/com/quanlyphongtro/controller/tenant/TenantRequestServlet.java": {
+    "mtime": 1782306003.5122154,
+    "ast_hash": "72f7c1ead2ac2e0b05ded46d58e58364",
+    "semantic_hash": "72f7c1ead2ac2e0b05ded46d58e58364"
+  },
+  "src/main/java/com/quanlyphongtro/dao/AuditLogDAO.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "2e03f5cc7047f8c4bb382ed7df299d7d",
+    "semantic_hash": "2e03f5cc7047f8c4bb382ed7df299d7d"
+  },
+  "src/main/java/com/quanlyphongtro/dao/BaseDAO.java": {
+    "mtime": 1782306003.5122154,
+    "ast_hash": "8d7131b78f60024254e74b882af13f2b",
+    "semantic_hash": "8d7131b78f60024254e74b882af13f2b"
+  },
+  "src/main/java/com/quanlyphongtro/dao/ContractDAO.java": {
+    "mtime": 1783101931.7348545,
+    "ast_hash": "faff21303cef1469217c6df0cea60914",
+    "semantic_hash": "faff21303cef1469217c6df0cea60914"
+  },
+  "src/main/java/com/quanlyphongtro/dao/DashboardDAO.java": {
+    "mtime": 1783157928.291848,
+    "ast_hash": "786780416d9b31456d4106768162f2c9",
+    "semantic_hash": "786780416d9b31456d4106768162f2c9"
+  },
+  "src/main/java/com/quanlyphongtro/dao/DebtDAO.java": {
+    "mtime": 1782756807.7784972,
+    "ast_hash": "f2fbb0618484efaf9a7c90f5f82ef251",
+    "semantic_hash": "f2fbb0618484efaf9a7c90f5f82ef251"
+  },
+  "src/main/java/com/quanlyphongtro/dao/DependentDAO.java": {
+    "mtime": 1782306003.5122154,
+    "ast_hash": "938659b5aff9c84ea414af9af8740d8f",
+    "semantic_hash": "938659b5aff9c84ea414af9af8740d8f"
+  },
+  "src/main/java/com/quanlyphongtro/dao/FacilityDAO.java": {
+    "mtime": 1782759570.856656,
+    "ast_hash": "7a6de41e560c8a9120b1e2546b86339f",
+    "semantic_hash": "7a6de41e560c8a9120b1e2546b86339f"
+  },
+  "src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java": {
+    "mtime": 1782756807.7790148,
+    "ast_hash": "5bf91bede8c9eaff2602e6f88356bbc4",
+    "semantic_hash": "5bf91bede8c9eaff2602e6f88356bbc4"
+  },
+  "src/main/java/com/quanlyphongtro/dao/MeterReadingDAO.java": {
+    "mtime": 1782398044.2897596,
+    "ast_hash": "c1fe17719f286f24ce7d843ef619590c",
+    "semantic_hash": "c1fe17719f286f24ce7d843ef619590c"
+  },
+  "src/main/java/com/quanlyphongtro/dao/NotificationDAO.java": {
+    "mtime": 1782756807.7797356,
+    "ast_hash": "2f256b334179db77eec6e6ad2108672f",
+    "semantic_hash": "2f256b334179db77eec6e6ad2108672f"
+  },
+  "src/main/java/com/quanlyphongtro/dao/OperatorDashboardDAO.java": {
+    "mtime": 1783157926.282242,
+    "ast_hash": "f6222e7b1288b267dd28daa808f3e139",
+    "semantic_hash": "f6222e7b1288b267dd28daa808f3e139"
+  },
+  "src/main/java/com/quanlyphongtro/dao/PaymentDAO.java": {
+    "mtime": 1782756807.780312,
+    "ast_hash": "74f3cd531615d48b89228a8d19471d60",
+    "semantic_hash": "74f3cd531615d48b89228a8d19471d60"
+  },
+  "src/main/java/com/quanlyphongtro/dao/PersonnelDAO.java": {
+    "mtime": 1782306003.5166018,
+    "ast_hash": "46740031d7833f3e37c0e90e870875be",
+    "semantic_hash": "46740031d7833f3e37c0e90e870875be"
+  },
+  "src/main/java/com/quanlyphongtro/dao/RequestDAO.java": {
+    "mtime": 1783157884.9184105,
+    "ast_hash": "bcdf9451aec490c7b6c7554353a96079",
+    "semantic_hash": "bcdf9451aec490c7b6c7554353a96079"
+  },
+  "src/main/java/com/quanlyphongtro/dao/RevenueDAO.java": {
+    "mtime": 1782306003.5166018,
+    "ast_hash": "2597c6c00f3eaabd069724b6bb3a1ec8",
+    "semantic_hash": "2597c6c00f3eaabd069724b6bb3a1ec8"
+  },
+  "src/main/java/com/quanlyphongtro/dao/RoomDAO.java": {
+    "mtime": 1783101931.7348545,
+    "ast_hash": "bfdd7830b94ea1b21c7505ab39dc2195",
+    "semantic_hash": "bfdd7830b94ea1b21c7505ab39dc2195"
+  },
+  "src/main/java/com/quanlyphongtro/dao/UserDAO.java": {
+    "mtime": 1782064888.555304,
+    "ast_hash": "7420bdf83f1be1eec4ef8945ff81e07d",
+    "semantic_hash": "7420bdf83f1be1eec4ef8945ff81e07d"
+  },
+  "src/main/java/com/quanlyphongtro/dto/DashboardSummaryDTO.java": {
+    "mtime": 1782064888.555304,
+    "ast_hash": "a0b354503d987a4a0653a171d05e1b66",
+    "semantic_hash": "a0b354503d987a4a0653a171d05e1b66"
+  },
+  "src/main/java/com/quanlyphongtro/dto/DebtDetailDTO.java": {
+    "mtime": 1782306003.5166018,
+    "ast_hash": "63bea0de0d1838eef468f6e8a160973a",
+    "semantic_hash": "63bea0de0d1838eef468f6e8a160973a"
+  },
+  "src/main/java/com/quanlyphongtro/dto/DebtListItemDTO.java": {
+    "mtime": 1782756807.780312,
+    "ast_hash": "5618f846ee293c40f01eacbf38538959",
+    "semantic_hash": "5618f846ee293c40f01eacbf38538959"
+  },
+  "src/main/java/com/quanlyphongtro/dto/FacilityRevenueStatDTO.java": {
+    "mtime": 1782306003.5166018,
+    "ast_hash": "f07d86eb3329bc26c013baa6a8218901",
+    "semantic_hash": "f07d86eb3329bc26c013baa6a8218901"
+  },
+  "src/main/java/com/quanlyphongtro/dto/InvoiceDetailDTO.java": {
+    "mtime": 1782756807.7808323,
+    "ast_hash": "e4ded548d77b62a5cb943def7376cc62",
+    "semantic_hash": "e4ded548d77b62a5cb943def7376cc62"
+  },
+  "src/main/java/com/quanlyphongtro/dto/InvoiceListItemDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "76a6b08151d65ee65897b858527d3829",
+    "semantic_hash": "76a6b08151d65ee65897b858527d3829"
+  },
+  "src/main/java/com/quanlyphongtro/dto/MeterStatusDTO.java": {
+    "mtime": 1782064888.555304,
+    "ast_hash": "d559fcb0bb744ddcdce331ba7f3e153d",
+    "semantic_hash": "d559fcb0bb744ddcdce331ba7f3e153d"
+  },
+  "src/main/java/com/quanlyphongtro/dto/PageDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "79ca41a55426599a09a7ac359bbe1152",
+    "semantic_hash": "79ca41a55426599a09a7ac359bbe1152"
+  },
+  "src/main/java/com/quanlyphongtro/dto/PaymentDetailDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "55a8313e308b08c3695583dddc6bb23e",
+    "semantic_hash": "55a8313e308b08c3695583dddc6bb23e"
+  },
+  "src/main/java/com/quanlyphongtro/dto/PaymentListItemDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "a787b464f17ce1820de3e3ab7cccb3ba",
+    "semantic_hash": "a787b464f17ce1820de3e3ab7cccb3ba"
+  },
+  "src/main/java/com/quanlyphongtro/dto/RevenueActivityDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "8c3c94095f43058246b5d290f04847fc",
+    "semantic_hash": "8c3c94095f43058246b5d290f04847fc"
+  },
+  "src/main/java/com/quanlyphongtro/dto/RoomOccupancyStatDTO.java": {
+    "mtime": 1783101931.7348545,
+    "ast_hash": "3c31683b99bc26245bda012023f90a4a",
+    "semantic_hash": "3c31683b99bc26245bda012023f90a4a"
+  },
+  "src/main/java/com/quanlyphongtro/dto/ServicePriceDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "cfe8ca2441b48d1aa567d50fbb0058a8",
+    "semantic_hash": "cfe8ca2441b48d1aa567d50fbb0058a8"
+  },
+  "src/main/java/com/quanlyphongtro/dto/ServicePriceHistoryDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "6fdb7d55a04ee3a659531ffed2833f7a",
+    "semantic_hash": "6fdb7d55a04ee3a659531ffed2833f7a"
+  },
+  "src/main/java/com/quanlyphongtro/dto/SystemRevenueDTO.java": {
+    "mtime": 1782306003.518606,
+    "ast_hash": "84bd689b6fdb139a39b8e43724c2f5df",
+    "semantic_hash": "84bd689b6fdb139a39b8e43724c2f5df"
+  },
+  "src/main/java/com/quanlyphongtro/dto/UserSessionDTO.java": {
+    "mtime": 1782399959.856946,
+    "ast_hash": "2e45577092191725e31946610e330d9c",
+    "semantic_hash": "2e45577092191725e31946610e330d9c"
+  },
+  "src/main/java/com/quanlyphongtro/exception/AppException.java": {
+    "mtime": 1781848199.8754601,
+    "ast_hash": "fb0b3e24e02e1ea5d082aec831d1d942",
+    "semantic_hash": "fb0b3e24e02e1ea5d082aec831d1d942"
+  },
+  "src/main/java/com/quanlyphongtro/exception/ForbiddenException.java": {
+    "mtime": 1781848199.8754601,
+    "ast_hash": "c235a5001e812b1aba78ee25d7db6a79",
+    "semantic_hash": "c235a5001e812b1aba78ee25d7db6a79"
+  },
+  "src/main/java/com/quanlyphongtro/exception/NotFoundException.java": {
+    "mtime": 1781848199.8754601,
+    "ast_hash": "2f0b29da047eafb098a9e368081a83c6",
+    "semantic_hash": "2f0b29da047eafb098a9e368081a83c6"
+  },
+  "src/main/java/com/quanlyphongtro/exception/ValidationException.java": {
+    "mtime": 1781848199.8754601,
+    "ast_hash": "6fda39172c71329560a0d7c267107cc6",
+    "semantic_hash": "6fda39172c71329560a0d7c267107cc6"
+  },
+  "src/main/java/com/quanlyphongtro/filter/AuthFilter.java": {
+    "mtime": 1782397408.603357,
+    "ast_hash": "ece7a30030ca7bca9fd68412511109cc",
+    "semantic_hash": "ece7a30030ca7bca9fd68412511109cc"
+  },
+  "src/main/java/com/quanlyphongtro/filter/CsrfFilter.java": {
+    "mtime": 1782397408.603357,
+    "ast_hash": "fe26f6f66b8f0daf339175627fdc7f55",
+    "semantic_hash": "fe26f6f66b8f0daf339175627fdc7f55"
+  },
+  "src/main/java/com/quanlyphongtro/filter/EncodingFilter.java": {
+    "mtime": 1781848199.8754601,
+    "ast_hash": "2e460abfcb288ab9cb909b7c5ceec33b",
+    "semantic_hash": "2e460abfcb288ab9cb909b7c5ceec33b"
+  },
+  "src/main/java/com/quanlyphongtro/filter/RoleFilter.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "b819db6c097e92ca7b16b4f2b2395f38",
+    "semantic_hash": "b819db6c097e92ca7b16b4f2b2395f38"
+  },
+  "src/main/java/com/quanlyphongtro/listener/UserSessionListener.java": {
+    "mtime": 1782064888.5563045,
+    "ast_hash": "08173ed2bad206b05c1629bfb225c346",
+    "semantic_hash": "08173ed2bad206b05c1629bfb225c346"
+  },
+  "src/main/java/com/quanlyphongtro/model/AuditLog.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "ebe35d26558568395d563e970f1d61a2",
+    "semantic_hash": "ebe35d26558568395d563e970f1d61a2"
+  },
+  "src/main/java/com/quanlyphongtro/model/Contract.java": {
+    "mtime": 1782306003.5206096,
+    "ast_hash": "19117daeffedd8bb3d4bed16b2ddb997",
+    "semantic_hash": "19117daeffedd8bb3d4bed16b2ddb997"
+  },
+  "src/main/java/com/quanlyphongtro/model/Dependent.java": {
+    "mtime": 1782306003.5206096,
+    "ast_hash": "b426adb99ea38a79853cc8675c74035c",
+    "semantic_hash": "b426adb99ea38a79853cc8675c74035c"
+  },
+  "src/main/java/com/quanlyphongtro/model/Facility.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "bace07be947904dfd179d288147481b7",
+    "semantic_hash": "bace07be947904dfd179d288147481b7"
+  },
+  "src/main/java/com/quanlyphongtro/model/Invoice.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "05dda7fa72591314a7226276efb819df",
+    "semantic_hash": "05dda7fa72591314a7226276efb819df"
+  },
+  "src/main/java/com/quanlyphongtro/model/MeterReading.java": {
+    "mtime": 1782306003.5206096,
+    "ast_hash": "898e643c1cef7c63de7cc992d4268412",
+    "semantic_hash": "898e643c1cef7c63de7cc992d4268412"
+  },
+  "src/main/java/com/quanlyphongtro/model/Notification.java": {
+    "mtime": 1782719342.1676912,
+    "ast_hash": "5368f5b0b93f41324eb3714281c6db48",
+    "semantic_hash": "5368f5b0b93f41324eb3714281c6db48"
+  },
+  "src/main/java/com/quanlyphongtro/model/PaymentTransaction.java": {
+    "mtime": 1782306003.5206096,
+    "ast_hash": "ed7ac6765bf49e15214384f232b9d352",
+    "semantic_hash": "ed7ac6765bf49e15214384f232b9d352"
+  },
+  "src/main/java/com/quanlyphongtro/model/Request.java": {
+    "mtime": 1783159477.3694184,
+    "ast_hash": "9701c06936352a2f21a593460bfe4b3a",
+    "semantic_hash": "9701c06936352a2f21a593460bfe4b3a"
+  },
+  "src/main/java/com/quanlyphongtro/model/Room.java": {
+    "mtime": 1782719342.1762514,
+    "ast_hash": "1c988bf69093d80dd5c62ca76cf52098",
+    "semantic_hash": "1c988bf69093d80dd5c62ca76cf52098"
+  },
+  "src/main/java/com/quanlyphongtro/model/User.java": {
+    "mtime": 1782719342.1762514,
+    "ast_hash": "43c0d6f58f0af1a34907aabafd81a698",
+    "semantic_hash": "43c0d6f58f0af1a34907aabafd81a698"
+  },
+  "src/main/java/com/quanlyphongtro/service/ContractService.java": {
+    "mtime": 1783101931.7348545,
+    "ast_hash": "14a08328379a26be26ee124a34c7a545",
+    "semantic_hash": "14a08328379a26be26ee124a34c7a545"
+  },
+  "src/main/java/com/quanlyphongtro/service/DashboardService.java": {
+    "mtime": 1782064888.5573041,
+    "ast_hash": "14940a5bbef37ed3ee1cb746830e8ba0",
+    "semantic_hash": "14940a5bbef37ed3ee1cb746830e8ba0"
+  },
+  "src/main/java/com/quanlyphongtro/service/DebtService.java": {
+    "mtime": 1782306003.5226135,
+    "ast_hash": "8a44db054d6aa22367260e14c9b2783b",
+    "semantic_hash": "8a44db054d6aa22367260e14c9b2783b"
+  },
+  "src/main/java/com/quanlyphongtro/service/DependentService.java": {
+    "mtime": 1782306003.5226135,
+    "ast_hash": "24c01d8f1a43c8a8165efd1273d97305",
+    "semantic_hash": "24c01d8f1a43c8a8165efd1273d97305"
+  },
+  "src/main/java/com/quanlyphongtro/service/InvoiceService.java": {
+    "mtime": 1782397408.604357,
+    "ast_hash": "324d5099160c644d1386081c5dd1ad95",
+    "semantic_hash": "324d5099160c644d1386081c5dd1ad95"
+  },
+  "src/main/java/com/quanlyphongtro/service/MeterReadingService.java": {
+    "mtime": 1782398044.2902856,
+    "ast_hash": "f095fd3dc0ecc3154104c27003564fe2",
+    "semantic_hash": "f095fd3dc0ecc3154104c27003564fe2"
+  },
+  "src/main/java/com/quanlyphongtro/service/NotificationService.java": {
+    "mtime": 1782719342.1762514,
+    "ast_hash": "793f2c13123bb336ef432c2946434d53",
+    "semantic_hash": "793f2c13123bb336ef432c2946434d53"
+  },
+  "src/main/java/com/quanlyphongtro/service/PaymentService.java": {
+    "mtime": 1782397408.604357,
+    "ast_hash": "fb53d79517f99e361b2b2f79dd5075af",
+    "semantic_hash": "fb53d79517f99e361b2b2f79dd5075af"
+  },
+  "src/main/java/com/quanlyphongtro/service/RequestService.java": {
+    "mtime": 1783157896.1764991,
+    "ast_hash": "465f00f17664b4932e2679b86943311e",
+    "semantic_hash": "465f00f17664b4932e2679b86943311e"
+  },
+  "src/main/java/com/quanlyphongtro/service/ServicePriceService.java": {
+    "mtime": 1782306003.5226135,
+    "ast_hash": "4b0e18b3d3fc235b7a9c9dc82d06a061",
+    "semantic_hash": "4b0e18b3d3fc235b7a9c9dc82d06a061"
+  },
+  "src/main/java/com/quanlyphongtro/service/TenantService.java": {
+    "mtime": 1782306003.5226135,
+    "ast_hash": "c54de67dc8a1dcdbc6ef8bea86cf63c8",
+    "semantic_hash": "c54de67dc8a1dcdbc6ef8bea86cf63c8"
+  },
+  "src/main/java/com/quanlyphongtro/service/UserService.java": {
+    "mtime": 1781848199.8754601,
+    "ast_hash": "5cc3c0c0b423e7eb9423d2c4faa77316",
+    "semantic_hash": "5cc3c0c0b423e7eb9423d2c4faa77316"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/ContractServiceImpl.java": {
+    "mtime": 1783101931.736858,
+    "ast_hash": "40d6189ed83f159636f0e5a5535089e3",
+    "semantic_hash": "40d6189ed83f159636f0e5a5535089e3"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/DebtServiceImpl.java": {
+    "mtime": 1782306003.5246172,
+    "ast_hash": "fa69fd1c18d44b2f5aa0ad88761a0d68",
+    "semantic_hash": "fa69fd1c18d44b2f5aa0ad88761a0d68"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/DependentServiceImpl.java": {
+    "mtime": 1782306003.5246172,
+    "ast_hash": "606010f74f3fad1a7d10580bdd8490ae",
+    "semantic_hash": "606010f74f3fad1a7d10580bdd8490ae"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java": {
+    "mtime": 1782397408.6053574,
+    "ast_hash": "4bfd083d37cff1faa8edd3668edb8fed",
+    "semantic_hash": "4bfd083d37cff1faa8edd3668edb8fed"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/NotificationServiceImpl.java": {
+    "mtime": 1782719342.1762514,
+    "ast_hash": "82dfc3616c68114905cdd36bd627f04b",
+    "semantic_hash": "82dfc3616c68114905cdd36bd627f04b"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/PaymentServiceImpl.java": {
+    "mtime": 1782397408.6053574,
+    "ast_hash": "be2401d7e958ffb376fe4e341f177aa9",
+    "semantic_hash": "be2401d7e958ffb376fe4e341f177aa9"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/RequestServiceImpl.java": {
+    "mtime": 1783157898.1880176,
+    "ast_hash": "10a681f7d871fc2740b6361c32442577",
+    "semantic_hash": "10a681f7d871fc2740b6361c32442577"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/ServicePriceServiceImpl.java": {
+    "mtime": 1782719342.1762514,
+    "ast_hash": "a403395e5567abcfcaff29a52320de97",
+    "semantic_hash": "a403395e5567abcfcaff29a52320de97"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/TenantServiceImpl.java": {
+    "mtime": 1782306003.5266209,
+    "ast_hash": "7784890343654385ce4353efc323ea7c",
+    "semantic_hash": "7784890343654385ce4353efc323ea7c"
+  },
+  "src/main/java/com/quanlyphongtro/service/impl/UserServiceImpl.java": {
+    "mtime": 1782397458.6091745,
+    "ast_hash": "6cffdf323898fea23995376c1838d3fb",
+    "semantic_hash": "6cffdf323898fea23995376c1838d3fb"
+  },
+  "src/main/java/com/quanlyphongtro/util/AuditLogHelper.java": {
+    "mtime": 1782306003.5266209,
+    "ast_hash": "98229baa959355eab3f6d5cbf297b198",
+    "semantic_hash": "98229baa959355eab3f6d5cbf297b198"
+  },
+  "src/main/java/com/quanlyphongtro/util/DatabaseUtil.java": {
+    "mtime": 1783101931.7374027,
+    "ast_hash": "0db31a6dc697fb7145494eeea847268c",
+    "semantic_hash": "0db31a6dc697fb7145494eeea847268c"
+  },
+  "src/main/java/com/quanlyphongtro/util/EmailService.java": {
+    "mtime": 1782306003.527625,
+    "ast_hash": "b908ca02392aa4f3c22235ea2372f556",
+    "semantic_hash": "b908ca02392aa4f3c22235ea2372f556"
+  },
+  "src/main/java/com/quanlyphongtro/util/LoginAttemptTracker.java": {
+    "mtime": 1781848199.8754601,
+    "ast_hash": "f9367c5aafd0f29a6e0539112d7722cb",
+    "semantic_hash": "f9367c5aafd0f29a6e0539112d7722cb"
+  },
+  "src/main/java/com/quanlyphongtro/util/PasswordUtil.java": {
+    "mtime": 1782306003.527625,
+    "ast_hash": "8853125c9c372cfac22e1260d6c832b9",
+    "semantic_hash": "8853125c9c372cfac22e1260d6c832b9"
+  },
+  "src/main/java/com/quanlyphongtro/util/PasswordValidator.java": {
+    "mtime": 1782390823.821429,
+    "ast_hash": "bcff98c755a628ed4bf679f6610269a9",
+    "semantic_hash": "bcff98c755a628ed4bf679f6610269a9"
+  },
+  "src/main/java/com/quanlyphongtro/util/RateLimitManager.java": {
+    "mtime": 1782064888.5603042,
+    "ast_hash": "d8ed2189063ca7bbc0c1bcc8ace1e724",
+    "semantic_hash": "d8ed2189063ca7bbc0c1bcc8ace1e724"
+  },
+  "src/main/java/com/quanlyphongtro/util/ResetTokenManager.java": {
+    "mtime": 1782064888.5613039,
+    "ast_hash": "d37f93355600b1257c5f25608eeac983",
+    "semantic_hash": "d37f93355600b1257c5f25608eeac983"
+  },
+  "src/main/java/com/quanlyphongtro/util/SessionRegistry.java": {
+    "mtime": 1782064888.5613039,
+    "ast_hash": "74f33277d47d8d92362ea164a8639f45",
+    "semantic_hash": "74f33277d47d8d92362ea164a8639f45"
+  },
+  "src/main/java/com/quanlyphongtro/util/VNPayConfig.java": {
+    "mtime": 1783101931.7374027,
+    "ast_hash": "f6d3e2799aa1c450f0836485b9eb6c5d",
+    "semantic_hash": "f6d3e2799aa1c450f0836485b9eb6c5d"
+  },
+  "src/main/java/com/quanlyphongtro/util/ValidationUtil.java": {
+    "mtime": 1782397408.6066024,
+    "ast_hash": "23346c4b03ff059352817625b53437f2",
+    "semantic_hash": "23346c4b03ff059352817625b53437f2"
+  },
+  "src/main/webapp/assets/js/hostel-app.js": {
+    "mtime": 1782397408.6116452,
+    "ast_hash": "f8f39fc3db264d3a492cc758392dac60",
+    "semantic_hash": "f8f39fc3db264d3a492cc758392dac60"
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1783587526.0473201,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": "a0e4d192b9e2e17256124dbfc8e24e6a"
+  },
+  ".agents/skills/speckit-agent-context-update/SKILL.md": {
+    "mtime": 1782757684.6389527,
+    "ast_hash": "29e9c0bde4d1a21e8b17a1f4e75a51c8",
+    "semantic_hash": "29e9c0bde4d1a21e8b17a1f4e75a51c8"
+  },
+  ".agents/skills/speckit-analyze/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "abc5bf5f2aaaa4f554562de3df601c60",
+    "semantic_hash": "abc5bf5f2aaaa4f554562de3df601c60"
+  },
+  ".agents/skills/speckit-checklist/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "b30e2d4169502aa43f16362582c7af8e",
+    "semantic_hash": "b30e2d4169502aa43f16362582c7af8e"
+  },
+  ".agents/skills/speckit-clarify/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "136cb3c79160818b4126bbe801254e3e",
+    "semantic_hash": "136cb3c79160818b4126bbe801254e3e"
+  },
+  ".agents/skills/speckit-constitution/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "c73bbb762fd2c054e31d2c264193720b",
+    "semantic_hash": "c73bbb762fd2c054e31d2c264193720b"
+  },
+  ".agents/skills/speckit-converge/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "d7c3c5b9258482d4323c786c93904b49",
+    "semantic_hash": "d7c3c5b9258482d4323c786c93904b49"
+  },
+  ".agents/skills/speckit-implement/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "b9d39005a630fa1c5de89c8ab346922c",
+    "semantic_hash": "b9d39005a630fa1c5de89c8ab346922c"
+  },
+  ".agents/skills/speckit-plan/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "06a3d2e03313009c05f52e8cce8c27d3",
+    "semantic_hash": "06a3d2e03313009c05f52e8cce8c27d3"
+  },
+  ".agents/skills/speckit-specify/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "e1a9dbe264db6e5f7f6907585fc4b3db",
+    "semantic_hash": "e1a9dbe264db6e5f7f6907585fc4b3db"
+  },
+  ".agents/skills/speckit-tasks/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "2fa154c5b738f95f9bf53ff812ca818a",
+    "semantic_hash": "2fa154c5b738f95f9bf53ff812ca818a"
+  },
+  ".agents/skills/speckit-taskstoissues/SKILL.md": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "f57b8fba2916aac9b76201a4f47e392f",
+    "semantic_hash": "f57b8fba2916aac9b76201a4f47e392f"
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1783587526.0473201,
+    "ast_hash": "637776aa6f7496d069afe7520c845c8a",
+    "semantic_hash": "637776aa6f7496d069afe7520c845c8a"
+  },
+  ".claude/CLAUDE.md": {
+    "mtime": 1783587029.389686,
+    "ast_hash": "c232166e6492ba1ed955030b16979b05",
+    "semantic_hash": "c232166e6492ba1ed955030b16979b05"
+  },
+  ".claude/skills/graphify/SKILL.md": {
+    "mtime": 1783587029.3816552,
+    "ast_hash": "60dae20a917d4f50294ef7f88470cf53",
+    "semantic_hash": "60dae20a917d4f50294ef7f88470cf53"
+  },
+  ".claude/skills/graphify/references/add-watch.md": {
+    "mtime": 1783587008.10729,
+    "ast_hash": "d59d027fe449f06aa03905a01184e779",
+    "semantic_hash": "d59d027fe449f06aa03905a01184e779"
+  },
+  ".claude/skills/graphify/references/exports.md": {
+    "mtime": 1783587008.10729,
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
+  },
+  ".claude/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1783587008.108323,
+    "ast_hash": "42fef56a01698118f7fd722acdadea34",
+    "semantic_hash": "42fef56a01698118f7fd722acdadea34"
+  },
+  ".claude/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1783587008.108323,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
+  },
+  ".claude/skills/graphify/references/hooks.md": {
+    "mtime": 1783587008.1093352,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
+  },
+  ".claude/skills/graphify/references/query.md": {
+    "mtime": 1783587008.1093352,
+    "ast_hash": "3c46f8ad006874260614ed8657d02307",
+    "semantic_hash": "3c46f8ad006874260614ed8657d02307"
+  },
+  ".claude/skills/graphify/references/transcribe.md": {
+    "mtime": 1783587008.1123037,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
+  },
+  ".claude/skills/graphify/references/update.md": {
+    "mtime": 1783587008.1134584,
+    "ast_hash": "c698309979460d0f02ba616417844399",
+    "semantic_hash": "c698309979460d0f02ba616417844399"
+  },
+  ".specify/extensions.yml": {
+    "mtime": 1782757684.64323,
+    "ast_hash": "6fc655d042586d15ec3356b836bfd8ab",
+    "semantic_hash": "6fc655d042586d15ec3356b836bfd8ab"
+  },
+  ".specify/extensions/agent-context/README.md": {
+    "mtime": 1782757684.650481,
+    "ast_hash": "58fd356d3a2661365827d32d2cdd041a",
+    "semantic_hash": "58fd356d3a2661365827d32d2cdd041a"
+  },
+  ".specify/extensions/agent-context/agent-context-config.yml": {
+    "mtime": 1782757684.650481,
+    "ast_hash": "4c290ba881d5b74765eeb2e5b7b5a95e",
+    "semantic_hash": "4c290ba881d5b74765eeb2e5b7b5a95e"
+  },
+  ".specify/extensions/agent-context/commands/speckit.agent-context.update.md": {
+    "mtime": 1782757684.650481,
+    "ast_hash": "4c630909ab8012a02fff50b917a7361b",
+    "semantic_hash": "4c630909ab8012a02fff50b917a7361b"
+  },
+  ".specify/extensions/agent-context/extension.yml": {
+    "mtime": 1782757684.650481,
+    "ast_hash": "862d88fd98ac8b7ba101da18f80fb8ae",
+    "semantic_hash": "862d88fd98ac8b7ba101da18f80fb8ae"
+  },
+  ".specify/memory/constitution.md": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "5828a9f7f18d85b62ddf26c0d74fb396",
+    "semantic_hash": "5828a9f7f18d85b62ddf26c0d74fb396"
+  },
+  ".specify/templates/checklist-template.md": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "8532a1ca482a9f356b9cedec08a01b3b",
+    "semantic_hash": "8532a1ca482a9f356b9cedec08a01b3b"
+  },
+  ".specify/templates/constitution-template.md": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "8667511ac346dad1c731438a3081aaa1",
+    "semantic_hash": "8667511ac346dad1c731438a3081aaa1"
+  },
+  ".specify/templates/plan-template.md": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "d27f8f859c4d4cf2a3dd52d308b67f0d",
+    "semantic_hash": "d27f8f859c4d4cf2a3dd52d308b67f0d"
+  },
+  ".specify/templates/spec-template.md": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "593b5f4630b0a5bf7714c04861b45d8f",
+    "semantic_hash": "593b5f4630b0a5bf7714c04861b45d8f"
+  },
+  ".specify/templates/tasks-template.md": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "0a5a0d55a634eb7178cd7c6d2aa0b0a7",
+    "semantic_hash": "0a5a0d55a634eb7178cd7c6d2aa0b0a7"
+  },
+  ".specify/workflows/speckit/workflow.yml": {
+    "mtime": 1782757684.6533368,
+    "ast_hash": "b5eba131f0b187c5a948c3a946871a53",
+    "semantic_hash": "b5eba131f0b187c5a948c3a946871a53"
+  },
+  "CLAUDE.md": {
+    "mtime": 1783587029.3911927,
+    "ast_hash": "8a6643a420fdad6bfb583523bc6cef16",
+    "semantic_hash": "8a6643a420fdad6bfb583523bc6cef16"
+  },
+  "docker/docker-compose.yml": {
+    "mtime": 1783012743.612587,
+    "ast_hash": "5935fe605319133639c53dbbf365ea19",
+    "semantic_hash": "5935fe605319133639c53dbbf365ea19"
+  },
+  "my-project/agents/AGENTS.md": {
+    "mtime": 1783101931.7265725,
+    "ast_hash": "21825b6bd5e5aff6511e5ee5bcac0572",
+    "semantic_hash": "21825b6bd5e5aff6511e5ee5bcac0572"
+  },
+  "my-project/agents/CLAUDE.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "455806d1dd5b59dd8cc4c13b9b8de0db",
+    "semantic_hash": "455806d1dd5b59dd8cc4c13b9b8de0db"
+  },
+  "my-project/frontend/DESIGN.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "4216b58896ae3461339adbd6e489da12",
+    "semantic_hash": "4216b58896ae3461339adbd6e489da12"
+  },
+  "my-project/screenflow/Admin.md": {
+    "mtime": 1782306003.4855936,
+    "ast_hash": "4e411e7be439898e0cfddad54a208539",
+    "semantic_hash": "4e411e7be439898e0cfddad54a208539"
+  },
+  "my-project/screenflow/Mainflow.md": {
+    "mtime": 1783101931.727092,
+    "ast_hash": "ab6809c13793ffb1c4732052fa4b5082",
+    "semantic_hash": "ab6809c13793ffb1c4732052fa4b5082"
+  },
+  "my-project/screenflow/Manager.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "7715e647f5816520f29cee1e3d752292",
+    "semantic_hash": "7715e647f5816520f29cee1e3d752292"
+  },
+  "my-project/screenflow/Operator.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "833583bf68f8d4baff4beee74e1d2a79",
+    "semantic_hash": "833583bf68f8d4baff4beee74e1d2a79"
+  },
+  "my-project/screenflow/Tenant.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "a356638c2d3339e3b835a1f93b0585b6",
+    "semantic_hash": "a356638c2d3339e3b835a1f93b0585b6"
+  },
+  "my-project/sdd/SYNC_REPORT.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "4a8b9a2d99953d6569d67c3e138ef934",
+    "semantic_hash": "4a8b9a2d99953d6569d67c3e138ef934"
+  },
+  "my-project/sdd/constitution.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "6caf6c285923ac5cfdf5830206797414",
+    "semantic_hash": "6caf6c285923ac5cfdf5830206797414"
+  },
+  "my-project/sdd/constraints/business.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "57abbc59265c0e5f8958e6f5bb13710e",
+    "semantic_hash": "57abbc59265c0e5f8958e6f5bb13710e"
+  },
+  "my-project/sdd/constraints/global.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "9cd01f44585ff3f5991beb9bcc6676ea",
+    "semantic_hash": "9cd01f44585ff3f5991beb9bcc6676ea"
+  },
+  "my-project/sdd/constraints/safety.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "124c1bf4f5970316fc6670e5b8f6d167",
+    "semantic_hash": "124c1bf4f5970316fc6670e5b8f6d167"
+  },
+  "my-project/sdd/rfcs/ADR-001-auth.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "39a6596627587c01679053509be0f1af",
+    "semantic_hash": "39a6596627587c01679053509be0f1af"
+  },
+  "my-project/sdd/share_context.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "my-project/sdd/skills/api-security.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "8c98d97ce8a3d37122816be021574138",
+    "semantic_hash": "8c98d97ce8a3d37122816be021574138"
+  },
+  "my-project/sdd/skills/sql-performance.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "4b967d584124027f321bc0b1a7620930",
+    "semantic_hash": "4b967d584124027f321bc0b1a7620930"
+  },
+  "my-project/sdd/specs/_template.md": {
+    "mtime": 1783436439.1027255,
+    "ast_hash": "a8650029c162f33bc8590d492d86126f",
+    "semantic_hash": "a8650029c162f33bc8590d492d86126f"
+  },
+  "my-project/sdd/specs/admin/auditLogs/CONTEXT.md": {
+    "mtime": 1782306003.4855936,
+    "ast_hash": "6753397a010c811b6347ea62450d027e",
+    "semantic_hash": "6753397a010c811b6347ea62450d027e"
+  },
+  "my-project/sdd/specs/admin/auditLogs/PLAN.md": {
+    "mtime": 1782306003.4855936,
+    "ast_hash": "71a2163695886c2520ca556082d948e9",
+    "semantic_hash": "71a2163695886c2520ca556082d948e9"
+  },
+  "my-project/sdd/specs/admin/auditLogs/RULE.md": {
+    "mtime": 1782306003.4855936,
+    "ast_hash": "446b4a662042f86d5170500484b30c8e",
+    "semantic_hash": "446b4a662042f86d5170500484b30c8e"
+  },
+  "my-project/sdd/specs/admin/auditLogs/SPEC.md": {
+    "mtime": 1782306003.486596,
+    "ast_hash": "faa1cb85aab041a489e34de18a60b729",
+    "semantic_hash": "faa1cb85aab041a489e34de18a60b729"
+  },
+  "my-project/sdd/specs/admin/auditLogs/TASKS.md": {
+    "mtime": 1782306003.486596,
+    "ast_hash": "183f44b26644945b4b3e057607a0dcf3",
+    "semantic_hash": "183f44b26644945b4b3e057607a0dcf3"
+  },
+  "my-project/sdd/specs/admin/dashboard/CONTEXT.md": {
+    "mtime": 1783101931.7276084,
+    "ast_hash": "3b05cdddfda92598e51b3d7e401b1232",
+    "semantic_hash": "3b05cdddfda92598e51b3d7e401b1232"
+  },
+  "my-project/sdd/specs/admin/dashboard/PLAN.md": {
+    "mtime": 1783101931.7281287,
+    "ast_hash": "5a6ea585148cd026e69d70c965ca1346",
+    "semantic_hash": "5a6ea585148cd026e69d70c965ca1346"
+  },
+  "my-project/sdd/specs/admin/dashboard/RULE.md": {
+    "mtime": 1783101931.7281287,
+    "ast_hash": "ef14a7e4096946d0ff0f4a52e83d6557",
+    "semantic_hash": "ef14a7e4096946d0ff0f4a52e83d6557"
+  },
+  "my-project/sdd/specs/admin/dashboard/SPEC.md": {
+    "mtime": 1783101931.728693,
+    "ast_hash": "e649ebb774f8c6c09465191c7f2dfebf",
+    "semantic_hash": "e649ebb774f8c6c09465191c7f2dfebf"
+  },
+  "my-project/sdd/specs/admin/dashboard/TASKS.md": {
+    "mtime": 1783101931.7292116,
+    "ast_hash": "ee32ebea7376f9f4ecf99de49d2b2d00",
+    "semantic_hash": "ee32ebea7376f9f4ecf99de49d2b2d00"
+  },
+  "my-project/sdd/specs/admin/facilityManagement/CONTEXT.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "d891a6221a0c93d4cc36d42603671927",
+    "semantic_hash": "d891a6221a0c93d4cc36d42603671927"
+  },
+  "my-project/sdd/specs/admin/facilityManagement/PLAN.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "6bd5fd7bfeaf29c056c3b00daf8940df",
+    "semantic_hash": "6bd5fd7bfeaf29c056c3b00daf8940df"
+  },
+  "my-project/sdd/specs/admin/facilityManagement/RULE.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "513d52db7e3bbe15e9b3ed6b199536c3",
+    "semantic_hash": "513d52db7e3bbe15e9b3ed6b199536c3"
+  },
+  "my-project/sdd/specs/admin/facilityManagement/SPEC.md": {
+    "mtime": 1782306003.4886003,
+    "ast_hash": "7f1f9ae9b0ecba911598b84f35514330",
+    "semantic_hash": "7f1f9ae9b0ecba911598b84f35514330"
+  },
+  "my-project/sdd/specs/admin/facilityManagement/TASKS.md": {
+    "mtime": 1781848199.811944,
+    "ast_hash": "b31e2709fcfa3287045f9d14ed137030",
+    "semantic_hash": "b31e2709fcfa3287045f9d14ed137030"
+  },
+  "my-project/sdd/specs/admin/notificationManagement/CONTEXT.md": {
+    "mtime": 1782306003.4886003,
+    "ast_hash": "d10ef070964160e784bf158a06a5800b",
+    "semantic_hash": "d10ef070964160e784bf158a06a5800b"
+  },
+  "my-project/sdd/specs/admin/notificationManagement/PLAN.md": {
+    "mtime": 1782306003.4886003,
+    "ast_hash": "1b05b36ff9a163e2c5a45e45f0517ae1",
+    "semantic_hash": "1b05b36ff9a163e2c5a45e45f0517ae1"
+  },
+  "my-project/sdd/specs/admin/notificationManagement/RULE.md": {
+    "mtime": 1782306003.489593,
+    "ast_hash": "44fcf390e2ac6f00e85bf1ab04f48aad",
+    "semantic_hash": "44fcf390e2ac6f00e85bf1ab04f48aad"
+  },
+  "my-project/sdd/specs/admin/notificationManagement/SPEC.md": {
+    "mtime": 1782306003.489593,
+    "ast_hash": "d9e8cbc10fc5a67b06c5e01b9889b908",
+    "semantic_hash": "d9e8cbc10fc5a67b06c5e01b9889b908"
+  },
+  "my-project/sdd/specs/admin/notificationManagement/TASKS.md": {
+    "mtime": 1782306003.489593,
+    "ast_hash": "47fb232823d5c3a699dec8f7b70b5e58",
+    "semantic_hash": "47fb232823d5c3a699dec8f7b70b5e58"
+  },
+  "my-project/sdd/specs/admin/personnelManagemenr/CONTEXT.md": {
+    "mtime": 1781848199.8276713,
+    "ast_hash": "6ca890eeb3975378f7803e06878252d2",
+    "semantic_hash": "6ca890eeb3975378f7803e06878252d2"
+  },
+  "my-project/sdd/specs/admin/personnelManagemenr/PLAN.md": {
+    "mtime": 1782306003.489593,
+    "ast_hash": "f0b6b9305c09d61c592f03bc0bd93062",
+    "semantic_hash": "f0b6b9305c09d61c592f03bc0bd93062"
+  },
+  "my-project/sdd/specs/admin/personnelManagemenr/RULE.md": {
+    "mtime": 1781848199.8276713,
+    "ast_hash": "98db32621e47d633f0d1f2998e3cefd1",
+    "semantic_hash": "98db32621e47d633f0d1f2998e3cefd1"
+  },
+  "my-project/sdd/specs/admin/personnelManagemenr/SPEC.md": {
+    "mtime": 1782306003.490697,
+    "ast_hash": "cd75c7bf9889aec0954e62f926cfe5cc",
+    "semantic_hash": "cd75c7bf9889aec0954e62f926cfe5cc"
+  },
+  "my-project/sdd/specs/admin/personnelManagemenr/TASKS.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "690a3e4e5e7065aad849c8c785d19501",
+    "semantic_hash": "690a3e4e5e7065aad849c8c785d19501"
+  },
+  "my-project/sdd/specs/admin/viewRevenue/CONTEXT.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "3ad2017485e9e56ba810c5403e2e3ea1",
+    "semantic_hash": "3ad2017485e9e56ba810c5403e2e3ea1"
+  },
+  "my-project/sdd/specs/admin/viewRevenue/PLAN.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "8445a02727b5c354c979851637e5570e",
+    "semantic_hash": "8445a02727b5c354c979851637e5570e"
+  },
+  "my-project/sdd/specs/admin/viewRevenue/RULE.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "c7aa1d159481478d749eb000eb1b1a11",
+    "semantic_hash": "c7aa1d159481478d749eb000eb1b1a11"
+  },
+  "my-project/sdd/specs/admin/viewRevenue/SPEC.md": {
+    "mtime": 1782306003.490697,
+    "ast_hash": "cd4f950e3a3541cfbfdad8469bf073c2",
+    "semantic_hash": "cd4f950e3a3541cfbfdad8469bf073c2"
+  },
+  "my-project/sdd/specs/admin/viewRevenue/TASKS.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "d0b765448f42e8b9ae41231c794a2b82",
+    "semantic_hash": "d0b765448f42e8b9ae41231c794a2b82"
+  },
+  "my-project/sdd/specs/auth/ChangePassword/Context.md": {
+    "mtime": 1782756999.8313444,
+    "ast_hash": "19fe771a79c43ed327e8eed014f12375",
+    "semantic_hash": "19fe771a79c43ed327e8eed014f12375"
+  },
+  "my-project/sdd/specs/auth/ChangePassword/Plan.md": {
+    "mtime": 1782306003.4916966,
+    "ast_hash": "01569f8cb5adbb99d9c9e8631d4999e7",
+    "semantic_hash": "01569f8cb5adbb99d9c9e8631d4999e7"
+  },
+  "my-project/sdd/specs/auth/ChangePassword/Spec.md": {
+    "mtime": 1782756999.8313444,
+    "ast_hash": "6128d1d166958d82a12192a9ecdffbb9",
+    "semantic_hash": "6128d1d166958d82a12192a9ecdffbb9"
+  },
+  "my-project/sdd/specs/auth/ChangePassword/Task.md": {
+    "mtime": 1782306003.4916966,
+    "ast_hash": "83eac2dc7dbdbf84c6dc26c32cd88ba0",
+    "semantic_hash": "83eac2dc7dbdbf84c6dc26c32cd88ba0"
+  },
+  "my-project/sdd/specs/auth/ForgotPassword/Context.md": {
+    "mtime": 1782064888.5342178,
+    "ast_hash": "b28c418b144f59ec281675e6a8725fa0",
+    "semantic_hash": "b28c418b144f59ec281675e6a8725fa0"
+  },
+  "my-project/sdd/specs/auth/ForgotPassword/Plan.md": {
+    "mtime": 1782064888.5342178,
+    "ast_hash": "f347eb4b608d1bdfc0471fa6b50f6054",
+    "semantic_hash": "f347eb4b608d1bdfc0471fa6b50f6054"
+  },
+  "my-project/sdd/specs/auth/ForgotPassword/Spec.md": {
+    "mtime": 1782064888.5342178,
+    "ast_hash": "626da6bb6db6ae68e4963f704035edec",
+    "semantic_hash": "626da6bb6db6ae68e4963f704035edec"
+  },
+  "my-project/sdd/specs/auth/ForgotPassword/Task.md": {
+    "mtime": 1782064888.5342178,
+    "ast_hash": "c39d03e26a3499104bcc7bfc9adc2788",
+    "semantic_hash": "c39d03e26a3499104bcc7bfc9adc2788"
+  },
+  "my-project/sdd/specs/auth/Login/Context.md": {
+    "mtime": 1782756999.8313444,
+    "ast_hash": "6424fa347f67e627a35a55822e2b198b",
+    "semantic_hash": "6424fa347f67e627a35a55822e2b198b"
+  },
+  "my-project/sdd/specs/auth/Login/PLAN.md": {
+    "mtime": 1782306003.4926965,
+    "ast_hash": "99e8c2a9b41fee97e3ebd58114e62a32",
+    "semantic_hash": "99e8c2a9b41fee97e3ebd58114e62a32"
+  },
+  "my-project/sdd/specs/auth/Login/Spec.md": {
+    "mtime": 1782756999.8313444,
+    "ast_hash": "fb4f839e6528b71a7f646b64270c340a",
+    "semantic_hash": "fb4f839e6528b71a7f646b64270c340a"
+  },
+  "my-project/sdd/specs/auth/Login/Task.md": {
+    "mtime": 1782306003.4926965,
+    "ast_hash": "cde1f31c43632f25759ec3e6e9fdd614",
+    "semantic_hash": "cde1f31c43632f25759ec3e6e9fdd614"
+  },
+  "my-project/sdd/specs/auth/Profile/Context.md": {
+    "mtime": 1782064888.536217,
+    "ast_hash": "e682870cc4243acc7a5808e9ed9aaada",
+    "semantic_hash": "e682870cc4243acc7a5808e9ed9aaada"
+  },
+  "my-project/sdd/specs/auth/Profile/Plan.md": {
+    "mtime": 1782064888.536217,
+    "ast_hash": "0574e1f3f15778cbf2bcc43353571a4c",
+    "semantic_hash": "0574e1f3f15778cbf2bcc43353571a4c"
+  },
+  "my-project/sdd/specs/auth/Profile/Spec.md": {
+    "mtime": 1782064888.536217,
+    "ast_hash": "3a9feb621c116bf1b9a3df2b51ea7b2c",
+    "semantic_hash": "3a9feb621c116bf1b9a3df2b51ea7b2c"
+  },
+  "my-project/sdd/specs/auth/Profile/Task.md": {
+    "mtime": 1782064888.5372171,
+    "ast_hash": "dfecb2de181cd257b9669903f1a43f0d",
+    "semantic_hash": "dfecb2de181cd257b9669903f1a43f0d"
+  },
+  "my-project/sdd/specs/manager/contractmanagement/CONTEXT.md": {
+    "mtime": 1782306003.4936976,
+    "ast_hash": "fa9272f3cce72530d143d342047b43ae",
+    "semantic_hash": "fa9272f3cce72530d143d342047b43ae"
+  },
+  "my-project/sdd/specs/manager/contractmanagement/Hopdong.md": {
+    "mtime": 1782306003.4936976,
+    "ast_hash": "84fbb7b659d6e776b3cdd7116ba82940",
+    "semantic_hash": "84fbb7b659d6e776b3cdd7116ba82940"
+  },
+  "my-project/sdd/specs/manager/contractmanagement/PLAN.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "my-project/sdd/specs/manager/contractmanagement/SPEC.md": {
+    "mtime": 1782306003.4936976,
+    "ast_hash": "61e0b0e03dfb8ff543b158c589109166",
+    "semantic_hash": "61e0b0e03dfb8ff543b158c589109166"
+  },
+  "my-project/sdd/specs/manager/contractmanagement/TASKS.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "my-project/sdd/specs/manager/debtManagement/CONTEXT.md": {
+    "mtime": 1782306003.4946964,
+    "ast_hash": "a93a8bd6170f585f2037b2a551702c88",
+    "semantic_hash": "a93a8bd6170f585f2037b2a551702c88"
+  },
+  "my-project/sdd/specs/manager/debtManagement/PLAN.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "6b91a775eea0093825946c1de1d44ae8",
+    "semantic_hash": "6b91a775eea0093825946c1de1d44ae8"
+  },
+  "my-project/sdd/specs/manager/debtManagement/SPEC.md": {
+    "mtime": 1782306003.4946964,
+    "ast_hash": "3344657dc381c2d8037f1c58c11e9742",
+    "semantic_hash": "3344657dc381c2d8037f1c58c11e9742"
+  },
+  "my-project/sdd/specs/manager/debtManagement/TASKS.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "643ca0322a431b73da259942a8d92121",
+    "semantic_hash": "643ca0322a431b73da259942a8d92121"
+  },
+  "my-project/sdd/specs/manager/dependentManagement/CONTEXT.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "83e3638df1396776ce08fa7451d4f4b3",
+    "semantic_hash": "83e3638df1396776ce08fa7451d4f4b3"
+  },
+  "my-project/sdd/specs/manager/dependentManagement/PLAN.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "fd38f8561f16f88d09e5cdb0b116430a",
+    "semantic_hash": "fd38f8561f16f88d09e5cdb0b116430a"
+  },
+  "my-project/sdd/specs/manager/dependentManagement/SPEC.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "42ecffaaed48c700770a7216625073ba",
+    "semantic_hash": "42ecffaaed48c700770a7216625073ba"
+  },
+  "my-project/sdd/specs/manager/dependentManagement/TASKS.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "8798b2e2cee36655ab1de67bd06d6fd4",
+    "semantic_hash": "8798b2e2cee36655ab1de67bd06d6fd4"
+  },
+  "my-project/sdd/specs/manager/invoiceManagement/CONTEXT.md": {
+    "mtime": 1782306003.4946964,
+    "ast_hash": "f10e541768ac36baf01ef66bb0e787f1",
+    "semantic_hash": "f10e541768ac36baf01ef66bb0e787f1"
+  },
+  "my-project/sdd/specs/manager/invoiceManagement/PLAN.md": {
+    "mtime": 1781848199.8302598,
+    "ast_hash": "b3024e74c58d3e64afecee7cfcbbf545",
+    "semantic_hash": "b3024e74c58d3e64afecee7cfcbbf545"
+  },
+  "my-project/sdd/specs/manager/invoiceManagement/SPEC.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "809e89f79d8dbf2cdfdcaf1784157b03",
+    "semantic_hash": "809e89f79d8dbf2cdfdcaf1784157b03"
+  },
+  "my-project/sdd/specs/manager/invoiceManagement/TASKS.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "d47ebd1ab18d905ed4ca2ca8c6b0bbd7",
+    "semantic_hash": "d47ebd1ab18d905ed4ca2ca8c6b0bbd7"
+  },
+  "my-project/sdd/specs/manager/notificationFacilityManagement/CONTEXT.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "b848c390cdfbd9c8a8a69c3407d24e60",
+    "semantic_hash": "b848c390cdfbd9c8a8a69c3407d24e60"
+  },
+  "my-project/sdd/specs/manager/notificationFacilityManagement/PLAN.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "df6756fb54812b9a8b255de9c245f384",
+    "semantic_hash": "df6756fb54812b9a8b255de9c245f384"
+  },
+  "my-project/sdd/specs/manager/notificationFacilityManagement/SPEC.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "55e6dec8ec9ec322fae9184a98d506b5",
+    "semantic_hash": "55e6dec8ec9ec322fae9184a98d506b5"
+  },
+  "my-project/sdd/specs/manager/notificationFacilityManagement/TASKS.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "8f41c03fa569ebbd8d3edc1d1cb5f3a3",
+    "semantic_hash": "8f41c03fa569ebbd8d3edc1d1cb5f3a3"
+  },
+  "my-project/sdd/specs/manager/paymentManagement/CONTEXT.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "9e6891d52383f44b3a6df613280c1b86",
+    "semantic_hash": "9e6891d52383f44b3a6df613280c1b86"
+  },
+  "my-project/sdd/specs/manager/paymentManagement/PLAN.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "6dd2f8146863d8cf2d86a8773276571f",
+    "semantic_hash": "6dd2f8146863d8cf2d86a8773276571f"
+  },
+  "my-project/sdd/specs/manager/paymentManagement/SPEC.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "4902b59eebc0754fd3473fcd143d4ee9",
+    "semantic_hash": "4902b59eebc0754fd3473fcd143d4ee9"
+  },
+  "my-project/sdd/specs/manager/paymentManagement/TASK.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "1638640523140ada4f327b528ca8193d",
+    "semantic_hash": "1638640523140ada4f327b528ca8193d"
+  },
+  "my-project/sdd/specs/manager/paymentManagement/TASKS.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "2f2e601709d7b26c84993a7049edfab0",
+    "semantic_hash": "2f2e601709d7b26c84993a7049edfab0"
+  },
+  "my-project/sdd/specs/manager/receiveTenantRequest/CONTEXT.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "a122b2851b15fc7ae7f27d137d7d2eae",
+    "semantic_hash": "a122b2851b15fc7ae7f27d137d7d2eae"
+  },
+  "my-project/sdd/specs/manager/receiveTenantRequest/PLAN.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "a0f96440438ed7b3bfdabe2d96e466a1",
+    "semantic_hash": "a0f96440438ed7b3bfdabe2d96e466a1"
+  },
+  "my-project/sdd/specs/manager/receiveTenantRequest/SPEC.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "5d6bfd25b95ee09c0ee616a16082d4ad",
+    "semantic_hash": "5d6bfd25b95ee09c0ee616a16082d4ad"
+  },
+  "my-project/sdd/specs/manager/receiveTenantRequest/TASKS.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "ac696706c9e4dfefc3643e2900a576be",
+    "semantic_hash": "ac696706c9e4dfefc3643e2900a576be"
+  },
+  "my-project/sdd/specs/manager/roomFacilityManagement/CONTEXT.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "94a14da68616e3b89208ea356ffde631",
+    "semantic_hash": "94a14da68616e3b89208ea356ffde631"
+  },
+  "my-project/sdd/specs/manager/roomFacilityManagement/PLAN.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "47633064e74c26076a06b31edfb84748",
+    "semantic_hash": "47633064e74c26076a06b31edfb84748"
+  },
+  "my-project/sdd/specs/manager/roomFacilityManagement/SPEC.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "fd41fe5a7096208e0d960d5d79038445",
+    "semantic_hash": "fd41fe5a7096208e0d960d5d79038445"
+  },
+  "my-project/sdd/specs/manager/roomFacilityManagement/TASKS.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "c38a60fd34a4cddadab970f22af46ac0",
+    "semantic_hash": "c38a60fd34a4cddadab970f22af46ac0"
+  },
+  "my-project/sdd/specs/manager/tenantManagement/CONTEXT.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "4af9d15f875ee34dc96737cea46b22fe",
+    "semantic_hash": "4af9d15f875ee34dc96737cea46b22fe"
+  },
+  "my-project/sdd/specs/manager/tenantManagement/PLAN.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "e3c0aed33b77ccb308a1204141ec838a",
+    "semantic_hash": "e3c0aed33b77ccb308a1204141ec838a"
+  },
+  "my-project/sdd/specs/manager/tenantManagement/SPEC.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "7d7bb8659f9c9e7dd2644468189548b6",
+    "semantic_hash": "7d7bb8659f9c9e7dd2644468189548b6"
+  },
+  "my-project/sdd/specs/manager/tenantManagement/TASKS.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "dbd69f1cff9ec825d8f1a903e6f91a0f",
+    "semantic_hash": "dbd69f1cff9ec825d8f1a903e6f91a0f"
+  },
+  "my-project/sdd/specs/manager/updateServicePrice/CONTEXT.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "85dac7d427761425383c153f12c62035",
+    "semantic_hash": "85dac7d427761425383c153f12c62035"
+  },
+  "my-project/sdd/specs/manager/updateServicePrice/PLAN.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "6c10dabd3117b163ee6696d8d686dfd1",
+    "semantic_hash": "6c10dabd3117b163ee6696d8d686dfd1"
+  },
+  "my-project/sdd/specs/manager/updateServicePrice/SPEC.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "ce4b33ec0e1fd82296c523973a756618",
+    "semantic_hash": "ce4b33ec0e1fd82296c523973a756618"
+  },
+  "my-project/sdd/specs/manager/updateServicePrice/TASKS.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "a537b4395e2721d244fd20286a6aa800",
+    "semantic_hash": "a537b4395e2721d244fd20286a6aa800"
+  },
+  "my-project/sdd/specs/operator/Baocaosuco/Context.md": {
+    "mtime": 1782756999.8313444,
+    "ast_hash": "e0236a315c76e352860f1496eb75b18f",
+    "semantic_hash": "e0236a315c76e352860f1496eb75b18f"
+  },
+  "my-project/sdd/specs/operator/Baocaosuco/Spec.md": {
+    "mtime": 1782756999.8313444,
+    "ast_hash": "ede8fcf5d3539382780829e0588edb36",
+    "semantic_hash": "ede8fcf5d3539382780829e0588edb36"
+  },
+  "my-project/sdd/specs/operator/Baocaosuco/plan.md": {
+    "mtime": 1782064888.5372171,
+    "ast_hash": "1c9c3b49ccaca9845b982421db8e3d52",
+    "semantic_hash": "1c9c3b49ccaca9845b982421db8e3d52"
+  },
+  "my-project/sdd/specs/operator/Baocaosuco/task.md": {
+    "mtime": 1782064888.5382175,
+    "ast_hash": "855724a4175573ebb7bdf68d5a49ea1b",
+    "semantic_hash": "855724a4175573ebb7bdf68d5a49ea1b"
+  },
+  "my-project/sdd/specs/operator/Dashboard/Context.md": {
+    "mtime": 1782064888.5382175,
+    "ast_hash": "09359af3a2d3c72090d129e0d634b825",
+    "semantic_hash": "09359af3a2d3c72090d129e0d634b825"
+  },
+  "my-project/sdd/specs/operator/Dashboard/Plan.md": {
+    "mtime": 1783159043.0555444,
+    "ast_hash": "86e0febd2e1ba3b41a43dc901b18b7f8",
+    "semantic_hash": "86e0febd2e1ba3b41a43dc901b18b7f8"
+  },
+  "my-project/sdd/specs/operator/Dashboard/Spec.md": {
+    "mtime": 1782064888.5382175,
+    "ast_hash": "57595b5c8be275f72369ddab5ed42958",
+    "semantic_hash": "57595b5c8be275f72369ddab5ed42958"
+  },
+  "my-project/sdd/specs/operator/Dashboard/Task.md": {
+    "mtime": 1783159191.3524973,
+    "ast_hash": "74faed21b10e9d9320341c6f0b3cbe0a",
+    "semantic_hash": "74faed21b10e9d9320341c6f0b3cbe0a"
+  },
+  "my-project/sdd/specs/operator/DetailRequest/Context.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "cae77f12fc21819cac2456407b927d75",
+    "semantic_hash": "cae77f12fc21819cac2456407b927d75"
+  },
+  "my-project/sdd/specs/operator/DetailRequest/PLAN.md": {
+    "mtime": 1782064888.5392175,
+    "ast_hash": "de747f346fa957008b46febcd1469c10",
+    "semantic_hash": "de747f346fa957008b46febcd1469c10"
+  },
+  "my-project/sdd/specs/operator/DetailRequest/Spec.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "44bbdbe8d5441dfc80ef98c12bda8069",
+    "semantic_hash": "44bbdbe8d5441dfc80ef98c12bda8069"
+  },
+  "my-project/sdd/specs/operator/DetailRequest/TASKS.md": {
+    "mtime": 1782064888.5392175,
+    "ast_hash": "0f584e636648a6832cd2fb862382ff2a",
+    "semantic_hash": "0f584e636648a6832cd2fb862382ff2a"
+  },
+  "my-project/sdd/specs/operator/ListElectric/Context.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "80ac77b5804a834d561d3522a2227777",
+    "semantic_hash": "80ac77b5804a834d561d3522a2227777"
+  },
+  "my-project/sdd/specs/operator/ListElectric/PLAN.md": {
+    "mtime": 1782064888.5402174,
+    "ast_hash": "1264d8dd36c627bfe15b9ae662d542cb",
+    "semantic_hash": "1264d8dd36c627bfe15b9ae662d542cb"
+  },
+  "my-project/sdd/specs/operator/ListElectric/Spec.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "6dda26619b0d87caa751767279671260",
+    "semantic_hash": "6dda26619b0d87caa751767279671260"
+  },
+  "my-project/sdd/specs/operator/ListElectric/TASKS.md": {
+    "mtime": 1782064888.5402174,
+    "ast_hash": "a5c2b0c23f96dea3da7a8dd24ce20a89",
+    "semantic_hash": "a5c2b0c23f96dea3da7a8dd24ce20a89"
+  },
+  "my-project/sdd/specs/operator/ListRequest/Context.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "66734aea9d12e77556a0f81443d1fbce",
+    "semantic_hash": "66734aea9d12e77556a0f81443d1fbce"
+  },
+  "my-project/sdd/specs/operator/ListRequest/PLAN.md": {
+    "mtime": 1783159999.1445646,
+    "ast_hash": "9059b362b402d4f38d918cbc5c23cba9",
+    "semantic_hash": "9059b362b402d4f38d918cbc5c23cba9"
+  },
+  "my-project/sdd/specs/operator/ListRequest/Spec.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "e27e32970dbd36d0a4f9e3df089a5ecc",
+    "semantic_hash": "e27e32970dbd36d0a4f9e3df089a5ecc"
+  },
+  "my-project/sdd/specs/operator/ListRequest/TASKS.md": {
+    "mtime": 1783160283.8113375,
+    "ast_hash": "6b945eb79060d431736e1165a6bfe221",
+    "semantic_hash": "6b945eb79060d431736e1165a6bfe221"
+  },
+  "my-project/sdd/specs/operator/MeterReadings/Plan.md": {
+    "mtime": 1782398044.2881866,
+    "ast_hash": "75065bcff18384b77f2325bd75622102",
+    "semantic_hash": "75065bcff18384b77f2325bd75622102"
+  },
+  "my-project/sdd/specs/operator/MeterReadings/Task.md": {
+    "mtime": 1782398044.2881866,
+    "ast_hash": "88b8d03d995f9521527d48b3db44dd37",
+    "semantic_hash": "88b8d03d995f9521527d48b3db44dd37"
+  },
+  "my-project/sdd/specs/operator/Notifications/Context.md": {
+    "mtime": 1782397458.0056515,
+    "ast_hash": "1076799ff706b4b4ee251a29dacb4091",
+    "semantic_hash": "1076799ff706b4b4ee251a29dacb4091"
+  },
+  "my-project/sdd/specs/operator/Notifications/Plan.md": {
+    "mtime": 1782397458.0056515,
+    "ast_hash": "9e624e156f5706f5edfe3883327fe374",
+    "semantic_hash": "9e624e156f5706f5edfe3883327fe374"
+  },
+  "my-project/sdd/specs/operator/Notifications/Spec.md": {
+    "mtime": 1782397458.006273,
+    "ast_hash": "fc0862a90145eebe7d65cce14b89cc67",
+    "semantic_hash": "fc0862a90145eebe7d65cce14b89cc67"
+  },
+  "my-project/sdd/specs/operator/Notifications/Task.md": {
+    "mtime": 1782397458.0066464,
+    "ast_hash": "c15a627ce3e395bd29a160157256c343",
+    "semantic_hash": "c15a627ce3e395bd29a160157256c343"
+  },
+  "my-project/sdd/specs/operator/UpdateSatatus/Context.md": {
+    "mtime": 1782064888.541217,
+    "ast_hash": "cbe881d58b36ed2c1e77750de938c502",
+    "semantic_hash": "cbe881d58b36ed2c1e77750de938c502"
+  },
+  "my-project/sdd/specs/operator/UpdateSatatus/Spec.md": {
+    "mtime": 1782064888.541217,
+    "ast_hash": "82a0ca1ad9522234a7b19102d0524805",
+    "semantic_hash": "82a0ca1ad9522234a7b19102d0524805"
+  },
+  "my-project/sdd/specs/operator/WaterElectricUpdate/Context.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "384d3568a789f097781fd4f805418ba2",
+    "semantic_hash": "384d3568a789f097781fd4f805418ba2"
+  },
+  "my-project/sdd/specs/operator/WaterElectricUpdate/PLAN.md": {
+    "mtime": 1782064888.541217,
+    "ast_hash": "42848241f7d934b7ed9473bd49ee1139",
+    "semantic_hash": "42848241f7d934b7ed9473bd49ee1139"
+  },
+  "my-project/sdd/specs/operator/WaterElectricUpdate/Spec.md": {
+    "mtime": 1781848199.843789,
+    "ast_hash": "22d67be8c03630b71bb04d7a962ae6b4",
+    "semantic_hash": "22d67be8c03630b71bb04d7a962ae6b4"
+  },
+  "my-project/sdd/specs/operator/WaterElectricUpdate/TASKS.md": {
+    "mtime": 1782064888.5422175,
+    "ast_hash": "1ac70ae08ea2e953ae4cf0a51edd8ad3",
+    "semantic_hash": "1ac70ae08ea2e953ae4cf0a51edd8ad3"
+  },
+  "my-project/sdd/specs/tenant/contract_management/CONTEXT.md": {
+    "mtime": 1783101931.7297277,
+    "ast_hash": "e90c34e989457bb7c2a7bb13226116d9",
+    "semantic_hash": "e90c34e989457bb7c2a7bb13226116d9"
+  },
+  "my-project/sdd/specs/tenant/contract_management/Hopdong.md": {
+    "mtime": 1783101931.7302895,
+    "ast_hash": "84fbb7b659d6e776b3cdd7116ba82940",
+    "semantic_hash": "84fbb7b659d6e776b3cdd7116ba82940"
+  },
+  "my-project/sdd/specs/tenant/contract_management/PLAN.md": {
+    "mtime": 1783101931.7302895,
+    "ast_hash": "3a60cbf6b667b563bcb80e6ea2c39f05",
+    "semantic_hash": "3a60cbf6b667b563bcb80e6ea2c39f05"
+  },
+  "my-project/sdd/specs/tenant/contract_management/SPEC.md": {
+    "mtime": 1783101931.7308147,
+    "ast_hash": "dee50b02832b0e59a56c9b204487545a",
+    "semantic_hash": "dee50b02832b0e59a56c9b204487545a"
+  },
+  "my-project/sdd/specs/tenant/contract_management/TASKS.md": {
+    "mtime": 1783101931.7308147,
+    "ast_hash": "084938185cfef3c501ec45eacb1ff530",
+    "semantic_hash": "084938185cfef3c501ec45eacb1ff530"
+  },
+  "my-project/sdd/specs/tenant/dependent_management/CONTEXT.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "fda56211899227864d78267191e14fec",
+    "semantic_hash": "fda56211899227864d78267191e14fec"
+  },
+  "my-project/sdd/specs/tenant/dependent_management/PLAN.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "31823f8a460a1fba931a4ca039146cc9",
+    "semantic_hash": "31823f8a460a1fba931a4ca039146cc9"
+  },
+  "my-project/sdd/specs/tenant/dependent_management/SPEC.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "a43c011e56587db1947f42c955273eb3",
+    "semantic_hash": "a43c011e56587db1947f42c955273eb3"
+  },
+  "my-project/sdd/specs/tenant/dependent_management/TASKS.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "965e69f0d747baee314f37ed7175171d",
+    "semantic_hash": "965e69f0d747baee314f37ed7175171d"
+  },
+  "my-project/sdd/specs/tenant/invoice_management/CONTEXT.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "e58fffe3e07327b52a5750d4825a0563",
+    "semantic_hash": "e58fffe3e07327b52a5750d4825a0563"
+  },
+  "my-project/sdd/specs/tenant/invoice_management/PLAN.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "e9a0d1dacb2bcc5c7e407a6961525116",
+    "semantic_hash": "e9a0d1dacb2bcc5c7e407a6961525116"
+  },
+  "my-project/sdd/specs/tenant/invoice_management/SPEC.md": {
+    "mtime": 1782399959.8528328,
+    "ast_hash": "f8d2fb729e10c87ad4e21568381c70c5",
+    "semantic_hash": "f8d2fb729e10c87ad4e21568381c70c5"
+  },
+  "my-project/sdd/specs/tenant/invoice_management/TASKS.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "a81db1e6d57d859e2374d71a8d2db9e3",
+    "semantic_hash": "a81db1e6d57d859e2374d71a8d2db9e3"
+  },
+  "my-project/sdd/specs/tenant/notification_management/CONTEXT.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "44cceec606be45cd0a8dd8f0cb62fb09",
+    "semantic_hash": "44cceec606be45cd0a8dd8f0cb62fb09"
+  },
+  "my-project/sdd/specs/tenant/notification_management/PLAN.md": {
+    "mtime": 1782306003.4956963,
+    "ast_hash": "7a1b4f7bbe5a3283bbc197125bc77e93",
+    "semantic_hash": "7a1b4f7bbe5a3283bbc197125bc77e93"
+  },
+  "my-project/sdd/specs/tenant/notification_management/SPEC.md": {
+    "mtime": 1782399959.8533585,
+    "ast_hash": "7dd9921f252283c22de36b0529007283",
+    "semantic_hash": "7dd9921f252283c22de36b0529007283"
+  },
+  "my-project/sdd/specs/tenant/notification_management/TASKS.md": {
+    "mtime": 1782306003.5024803,
+    "ast_hash": "043002555277594af4ab68b94a1e517d",
+    "semantic_hash": "043002555277594af4ab68b94a1e517d"
+  },
+  "my-project/sdd/specs/tenant/request_management/CONTEXT.md": {
+    "mtime": 1781848199.8594723,
+    "ast_hash": "c10939424c68bdf540ad0a02af03c255",
+    "semantic_hash": "c10939424c68bdf540ad0a02af03c255"
+  },
+  "my-project/sdd/specs/tenant/request_management/PLAN.md": {
+    "mtime": 1782306003.5024803,
+    "ast_hash": "b3b7d711a238a22ee0b4fd0702cea381",
+    "semantic_hash": "b3b7d711a238a22ee0b4fd0702cea381"
+  },
+  "my-project/sdd/specs/tenant/request_management/SPEC.md": {
+    "mtime": 1781848199.8594723,
+    "ast_hash": "47b663c83f57816095b93d80bc3cf5bf",
+    "semantic_hash": "47b663c83f57816095b93d80bc3cf5bf"
+  },
+  "my-project/sdd/specs/tenant/request_management/TASKS.md": {
+    "mtime": 1782306003.5024803,
+    "ast_hash": "3c61475227e358a10ddc6b8397ae1cdf",
+    "semantic_hash": "3c61475227e358a10ddc6b8397ae1cdf"
+  },
+  "src/main/webapp/assets/img/login-illustration.png": {
+    "mtime": 1781848199.891271,
+    "ast_hash": "1facb25e25ac7e9a672a489ba02a1cc9",
+    "semantic_hash": "1facb25e25ac7e9a672a489ba02a1cc9"
+  }
+}

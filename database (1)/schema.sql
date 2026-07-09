@@ -365,7 +365,136 @@ BEGIN
 	);
 END
 GO
+-- ============================================================
+-- 12. COMMUNITY POSTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.community_posts', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.community_posts (
 
+        post_id             INT IDENTITY(1,1) PRIMARY KEY,
+
+        title               NVARCHAR(250)      NOT NULL,
+        content             NVARCHAR(MAX)      NOT NULL,
+        image_url           NVARCHAR(500)      NULL,
+
+        author_id           INT                NOT NULL,
+
+        status              NVARCHAR(20)       NOT NULL DEFAULT 'PENDING',
+        -- PENDING, APPROVED, REJECTED
+
+        reviewed_by         INT                NULL,
+
+        created_at          DATETIME2          NOT NULL DEFAULT GETDATE(),
+        updated_at          DATETIME2          NOT NULL DEFAULT GETDATE(),
+        deleted_at          DATETIME2          NULL,
+
+        CONSTRAINT FK_community_posts_author
+            FOREIGN KEY(author_id)
+            REFERENCES dbo.users(user_id),
+
+        CONSTRAINT FK_community_posts_reviewer
+            FOREIGN KEY(reviewed_by)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- 13. POST REACTIONS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.post_reactions', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.post_reactions (
+
+        post_id         INT             NOT NULL,
+        user_id         INT             NOT NULL,
+
+        created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
+
+        CONSTRAINT PK_post_reactions
+            PRIMARY KEY(post_id,user_id),
+
+        CONSTRAINT FK_post_reactions_post
+            FOREIGN KEY(post_id)
+            REFERENCES dbo.community_posts(post_id),
+
+        CONSTRAINT FK_post_reactions_user
+            FOREIGN KEY(user_id)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- 14. POST COMMENTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.post_comments', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.post_comments (
+
+        comment_id          INT IDENTITY(1,1) PRIMARY KEY,
+
+        post_id             INT                 NOT NULL,
+
+        user_id             INT                 NOT NULL,
+
+        content             NVARCHAR(1000)      NOT NULL,
+
+        created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
+
+        updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
+
+        deleted_at          DATETIME2           NULL,
+
+        CONSTRAINT FK_post_comments_post
+            FOREIGN KEY(post_id)
+            REFERENCES dbo.community_posts(post_id),
+
+        CONSTRAINT FK_post_comments_user
+            FOREIGN KEY(user_id)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- COMMUNITY INDEXES
+-- ============================================================
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_community_posts_status'
+)
+CREATE NONCLUSTERED INDEX IX_community_posts_status
+ON dbo.community_posts(status)
+WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_community_posts_author'
+)
+CREATE NONCLUSTERED INDEX IX_community_posts_author
+ON dbo.community_posts(author_id);
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_post_comments_post'
+)
+CREATE NONCLUSTERED INDEX IX_post_comments_post
+ON dbo.post_comments(post_id);
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_post_reactions_post'
+)
+CREATE NONCLUSTERED INDEX IX_post_reactions_post
+ON dbo.post_reactions(post_id);
+GO
 -- ============================================================
 -- 12. SYSTEM CONFIG TABLE
 -- ============================================================

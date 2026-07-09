@@ -1,10 +1,15 @@
 package com.quanlyphongtro.service.impl;
 
 import com.quanlyphongtro.dao.CommunityPostDAO;
+import com.quanlyphongtro.dao.PostCommentDAO;
+import com.quanlyphongtro.dao.PostReactionDAO;
+import com.quanlyphongtro.dto.CommentDTO;
 import com.quanlyphongtro.dto.CommunityPostCreateDTO;
 import com.quanlyphongtro.dto.CommunityPostDTO;
+import com.quanlyphongtro.dto.NewsFeedDTO;
 import com.quanlyphongtro.exception.ValidationException;
 import com.quanlyphongtro.model.CommunityPost;
+import com.quanlyphongtro.model.PostComment;
 import com.quanlyphongtro.service.CommunityPostService;
 import jakarta.servlet.http.Part;
 import org.slf4j.Logger;
@@ -21,10 +26,16 @@ import java.util.UUID;
 public class CommunityPostServiceImpl implements CommunityPostService {
     private static final Logger logger = LoggerFactory.getLogger(CommunityPostServiceImpl.class);
     private final CommunityPostDAO communityPostDAO;
+    private final CommunityPostDAO postDAO;
+    private final PostReactionDAO reactionDAO;
+    private final PostCommentDAO commentDAO;
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     public CommunityPostServiceImpl() {
         this.communityPostDAO = new CommunityPostDAO();
+        this.postDAO = this.communityPostDAO;
+        this.reactionDAO = new PostReactionDAO();
+        this.commentDAO = new PostCommentDAO();
     }
 
     @Override
@@ -48,7 +59,6 @@ public class CommunityPostServiceImpl implements CommunityPostService {
             if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png") && !contentType.equals("image/jpg"))) {
                 throw new ValidationException("Định dạng ảnh không hợp lệ (chỉ hỗ trợ JPG/JPEG/PNG).");
             }
-            // Save file logic
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) uploadDir.mkdirs();
 
@@ -67,10 +77,9 @@ public class CommunityPostServiceImpl implements CommunityPostService {
         post.setStatus("PENDING");
         if ("TENANT".equals(userRole)) {
             Integer managerId = communityPostDAO.getManagerByTenant(authorId);
-            post.setReviewedBy(managerId); // Gán người duyệt là quản lý của tòa nhà
+            post.setReviewedBy(managerId);
         } else if ("MANAGER".equals(userRole)) {
             post.setReviewedBy(authorId);
-            // Quản lý đăng bài thì vẫn là PENDING để chờ duyệt
         } else {
             post.setReviewedBy(null);
         }
@@ -80,6 +89,40 @@ public class CommunityPostServiceImpl implements CommunityPostService {
             throw new Exception("Lỗi khi tạo bài viết vào CSDL.");
         }
         return postId;
+    }
+
+    @Override
+    public CommunityPost createPost(Integer tenantId, String title, String content, String imageUrl) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new ValidationException("Tiêu đề không được để trống");
+        }
+        if (content == null || content.trim().isEmpty()) {
+            throw new ValidationException("Nội dung không được để trống");
+        }
+
+        CommunityPost post = new CommunityPost();
+        post.setAuthorId(tenantId);
+        post.setTitle(title.trim());
+        post.setContent(content.trim());
+        post.setImageUrl(imageUrl != null && !imageUrl.isEmpty() ? imageUrl : null);
+        post.setStatus("PENDING");
+
+        return postDAO.createPost(post);
+    }
+
+    @Override
+    public List<NewsFeedDTO> getNewsFeed(Integer currentUserId) {
+        return postDAO.getNewsFeed(currentUserId);
+    }
+
+    @Override
+    public List<NewsFeedDTO> getMyPosts(Integer authorId) {
+        return postDAO.getMyPosts(authorId);
+    }
+
+    @Override
+    public NewsFeedDTO getPostDetail(Integer postId, Integer currentUserId) {
+        return postDAO.getPostDetail(postId, currentUserId);
     }
 
     @Override
@@ -98,8 +141,40 @@ public class CommunityPostServiceImpl implements CommunityPostService {
     }
 
     @Override
+    public boolean toggleLike(Integer postId, Integer currentUserId) {
+        return reactionDAO.toggleReaction(postId, currentUserId);
+    }
+
+    @Override
+    public CommentDTO addComment(Integer postId, Integer currentUserId, String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new ValidationException("Nội dung bình luận không được để trống");
+        }
+        if (content.length() > 1000) {
+            throw new ValidationException("Nội dung bình luận tối đa 1000 ký tự");
+        }
+
+        PostComment comment = new PostComment();
+        comment.setPostId(postId);
+        comment.setUserId(currentUserId);
+        comment.setContent(content.trim());
+
+        return commentDAO.addComment(comment);
+    }
+
+    @Override
+    public List<CommentDTO> getCommentsByPostId(Integer postId) {
+        return commentDAO.getCommentsByPostId(postId);
+    }
+
+    @Override
     public void deletePost(int postId) {
         communityPostDAO.softDeletePost(postId);
+    }
+
+    @Override
+    public boolean deletePost(Integer postId, Integer authorId) {
+        return postDAO.softDeletePost(postId, authorId);
     }
 
     private String getSubmittedFileName(Part part) {

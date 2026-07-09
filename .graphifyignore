@@ -1,0 +1,7 @@
+*.json
+*.md
+*.txt
+*.pdf
+*.xml
+assets/
+docs/
