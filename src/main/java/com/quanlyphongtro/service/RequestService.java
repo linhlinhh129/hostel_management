@@ -22,9 +22,7 @@ public interface RequestService {
     int countManagerTickets(int managerId, String type, String status, String keyword);
     List<java.util.Map<String, Object>> getManagerTickets(int managerId, String type, String status, String keyword, int page, int pageSize);
     java.util.Map<String, Object> getManagerTicketDetail(int ticketId, int managerId) throws Exception;
-    List<java.util.Map<String, Object>> getOperatorsForFacility(int facilityId, int managerId);
     boolean receiveTicket(int ticketId);
-    boolean assignTicket(int ticketId, int operatorId);
     boolean rejectTicket(int ticketId, String reason);
     boolean scheduleTicket(int ticketId, java.time.LocalDateTime scheduleTime);
     boolean completeTicket(int ticketId, String notes, String attachmentUrls2);

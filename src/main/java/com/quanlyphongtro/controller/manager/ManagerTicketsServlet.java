@@ -63,8 +63,6 @@ public class ManagerTicketsServlet extends BaseServlet {
                 String action = parts[2];
                 if ("receive".equals(action)) {
                     handleReceive(ticketId, req, resp);
-                } else if ("assign".equals(action)) {
-                    handleAssign(ticketId, req, resp);
                 } else if ("reject".equals(action)) {
                     handleReject(ticketId, req, resp);
                 } else if ("schedule".equals(action)) {
@@ -137,14 +135,9 @@ public class ManagerTicketsServlet extends BaseServlet {
         }
 
         Map<String, Object> ticket = null;
-        List<Map<String, Object>> operators = new ArrayList<>();
 
         try {
             ticket = requestService.getManagerTicketDetail(ticketId, currentUser.getId());
-            if (ticket != null) {
-                int facilityId = ticket.get("facilityId") != null ? (Integer) ticket.get("facilityId") : -1;
-                operators = requestService.getOperatorsForFacility(facilityId, currentUser.getId());
-            }
         } catch (java.nio.file.AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
@@ -158,7 +151,6 @@ public class ManagerTicketsServlet extends BaseServlet {
         }
 
         req.setAttribute("ticket", ticket);
-        req.setAttribute("operators", operators);
         req.getRequestDispatcher("/WEB-INF/views/manager/tickets/detail.jsp").forward(req, resp);
     }
 
@@ -168,24 +160,6 @@ public class ManagerTicketsServlet extends BaseServlet {
             setFlashMessage(req, "success", "Tiếp nhận yêu cầu thành công!");
         } else {
             setFlashMessage(req, "danger", "Lỗi tiếp nhận yêu cầu.");
-        }
-        resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
-    }
-
-    private void handleAssign(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String operatorIdStr = req.getParameter("operatorId");
-        if (operatorIdStr == null || operatorIdStr.trim().isEmpty()) {
-            setFlashMessage(req, "danger", "Vui lòng chọn nhân sự.");
-            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
-            return;
-        }
-
-        int operatorId = Integer.parseInt(operatorIdStr);
-        boolean success = requestService.assignTicket(ticketId, operatorId);
-        if (success) {
-            setFlashMessage(req, "success", "Phân công xử lý yêu cầu thành công!");
-        } else {
-            setFlashMessage(req, "danger", "Lỗi phân công.");
         }
         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
     }
@@ -244,7 +218,17 @@ public class ManagerTicketsServlet extends BaseServlet {
 
             for (Part part : req.getParts()) {
                 if ("after_images".equals(part.getName()) && part.getSize() > 0) {
-                    String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(part);
+                    String originalFileName = getFileName(part);
+                    String contentType = part.getContentType();
+
+                    if (!com.quanlyphongtro.util.ValidationUtil.isValidFileType(originalFileName) ||
+                        !com.quanlyphongtro.util.ValidationUtil.isValidMimeType(contentType)) {
+                        setFlashMessage(req, "danger", "File upload không hợp lệ. Chỉ chấp nhận các định dạng ảnh JPG, PNG hoặc tài liệu PDF.");
+                        resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                        return;
+                    }
+
+                    String fileName = java.util.UUID.randomUUID().toString() + "_" + originalFileName;
                     part.write(uploadPath + java.io.File.separator + fileName);
                     fileNames.add("/uploads/requests/" + fileName);
                 }

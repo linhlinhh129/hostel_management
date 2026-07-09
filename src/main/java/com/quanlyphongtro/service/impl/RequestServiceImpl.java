@@ -197,33 +197,54 @@ public class RequestServiceImpl implements RequestService {
         return ticket;
     }
 
-    @Override
-    public List<java.util.Map<String, Object>> getOperatorsForFacility(int facilityId, int managerId) {
-        return requestDAO.getOperatorsForFacility(facilityId, managerId);
+    private String getTicketStatus(int ticketId) {
+        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        if (ticket == null) {
+            return null;
+        }
+        return (String) ticket.get("status");
+    }
+
+    private boolean isClosedStatus(String status) {
+        return "REJECTED".equals(status) || "RESOLVED".equals(status) || "DONE".equals(status) || "CANCELLED".equals(status);
     }
 
     @Override
     public boolean receiveTicket(int ticketId) {
+        String status = getTicketStatus(ticketId);
+        if (status == null || isClosedStatus(status)) {
+            return false;
+        }
+        if (!"NEW".equals(status) && !"PENDING".equals(status)) {
+            return false;
+        }
         return requestDAO.receiveTicket(ticketId);
     }
 
     @Override
-    public boolean assignTicket(int ticketId, int operatorId) {
-        return requestDAO.assignTicket(ticketId, operatorId);
-    }
-
-    @Override
     public boolean rejectTicket(int ticketId, String reason) {
+        String status = getTicketStatus(ticketId);
+        if (status == null || isClosedStatus(status)) {
+            return false;
+        }
         return requestDAO.rejectTicket(ticketId, reason);
     }
 
     @Override
     public boolean scheduleTicket(int ticketId, java.time.LocalDateTime scheduleTime) {
+        String status = getTicketStatus(ticketId);
+        if (status == null || isClosedStatus(status)) {
+            return false;
+        }
         return requestDAO.scheduleTicket(ticketId, scheduleTime);
     }
 
     @Override
     public boolean completeTicket(int ticketId, String notes, String attachmentUrls2) {
+        String status = getTicketStatus(ticketId);
+        if (status == null || isClosedStatus(status)) {
+            return false;
+        }
         return requestDAO.completeTicket(ticketId, notes, attachmentUrls2);
     }
 }
