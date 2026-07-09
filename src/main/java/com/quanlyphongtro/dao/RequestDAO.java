@@ -208,7 +208,7 @@ public class RequestDAO extends BaseDAO {
     }
 
     public boolean insertIncidentReport(Request req) {
-        String sql = "INSERT INTO requests (code, sender_id, category, title, content, status, attachment_urls1, created_at) VALUES (?, ?, ?, ?, ?, 'PENDING', ?, GETDATE())";
+        String sql = "INSERT INTO requests (code, sender_id, category, title, content, status, attachment_urls1, assigned_staff_id, created_at) VALUES (?, ?, ?, ?, ?, 'PENDING', ?, ?, GETDATE())";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, req.getCode());
@@ -217,6 +217,11 @@ public class RequestDAO extends BaseDAO {
             ps.setString(4, req.getTitle());
             ps.setString(5, req.getContent());
             ps.setString(6, req.getAttachmentUrls1());
+            if (req.getAssignedStaffId() != null) {
+                ps.setInt(7, req.getAssignedStaffId());
+            } else {
+                ps.setNull(7, java.sql.Types.INTEGER);
+            }
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             logger.error("insertIncidentReport failed", e);
@@ -326,8 +331,8 @@ public class RequestDAO extends BaseDAO {
 
     public boolean insert(Request r) {
         String code = "REQ" + System.currentTimeMillis();
-        String sql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, attachment_urls1) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, attachment_urls1, assigned_staff_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code);
@@ -336,6 +341,11 @@ public class RequestDAO extends BaseDAO {
             ps.setString(4, r.getTitle());
             ps.setString(5, r.getContent());
             ps.setString(6, r.getAttachmentUrls1());
+            if (r.getAssignedStaffId() != null) {
+                ps.setInt(7, r.getAssignedStaffId());
+            } else {
+                ps.setNull(7, java.sql.Types.INTEGER);
+            }
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             logger.error("insert failed for Request", e);

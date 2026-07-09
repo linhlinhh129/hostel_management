@@ -61,11 +61,29 @@
                             
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">
-                                    Tiêu đề <span class="text-danger">*</span>
+                                    Gửi đến (Người phụ trách) <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control" name="title"
-                                       required placeholder="Mô tả ngắn gọn vấn đề...">
+                                <select class="form-select" name="assignedStaffId" required>
+                                    <option value="">-- Chọn người nhận --</option>
+                                    <c:forEach var="staff" items="${staffUsers}">
+                                        <option value="${staff.id}">
+                                            ${staff.fullName} - 
+                                            <c:choose>
+                                                <c:when test="${staff.role == 'MANAGER'}">Quản lý</c:when>
+                                                <c:otherwise>Nhân viên kỹ thuật</c:otherwise>
+                                            </c:choose>
+                                        </option>
+                                    </c:forEach>
+                                </select>
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                Tiêu đề <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="title"
+                                   required placeholder="Mô tả ngắn gọn vấn đề...">
                         </div>
 
                         <div class="mb-4">

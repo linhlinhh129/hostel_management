@@ -38,7 +38,7 @@
                                     <thead>
                                     <tr>
                                         <th>Tiêu đề</th>
-                                        <th class="d-none d-md-table-cell">Phân loại</th>
+                                        <th class="d-none d-md-table-cell">Thể loại</th>
                                         <th class="d-none d-md-table-cell">Ngày gửi</th>
                                         <th class="text-center">Trạng thái</th>
                                         <th class="d-none d-md-table-cell text-center">Hành động</th>
@@ -51,29 +51,13 @@
                                                 <c:out value="${ticket.title}"/>
                                             </td>
                                             <td class="d-none d-md-table-cell">
-                                                <span class="badge-hms badge-neutral"><c:out value="${ticket.category}"/></span>
+                                                <span class="badge-hms badge-neutral"><c:out value="${ticket.typeLabel}"/></span>
                                             </td>
                                             <td class="d-none d-md-table-cell" style="font-size:0.875rem;color:var(--hms-stone)">
                                                 <fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/>
                                             </td>
                                             <td class="text-center">
-                                                <c:choose>
-                                                    <c:when test="${ticket.status == 'PENDING'}">
-                                                        <span class="badge-hms badge-info">Mới tạo</span>
-                                                    </c:when>
-                                                    <c:when test="${ticket.status == 'IN_PROGRESS'}">
-                                                        <span class="badge-hms badge-warning">Đang xử lý</span>
-                                                    </c:when>
-                                                    <c:when test="${ticket.status == 'DONE'}">
-                                                        <span class="badge-hms badge-success">Hoàn thành</span>
-                                                    </c:when>
-                                                    <c:when test="${ticket.status == 'REJECTED'}">
-                                                        <span class="badge-hms badge-danger">Từ chối</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="badge-hms badge-neutral"><c:out value="${ticket.status}"/></span>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <span class="badge-hms ${ticket.statusBadgeClass}"><c:out value="${ticket.statusLabel}"/></span>
                                             </td>
                                             <td class="d-none d-md-table-cell text-center">
                                                 <a href="${ctx}/tenant/tickets/${ticket.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
