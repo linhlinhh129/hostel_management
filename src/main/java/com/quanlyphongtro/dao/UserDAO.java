@@ -420,4 +420,39 @@ public class UserDAO extends BaseDAO {
             }
         }
     }
+
+    public List<User> getStaffUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM dbo.users WHERE status = 'ACTIVE' AND deleted_at IS NULL AND role IN ('MANAGER', 'OPERATOR')";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                users.add(mapRow(rs));
+            }
+        } catch (Exception e) {
+            logger.error("getStaffUsers failed", e);
+        }
+        return users;
+    }
+
+    public List<User> getStaffUsersByTenantId(int tenantId) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT u.* FROM dbo.users u " +
+                     "JOIN dbo.facilities f ON (u.user_id = f.manager_id OR u.user_id = f.operator_id) " +
+                     "JOIN dbo.rooms r ON r.facility_id = f.facility_id " +
+                     "WHERE r.tenant_id = ? AND u.status = 'ACTIVE' AND u.deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, tenantId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    users.add(mapRow(rs));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("getStaffUsersByTenantId failed for tenantId={}", tenantId, e);
+        }
+        return users;
+    }
 }
