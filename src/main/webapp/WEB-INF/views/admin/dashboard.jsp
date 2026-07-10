@@ -229,8 +229,8 @@
                                         <c:forEach var="act" items="${recentActivities}" varStatus="st">
                                             <li style="padding:0.625rem 1.25rem;
                                                        border-bottom:1px solid var(--hms-border-soft);
-                                                       display:flex;gap:0.625rem;align-items:flex-start;
-                                                       animation:fadeInUp 0.4s ease ${st.index * 0.04}s both">
+                                                       display:flex;gap:0.625rem;align-items:flex-start"
+                                                data-anim-index="${st.index}">
                                                 <div style="width:28px;height:28px;border-radius:var(--hms-radius-sm);
                                                             background:linear-gradient(135deg,var(--hms-accent),var(--hms-accent-soft));
                                                             display:flex;align-items:center;justify-content:center;
@@ -274,3 +274,9 @@
     </div>
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+<script>
+document.querySelectorAll('[data-anim-index]').forEach(function(el) {
+    var delay = (parseInt(el.getAttribute('data-anim-index'), 10) * 0.04) + 's';
+    el.style.animation = 'fadeInUp 0.4s ease ' + delay + ' both';
+});
+</script>
