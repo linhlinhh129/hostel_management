@@ -6,6 +6,23 @@
 <c:set var="pageRole" value="MANAGER"/>
 <c:set var="activeMenu" value="notifications"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
+<style>
+  .ntf-tab-link { font-weight: 600; color: var(--hms-text-muted); }
+  .ntf-tab-link.ntf-tab-active { color: var(--hms-accent-deep); }
+  .ntf-pill-link {
+    font-weight: 600; font-size: 0.8125rem;
+    padding: 8px 20px; border-radius: 6px;
+    transition: all 0.2s;
+    background: var(--hms-surface);
+    color: var(--hms-text-muted);
+    border: 1px solid var(--hms-border);
+  }
+  .ntf-pill-link.ntf-pill-active {
+    background: var(--hms-accent-deep);
+    color: #fff;
+    border-color: var(--hms-accent-deep);
+  }
+</style>
 <body>
 <div class="app-shell">
   <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
@@ -33,23 +50,20 @@
         <%-- Tabs --%>
         <ul class="nav nav-tabs mb-3" id="notificationTabs" role="tablist">
           <li class="nav-item" role="presentation">
-            <a class="nav-link ${empty tab or tab == 'general' ? 'active' : ''}" 
-               href="${ctx}/manager/notifications?tab=general" 
-               style="font-weight: 600; color: ${(empty tab or tab == 'general') ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+            <a class="nav-link ntf-tab-link ${empty tab or tab == 'general' ? 'active ntf-tab-active' : ''}"
+               href="${ctx}/manager/notifications?tab=general">
               Thông báo chung
             </a>
           </li>
           <li class="nav-item" role="presentation">
-            <a class="nav-link ${tab == 'payment-reminder' ? 'active' : ''}" 
-               href="${ctx}/manager/notifications?tab=payment-reminder" 
-               style="font-weight: 600; color: ${tab == 'payment-reminder' ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+            <a class="nav-link ntf-tab-link ${tab == 'payment-reminder' ? 'active ntf-tab-active' : ''}"
+               href="${ctx}/manager/notifications?tab=payment-reminder">
               Nhắc nhở thanh toán
             </a>
           </li>
           <li class="nav-item" role="presentation">
-            <a class="nav-link ${tab == 'incorrect-utility' ? 'active' : ''}" 
-               href="${ctx}/manager/notifications?tab=incorrect-utility" 
-               style="font-weight: 600; color: ${tab == 'incorrect-utility' ? 'var(--hms-accent-deep)' : 'var(--hms-text-muted)'}">
+            <a class="nav-link ntf-tab-link ${tab == 'incorrect-utility' ? 'active ntf-tab-active' : ''}"
+               href="${ctx}/manager/notifications?tab=incorrect-utility">
               Báo lỗi điện nước
             </a>
           </li>
@@ -263,22 +277,18 @@
             <%-- Tab Thông báo chung (Gộp cả gửi đến tôi và gửi tới cư dân) --%>
             
             <%-- Sub-tabs/Pills for General tab --%>
+            <c:set var="pillStyleReceived" value="${type == 'received' ? 'background:var(--hms-accent-deep);color:#fff;' : 'background:var(--hms-surface);color:var(--hms-text-muted);border:1px solid var(--hms-border);'}"/>
+            <c:set var="pillStyleSent"     value="${type == 'sent'     ? 'background:var(--hms-accent-deep);color:#fff;' : 'background:var(--hms-surface);color:var(--hms-text-muted);border:1px solid var(--hms-border);'}"/>
             <ul class="nav nav-pills mb-4 mt-3 ms-2" id="notificationSubTabs" role="tablist" style="gap:12px">
               <li class="nav-item" role="presentation">
-                <a class="nav-link ${type == 'received' ? 'active' : ''}" 
-                   href="${ctx}/manager/notifications?tab=general&type=received"
-                   style="font-weight: 600; font-size: 0.8125rem; padding: 8px 20px; border-radius: 6px; 
-                          transition: all 0.2s;
-                          ${type == 'received' ? 'background: var(--hms-accent-deep); color: #fff;' : 'background: var(--hms-surface); color: var(--hms-text-muted); border: 1px solid var(--hms-border);'}">
+                <a class="nav-link ntf-pill-link ${type == 'received' ? 'active ntf-pill-active' : ''}"
+                   href="${ctx}/manager/notifications?tab=general&type=received">
                   Gửi đến tôi
                 </a>
               </li>
               <li class="nav-item" role="presentation">
-                <a class="nav-link ${type == 'sent' ? 'active' : ''}" 
-                   href="${ctx}/manager/notifications?tab=general&type=sent"
-                   style="font-weight: 600; font-size: 0.8125rem; padding: 8px 20px; border-radius: 6px; 
-                          transition: all 0.2s;
-                          ${type == 'sent' ? 'background: var(--hms-accent-deep); color: #fff;' : 'background: var(--hms-surface); color: var(--hms-text-muted); border: 1px solid var(--hms-border);'}">
+                <a class="nav-link ntf-pill-link ${type == 'sent' ? 'active ntf-pill-active' : ''}"
+                   href="${ctx}/manager/notifications?tab=general&type=sent">
                   Gửi tới cư dân
                 </a>
               </li>
@@ -327,14 +337,7 @@
                               </td>
                               <td style="max-width:320px; font-weight: 500;"><c:out value="${notif.title}"/></td>
                               <td class="d-none d-md-table-cell">
-                                <c:choose>
-                                  <c:when test="${notif.creatorRole == 'ADMIN'}">
-                                    <span class="badge-hms badge-danger">Admin</span>
-                                  </c:when>
-                                  <c:otherwise>
-                                    <c:out value="${notif.createdByName}"/>
-                                  </c:otherwise>
-                                </c:choose>
+                                <c:out value="${notif.createdByName}"/>
                               </td>
                               <td class="d-none d-md-table-cell" style="font-size:0.8125rem;color:var(--hms-text-muted)">
                                 <c:out value="${notif.createdDateLabel}"/>
