@@ -8,6 +8,8 @@ import com.quanlyphongtro.service.RequestService;
 import com.quanlyphongtro.service.TenantService;
 import com.quanlyphongtro.service.impl.RequestServiceImpl;
 import com.quanlyphongtro.service.impl.TenantServiceImpl;
+import com.quanlyphongtro.service.UserService;
+import com.quanlyphongtro.service.impl.UserServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,7 @@ public class TenantRequestServlet extends BaseServlet {
 
     private final TenantService tenantService = new TenantServiceImpl();
     private final RequestService requestService = new RequestServiceImpl();
+    private final UserService userService = new UserServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -45,6 +48,7 @@ public class TenantRequestServlet extends BaseServlet {
                 // Show Create Form
                 Optional<Room> roomOpt = tenantService.getTenantRoom(currentUser.getId());
                 roomOpt.ifPresent(room -> req.setAttribute("room", room));
+                req.setAttribute("staffUsers", userService.getStaffUsersByTenantId(currentUser.getId()));
                 req.getRequestDispatcher("/WEB-INF/views/tenant/tickets/create.jsp").forward(req, resp);
             } else {
                 // Detail
@@ -82,6 +86,15 @@ public class TenantRequestServlet extends BaseServlet {
             request.setCategory(category);
             request.setTitle(title);
             request.setContent(content);
+            
+            String assignedStaffIdStr = req.getParameter("assignedStaffId");
+            if (assignedStaffIdStr != null && !assignedStaffIdStr.isBlank()) {
+                try {
+                    request.setAssignedStaffId(Integer.parseInt(assignedStaffIdStr.trim()));
+                } catch (NumberFormatException e) {
+                    logger.error("Failed to parse assignedStaffId: '" + assignedStaffIdStr + "'", e);
+                }
+            }
 
             try {
                 jakarta.servlet.http.Part filePart = req.getPart("attachment");

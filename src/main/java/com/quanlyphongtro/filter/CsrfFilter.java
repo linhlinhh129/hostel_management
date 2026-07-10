@@ -42,8 +42,24 @@ public class CsrfFilter implements Filter {
             // JSON API requests gửi token qua header X-CSRF-Token
             String submitted = req.getHeader("X-CSRF-Token");
             if (submitted == null) {
-                // Form requests gửi token qua parameter
-                submitted = req.getParameter(CSRF_SESSION_KEY);
+                // Try query string directly to avoid triggering multipart parsing crash
+                String qs = req.getQueryString();
+                if (qs != null && qs.contains(CSRF_SESSION_KEY + "=")) {
+                    for (String param : qs.split("&")) {
+                        if (param.startsWith(CSRF_SESSION_KEY + "=")) {
+                            submitted = param.substring(CSRF_SESSION_KEY.length() + 1);
+                            break;
+                        }
+                    }
+                }
+                // Fallback to getParameter for non-multipart forms
+                if (submitted == null) {
+                    try {
+                        submitted = req.getParameter(CSRF_SESSION_KEY);
+                    } catch (Exception e) {
+                        // Ignore getParameter crash for multipart forms
+                    }
+                }
             }
             if (submitted == null || !submitted.equals(token)) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, ErrorMessageConstant.CSRF_INVALID);
