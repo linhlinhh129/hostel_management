@@ -187,6 +187,99 @@ public class RoomDAO extends BaseDAO {
     }
 
     /**
+     * Tìm chi tiết phòng kèm thông tin facility và tenant — dùng cho AdminRoomServlet.
+     * Trả về Map<String, Object> để tiện set attribute sang JSP mà không cần thêm DTO mới.
+     */
+    public java.util.Optional<java.util.Map<String, Object>> findDetailForAdmin(int roomId) {
+        String sql =
+            "SELECT r.room_id, r.facility_id, r.code, r.area, r.status, " +
+            "       r.room_fee, r.deposit_amount, r.created_at, r.updated_at, " +
+            "       f.code   AS facility_code, " +
+            "       f.name   AS facility_name, " +
+            "       f.status AS facility_status, " +
+            "       u.user_id   AS tenant_id, " +
+            "       u.full_name AS tenant_name, " +
+            "       u.username  AS tenant_code, " +
+            "       u.phone     AS tenant_phone, " +
+            "       u.email     AS tenant_email " +
+            "FROM   dbo.rooms r " +
+            "JOIN   dbo.facilities f ON f.facility_id = r.facility_id " +
+            "LEFT JOIN dbo.users u   ON u.user_id     = r.tenant_id " +
+            "WHERE  r.room_id = ? AND r.deleted_at IS NULL";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return java.util.Optional.empty();
+
+                java.util.Map<String, Object> room = new java.util.HashMap<>();
+                room.put("id",             rs.getInt("room_id"));
+                room.put("facilityId",     rs.getInt("facility_id"));
+                room.put("facilityCode",   rs.getString("facility_code"));
+                room.put("facilityName",   rs.getString("facility_name"));
+                room.put("facilityStatus", rs.getString("facility_status"));
+
+                String code = rs.getString("code");
+                room.put("code",          code);
+                room.put("area",          rs.getDouble("area"));
+                room.put("areaRaw",       rs.getObject("area"));
+                room.put("status",        rs.getString("status"));
+                room.put("roomFee",       rs.getObject("room_fee"));
+                room.put("depositAmount", rs.getObject("deposit_amount"));
+
+                java.sql.Timestamp cAt = rs.getTimestamp("created_at");
+                java.sql.Timestamp uAt = rs.getTimestamp("updated_at");
+                room.put("createdAt",     cAt != null ? cAt.toLocalDateTime().toString() : "—");
+                room.put("updatedAt",     uAt != null ? uAt.toLocalDateTime().toString() : "—");
+                room.put("createdAtAsDate", cAt);
+                room.put("updatedAtAsDate", uAt);
+
+                int tenantId = rs.getInt("tenant_id");
+                room.put("tenantId",    rs.wasNull() ? null : tenantId);
+                room.put("tenantName",  rs.getString("tenant_name"));
+                room.put("tenantCode",  rs.getString("tenant_code"));
+                room.put("tenantPhone", rs.getString("tenant_phone"));
+                room.put("tenantEmail", rs.getString("tenant_email"));
+
+                String floor = "—", roomNum = "—";
+                if (code != null && code.length() >= 4) {
+                    String last4 = code.substring(code.length() - 4);
+                    if (last4.matches("\\d+")) {
+                        floor   = String.valueOf(Integer.parseInt(last4.substring(0, 2)));
+                        roomNum = String.valueOf(Integer.parseInt(last4.substring(2)));
+                    }
+                }
+                room.put("floor",      floor);
+                room.put("roomNumber", roomNum);
+
+                return java.util.Optional.of(room);
+            }
+        } catch (Exception e) {
+            logger.error("RoomDAO.findDetailForAdmin failed for roomId={}", roomId, e);
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * Cập nhật diện tích và giá phòng cùng lúc — dùng cho AdminRoomServlet.
+     */
+    public boolean updateAreaAndFee(int roomId, java.math.BigDecimal area, java.math.BigDecimal fee) {
+        String sql = "UPDATE dbo.rooms SET area = ?, room_fee = ?, updated_at = GETDATE() " +
+                     "WHERE room_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (area != null) ps.setBigDecimal(1, area); else ps.setNull(1, java.sql.Types.DECIMAL);
+            if (fee  != null) ps.setBigDecimal(2, fee);  else ps.setNull(2, java.sql.Types.DECIMAL);
+            ps.setInt(3, roomId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("RoomDAO.updateAreaAndFee failed for roomId={}", roomId, e);
+        }
+        return false;
+    }
+
+    /**
      * Thống kê tình trạng phòng toàn hệ thống cho Admin Dashboard.
      * 
      * @return RoomOccupancyStatDTO chứa tổng phòng, đang thuê, trống, tỷ lệ lấp đầy

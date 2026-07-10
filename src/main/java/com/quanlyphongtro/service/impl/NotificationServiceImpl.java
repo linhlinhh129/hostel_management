@@ -1,6 +1,8 @@
 package com.quanlyphongtro.service.impl;
 
 import com.quanlyphongtro.dao.NotificationDAO;
+import com.quanlyphongtro.dto.PageDTO;
+import com.quanlyphongtro.exception.ValidationException;
 import com.quanlyphongtro.model.Notification;
 import com.quanlyphongtro.service.NotificationService;
 
@@ -13,6 +15,8 @@ import java.util.HashMap;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationDAO notificationDAO = new NotificationDAO();
+
+    // ── Tenant scope ─────────────────────────────────────────────────────
 
     @Override
     public List<Notification> getNotificationsForTenant(int roomId, int facilityId, int page, int pageSize) {
@@ -44,186 +48,43 @@ public class NotificationServiceImpl implements NotificationService {
         return notificationDAO.countUnreadForTenant(roomId, facilityId, lastReadTime);
     }
 
+    // ── Admin scope ───────────────────────────────────────────────────────
+
     @Override
-    public int countManagerNotifications(int managerId, String tab, String type, Integer filterFacilityId, String keyword) {
-        return notificationDAO.countManagerNotifications(managerId, tab, type, filterFacilityId, keyword);
+    public PageDTO<Notification> getAdminNotifications(String keyword, int page, int pageSize) {
+        int total = notificationDAO.count(keyword);
+        List<Notification> items = notificationDAO.findAll(keyword, page, pageSize);
+        return new PageDTO<>(items, page, pageSize, total);
     }
 
     @Override
-    public List<Map<String, Object>> getManagerNotifications(int managerId, String tab, String type, Integer filterFacilityId, String keyword, int page, int pageSize) {
-        int offset = (page - 1) * pageSize;
-        return notificationDAO.getManagerNotifications(managerId, tab, type, filterFacilityId, keyword, offset, pageSize);
+    public Optional<Notification> getAdminNotificationById(int id) {
+        return notificationDAO.findById(id);
     }
 
     @Override
-    public List<Map<String, Object>> getAssignedFacilitiesForManager(int managerId) {
-        return notificationDAO.getAssignedFacilitiesForManager(managerId);
-    }
+    public void createAdminNotification(String title, String content, Integer createdBy)
+            throws ValidationException {
+        // Validation
+        if (title == null || title.isBlank())
+            throw new ValidationException("Tiêu đề không được để trống.");
+        if (title.length() > 255)
+            throw new ValidationException("Tiêu đề không được vượt quá 255 ký tự.");
+        if (content == null || content.isBlank())
+            throw new ValidationException("Nội dung không được để trống.");
+        if (content.length() > 1000)
+            throw new ValidationException("Nội dung không được vượt quá 1000 ký tự.");
 
-    @Override
-    public List<Map<String, Object>> getReportedIncorrectInvoices(int managerId, Integer filterFacilityId, String keyword) {
-        return notificationDAO.getReportedIncorrectInvoices(managerId, filterFacilityId, keyword);
-    }
+        String code = notificationDAO.generateCode("ALL");
 
-    @Override
-    public List<Map<String, Object>> getAssignedRoomsForManager(int managerId) {
-        return notificationDAO.getAssignedRoomsForManager(managerId);
-    }
+        Notification n = new Notification();
+        n.setCode(code);
+        n.setTitle(title.trim());
+        n.setContent(content.trim());
+        n.setTargetType("ALL");
+        n.setStatus("SENT");
+        n.setCreatedBy(createdBy);
 
-    @Override
-    public boolean sendNotification(String title, String content, String recipientType, Integer recipientId, Integer facilityIdForRoom, int managerId) throws Exception {
-        Integer facilityId = null;
-        Integer roomId = null;
-
-        if ("FACILITY".equals(recipientType)) {
-            if (recipientId == null) {
-                throw new IllegalArgumentException("Vui lòng chọn cơ sở nhận thông báo.");
-            }
-            facilityId = recipientId;
-            // Verify manager manages this facility
-            if (!notificationDAO.verifyFacilityManager(facilityId, managerId)) {
-                throw new java.nio.file.AccessDeniedException("Bạn không có quyền gửi thông báo đến cơ sở này.");
-            }
-        } else if ("ROOM".equals(recipientType)) {
-            if (recipientId == null) {
-                throw new IllegalArgumentException("Vui lòng chọn phòng nhận thông báo.");
-            }
-            roomId = recipientId;
-            // Verify room exists and belongs to a facility managed by this manager
-            Integer facId = notificationDAO.verifyRoomManagerAndGetFacilityId(roomId, managerId);
-            if (facId == null) {
-                throw new java.nio.file.AccessDeniedException("Bạn không có quyền gửi thông báo đến phòng này.");
-            }
-        } else {
-            throw new IllegalArgumentException("Đối tượng nhận không hợp lệ.");
-        }
-
-        // Generate unique code
-        String code = notificationDAO.generateCode(recipientType);
-        return notificationDAO.insertNotificationAndGetId(code, title, content, recipientType, facilityId, roomId, managerId) > 0;
-    }
-
-    @Override
-    public Map<String, Object> getNotificationDetail(int notificationId, int managerId) throws Exception {
-        Map<String, Object> notification = notificationDAO.getNotificationDetail(notificationId);
-        if (notification == null) {
-            return null;
-        }
-
-        int creatorId = (Integer) notification.get("created_by");
-        Integer targetFacilityManagerId = (Integer) notification.get("target_facility_manager_id");
-        Integer targetRoomFacilityManagerId = (Integer) notification.get("target_room_facility_manager_id");
-        String targetType = (String) notification.get("recipientType");
-
-        boolean hasAccess = (creatorId == managerId) 
-                         || (targetFacilityManagerId != null && targetFacilityManagerId == managerId)
-                         || (targetRoomFacilityManagerId != null && targetRoomFacilityManagerId == managerId)
-                         || "ALL".equals(targetType);
-
-        if (!hasAccess) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền xem thông báo này.");
-        }
-
-        return notification;
-    }
-
-    @Override
-    public boolean reportIncorrectInvoice(int invoiceId, int managerId) throws Exception {
-        Map<String, Object> verify = notificationDAO.getInvoiceVerifyDetails(invoiceId);
-        if (verify == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn.");
-        }
-
-        int ownerManagerId = (Integer) verify.get("managerId");
-        if (ownerManagerId != managerId) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền báo cáo hóa đơn này.");
-        }
-
-        String invoiceStatus = (String) verify.get("status");
-        if ("PAID".equals(invoiceStatus)) {
-            throw new IllegalStateException("Không thể báo cáo sai số cho hóa đơn đã thanh toán.");
-        }
-
-        int meterId = (Integer) verify.get("meterId");
-        if (meterId <= 0) {
-            throw new IllegalArgumentException("Hóa đơn không liên kết với chỉ số điện nước hợp lệ.");
-        }
-
-        return notificationDAO.updateMeterReadingStatus(meterId, "INCORRECT");
-    }
-
-    @Override
-    public Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId, int managerId) throws Exception {
-        Map<String, Object> invoice = notificationDAO.getInvoiceDetailsForSendOperator(invoiceId);
-        if (invoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn.");
-        }
-
-        int ownerManagerId = (Integer) invoice.get("managerId");
-        if (ownerManagerId != managerId) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền thực hiện thao tác này.");
-        }
-
-        return invoice;
-    }
-
-    @Override
-    public List<Map<String, Object>> getActiveOperatorsForFacility(int facilityId) {
-        return notificationDAO.getActiveOperatorsForFacility(facilityId);
-    }
-
-    @Override
-    public boolean sendOperatorRequest(int invoiceId, int operatorId, String title, String content, int managerId) throws Exception {
-        Map<String, Object> invoice = notificationDAO.getInvoiceDetailsForSendOperator(invoiceId);
-        if (invoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn.");
-        }
-
-        int ownerManagerId = (Integer) invoice.get("managerId");
-        if (ownerManagerId != managerId) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền thực hiện thao tác này.");
-        }
-
-        int meterId = (Integer) invoice.get("meter_id");
-
-        // Create unique request code: REQ-UTL-XXXX
-        String reqCode = "REQ-UTL-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
-        return notificationDAO.sendOperatorRequestTransaction(reqCode, managerId, title, content, operatorId, meterId);
-    }
-
-    @Override
-    public Map<String, Object> getInvoiceDetailsForSendDebt(int invoiceId, int managerId) throws Exception {
-        Map<String, Object> invoice = notificationDAO.getInvoiceDetailsForSendDebt(invoiceId);
-        if (invoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn.");
-        }
-
-        int ownerManagerId = (Integer) invoice.get("managerId");
-        if (ownerManagerId != managerId) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền thực hiện thao tác này.");
-        }
-
-        return invoice;
-    }
-
-    @Override
-    public boolean sendDebtReminder(int invoiceId, String title, String content, int managerId) throws Exception {
-        Map<String, Object> invoice = notificationDAO.getInvoiceDetailsForSendDebt(invoiceId);
-        if (invoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn.");
-        }
-
-        int ownerManagerId = (Integer) invoice.get("managerId");
-        if (ownerManagerId != managerId) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền thực hiện thao tác này.");
-        }
-
-        int roomId = (Integer) invoice.get("roomId");
-
-        // Generate unique code: NTF-DEBT-XXXX
-        String code = notificationDAO.generateCode("DEBT");
-
-        return notificationDAO.sendDebtReminder(code, title, content, roomId, managerId);
+        notificationDAO.insert(n);
     }
 }
