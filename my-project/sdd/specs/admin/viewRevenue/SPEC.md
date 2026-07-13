@@ -105,7 +105,7 @@ THE SYSTEM SHALL hiển thị các thông tin sau cho từng kỳ:
 
 WHEN Admin xem báo cáo doanh thu theo kỳ
 
-THE SYSTEM SHALL sắp xếp dữ liệu theo thời gian tăng dần.
+THE SYSTEM SHALL sắp xếp dữ liệu theo thời gian giảm dần.
 
 
 ### 3.2 Phân quyền

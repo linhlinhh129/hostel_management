@@ -106,12 +106,12 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi FORBIDDEN.
 
 ### 4.1 Servlet Entry Point
 
-| Thuộc tính | Giá trị |
-|---|---|
-| **Servlet** | `AdminDashboardServlet` |
-| **URL Pattern** | `GET /admin/dashboard` |
-| **Forward đến** | `/WEB-INF/views/admin/dashboard.jsp` |
-| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
+|    Thuộc tính   | Giá trị                                     |
+|-----------------|---------------------------------------------|
+| **Servlet**     | `AdminDashboardServlet`                     |
+| **URL Pattern** | `GET /admin/dashboard`                      |
+| **Forward đến** | `/WEB-INF/views/admin/dashboard.jsp`        |
+| **Phân quyền**  | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
 ---
 
@@ -120,7 +120,7 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi FORBIDDEN.
 Servlet set các attribute sau trước khi forward sang JSP:
 
 | Attribute | Java Type | Nguồn dữ liệu | Mô tả |
-|---|---|---|---|
+|-----------|-----------|---------------|-------|
 | `currentPeriodLabel` | `String` | `LocalDate.now()` | Kỳ hiện tại, định dạng `"MM/yyyy"` |
 | `monthlyRevenue` | `BigDecimal` | `RevenueDAO.getMonthlyRevenueTotal(period)` | Tổng doanh thu tháng (hóa đơn PAID) |
 | `totalFacilities` | `int` | `FacilityDAO.count("", "")` | Tổng số cơ sở (tất cả trạng thái) |
