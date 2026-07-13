@@ -1,243 +1,51 @@
-# Quản lý hợp đồng
+# CONTEXT.md \[Quản lý hợp đồng\]
 
-# Người viết: @BuiDinh | Ngày: 2026-06-21
+# Người viết: Bùi Đỉnh | Ngày: 2026-06-13
 
 ## 1. PROBLEM STATEMENT
 
-Trong hệ thống quản lý nhà trọ, hợp đồng thuê phòng là căn cứ quan trọng để ghi nhận thỏa thuận giữa bên cho thuê và người thuê. Nếu thông tin hợp đồng không được quản lý tập trung, Ban quản lý sẽ khó theo dõi phòng nào đang có khách thuê, hợp đồng nào còn hiệu lực, hợp đồng nào đã hết hạn hoặc không còn sử dụng.
-
-Nỗi đau chính của Ban quản lý là quá trình lập hợp đồng có nhiều thông tin cần nhập và dễ sai sót, bao gồm thông tin cá nhân người thuê, phòng thuê, thời hạn hợp đồng, tiền phòng, tiền cọc và các khoản phí liên quan. Nếu Ban quản lý phải nhập thủ công toàn bộ thông tin phòng, tầng, tiền phòng hoặc tiền cọc, hợp đồng có thể sai dữ liệu so với hệ thống thực tế.
-
-Người thuê cũng bị ảnh hưởng nếu hợp đồng ghi sai thông tin cá nhân, phòng thuê, thời hạn hoặc số tiền. Những sai lệch này có thể gây tranh chấp khi thanh toán, trả phòng, hoàn cọc hoặc xử lý trách nhiệm giữa hai bên.
-
-Ngoài ra, hợp đồng là tài liệu cần in ra để lưu trữ hoặc đưa cho người thuê ký xác nhận. Nếu dữ liệu hợp đồng không được lấy đúng từ hệ thống, bản in hợp đồng có thể thiếu thông tin, sai mẫu hoặc không đủ căn cứ để đối chiếu sau này.
-
-Một vấn đề quan trọng khác là phân quyền theo cơ sở. Ban quản lý chỉ được xem và tạo hợp đồng cho phòng thuộc cơ sở mình phụ trách. Nếu hệ thống cho phép truy cập hoặc tạo hợp đồng cho cơ sở khác, dữ liệu hợp đồng có thể bị lộ hoặc bị thao tác sai quyền.
+- **Nhập liệu thủ công rập khuôn & Dễ sai sót cực kỳ cao**: Ban quản lý khi lập một hợp đồng thuê phòng trọ mới phải copy/paste hoặc gõ lại tay hàng loạt trường thông tin tẻ nhạt sẵn có của phòng (mã phòng, tầng, tiền phòng, tiền cọc, thông tin cơ sở) từ danh mục quản lý phòng sang form hợp đồng, dễ dẫn đến tình trạng gõ nhầm giá tiền, lệch tầng, hoặc gõ sai mã phòng.
+- **Sai lệch dữ liệu lịch sử**: Nếu sau này giá phòng hoặc giá dịch vụ của cơ sở thay đổi, các hợp đồng cũ bị cập nhật động theo nếu hệ thống chỉ tham chiếu (join) động, làm sai lệch doanh thu lịch sử và thông tin cam kết ban đầu với khách thuê.
+- **Tốn thời gian tạo tài khoản thủ công cho người thuê**: Sau khi ký xong hợp đồng giấy/lưu hệ thống, Ban quản lý lại phải qua một phân hệ khác tạo tài khoản thủ công cho khách thuê (nhập lại họ tên, email, SĐT, CCCD), gây tốn thời gian gấp đôi và dễ mất đồng bộ dữ liệu.
+- **Mất an toàn dữ liệu cơ sở**: Ban quản lý của cơ sở này có nguy cơ nhìn thấy hoặc can thiệp (xem, xóa, tạo) vào hợp đồng thuộc cơ sở của quản lý khác nếu hệ thống không phân quyền chặt chẽ theo phạm vi quản lý cơ sở.
+- **Rác dữ liệu**: Các hợp đồng cũ đã hết hạn (`INACTIVE`) bị xếp chồng lấn át các hợp đồng đang chạy (`ACTIVE`), cần có cơ chế dọn dẹp sạch sẽ nhưng tránh xóa nhầm các hợp đồng đang có hiệu lực.
+- **Không có mẫu in hợp đồng chuẩn hóa**: Ban quản lý tốn thời gian soạn thảo hợp đồng bằng file Word bên ngoài rồi điền tay thông tin, thay vì có một file in chuẩn hóa tự động đổ dữ liệu hệ thống ra đầy đủ các điều khoản pháp lý quy định để khách ký ngay.
 
 ## 2. DOMAIN KNOWLEDGE
 
-- `contract` / hợp đồng: tài liệu ghi nhận thỏa thuận thuê phòng giữa bên cho thuê và người thuê.
-
-- `contracts`: bảng chính dùng để lưu dữ liệu hợp đồng.
-
-- `contract_id`: mã định danh nội bộ của hợp đồng, do hệ thống hoặc database tự sinh tăng dần.
-
-- `code`: mã hợp đồng duy nhất, được hệ thống tự sinh.
-
-- Định dạng mã hợp đồng đề xuất: `HD-{roomCode}-{signedDate:yyyyMMdd}-{sequence}`.
-
-- `tenant`: người thuê phòng.
-
-- `tenant_full_name`: họ tên khách thuê được ghi trên hợp đồng.
-
-- `tenant_identity_number`: số CMND/CCCD của khách thuê.
-
-- `room_id`: ID phòng được thuê, dùng để liên kết hợp đồng với bảng `rooms`.
-
-- `roomCode`: mã phòng được hiển thị trên danh sách, chi tiết và bản in hợp đồng.
-
-- `facility`: cơ sở/khu nhà mà phòng thuộc về.
-
-- `signed_date`: ngày lập hợp đồng.
-
-- `start_date`: ngày bắt đầu hợp đồng. Nếu không nhập riêng, mặc định bằng `signed_date`.
-
-- `end_date`: ngày hết hạn hợp đồng.
-
-- `amount_in_words`: số tiền bằng chữ, dùng để hiển thị trong hợp đồng in ra.
-
-- `ACTIVE`: hợp đồng đang có hiệu lực.
-
-- `INACTIVE`: hợp đồng không còn hiệu lực.
-
-- Khi tạo mới, hợp đồng mặc định có trạng thái `ACTIVE`.
-
-- Một phòng đang có hợp đồng `ACTIVE` thì không được tạo thêm hợp đồng mới.
-
-- Khi in hợp đồng, dữ liệu phải được lấy từ database, không yêu cầu nhập lại thủ công.
-
-- Ban quản lý chỉ được xem và tạo hợp đồng cho phòng thuộc cơ sở mà mình phụ trách.
+- **Hợp đồng (Contract)**: Thỏa thuận pháp lý ràng buộc giữa Ban quản lý (Bên A - Đại diện cơ sở) và Khách thuê (Bên B - Tenant) về việc thuê một phòng cụ thể trong một khoảng thời gian nhất định với mức giá cố định.
+- **Trạng thái Hợp đồng**:
+  - `ACTIVE`: Hợp đồng đang có hiệu lực pháp lý, phòng tương ứng sẽ được coi là đã có người ở (`OCCUPIED`). Một phòng tại một thời điểm chỉ được phép có duy nhất một hợp đồng `ACTIVE`.
+  - `INACTIVE`: Hợp đồng đã hết hiệu lực (hết hạn, thanh lý hoặc bị hủy). Chỉ các hợp đồng ở trạng thái này mới được phép xóa (soft-delete).
+- **Mã hợp đồng (Contract Code)**: Định dạng duy nhất bắt buộc tuân thủ cấu trúc: `HD-{roomCode}-{signedDate:yyyyMMdd}-{sequence}` (Ví dụ: `HD-402-20240223-001`).
+- **Dữ liệu Snapshot tại thời điểm tạo**: Lưu lại bản sao cứng của các giá trị phòng (`rent_price`, `deposit_amount`, `room_code_snapshot`, `floor_snapshot`) ngay khi nhấn lưu hợp đồng để bảo vệ tính toàn vẹn dữ liệu lịch sử kể cả khi phòng thay đổi giá trong tương lai.
+- **Tenant (Người thuê)**: Đối tượng khách thuê phòng, có tài khoản hệ thống với role `TENANT` liên kết trực tiếp với trường `tenant_id` trong hợp đồng.
 
 ## 3. STAKEHOLDERS
 
-- Ban quản lý / Management Board:
-
-  - Người dùng chính của feature.
-
-  - Cần xem danh sách hợp đồng, xem chi tiết, tạo hợp đồng mới và in hợp đồng.
-
-  - Chịu trách nhiệm đảm bảo hợp đồng đúng thông tin người thuê, phòng thuê, thời hạn và trạng thái.
-
-- Người thuê:
-
-  - Người ký hợp đồng và chịu ảnh hưởng trực tiếp bởi nội dung hợp đồng.
-
-  - Cần hợp đồng ghi đúng thông tin cá nhân, phòng thuê, tiền thuê, tiền cọc, thời hạn và trách nhiệm hai bên.
-
-- Chủ cơ sở / đại diện bên cho thuê:
-
-  - Là bên A trong hợp đồng.
-
-  - Cần hợp đồng làm căn cứ quản lý thuê phòng, thu tiền, hoàn cọc và xử lý tranh chấp.
-
-- Bộ phận tài chính / kế toán nếu có:
-
-  - Cần thông tin hợp đồng để đối chiếu tiền phòng, tiền cọc, kỳ hạn thuê và các khoản phí liên quan.
-
-- Quản trị hệ thống / kỹ thuật:
-
-  - Đảm bảo phân quyền theo cơ sở, dữ liệu liên kết đúng giữa `contracts`, `rooms`, `users`, `facilities`.
-
-  - Đảm bảo mã hợp đồng duy nhất, API ổn định và bản in lấy đúng dữ liệu.
-
-- Người có quyền quyết định nghiệp vụ:
-
-  - Ban quản lý cấp cao hoặc chủ cơ sở.
-
-  - Cần xác nhận mẫu hợp đồng, quy tắc tạo hợp đồng, trạng thái hợp đồng và quy định khi phòng đã có hợp đồng hiệu lực.
+- **Ban quản lý (Manager)**: Người trực tiếp vận hành, thụ hưởng việc giảm tải nhập liệu, quản lý vòng đời hợp đồng, tạo tài khoản cho khách và in ấn biểu mẫu trực tiếp.
+- **Khách thuê (Tenant)**: Người chịu ảnh hưởng trực tiếp bởi các điều khoản hợp đồng, được nhận tài khoản hệ thống tự sinh để đăng nhập và theo dõi dịch vụ.
+- **Chủ cơ sở / Admin**: Người có quyền quyết định cao nhất, giám sát toàn bộ hợp đồng của tất cả các cơ sở, xem Audit Log để kiểm tra tính minh bạch của dữ liệu.
 
 ## 4. CONSTRAINTS (ràng buộc không thể thay đổi)
 
-- Chỉ Ban quản lý được truy cập chức năng Quản lý hợp đồng.
-
-- Ban quản lý chỉ được xem hợp đồng của cơ sở mình phụ trách.
-
-- Không được xem hợp đồng thuộc cơ sở khác.
-
-- Không được tạo hợp đồng cho phòng thuộc cơ sở khác.
-
-- Khi truy xuất hợp đồng, hệ thống phải join `contracts` với `rooms` để xác định cơ sở của phòng.
-
-- Mỗi hợp đồng phải liên kết với một phòng hợp lệ.
-
-- Mỗi hợp đồng phải liên kết với một người thuê hợp lệ.
-
-- Mỗi hợp đồng phải có mã hợp đồng duy nhất.
-
-- Hệ thống phải tự sinh `contract_id`.
-
-- Hệ thống phải tự sinh `code`.
-
-- Khi tạo mới, hợp đồng có trạng thái mặc định là `ACTIVE`.
-
-- Ban quản lý bắt buộc nhập họ tên khách thuê.
-
-- Ban quản lý bắt buộc nhập số CMND/CCCD.
-
-- Ban quản lý bắt buộc chọn phòng thuê.
-
-- Ban quản lý bắt buộc nhập ngày lập hợp đồng.
-
-- Ban quản lý bắt buộc nhập ngày hết hạn hợp đồng.
-
-- `end_date` phải lớn hơn hoặc bằng `signed_date`.
-
-- Nếu không nhập `start_date`, hệ thống mặc định `start_date = signed_date`.
-
-- Không được tạo hợp đồng mới cho phòng đang có hợp đồng `ACTIVE`.
-
-- Khi chọn phòng, hệ thống phải kiểm tra phòng tồn tại.
-
-- Khi chọn phòng, hệ thống phải kiểm tra phòng thuộc cơ sở mà Ban quản lý phụ trách.
-
-- Khi chọn phòng hợp lệ, hệ thống tự động lấy mã phòng, tầng, tiền phòng, tiền cọc và thông tin cơ sở.
-
-- Khi in hợp đồng, hệ thống không được yêu cầu nhập lại dữ liệu thủ công.
-
-- Dữ liệu in hợp đồng phải lấy từ database.
-
-- Hợp đồng in ra phải theo mẫu hợp đồng thuê phòng trọ đã định nghĩa.
-
-- API danh sách hợp đồng phải phản hồi dưới `1000ms (p95)`.
-
-- API chi tiết hợp đồng phải phản hồi dưới `500ms (p95)`.
-
-- API tạo hợp đồng phải phản hồi dưới `1000ms (p95)`.
-
-- API in hợp đồng phải phản hồi dưới `2000ms (p95)`.
-
-- Không bao gồm ký hợp đồng điện tử, chữ ký số, upload file scan hợp đồng, gia hạn hợp đồng, thanh lý hợp đồng, phụ lục hợp đồng hoặc tự động chuyển hợp đồng hết hạn sang `INACTIVE`.
+- **Kiến trúc kĩ thuật**: Phải tuân thủ mô hình MVC truyền thống (JSP + Servlet + Service + DAO).
+- **Công nghệ database**: Chỉ dùng JDBC thuần và `PreparedStatement`, tuyệt đối nghiêm cấm sử dụng các framework ORM (như Hibernate, JPA, MyBatis).
+- **Giao diện JSP**: Tuyệt đối không dùng Scriptlet (`<% ... %>`) trong file JSP.
+- **Hiệu năng**: Thời gian phản hồi tối đa của hệ thống phải đạt dưới 500ms (P95).
+- **Toàn vẹn dữ liệu**: Bắt buộc sử dụng Database Transaction khi thực hiện cập nhật đồng thời nhiều bảng dữ liệu (ví dụ: vừa thêm user vừa cập nhật trạng thái phòng và gán ID hợp đồng).
+- **Bảo mật & Phân quyền**: Chỉ người dùng có vai trò `MANAGER` hoặc `ADMIN` mới được truy cập servlet. Ban quản lý chỉ được quyền thao tác dữ liệu thuộc cơ sở mình được giao phụ trách (Phân quyền dữ liệu theo `room_id` -&gt; `facility_id`).
+- **Kiểm toán dữ liệu**: Bắt buộc ghi log tập trung bằng SLF4J và tạo bản ghi Audit Log đối với các hành động: Tạo hợp đồng, Xóa hợp đồng và Thêm người thuê.
 
 ## 5. ASSUMPTIONS (giả định cần confirm)
 
-- Giả định vai trò Ban quản lý đã tồn tại trong hệ thống phân quyền.
-
-- Giả định hệ thống đã có cơ chế xác định cơ sở mà Ban quản lý phụ trách.
-
-- Giả định bảng `contracts` đã tồn tại hoặc sẽ được tạo theo cấu trúc trong SPEC.
-
-- Giả định bảng `rooms` có thông tin `room_id`, `room_code`, tầng, giá phòng, tiền cọc và cơ sở.
-
-- Giả định bảng `facilities` có thông tin địa chỉ cơ sở và thông tin đại diện bên A hoặc có thể lấy từ cấu hình khác.
-
-- Giả định mỗi hợp đồng chỉ gắn với một phòng.
-
-- Giả định mỗi hợp đồng chỉ gắn với một người thuê chính.
-
-- Giả định khách thuê đã có hoặc sẽ được tạo user tương ứng trước khi tạo hợp đồng.
-
-- Giả định thông tin người thuê được lưu snapshot trong bảng `contracts` để bản hợp đồng không bị thay đổi khi thông tin user thay đổi sau này.
-
-- Giả định tiền phòng và tiền cọc lấy từ dữ liệu phòng tại thời điểm in hoặc tạo hợp đồng.
-
-- Giả định nếu cần giữ nguyên tiền phòng/tiền cọc tại thời điểm tạo, hệ thống sẽ bổ sung cột snapshot.
-
-- Giả định mã hợp đồng sinh theo format `HD-{roomCode}-{signedDate:yyyyMMdd}-{sequence}`.
-
-- Giả định bản in hợp đồng có thể là HTML print view hoặc PDF tùy thiết kế kỹ thuật.
-
-- Giả định trạng thái hợp đồng chỉ gồm `ACTIVE` và `INACTIVE` trong phạm vi hiện tại.
-
-- Giả định hệ thống chưa tự động chuyển hợp đồng hết hạn sang `INACTIVE`.
+- **Giả định 1**: Hệ thống đã có sẵn dữ liệu đầy đủ về thông tin Bên A (Thông tin đại diện chủ cơ sở/ban quản lý) trong bảng `facilities` hoặc bảng cấu hình để tự động đổ ra bản in. *Rủi ro nếu sai*: Bản in sẽ bị trống thông tin Bên A hoặc phải nhập tay bừa bãi.
+- **Giả định 2**: Quy trình tạo tài khoản tenant từ hợp đồng giả định rằng email hoặc SĐT của khách thuê là duy nhất trên toàn hệ thống. *Rủi ro nếu sai*: Nếu khách thuê cũ quay lại thuê ở cơ sở khác, hệ thống sẽ báo trùng lặp email/SĐT khi tạo mới thay vì tái kích hoạt (`Reactivate`) một cách trơn tru nếu logic so khớp bị lỗi.
+- **Giả định 3**: Khi phòng đã ở trạng thái `ACTIVE` hợp đồng, hệ thống coi phòng đó là không khả dụng để tạo hợp đồng khác. Giả định không có trường hợp nhiều người cùng đứng tên các hợp đồng độc lập trên cùng một phòng tại một thời điểm (hệ thống hiện tại Out Of Scope việc quản lý nhiều người thuê chung 1 hợp đồng hoặc nhiều hợp đồng song song).
 
 ## 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời)
 
-- Role Ban quản lý trong database tương ứng với role nào: `MANAGER`, `ADMIN`, `Management Board` hay một role riêng?
-
-- Một Ban quản lý có thể phụ trách nhiều cơ sở không? Nếu có, khi tạo hợp đồng sẽ chọn cơ sở trước hay chọn phòng trực tiếp?
-
-- Thông tin bên A lấy từ đâu: bảng `facilities`, bảng cấu hình chủ cơ sở hay nhập thủ công?
-
-- Bên A có cần lưu họ tên, ngày sinh, CMND/CCCD, địa chỉ và số điện thoại trong database không?
-
-- Địa chỉ cơ sở dùng trong hợp đồng in ra lấy từ trường nào?
-
-- Tiền phòng và tiền cọc có cần lưu snapshot trong bảng `contracts` không?
-
-- Nếu giá phòng thay đổi sau khi hợp đồng được tạo, bản in hợp đồng cũ dùng giá cũ hay giá hiện tại?
-
-- Nếu phòng đã có hợp đồng `ACTIVE` nhưng người thuê sắp trả phòng, có cho tạo hợp đồng mới trước ngày kết thúc không?
-
-- Khi hợp đồng hết hạn, hệ thống có cần tự động chuyển sang `INACTIVE` không?
-
-- Ai có quyền cập nhật trạng thái hợp đồng từ `ACTIVE` sang `INACTIVE`?
-
-- Có cần chức năng gia hạn hợp đồng không, hay tạo hợp đồng mới hoàn toàn?
-
-- Có cần chức năng thanh lý hợp đồng không?
-
-- Có cần cho phép chỉnh sửa hợp đồng sau khi tạo không?
-
-- Nếu nhập sai thông tin người thuê sau khi đã in hợp đồng, quy trình xử lý là chỉnh sửa, hủy hay tạo hợp đồng mới?
-
-- Có cần lưu lịch sử thay đổi hợp đồng không?
-
-- Có cần upload bản scan hợp đồng đã ký không?
-
-- Có cần hỗ trợ nhiều người thuê trong cùng một hợp đồng không?
-
-- Số tiền bằng chữ có bắt buộc nhập tay không, hay hệ thống tự chuyển từ tiền phòng sang chữ?
-
-- Mẫu hợp đồng có cố định cho mọi cơ sở không, hay mỗi cơ sở được tùy chỉnh?
-
-- Bản in hợp đồng cần xuất PDF hay chỉ cần HTML print view?
-
-- Có cần đánh số thứ tự hợp đồng theo từng phòng, từng cơ sở hay toàn hệ thống?
-
-- Khi tạo hợp đồng, có cần tự động cập nhật trạng thái phòng sang đang thuê không?
-
-- Khi hợp đồng chuyển `INACTIVE`, có cần tự động cập nhật trạng thái phòng không?
-
-- Có cần kiểm tra định dạng số điện thoại và CMND/CCCD không?
-
-- Có cần kiểm tra ngày sinh người thuê phải đủ tuổi thuê phòng không?
+- **Câu hỏi 1**: Hệ thống lấy thông tin đơn giá điện, nước, Internet, rác thải ở đâu để hiển thị vào "Điều 2" của bản in hợp đồng? (Lấy từ cấu hình mặc định của cơ sở `facilities`, hay Ban quản lý sẽ phải tự điền vào form khi tạo hợp đồng?)
+- **Câu hỏi 2**: Số tiền bằng chữ (`amountInWords`) cho phần tiền phòng hiện tại đang bắt nhập tay trên form tạo hợp đồng. Hệ thống có cần tích hợp thư viện tự động chuyển số thành chữ từ trường `rent_price` để tránh Ban quản lý gõ sai lệch giữa số tiền bằng số và bằng chữ không?
+- **Câu hỏi 3**: Đối với việc Soft-delete hợp đồng `INACTIVE`, hệ thống chỉ đánh dấu xóa dữ liệu (`is_deleted = true`), vậy phòng liên kết với hợp đồng đó có tự động giải phóng trạng thái về trống (`AVAILABLE`) hay nghiệp vụ đó phải được xử lý ở một phân hệ trả phòng độc lập khác?
+- **Câu hỏi 4**: Khi tạo tài khoản Tenant từ hợp đồng, mật khẩu tạm thời được gửi qua email. Nếu hệ thống chưa cấu hình Mail Server thành công thì có cơ chế hiển thị trực tiếp mật khẩu tạm thời lên màn hình cho Ban quản lý copy gửi cho khách không?

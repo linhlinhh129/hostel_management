@@ -15,184 +15,133 @@ Ban quản lý cần một chức năng để tạo và kiểm duyệt các bài
 ---
 
 # 2. User Stories
-
 ### Story 1 - Tạo bài viết
-
 **Là** Ban quản lý, **tôi muốn** tạo bài viết với tiêu đề, nội dung và hình ảnh (chụp trực tiếp hoặc tải từ thiết bị) **để** gửi bài viết vào danh sách chờ duyệt.
 
-### Story 2 - Xem danh sách chờ duyệt
-
-**Là** Ban quản lý, **tôi muốn** xem danh sách tất cả bài viết đang chờ duyệt **để** theo dõi và xử lý.
+### Story 2 - Xem danh sách bài viết
+**Là** Ban quản lý, **tôi muốn** xem danh sách tất cả bài viết trên hệ thống (bao gồm PENDING, APPROVED) **để** theo dõi và quản lý.
 
 ### Story 3 - Duyệt bài viết
-
 **Là** Ban quản lý, **tôi muốn** duyệt một bài viết trong danh sách chờ **để** bài viết được phép hiển thị cho người dùng.
 
 ### Story 4 - Xóa bài viết
-
 **Là** Ban quản lý, **khi** phát hiện bài viết không còn cần thiết hoặc có nội dung không phù hợp, **tôi muốn** xóa bài viết khỏi danh sách chờ duyệt.
 
 ---
 
 # 3. Acceptance Criteria (EARS)
-
 ### UC01 - Tạo bài viết
-
 - **WHEN** Ban quản lý nhập đầy đủ tiêu đề và nội dung bài viết
 - **AND** chọn hình ảnh bằng cách chụp trực tiếp hoặc tải ảnh từ thiết bị (không bắt buộc)
 - **THE SYSTEM SHALL** tạo bài viết mới với trạng thái **PENDING**.
 - **AND** lưu thời gian tạo, người tạo và đường dẫn ảnh (nếu có).
 
----
 
 ### UC02 - Dữ liệu không hợp lệ
-
 - **WHEN** tiêu đề hoặc nội dung để trống
 - **THE SYSTEM SHALL** từ chối tạo bài viết.
 - **AND** trả về HTTP 400 cùng thông báo lỗi phù hợp.
 
----
 
-### UC03 - Xem danh sách chờ duyệt
-
-- **WHEN** Ban quản lý truy cập trang "Bài viết chờ duyệt"
-- **THE SYSTEM SHALL** hiển thị danh sách các bài viết có trạng thái **PENDING**.
-- **AND** mỗi bài viết hiển thị:
+### UC03 - Xem danh sách bài viết
+- **WHEN** Ban quản lý truy cập trang "Danh sách bài viết"
+- **THE SYSTEM SHALL** hiển thị danh sách tất cả bài viết trên hệ thống (không phân biệt trạng thái).
+- **AND** mỗi dòng trong bảng hiển thị:
   - Tiêu đề
-  - Nội dung tóm tắt
-  - Hình ảnh (nếu có)
-  - Người tạo
-  - Thời gian tạo
+  - Tác giả
+  - Thời gian đăng
+  - Trạng thái (Chờ duyệt, Đã duyệt)
+  - Các nút thao tác (Chi tiết, Duyệt, Xóa)
 
----
 
 ### UC04 - Duyệt bài viết
-
-- **WHEN** Ban quản lý chọn "Duyệt" đối với một bài viết
+- **WHEN** Ban quản lý chọn "Duyệt" đối với một bài viết PENDING
 - **THE SYSTEM SHALL**
-  - cập nhật trạng thái bài viết thành **APPROVED**
-  - lưu người duyệt vào trường **reviewed_by**
-  - cập nhật **updated_at**
-  - bài viết không còn xuất hiện trong danh sách chờ duyệt.
+  - gọi API qua AJAX POST.
+  - cập nhật trạng thái bài viết thành **APPROVED**.
+  - tải lại trang danh sách hoặc chi tiết.
 
----
 
 ### UC05 - Xóa bài viết
-
 - **WHEN** Ban quản lý chọn "Xóa"
 - **THE SYSTEM SHALL**
-  - đánh dấu bài viết đã bị xóa bằng cách cập nhật **deleted_at**
-  - bài viết không còn xuất hiện trong danh sách chờ duyệt.
+  - gọi API qua AJAX POST.
+  - đánh dấu bài viết đã bị xóa bằng cách cập nhật **deleted_at** (Soft delete).
+  - tải lại trang hoặc chuyển hướng về danh sách bài viết.
 
----
 
 ### UC06 - Phân quyền
-
 - **WHILE** người dùng không thuộc Ban quản lý
 - **THE SYSTEM SHALL** không cho phép truy cập các chức năng tạo, duyệt hoặc xóa bài viết.
 
+# 4. Servlet & API Contract
+Quản lý bài viết kết hợp giữa Servlet render giao diện (JSP/Form HTML) và API xử lý AJAX cho các tác vụ cần thiết (Duyệt/Xóa/Load JSON).
+
+## 4.1 Servlet Entry Point
+
+| Thuộc tính | Giá trị |
+|---|---|
+| **Servlet** | `CommunityPostServlet` |
+| **URL Pattern** | `/manager/articles`, `/manager/articles/*`, `/manager/community-posts/*`, `/manager/articles/detail` |
+| **Phân quyền** | Dành cho Manager (Kiểm tra qua `currentUser` / `UserSessionDTO` từ Session) |
+
 ---
 
-# 4. API Contract
+## 4.2 Giao diện và Request Attributes (JSP/HTML Form)
 
-## 4.1 Tạo bài viết
+### Xem danh sách (list-pending.jsp)
+- **Endpoint:** `GET /manager/articles`
+- **Query Params:** `cursor`, `limit` (tùy chọn)
+- **Attribute:** `posts` (`List<CommunityPostDTO>`), `nextCursor`
+- **Lưu ý:** Nếu request mang header `X-Requested-With: XMLHttpRequest` (AJAX) hoặc `Accept: application/json`, hệ thống sẽ trả về chuỗi JSON. Giao diện hiển thị dạng bảng (Table) với các cột Tiêu đề, Tác giả, Thời gian đăng, Trạng thái, Thao tác.
 
-**Endpoint**
+### Xem chi tiết (detail.jsp)
+- **Endpoint:** `GET /manager/articles/detail?id={postId}`
+- **Attribute:** `post` (`CommunityPostDTO`)
+- **Tính năng UI:** Hỗ trợ Modal phóng to hình ảnh (Image Viewer Modal) khi người dùng click vào ảnh đính kèm bài viết.
 
-```
-POST /api/v1/community-posts
-```
+### Màn hình tạo bài viết (create.jsp)
+- **Endpoint GET:** `GET /manager/articles/create` (forward form)
+- **Endpoint POST:** `POST /manager/articles/create`
+  - **Payload:** `multipart/form-data` chứa `title`, `content` (text) và `image` (file upload)
+  - **Xử lý thành công:** Redirect (`sendRedirect`) về trang danh sách kèm cờ `?success=create`.
+  - **Xử lý thất bại:** Bắt lỗi và forward ngược lại trang `create.jsp` với thuộc tính `error` hiển thị trên màn hình.
 
-**Request**
+---
 
-```json
-{
-  "title": "Thông báo bảo trì thang máy",
-  "content": "Thang máy tòa A sẽ bảo trì từ 08:00 đến 12:00.",
-  "imageUrl": "string | null"
-}
-```
+## 4.3 AJAX Endpoints (Trả về JSON)
 
-**Response 201**
-
-```json
-{
-  "success": true,
-  "data": {
-    "postId": 1,
-    "status": "PENDING"
+### Duyệt bài viết
+- **Endpoint:** `POST /manager/articles/approve`
+- **Tham số Request:** `postId`
+- **Response 200 (Thành công):**
+  ```json
+  {
+    "success": true,
+    "message": "Bài viết đã được duyệt."
   }
-}
-```
+  ```
 
-**Response**
-
-- 400: Dữ liệu không hợp lệ
-- 401: Chưa đăng nhập
-- 403: Không có quyền
-
----
-
-## 4.2 Danh sách bài viết chờ duyệt
-
-**Endpoint**
-
-```
-GET /api/v1/community-posts/pending
-```
-
-**Response 200**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "postId": 1,
-      "title": "...",
-      "status": "PENDING"
-    }
-  ]
-}
-```
+### Xóa bài viết
+- **Endpoint:** `POST /manager/articles/delete`
+- **Tham số Request:** `postId`
+- **Response 200 (Thành công):**
+  ```json
+  {
+    "success": true,
+    "message": "Bài viết đã được xóa."
+  }
+  ```
 
 ---
 
-## 4.3 Duyệt bài viết
+## 4.4 Xử lý lỗi (Servlet Behavior)
 
-**Endpoint**
-
-```
-PUT /api/v1/community-posts/{postId}/approve
-```
-
-**Response 200**
-
-```json
-{
-  "success": true,
-  "message": "Bài viết đã được duyệt."
-}
-```
-
----
-
-## 4.4 Xóa bài viết
-
-**Endpoint**
-
-```
-DELETE /api/v1/community-posts/{postId}
-```
-
-**Response 200**
-
-```json
-{
-  "success": true,
-  "message": "Bài viết đã được xóa."
-}
-```
+| Tình huống | Hành vi |
+|---|---|
+| `GET /manager/articles/detail` lỗi ID / Không tìm thấy | Chuyển hướng về trang danh sách kèm tham số query `?error=invalid` hoặc `?error=notfound` |
+| AJAX Endpoint (Duyệt/Xóa) bị lỗi Validation | Trả về HTTP `400 Bad Request` kèm JSON chứa `"error"` |
+| Có Exception hoặc Lỗi Server | Trả về HTTP `500 Internal Server Error` kèm JSON chứa lỗi hệ thống hoặc chuyển hướng kèm lỗi tuỳ context gọi |
 
 ---
 

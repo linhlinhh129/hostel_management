@@ -1,185 +1,56 @@
-# Quản lý khoản phí và giá dịch vụ
+# CONTEXT.md [Quản lý khoản phí và giá dịch vụ]
 
-# Người viết: @BuiDinh | Ngày: 2026-06-21
+# Người viết: Bùi Đỉnh | Ngày: 2026-07-13
 
 ## 1. PROBLEM STATEMENT
+<!-- Vấn đề thực sự là gì? User đang bị đau ở đâu? -->
+<!-- Tránh solution thinking ở bước này. Chỉ mô tả pain. -->
 
-Trong quá trình vận hành chung cư hoặc cơ sở cho thuê, Ban quản lý cần duy trì các mức giá như giá điện, giá nước và phí dịch vụ theo đúng chính sách vận hành từng thời kỳ. Các mức giá này ảnh hưởng trực tiếp đến hóa đơn và công nợ của cư dân/người thuê.
-
-Nỗi đau chính của Ban quản lý là nếu giá điện, giá nước hoặc phí dịch vụ không được cập nhật đúng lúc, hóa đơn phát sinh sau đó có thể bị tính sai. Điều này làm giảm tính minh bạch, gây khó khăn khi giải thích với cư dân/người thuê và có thể tạo ra sai lệch trong quản lý tài chính.
-
-Một nỗi đau khác là mỗi Ban quản lý chỉ phụ trách một hoặc một số cơ sở nhất định. Nếu hệ thống hiển thị hoặc cho phép cập nhật nhầm dữ liệu của cơ sở khác, dữ liệu giá có thể bị thay đổi sai quyền, dẫn đến hóa đơn của nhiều người thuê bị ảnh hưởng.
-
-Ngoài ra, việc thay đổi giá cần có khả năng truy vết. Nếu không lưu lại giá cũ, giá mới, người cập nhật và thời gian cập nhật, Ban quản lý sẽ khó kiểm tra lại nguyên nhân sai lệch khi có tranh chấp hoặc khi cần đối soát hóa đơn.
+* **Hệ lụy sai lệch hóa đơn khi chậm cập nhật giá**: Các mức giá như giá điện, giá nước và phí dịch vụ biến động liên tục theo từng thời kỳ vận hành[cite: 8]. Nếu hệ thống không cập nhật kịp thời, các hóa đơn và công nợ phát sinh của cư dân sẽ bị tính toán sai, làm mất tính minh bạch tài chính và gây khiếu nại[cite: 8].
+* **Nguy cơ nhầm lẫn dữ liệu giữa các cơ sở**: Mỗi Ban quản lý chỉ phụ trách một hoặc một vài cơ sở nhất định[cite: 8]. Nếu hệ thống không phân tách bộ lọc dữ liệu chặt chẽ, quản lý có thể nhìn thấy hoặc sửa đổi nhầm giá dịch vụ của cơ sở khác không thuộc quyền hạn của mình[cite: 8].
+* **Thất thoát dấu vết kiểm toán khi điều chỉnh giá**: Khi có sự thay đổi về đơn giá tài chính, nếu không lưu trữ lại dữ liệu lịch sử (ai sửa, sửa lúc nào, lý do gì), Ban quản lý và Chủ cơ sở sẽ không có căn cứ đối chiếu khi xảy ra tranh chấp số liệu[cite: 8].
+* **Hành vi gửi yêu cầu trùng lặp (Double Submitting)**: Trong quá trình xử lý lưu giá mới, nếu mạng chập chờn hoặc hệ thống phản hồi chậm, người dùng có xu hướng bấm liên tiếp vào nút lưu, dễ gây ra xung đột dữ liệu hoặc tạo ra các bản ghi lịch sử trùng lặp trong database[cite: 8].
 
 ## 2. DOMAIN KNOWLEDGE
+<!-- Các thuật ngữ domain-specific mà AI cần biết -->
+<!-- Ví dụ: "invoice" trong hệ thống này nghĩa là gì? -->
+<!-- Các quy tắc nghiệp vụ bất thành văn -->
 
-- `facility` / cơ sở: địa điểm hoặc khu nhà mà Ban quản lý phụ trách vận hành.
-
-- `facilities`: bảng lưu thông tin cơ sở, đồng thời lưu các mức giá hiện tại như giá điện, giá nước và phí dịch vụ.
-
-- `priceType`: loại giá/khoản phí được cập nhật trong hệ thống.
-
-  - `ELECTRICITY`: giá điện.
-
-  - `WATER`: giá nước.
-
-  - `SERVICE_FEE`: phí dịch vụ.
-
-- Giá điện: mức tiền tính theo đơn vị VNĐ/kWh.
-
-- Giá nước: mức tiền tính theo đơn vị VNĐ/m3 hoặc VNĐ/m³.
-
-- Phí dịch vụ: khoản phí cố định theo tháng, thường tính theo VNĐ/tháng.
-
-- Giá hiện tại: mức giá đang được hệ thống áp dụng để tạo các hóa đơn mới.
-
-- Giá cũ: mức giá trước khi Ban quản lý cập nhật.
-
-- Giá mới: mức giá sau khi Ban quản lý cập nhật.
-
-- Lịch sử thay đổi giá: bản ghi lưu lại loại giá được thay đổi, giá cũ, giá mới, ghi chú, người cập nhật và thời gian cập nhật.
-
-- Hóa đơn đã phát hành trước thời điểm cập nhật giá không bị tính lại tự động.
-
-- Hóa đơn được tạo sau thời điểm cập nhật sẽ sử dụng mức giá mới nhất.
-
-- Ban quản lý chỉ được xem và cập nhật giá của cơ sở mà mình phụ trách.
+* **Cơ sở lưu trữ giá nền tảng**: Các thông số đơn giá dịch vụ hiện tại không nằm ở một bảng cấu hình riêng mà được lưu trực tiếp trong bảng `facilities`[cite: 8].
+* **Loại giá hợp lệ (Price Type)**: Hệ thống giới hạn nghiêm ngặt 3 loại danh mục phí cố định gồm: `ELECTRICITY` (Điện), `WATER` (Nước), và `SERVICE_FEE` (Phí dịch vụ)[cite: 8]. Hệ thống không hỗ trợ tạo mới loại khoản phí động[cite: 8].
+* **Quy tắc hiệu lực của giá mới**: Giá dịch vụ sau khi cập nhật thành công chỉ được áp dụng cho các hóa đơn được tạo *sau thời điểm cập nhật*[cite: 8]. 
+* **Tính đóng băng của hóa đơn cũ**: Quy định bất thành văn là toàn bộ hóa đơn đã được tạo từ trước thời điểm thay đổi giá phải được giữ nguyên tiền, hệ thống tuyệt đối không tự động tính toán lại dữ liệu quá khứ[cite: 8].
 
 ## 3. STAKEHOLDERS
+<!-- Ai được lợi? Ai chịu ảnh hưởng? Ai có quyền quyết định? -->
 
-- Ban quản lý:
-
-  - Người dùng chính của feature.
-
-  - Cần xem giá hiện tại, cập nhật giá mới và kiểm tra lịch sử thay đổi giá.
-
-  - Chịu trách nhiệm đảm bảo dữ liệu giá của cơ sở mình phụ trách là chính xác.
-
-- Cư dân / người thuê:
-
-  - Người bị ảnh hưởng trực tiếp bởi giá điện, giá nước và phí dịch vụ khi hệ thống tạo hóa đơn.
-
-  - Cần hóa đơn minh bạch, đúng giá và không bị tính sai do dữ liệu giá lỗi thời.
-
-- Bộ phận tài chính / kế toán nếu có:
-
-  - Cần dữ liệu giá chính xác để đối soát hóa đơn, công nợ và dòng tiền.
-
-  - Cần lịch sử thay đổi giá để kiểm tra khi có sai lệch.
-
-- Quản trị hệ thống / kỹ thuật:
-
-  - Đảm bảo phân quyền đúng cơ sở, API hoạt động ổn định, dữ liệu cập nhật đúng bảng và audit log được lưu đầy đủ.
-
-- Người có quyền quyết định nghiệp vụ:
-
-  - Ban quản lý cấp cao, chủ cơ sở hoặc người phụ trách vận hành.
-
-  - Cần quyết định khi nào được thay đổi giá, ai được đổi giá và có cần quy trình duyệt thay đổi giá hay không.
+* **Ban quản lý (Manager)**: Người trực tiếp theo dõi, thực hiện thao tác cập nhật đơn giá qua pop-up và tra cứu lịch sử biến động giá của cơ sở phụ trách[cite: 8].
+* **Cư dân / Người thuê**: Đối tượng chịu ảnh hưởng gián tiếp về mặt chi phí, được đảm bảo tính minh bạch khi hóa đơn hàng kỳ sử dụng đúng mức giá niêm yết[cite: 8].
+* **Chủ cơ sở / Admin**: Thụ hưởng dữ liệu kiểm toán chính xác, kiểm soát được dòng tiền và lịch sử thay đổi của các quản lý cấp dưới[cite: 8].
 
 ## 4. CONSTRAINTS (ràng buộc không thể thay đổi)
+<!-- Tech: "Phải dùng PostgreSQL vì infrastructure hiện tại" -->
+<!-- Business: "Phải comply với Thông tư 06/2023/TT-NHNN" -->
+<!-- Time: "Phải live trước 30/06" -->
 
-- Chỉ người dùng có vai trò Ban quản lý được phép truy cập chức năng.
-
-- Ban quản lý chỉ được xem và cập nhật dữ liệu giá của cơ sở mình phụ trách.
-
-- Hệ thống không cho phép Ban quản lý cập nhật giá của cơ sở khác.
-
-- Giá điện, giá nước và phí dịch vụ được lưu trong bảng `facilities`.
-
-- Khi cập nhật giá, hệ thống chỉ cập nhật đúng cột tương ứng với `priceType`.
-
-- Các loại giá hợp lệ gồm `ELECTRICITY`, `WATER`, `SERVICE_FEE`.
-
-- Giá mới phải lớn hơn 0.
-
-- Giá mới không được để trống.
-
-- Giá mới phải là số hợp lệ.
-
-- Tên khoản phí/dịch vụ và loại khoản phí/dịch vụ không được chỉnh sửa trực tiếp trong pop-up cập nhật.
-
-- Hệ thống phải lưu lịch sử thay đổi giá sau mỗi lần cập nhật thành công.
-
-- Lịch sử thay đổi phải lưu giá cũ, giá mới, loại giá, ghi chú, người cập nhật và thời gian cập nhật.
-
-- Các hóa đơn đã phát hành trước thời điểm cập nhật không bị ảnh hưởng bởi giá mới.
-
-- Các hóa đơn được tạo sau thời điểm cập nhật sẽ sử dụng giá mới nhất.
-
-- Hệ thống phải ngăn gửi trùng yêu cầu cập nhật trong khi đang xử lý.
-
-- API danh sách giá hiện tại phải phản hồi dưới 500ms ở p95.
-
-- API cập nhật giá phải phản hồi dưới 500ms ở p95.
-
-- API lịch sử thay đổi giá phải phản hồi dưới 1000ms ở p95.
-
-- Giới hạn request là 100 requests/phút/người dùng.
+* **Cấu trúc Servlet & Rendering**: Module bắt buộc phải chạy qua Servlet tập trung `ServicePricePageServlet` với URL pattern cố định `/manager/service-prices` và sử dụng cơ chế render Server-side (JSP)[cite: 8].
+* **Ràng buộc an toàn dữ liệu (Transaction)**: Thao tác cập nhật đơn giá bắt buộc phải đi kèm đồng thời hai hành động: ghi nhận giá mới vào bảng `facilities` và sinh một bản ghi log vào bảng lịch sử thay đổi trong cùng một Database Transaction[cite: 8].
+* **Kiểm soát giá trị nhập liệu**: Hệ thống nghiêm cấm cập nhật giá nhỏ hơn hoặc bằng 0, giá trống hoặc sai định dạng số[cite: 8].
+* **Chặn gửi yêu cầu liên tiếp**: Hệ thống bắt buộc phải vô hiệu hóa (disable) nút lưu trên pop-up ngay khi nhận được lệnh submit để ngăn chặn spam request từ cùng một phiên làm việc[cite: 8].
+* **Hiệu năng hệ thống (SLA)**: 
+  * Tác vụ load hiển thị danh sách và lịch sử phân trang không được vượt quá **1 giây (P95)**[cite: 8].
+  * Tác vụ submit form cập nhật thay đổi giá không được vượt quá **500ms (P95)**[cite: 8].
 
 ## 5. ASSUMPTIONS (giả định cần confirm)
+<!-- Những điều bạn assume là đúng nhưng chưa confirm -->
+<!-- Mỗi assumption là một rủi ro nếu sai -->
 
-- Giả định vai trò Ban quản lý đã tồn tại trong hệ thống phân quyền.
-
-- Giả định mỗi Ban quản lý có thể được ánh xạ tới một hoặc nhiều cơ sở.
-
-- Giả định hệ thống xác định cơ sở dựa trên tài khoản đăng nhập của Ban quản lý.
-
-- Giả định bảng `facilities` đã có các cột `electricity_price`, `water_price`, `service_fee`, `updated_at`, `updated_by`.
-
-- Giả định mỗi cơ sở luôn có tối đa một bộ giá hiện tại cho điện, nước và phí dịch vụ.
-
-- Giả định giá mới có hiệu lực ngay sau khi cập nhật thành công.
-
-- Giả định hóa đơn lưu snapshot giá tại thời điểm tạo nên không cần tính lại hóa đơn cũ.
-
-- Giả định Ban quản lý không cần quy trình phê duyệt nhiều bước khi thay đổi giá.
-
-- Giả định ghi chú thay đổi giá là không bắt buộc.
-
-- Giả định đơn vị tính của từng loại giá là cố định và không cho phép chỉnh sửa.
-
-- Giả định lịch sử thay đổi giá được lưu trong bảng riêng, ví dụ `facility_price_histories`.
-
-- Giả định người cập nhật được lấy từ user đang đăng nhập.
-
-- Giả định chỉ có ba loại giá trong phạm vi hiện tại: điện, nước và phí dịch vụ.
-
-- Giả định hệ thống chưa cần quản lý ngày hiệu lực trong tương lai cho giá mới.
+* **Giả định 1**: Giả định rằng thông tin định danh của người dùng (`currentUser`) và vai trò (`MANAGER`) luôn được lưu trữ sẵn sàng trong Session để Servlet thực hiện ghi vết lịch sử và phân quyền[cite: 8]. *Rủi ro nếu sai:* Hệ thống sẽ không xác định được ai là người thực hiện đổi giá, dẫn đến việc ghi log lịch sử bị trống thông tin tác giả.
+* **Giả định 2**: Giả định rằng cấu trúc bảng `facilities` hiện tại đã có sẵn các trường tương ứng cho Điện, Nước, Phí dịch vụ cho từng cơ sở riêng biệt mà không bị gộp chung toàn hệ thống[cite: 8].
 
 ## 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời)
+<!-- Những điều cần clarify với stakeholder trước khi viết spec -->
 
-- Role Ban quản lý trong database tương ứng với role nào: `MANAGER`, `ADMIN`, `Management Board` hay một role riêng?
-
-- Một Ban quản lý có thể phụ trách nhiều cơ sở không? Nếu có, màn hình sẽ chọn cơ sở như thế nào?
-
-- Nếu Ban quản lý phụ trách nhiều cơ sở, API `/facilities/current/prices` có trả về một cơ sở mặc định hay cần truyền `facilityId`?
-
-- Giá mới có hiệu lực ngay lập tức hay có thể chọn ngày bắt đầu hiệu lực?
-
-- Nếu giá thay đổi giữa kỳ hóa đơn, hóa đơn tháng đó dùng giá cũ, giá mới hay cần chia theo số ngày?
-
-- Có cần quy trình duyệt thay đổi giá trước khi áp dụng không?
-
-- Ai là người có quyền cuối cùng được cập nhật giá: Ban quản lý thường, quản lý cấp cao hay admin?
-
-- Có cần giới hạn mức tăng/giảm giá tối đa trong một lần cập nhật không?
-
-- Có cần cảnh báo nếu giá mới chênh lệch quá lớn so với giá cũ không?
-
-- Ghi chú thay đổi giá có bắt buộc trong một số trường hợp không?
-
-- Có cần gửi thông báo cho cư dân/người thuê khi giá điện, giá nước hoặc phí dịch vụ thay đổi không?
-
-- Có cần hiển thị lịch sử thay đổi giá ngay trên màn hình danh sách không, hay tách thành màn hình riêng?
-
-- Có cần cho phép rollback về giá cũ nếu nhập sai không?
-
-- Nếu hai người cùng cập nhật một loại giá cùng lúc, hệ thống ưu tiên xử lý như thế nào?
-
-- Có cần kiểm tra trùng giá, ví dụ giá mới bằng giá hiện tại thì có cho lưu không?
-
-- Đơn vị giá nước thống nhất là `VNĐ/m3` hay `VNĐ/m³`?
-
-- Khi giá thay đổi, công nợ chưa phát hành nhưng đã được chuẩn bị trước có bị ảnh hưởng không?
+* **Câu hỏi 1**: Hệ thống có cơ chế phân trang cụ thể như thế nào đối với màn hình xem lịch sử thay đổi (`history.jsp`)[cite: 8]? Kích thước dữ liệu mặc định của một trang (Page size) là bao nhiêu bản ghi?
+* **Câu hỏi 2**: Khi một Ban quản lý bị thu hồi quyền quản lý một cơ sở (`FACILITY_ACCESS_DENIED`), các bản ghi lịch sử do tài khoản đó từng cập nhật trong quá khứ có được giữ nguyên tên hiển thị hay sẽ ẩn đi[cite: 8]?
+* **Câu hỏi 3**: Đối với phần nhập "Ghi chú / Lý do thay đổi" trên giao diện pop-up[cite: 8], trường này có bắt buộc Ban quản lý phải nhập hay được phép để trống khi lưu giá mới?
