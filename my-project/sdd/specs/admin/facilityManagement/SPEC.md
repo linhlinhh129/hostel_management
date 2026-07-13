@@ -425,8 +425,8 @@ Ví dụ:
 
 ## 5. Technical Constraints
 
-* API tạo/cập nhật/kích hoạt/vô hiệu hóa: ≤ 500ms p95
-* API danh sách có phân trang: ≤ 1 giây p95
+* Servlet tạo/cập nhật/kích hoạt/vô hiệu hóa: ≤ 500ms p95
+* Servlet danh sách có phân trang: ≤ 1 giây p95
 * Rate limit: 100 request/phút/người dùng
 * Chỉ Admin được quản lý cơ sở
 * Backend phải validate toàn bộ business rule
@@ -462,8 +462,6 @@ MD1215
 
 ## 6. Out of Scope
 
-* Quản lý giá thuê phòng
-* Quản lý diện tích phòng
 * Quản lý số người tối đa trong phòng
 * Trạng thái chi tiết của phòng
 * Liên kết phòng với người thuê
