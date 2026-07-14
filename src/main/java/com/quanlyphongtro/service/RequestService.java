@@ -26,4 +26,5 @@ public interface RequestService {
     boolean rejectTicket(int ticketId, String reason);
     boolean scheduleTicket(int ticketId, java.time.LocalDateTime scheduleTime);
     boolean completeTicket(int ticketId, String notes, String attachmentUrls2);
+    boolean rescheduleTicket(int ticketId, java.time.LocalDateTime newTime, String reason, int managerId, String ipAddress) throws Exception;
 }

@@ -472,7 +472,7 @@ public class RequestDAO extends BaseDAO {
                     ticket.put("roomCode", rs.getString("room_code"));
                     ticket.put("facilityName", rs.getString("facility_name"));
                     Timestamp cAt = rs.getTimestamp("created_at");
-                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
+                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     ticket.put("status", rs.getString("status"));
                     tickets.add(ticket);
                 }
@@ -517,15 +517,18 @@ public class RequestDAO extends BaseDAO {
                     ticket.put("managerId", rs.getInt("manager_id"));
                     Timestamp cAt = rs.getTimestamp("created_at");
                     Timestamp uAt = rs.getTimestamp("updated_at");
-                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
-                    ticket.put("updatedAt", uAt != null ? uAt.toLocalDateTime().toString().replace("T", " ") : "");
+                    ticket.put("createdAtRaw", cAt);
+                    ticket.put("updatedAtRaw", uAt);
+                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                    ticket.put("updatedAt", uAt != null ? uAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     ticket.put("assignedOperatorName", rs.getString("assigned_operator_name"));
                     ticket.put("rejectionReason", rs.getString("rejection_reason"));
                     ticket.put("attachmentUrls1", rs.getString("attachment_urls1"));
                     ticket.put("attachmentUrls2", rs.getString("attachment_urls2"));
                     Timestamp appointAt = rs.getTimestamp("appoint_schedule");
                     if (appointAt != null) {
-                        ticket.put("appointSchedule", appointAt.toLocalDateTime().toString().replace("T", " "));
+                        ticket.put("appointScheduleRaw", appointAt);
+                        ticket.put("appointSchedule", appointAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
                         ticket.put("appointScheduleFormatted", appointAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")));
                     }
                 }
@@ -644,5 +647,47 @@ public class RequestDAO extends BaseDAO {
             logger.error("completeTicket failed for id={}", ticketId, e);
             return false;
         }
+    }
+
+    public boolean rescheduleTicket(int ticketId, java.time.LocalDateTime newTime) {
+        String sql = "UPDATE dbo.requests SET appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(newTime));
+            ps.setInt(2, ticketId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("rescheduleTicket failed for id={}", ticketId, e);
+            return false;
+        }
+    }
+
+    public List<Map<String, Object>> getRescheduleHistory(int ticketId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT al.old_value, al.new_value, al.comment, al.created_at, u.full_name AS performer_name " +
+                     "FROM dbo.audit_logs al " +
+                     "LEFT JOIN dbo.users u ON al.created_by = u.user_id " +
+                     "WHERE al.entity_type = 'requests' AND al.entity_id = ? AND al.action = 'RESCHEDULE' " +
+                     "ORDER BY al.created_at ASC";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ticketId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("oldValue", rs.getString("old_value"));
+                    map.put("newValue", rs.getString("new_value"));
+                    map.put("comment", rs.getString("comment"));
+                    Timestamp cAt = rs.getTimestamp("created_at");
+                    map.put("createdAtRaw", cAt);
+                    map.put("createdAt", cAt != null ? cAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                    map.put("performerName", rs.getString("performer_name"));
+                    list.add(map);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("getRescheduleHistory failed for id={}", ticketId, e);
+        }
+        return list;
     }
 }

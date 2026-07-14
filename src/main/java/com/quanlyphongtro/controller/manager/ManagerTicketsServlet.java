@@ -69,6 +69,8 @@ public class ManagerTicketsServlet extends BaseServlet {
                     handleSchedule(ticketId, req, resp);
                 } else if ("complete".equals(action)) {
                     handleComplete(ticketId, req, resp);
+                } else if ("reschedule".equals(action)) {
+                    handleReschedule(ticketId, req, resp);
                 } else {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
@@ -189,7 +191,14 @@ public class ManagerTicketsServlet extends BaseServlet {
                 ldt = java.time.LocalDateTime.parse(appointmentDateStr.trim());
             } catch (Exception e) {
                 logger.error("Failed to parse appointment date", e);
+                setFlashMessage(req, "danger", "Ngày hẹn không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                return;
             }
+        } else {
+            setFlashMessage(req, "danger", "Vui lòng chọn ngày hẹn xử lý sự cố.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
         }
         boolean success = requestService.scheduleTicket(ticketId, ldt);
         if (success) {
@@ -197,6 +206,57 @@ public class ManagerTicketsServlet extends BaseServlet {
         } else {
             setFlashMessage(req, "danger", "Lỗi cập nhật trạng thái.");
         }
+        resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+    }
+
+    private void handleReschedule(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String appointmentDateStr = req.getParameter("appointmentDate");
+        String reason = req.getParameter("reason");
+
+        if (appointmentDateStr == null || appointmentDateStr.trim().isEmpty()) {
+            setFlashMessage(req, "danger", "Vui lòng chọn ngày hẹn mới.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            setFlashMessage(req, "danger", "Vui lòng nhập lý do dời lịch hẹn.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
+
+        java.time.LocalDateTime newLdt = null;
+        try {
+            newLdt = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+        } catch (Exception e) {
+            logger.error("Failed to parse reschedule appointment date", e);
+            setFlashMessage(req, "danger", "Ngày hẹn mới không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
+
+        String ipAddress = req.getRemoteAddr();
+        try {
+            boolean success = requestService.rescheduleTicket(ticketId, newLdt, reason.trim(), currentUser.getId(), ipAddress);
+            if (success) {
+                setFlashMessage(req, "success", "Thay đổi lịch hẹn thành công!");
+            } else {
+                setFlashMessage(req, "danger", "Lỗi thay đổi lịch hẹn.");
+            }
+        } catch (java.nio.file.AccessDeniedException e) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            return;
+        } catch (Exception e) {
+            logger.error("Failed to reschedule ticket", e);
+            setFlashMessage(req, "danger", "Lỗi: " + e.getMessage());
+        }
+
         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
     }
 

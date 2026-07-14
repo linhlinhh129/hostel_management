@@ -345,7 +345,7 @@
                               <td class="d-none d-md-table-cell">
                                 <a href="${ctx}/manager/notifications/${notif.id}"
                                    class="btn-mintlify-secondary text-decoration-none"
-                                   style="padding:4px 12px;font-size:0.8125rem">Xem chi tiết</a>
+                                   style="padding:4px 12px;font-size:0.8125rem">Xem</a>
                               </td>
                             </tr>
                           </c:forEach>

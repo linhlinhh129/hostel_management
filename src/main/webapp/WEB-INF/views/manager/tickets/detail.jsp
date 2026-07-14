@@ -31,8 +31,11 @@
                         </strong>
                       </span>
                       <c:choose>
-                        <c:when test="${ticket.status == 'PENDING'}">
+                        <c:when test="${ticket.status == 'PENDING' or ticket.status == 'NEW'}">
                           <span class="badge-hms badge-info">Mới</span>
+                        </c:when>
+                        <c:when test="${ticket.status == 'RECEIVED'}">
+                          <span class="badge-hms badge-warning">Đã tiếp nhận</span>
                         </c:when>
                         <c:when test="${ticket.status == 'ASSIGNED'}">
                           <span class="badge-hms badge-warning">Đã phân công</span>
@@ -49,6 +52,11 @@
                         <c:when test="${ticket.status == 'CANCELLED'}">
                           <span class="badge-hms badge-neutral">Đã hủy</span>
                         </c:when>
+                        <c:otherwise>
+                          <span class="badge-hms badge-neutral">
+                            <c:out value="${ticket.status}" />
+                          </span>
+                        </c:otherwise>
                       </c:choose>
                     </div>
                   </div>
@@ -283,7 +291,7 @@
                               <tr style="border-bottom:1px solid var(--hms-border)">
                                 <td style="padding:9px 14px;color:var(--hms-text-muted)">Ngày gửi</td>
                                 <td style="padding:9px 14px;font-size:0.8125rem">
-                                  <fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
+                                  <c:out value="${ticket.createdAt}" />
                                 </td>
                               </tr>
                               <c:if test="${not empty ticket.appointSchedule}">
@@ -356,8 +364,8 @@
                                     <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                     <div class="mb-3">
                                       <label for="appointmentDate" class="form-label"
-                                        style="font-size:0.8125rem;font-weight:600">Lịch hẹn xử lý (Không bắt buộc)</label>
-                                      <input type="datetime-local" class="form-control form-control-sm" id="appointmentDate" name="appointmentDate" />
+                                        style="font-size:0.8125rem;font-weight:600">Lịch hẹn xử lý <span class="text-danger">*</span></label>
+                                      <input type="datetime-local" class="form-control form-control-sm" id="appointmentDate" name="appointmentDate" required />
                                     </div>
                                     <button type="submit" class="quick-action-btn primary w-100">
                                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -407,6 +415,24 @@
                                         <polyline points="20 6 9 17 4 12" />
                                       </svg>
                                       Hoàn thành yêu cầu
+                                    </button>
+                                  </form>
+                                  <hr style="border-color:var(--hms-border)">
+                                  <%-- Form dời lịch hẹn --%>
+                                  <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reschedule">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                    <div class="mb-3">
+                                      <label for="newAppointmentDate" class="form-label"
+                                        style="font-size:0.8125rem;font-weight:600">Dời lịch hẹn xử lý <span class="text-danger">*</span></label>
+                                      <input type="datetime-local" class="form-control form-control-sm" id="newAppointmentDate" name="appointmentDate" required />
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="rescheduleReason" class="form-label"
+                                        style="font-size:0.8125rem;font-weight:600">Lý do dời lịch <span class="text-danger">*</span></label>
+                                      <textarea class="form-control form-control-sm" id="rescheduleReason" name="reason" rows="2" maxlength="500" required placeholder="Lý do đổi lịch hẹn..."></textarea>
+                                    </div>
+                                    <button type="submit" class="quick-action-btn primary w-100" style="background-color: var(--hms-info, #0284c7); border-color: var(--hms-info, #0284c7);">
+                                      Xác nhận dời lịch
                                     </button>
                                   </form>
                                 </c:when>
