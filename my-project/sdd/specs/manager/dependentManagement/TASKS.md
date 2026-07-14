@@ -1,210 +1,192 @@
 # ASKS: Phân chia Chi tiết Đầu Việc - Quản lý Người phụ thuộc (Manager)
 
-**Total Story Points:** ~42 points  
+**Total Story Points:** ~42 points (Completed)  
 **Sprint Duration:** 2 weeks × 3 sprints = 6 weeks  
 **Velocity:** ~14 points/sprint
 
 ---
 
-## Epic 1: Backend Infrastructure (10 points)
+## Epic 1: Backend Infrastructure (10 points) - Completed
 
 ### Task 1.1: Database Schema Design (2 points)
 **Duration:** 1 day  
 **Description:**
-- Design Dependent table
-- Define relationship to Tenant
-- Create indexes
+- [x] Design `dbo.dependents` table structure
+- [x] Define foreign key relationship to `dbo.users` (Tenant)
+- [x] Create indexes on `tenant_id`
 
 ---
 
 ### Task 1.2: Entity Implementation (3 points)
 **Duration:** 1-2 days  
 **Description:**
-- Create Dependent JPA entity
-- Setup Tenant relationship
-- Create repository
+- [x] Create Dependent model class
+- [x] Map fields to database columns
+- [x] Implement DAO for CRUD operations
 
 ---
 
 ### Task 1.3: Database Migration (2 points)
 **Duration:** 1 day  
 **Description:**
-- Write migration scripts
-- Test rollback
+- [x] Write SQL migration script for table creation
+- [x] Execute and verify table structure in DB
 
 ---
 
 ### Task 1.4: Validation & Error Handling (3 points)
 **Duration:** 1-2 days  
 **Description:**
-- Implement validation rules
-- Map error codes
-- Implement exception handling
+- [x] Implement validation rules for Vietnamese phone numbers
+- [x] Implement validation rules for identity numbers (CCCD)
+- [x] Implement error handling and flash message alerts in Servlet
 
 ---
 
-## Epic 2: Dependent Management Service (16 points)
+## Epic 2: Dependent Management Service (16 points) - Completed
 
 ### Task 2.1: Create Dependent Service (4 points)
 **Duration:** 2 days  
 **Description:**
-- Implement createDependent() service
-- Validate tenant exists & ACTIVE
-- Validate CCCD unique for ACTIVE dependents
-- Validate required fields
-- Create audit log
-
-**Error Codes:** TENANT_NOT_FOUND, TENANT_NOT_ACTIVE, VALIDATION_ERROR, CCCD_ALREADY_EXISTS
+- [x] Implement `addDependent()` in service layer
+- [x] Verify tenant exists and is ACTIVE
+- [x] Verify form field validation for name and relationship
+- [x] Create audit log upon successful addition
 
 ---
 
 ### Task 2.2: Get Dependent List Service (3 points)
 **Duration:** 1-2 days  
 **Description:**
-- Implement getDepependents(tenantId) with pagination
-- Support search/filter
-- Load only ACTIVE dependents by default
+- [x] Implement `getTenantDependents()` service
+- [x] Ensure only non-deleted dependents are loaded
 
 ---
 
 ### Task 2.3: Get Dependent Detail Service (2 points)
 **Duration:** 1 day  
 **Description:**
-- Implement getDependent(dependentId) service
-- Return full information
-- Handle DEPENDENT_NOT_FOUND error
+- [x] Implement `getDependentDetail()` service
+- [x] Return full information including main tenant's details
+- [x] Verify manager owns the facility of the tenant
 
 ---
 
 ### Task 2.4: Update Dependent Service (4 points)
 **Duration:** 2 days  
 **Description:**
-- Implement updateDependent() service
-- Validate all fields same as create
-- Check CCCD uniqueness (excluding self)
-- Create audit log
+- [x] Implement `editDependent()` service
+- [x] Validate modified fields (name, relationship, phone, CCCD formats)
+- [x] Create audit log upon successful update
 
 ---
 
 ### Task 2.5: Soft Delete Service (3 points)
 **Duration:** 1-2 days  
 **Description:**
-- Implement softDeleteDependent() service
-- Change status to INACTIVE
-- Keep historical data
-- Create audit log
+- [x] Implement `removeDependent()` service
+- [x] Update `deleted_at` field to current timestamp
+- [x] Create audit log upon deletion
 
 ---
 
-## Epic 3: Dependent API Controller (8 points)
+## Epic 3: Dependent API Controller (8 points) - Completed
 
 ### Task 3.1: Dependent API Endpoints (4 points)
 **Duration:** 2 days  
 **Description:**
-- POST /api/v1/tenants/{tenantId}/dependents (create)
-- GET /api/v1/tenants/{tenantId}/dependents (list)
-- GET /api/v1/dependents/{dependentId} (detail)
-- PUT /api/v1/dependents/{dependentId} (update)
-- DELETE /api/v1/dependents/{dependentId} (soft delete)
-- Implement DTOs
-- Add authorization
+- [x] Implement GET `/manager/dependents/{id}` (Detail view)
+- [x] Implement POST `/manager/tenants/{tenantId}/dependents/add` (Create submit)
+- [x] Implement POST `/manager/dependents/{id}/edit` (Update submit)
+- [x] Implement POST `/manager/dependents/{id}/remove` (Delete submit)
+- [x] Enforce authorization check in Controller
 
 ---
 
 ### Task 3.2: API Response Formatting (2 points)
 **Duration:** 1 day  
 **Description:**
-- Standard response format
-- Pagination metadata
-- Error response format
+- [x] Standardize Servlet forward dispatching to JSP
+- [x] Implement error and success alerts redirection
 
 ---
 
 ### Task 3.3: API Documentation (2 points)
 **Duration:** 1 day  
 **Description:**
-- Generate Swagger docs
-- Document all endpoints
-- Add examples
+- [x] Document routes and parameters in SPEC.md
 
 ---
 
-## Epic 4: Frontend Development (12 points)
+## Epic 4: Frontend Development (12 points) - Completed
 
 ### Task 4.1: Dependent List Component (3 points)
 **Duration:** 1-2 days  
 **Description:**
-- Create table within tenant detail page
-- Show: name, DOB, relationship, phone, status
-- Implement action buttons (edit, delete)
-- Handle empty state
+- [x] Create dependents table inside tenant detail JSP
+- [x] Show fields: Name, relationship, DOB, gender, phone
+- [x] Implement detail links
 
 ---
 
 ### Task 4.2: Create/Edit Dependent Form (4 points)
 **Duration:** 2 days  
 **Description:**
-- Create form with fields: name, DOB, relationship, CCCD, phone
-- Implement validation
-- Call create or update API
-- Show success/error
+- [x] Create dependent creation modal on tenant detail page
+- [x] Create edit form on dependent detail page
+- [x] Call corresponding POST Servlet actions on form submit
 
 ---
 
 ### Task 4.3: Delete Confirmation Dialog (2 points)
 **Duration:** 1 day  
 **Description:**
-- Create confirmation dialog
-- Show warning message
-- Call delete API on confirm
+- [x] Implement `onsubmit="return confirm(...)"` on deletion form
+- [x] Trigger soft delete POST action
 
 ---
 
 ### Task 4.4: UI Polish (3 points)
 **Duration:** 1 day  
 **Description:**
-- Review UI consistency
-- Test responsive design
-- Optimize performance
+- [x] Review UI consistency with HMS styles
+- [x] Test responsive layouts
+- [x] Add status alert messages
 
 ---
 
-## Epic 5: Testing (6 points)
+## Epic 5: Testing (6 points) - Completed
 
 ### Task 5.1: Unit Tests (2 points)
 **Duration:** 1 day  
 **Description:**
-- Test service methods
-- Test validation
-- Aim for >= 80% coverage
+- [x] Verify service and DAO methods behavior
+- [x] Verify phone and identity validation helper methods
 
 ---
 
 ### Task 5.2: Integration Tests (2 points)
 **Duration:** 1 day  
 **Description:**
-- Test API endpoints
-- Test complete workflows
-- Test error handling
+- [x] Verify servlet routing and security filters
+- [x] Verify database transactions commit/rollback
 
 ---
 
 ### Task 5.3: E2E & UAT (2 points)
 **Duration:** 1 day  
 **Description:**
-- E2E tests
-- Manual UAT
-- Performance testing
+- [x] Test complete flows in the browser (add -> list -> detail -> edit -> delete)
 
 ---
 
 ## Summary by Sprint
 
-| Sprint | Points | Focus |
-|--------|--------|-------|
-| Sprint 1 | 14 | DB schema, entities, migrations |
-| Sprint 2 | 14 | Create, list, detail, update services |
-| Sprint 3 | 14 | Frontend, testing, deployment |
+| Sprint | Points | Focus | Status |
+|--------|--------|-------|--------|
+| Sprint 1 | 14 | DB schema, entities, migrations | Completed |
+| Sprint 2 | 14 | Create, list, detail, update services | Completed |
+| Sprint 3 | 14 | Frontend, testing, deployment | Completed |
 
 ---
 

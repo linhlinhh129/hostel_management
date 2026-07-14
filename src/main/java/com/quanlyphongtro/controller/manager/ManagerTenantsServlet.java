@@ -276,7 +276,16 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
         }
 
-        LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
+        LocalDate dob = null;
+        if (dobStr != null && !dobStr.trim().isEmpty()) {
+            try {
+                dob = LocalDate.parse(dobStr.trim());
+            } catch (Exception e) {
+                setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                return;
+            }
+        }
 
         try {
             boolean success = tenantService.addDependent(tenantId, currentUser.getId(), fullName, relationship, phone, gender, dob, identityNumber);
@@ -441,7 +450,20 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
         }
 
-        LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
+        LocalDate dob = null;
+        if (dobStr != null && !dobStr.trim().isEmpty()) {
+            try {
+                dob = LocalDate.parse(dobStr.trim());
+            } catch (Exception e) {
+                setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
+                if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
+                    resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/manager/dependents/" + dependentId);
+                }
+                return;
+            }
+        }
 
         int tenantId = 0;
         try {
@@ -520,7 +542,16 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
-        LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
+        LocalDate dob = null;
+        if (dobStr != null && !dobStr.trim().isEmpty()) {
+            try {
+                dob = LocalDate.parse(dobStr.trim());
+            } catch (Exception e) {
+                setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                return;
+            }
+        }
 
         try {
             boolean success = tenantService.editTenant(tenantId, currentUser.getId(), fullName, phone, email, identityNumber, permanentAddress, gender, dob);

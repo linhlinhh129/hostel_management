@@ -1,166 +1,70 @@
 # PLAN: Kế hoạch Thực thi Quản lý Người thuê (Manager)
 
-**Status:** Planning  
-**Date:** 2026-06-11  
+**Status:** Completed  
+**Date:** 2026-07-13  
 **Priority:** High  
-**Estimated Duration:** 8-10 weeks
+**Estimated Duration:** Completed
 
 ---
 
 ## 1. Tổng quan Giải pháp
 
-Feature cho phép Manager tạo tài khoản người thuê, gán vào phòng, quản lý vòng đời, và kết thúc hợp đồng.
+Tính năng Quản lý Người thuê cho phép Manager quản lý thông tin cư dân chính (đại diện cho phòng). Chức năng tạo người thuê được tích hợp trực tiếp vào luồng tạo Hợp đồng mới.
 
 **Kiến trúc:**
-- Backend API: Create, list, detail, assign room, end tenancy
-- Tenant code generation: Auto-generate TEN00001+
-- Account service integration: Create account, set temp password
-- Room management: Assign one tenant per room, validation
-- Lifecycle: ACTIVE → INACTIVE on tenancy end
-- Audit Log: Log all operations
+- Backend API: Servlet Controller (`ManagerTenantsServlet.java`) điều phối các thao tác cập nhật hồ sơ, khóa tài khoản, mở khóa và kết thúc thuê.
+- Service & DAO: `TenantServiceImpl.java` xử lý các quy tắc nghiệp vụ validate số điện thoại/CCCD, khóa đăng nhập và gỡ liên kết phòng cư dân.
+- Database: Tương tác với bảng `dbo.users` (với vai trò `role = 'TENANT'`), bảng `dbo.rooms` (gỡ liên kết `tenant_id`) và ghi nhật ký vào bảng `dbo.audit_logs`.
+- Giao diện JSP: `list.jsp` hiển thị danh sách phân trang và các bộ lọc tìm kiếm; `detail.jsp` hiển thị chi tiết hồ sơ cá nhân, các nút chức năng (Sửa thông tin, Khóa/Mở khóa, Kết thúc thuê, Xóa mềm), và danh sách người phụ thuộc đi kèm.
 
 ---
 
 ## 2. Giai đoạn Thực thi
 
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Tuần 1-2)
+### Giai đoạn 1: Thiết kế & Chuẩn bị (Hoàn thành)
+- Thiết kế luồng gán tài khoản cư dân tự động khi tạo hợp đồng phòng.
+- Thiết kế Servlet Controller `/manager/tenants` điều khiển các luồng sửa thông tin, khóa tài khoản, mở khóa tài khoản, kết thúc thuê, xóa mềm.
+- Thiết kế bộ validate định dạng thông tin liên lạc (số điện thoại và CCCD Việt Nam hợp lệ).
 
-**Mục tiêu:** Design database, account integration, code generation
+### Giai đoạn 2: Backend Development (Hoàn thành)
+- Implement `countTenants` và `getTenants` hỗ trợ tìm kiếm và phân trang người thuê thuộc các cơ sở được phân công.
+- Implement các phương thức quản lý tài khoản: `lockTenantAccount`, `unlockTenantAccount` (reset số lần nhập sai mật khẩu), và `softDeleteTenant` (cập nhật `deleted_at`).
+- Implement nghiệp vụ kết thúc thuê phòng `endRental()` (gỡ bỏ liên kết `tenant_id` tại bảng `rooms`).
 
-**Công việc:**
-- Design Tenant entity & table
-- Design Account integration
-- Design tenant code generation
-- Design room assignment validation
-- Define API contract
-- Plan account lifecycle
+### Giai đoạn 3: Frontend Development (Hoàn thành)
+- Xây dựng giao diện danh sách người thuê kèm phân trang và tìm kiếm.
+- Phát triển trang chi tiết hiển thị hồ sơ cá nhân và tích hợp các modal (modal sửa thông tin người thuê, modal sửa thông tin người phụ thuộc).
+- Tích hợp form xác nhận ngày kết thúc và lý do trả phòng.
 
----
-
-### Giai đoạn 2: Backend Development - Core (Tuần 3-4)
-
-**Mục tiêu:** Implement core tenant management
-
-**Công việc:**
-- Implement Tenant entity & repository
-- Implement tenant code generation service
-- Implement create tenant service with account creation
-- Implement tenant validation rules
-- Implement room assignment validation
-
----
-
-### Giai đoạn 3: Backend Development - Lifecycle (Tuần 5-6)
-
-**Mục tiêu:** Implement lifecycle management
-
-**Công việc:**
-- Implement list/search tenants service
-- Implement get tenant detail service
-- Implement assign room service
-- Implement end tenancy service
-- Implement soft delete logic
-
----
-
-### Giai đoạn 4: Frontend Development (Tuần 7-8)
-
-**Mục tiêu:** Implement UI
-
-**Công việc:**
-- Tenant creation form
-- Tenant list & search
-- Tenant detail view
-- Assign room dialog
-- End tenancy confirmation
-
----
-
-### Giai đoạn 5: Testing & Deployment (Tuần 9-10)
-
-**Mục tiêu:** Testing, UAT, deployment
+### Giai đoạn 4: Testing & Deployment (Hoàn thành)
 
 ---
 
 ## 3. Key Technical Aspects
 
-### Tenant Code Generation
-- Format: TEN00001, TEN00002, ...
-- Unique per tenant
-- Generated on creation
-- Sequence management
+### Contracts Redirection
+- Explicitly blocks direct tenant creation by redirecting requests to the contracts page.
+- Tenant accounts are automatically created during contract signature.
 
-### Account Creation
-- Auto-create account on tenant creation
-- Temp password generation
-- Email account credentials
-- Force password change on first login
-- Disable account on tenancy end
+### Account Lock/Unlock Mechanics
+- Locking sets user account status to LOCKED in `dbo.users`.
+- Unlocking restores status to ACTIVE and clears fail counts in the login attempt tracker.
 
-### Room Assignment
-- One active tenant per room
-- Validate room is AVAILABLE
-- Link tenant to room
-- Update room status to OCCUPIED
-- Prevent double assignment
-
-### Unique Fields
-- Email: System-wide unique (unless soft deleted)
-- CCCD: System-wide unique (unless soft deleted)
-- Phone: Unique for ACTIVE tenants only
-
-### Lifecycle
-- Create in ACTIVE status
-- ACTIVE → INACTIVE on tenancy end
-- Disable account when INACTIVE
-- Keep historical data
+### Soft Delete of Inactive Tenants
+- Hard deletion is prevented.
+- Sets `deleted_at = GETDATE()` in database to hide from list screens, while preserving past transaction history.
 
 ---
 
-## 4. Dependencies
+## 4. Success Criteria
 
-### External Dependencies
-- Account service (create account, disable account)
-- Room service (room validation, room status update)
-- Email service (send temp password)
-
-### Blocking
-- Account service must be ready
+- ✓ Manager can list, filter, search tenants within scope.
+- ✓ Tenant profile details can be updated with phone/CCCD validations.
+- ✓ Lock/Unlock functions work immediately.
+- ✓ End rental successfully frees up the room.
+- ✓ Operations logged in audit logs.
 
 ---
 
-## 5. Risk Management
-
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Account creation failure | High | Implement rollback on account creation error |
-| Duplicate email/CCCD | High | Implement unique constraints + validation |
-| Room assignment failure | High | Transaction rollback |
-| Code generation collision | Medium | Sequence-based generation |
-
----
-
-## 6. Success Criteria
-
-- ✓ Tenant code generation working
-- ✓ Account creation/integration working
-- ✓ Tenant creation with validation
-- ✓ Room assignment working
-- ✓ Unique constraints enforced
-- ✓ End tenancy working
-- ✓ List/search working
-- ✓ Response time < 500ms
-- ✓ >= 80% code coverage
-- ✓ UAT passed
-
----
-
-## 7. Timeline
-
-- **Week 1-2:** Design & preparation
-- **Week 3-4:** Backend core development
-- **Week 5-6:** Backend lifecycle development
-- **Week 7-8:** Frontend development
-- **Week 9-10:** Testing & deployment
-
-**Total:** 10 weeks
+## 5. Timeline
+- Completed.

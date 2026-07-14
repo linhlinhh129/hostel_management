@@ -229,14 +229,17 @@ public class InvoiceDAO extends BaseDAO {
     public List<InvoiceListItemDTO> findInvoices(int managerId, String keyword, String status, String billingPeriod, int offset, int limit) {
         List<InvoiceListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT i.invoice_id, i.code, i.total_amount, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name, c_del.tenant_full_name) AS tenant_name " +
+            "SELECT i.invoice_id, i.code, i.total_amount, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name " +
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
             "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-            "LEFT JOIN contracts c ON i.room_id = c.room_id AND CAST(i.created_at AS DATE) BETWEEN c.start_date AND c.end_date AND c.deleted_at IS NULL " +
-            "LEFT JOIN contracts c_del ON i.room_id = c_del.room_id AND CAST(i.created_at AS DATE) BETWEEN c_del.start_date AND c_del.end_date AND c_del.deleted_at IS NOT NULL " +
-            "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, c_del.tenant_id, r.tenant_id) = u.user_id " +
+            "LEFT JOIN contracts c ON c.contract_id = (" +
+            "    SELECT TOP 1 contract_id FROM contracts " +
+            "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date " +
+            "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+            ") " +
+            "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
             "WHERE i.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -244,7 +247,7 @@ public class InvoiceDAO extends BaseDAO {
             sql.append("AND i.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name, c_del.tenant_full_name) LIKE ?) ");
+            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
         if (billingPeriod != null && !billingPeriod.trim().isEmpty()) {
             if (billingPeriod.length() == 6) {
@@ -306,9 +309,12 @@ public class InvoiceDAO extends BaseDAO {
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
             "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-            "LEFT JOIN contracts c ON i.room_id = c.room_id AND CAST(i.created_at AS DATE) BETWEEN c.start_date AND c.end_date AND c.deleted_at IS NULL " +
-            "LEFT JOIN contracts c_del ON i.room_id = c_del.room_id AND CAST(i.created_at AS DATE) BETWEEN c_del.start_date AND c_del.end_date AND c_del.deleted_at IS NOT NULL " +
-            "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, c_del.tenant_id, r.tenant_id) = u.user_id " +
+            "LEFT JOIN contracts c ON c.contract_id = (" +
+            "    SELECT TOP 1 contract_id FROM contracts " +
+            "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date " +
+            "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+            ") " +
+            "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
             "WHERE i.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -316,7 +322,7 @@ public class InvoiceDAO extends BaseDAO {
             sql.append("AND i.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name, c_del.tenant_full_name) LIKE ?) ");
+            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
         if (billingPeriod != null && billingPeriod.length() == 6) {
             sql.append("AND i.code LIKE ? "); 
@@ -354,8 +360,8 @@ public class InvoiceDAO extends BaseDAO {
 
     public InvoiceDetailDTO findById(int managerId, int invoiceId) {
         String sql = "SELECT i.*, r.code AS room_code, " +
-                     "COALESCE(u.full_name, c.tenant_full_name, c_del.tenant_full_name) AS tenant_name, " +
-                     "COALESCE(u.phone, c.tenant_phone, c_del.tenant_phone) AS tenant_phone, " +
+                     "COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, " +
+                     "COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
                      "u.email AS tenant_email, " +
                      "f.name AS facility_name, f.address AS facility_address, " +
                      "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_img, mr_curr.water_img, " +
@@ -367,9 +373,12 @@ public class InvoiceDAO extends BaseDAO {
                      "INNER JOIN rooms r ON i.room_id = r.room_id " +
                      "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                      "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                     "LEFT JOIN contracts c ON i.room_id = c.room_id AND CAST(i.created_at AS DATE) BETWEEN c.start_date AND c.end_date AND c.deleted_at IS NULL " +
-                     "LEFT JOIN contracts c_del ON i.room_id = c_del.room_id AND CAST(i.created_at AS DATE) BETWEEN c_del.start_date AND c_del.end_date AND c_del.deleted_at IS NOT NULL " +
-                     "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, c_del.tenant_id, r.tenant_id) = u.user_id " +
+                     "LEFT JOIN contracts c ON c.contract_id = (" +
+                     "    SELECT TOP 1 contract_id FROM contracts " +
+                     "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date " +
+                     "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+                     ") " +
+                     "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                      "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
                      "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND f.manager_id = ?";
                       

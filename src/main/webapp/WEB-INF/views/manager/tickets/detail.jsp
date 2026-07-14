@@ -31,8 +31,11 @@
                         </strong>
                       </span>
                       <c:choose>
-                        <c:when test="${ticket.status == 'PENDING'}">
+                        <c:when test="${ticket.status == 'PENDING' or ticket.status == 'NEW'}">
                           <span class="badge-hms badge-info">Mới</span>
+                        </c:when>
+                        <c:when test="${ticket.status == 'RECEIVED'}">
+                          <span class="badge-hms badge-warning">Đã tiếp nhận</span>
                         </c:when>
                         <c:when test="${ticket.status == 'ASSIGNED'}">
                           <span class="badge-hms badge-warning">Đã phân công</span>
@@ -49,10 +52,15 @@
                         <c:when test="${ticket.status == 'CANCELLED'}">
                           <span class="badge-hms badge-neutral">Đã hủy</span>
                         </c:when>
+                        <c:otherwise>
+                          <span class="badge-hms badge-neutral">
+                            <c:out value="${ticket.status}" />
+                          </span>
+                        </c:otherwise>
                       </c:choose>
                     </div>
                   </div>
-                  <a href="${ctx}/manager/tickets" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+                  <a href="${ctx}/manager/tickets?type=${ticket.senderRole}" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
                 </div>
 
                 <div class="row g-3">
@@ -283,7 +291,7 @@
                               <tr style="border-bottom:1px solid var(--hms-border)">
                                 <td style="padding:9px 14px;color:var(--hms-text-muted)">Ngày gửi</td>
                                 <td style="padding:9px 14px;font-size:0.8125rem">
-                                  <fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
+                                  <c:out value="${ticket.createdAt}" />
                                 </td>
                               </tr>
                               <c:if test="${not empty ticket.appointSchedule}">
@@ -316,139 +324,245 @@
                             </div>
                             <div class="widget-surface-body">
                               <c:choose>
-                                <%-- PENDING / NEW: Tiếp nhận hoặc Từ chối --%>
-                                <c:when test="${ticket.status == 'PENDING' or ticket.status == 'NEW'}">
-                                  <p class="text-muted" style="font-size:0.8125rem;margin-bottom:12px">
-                                    Tiếp nhận yêu cầu để bắt đầu xử lý.
-                                  </p>
-                                  <form method="post" action="${ctx}/manager/tickets/${ticket.id}/receive" class="mb-3">
-                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                    <button type="submit" class="quick-action-btn primary w-100"
-                                      onclick="return confirm('Tiếp nhận yêu cầu này?')">
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        stroke="currentColor" stroke-width="2" style="margin-right:4px">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
-                                      Tiếp nhận yêu cầu
-                                    </button>
-                                  </form>
-                                  <hr style="border-color:var(--hms-border)">
-                                  <%-- Từ chối --%>
-                                  <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reject"
-                                    onsubmit="return confirm('Xác nhận từ chối yêu cầu này?')">
-                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                    <div class="mb-2">
-                                      <label for="rejectReason" class="form-label"
-                                        style="font-size:0.8125rem;font-weight:600">Lý do từ chối <span class="text-danger">*</span></label>
-                                      <textarea class="form-control form-control-sm" id="rejectReason"
-                                        name="reason" rows="2" maxlength="500" required
-                                        placeholder="Nhập lý do từ chối..."></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                      Từ chối yêu cầu
-                                    </button>
-                                  </form>
-                                </c:when>
-
-                                <%-- RECEIVED / ASSIGNED: Bắt đầu xử lý hoặc Từ chối --%>
-                                <c:when test="${ticket.status == 'RECEIVED' or ticket.status == 'ASSIGNED'}">
-                                  <form method="post" action="${ctx}/manager/tickets/${ticket.id}/schedule" class="mb-3">
-                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                    <div class="mb-3">
-                                      <label for="appointmentDate" class="form-label"
-                                        style="font-size:0.8125rem;font-weight:600">Lịch hẹn xử lý (Không bắt buộc)</label>
-                                      <input type="datetime-local" class="form-control form-control-sm" id="appointmentDate" name="appointmentDate" />
-                                    </div>
-                                    <button type="submit" class="quick-action-btn primary w-100">
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        stroke="currentColor" stroke-width="2" style="margin-right:4px">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
-                                      Bắt đầu xử lý
-                                    </button>
-                                  </form>
-                                  <hr style="border-color:var(--hms-border)">
-                                  <%-- Từ chối --%>
-                                  <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reject"
-                                    onsubmit="return confirm('Xác nhận từ chối yêu cầu này?')">
-                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                    <div class="mb-2">
-                                      <label for="rejectReason" class="form-label"
-                                        style="font-size:0.8125rem;font-weight:600">Lý do từ chối <span class="text-danger">*</span></label>
-                                      <textarea class="form-control form-control-sm" id="rejectReason"
-                                        name="reason" rows="2" maxlength="500" required
-                                        placeholder="Nhập lý do từ chối..."></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                      Từ chối yêu cầu
-                                    </button>
-                                  </form>
-                                </c:when>
-
-                                <%-- IN_PROGRESS: Hoàn thành --%>
-                                <c:when test="${ticket.status == 'IN_PROGRESS'}">
-                                  <form method="post" action="${ctx}/manager/tickets/${ticket.id}/complete" enctype="multipart/form-data">
-                                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                    <div class="mb-3">
-                                      <label for="completeNotes" class="form-label"
-                                        style="font-size:0.8125rem;font-weight:600">Ghi chú hoàn thành <span class="text-danger">*</span></label>
-                                      <textarea class="form-control form-control-sm" id="completeNotes"
-                                        name="notes" rows="3" maxlength="500" required
-                                        placeholder="Mô tả kết quả xử lý..."></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                      <label for="after_images" class="form-label"
-                                        style="font-size:0.8125rem;font-weight:600">Ảnh kết quả (Tùy chọn)</label>
-                                      <input type="file" class="form-control form-control-sm" id="after_images" name="after_images" accept="image/*" multiple />
-                                    </div>
-                                    <button type="submit" class="quick-action-btn primary w-100" style="background-color: var(--hms-success, #10b981); border-color: var(--hms-success, #10b981);">
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        stroke="currentColor" stroke-width="2" style="margin-right:4px">
-                                        <polyline points="20 6 9 17 4 12" />
-                                      </svg>
-                                      Hoàn thành yêu cầu
-                                    </button>
-                                  </form>
-                                </c:when>
-
-                                <%-- DONE / RESOLVED --%>
-                                <c:when test="${ticket.status == 'DONE' or ticket.status == 'RESOLVED'}">
-                                  <div style="background:#f0fdf4;border:1px solid #bbf7d0;
-                                    border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
-                                    <span class="badge-hms badge-success"
-                                      style="display:inline-block;margin-bottom:6px">Đã hoàn thành</span>
-                                    <p style="font-size:0.8125rem;color:#166534;margin:0">
-                                      Yêu cầu đã được xử lý thành công.
-                                    </p>
-                                  </div>
-                                </c:when>
-
-                                <%-- REJECTED --%>
-                                <c:when test="${ticket.status == 'REJECTED'}">
-                                  <div style="background:#fef2f2;border:1px solid #fecaca;
-                                    border-radius:var(--hms-radius);padding:0.75rem 1rem">
-                                    <span class="badge-hms badge-danger"
-                                      style="display:inline-block;margin-bottom:6px">Đã từ chối</span>
-                                    <c:if test="${not empty ticket.rejectionReason}">
-                                      <p style="font-size:0.8125rem;color:#7f1d1d;margin:0">
-                                        <strong>Lý do:</strong>
-                                        <c:out value="${ticket.rejectionReason}" />
+                                <%-- THÊM ĐIỀU KIỆN CHO OPERATOR TICKET (MANAGER CHỈ CÓ NHIỆM VỤ DUYỆT) --%>
+                                <c:when test="${ticket.senderRole == 'OPERATOR'}">
+                                  <c:choose>
+                                    <%-- Nếu trạng thái là CHỜ DUYỆT --%>
+                                    <c:when test="${ticket.status == 'PENDING' or ticket.status == 'NEW'}">
+                                      <p class="text-muted" style="font-size:0.8125rem;margin-bottom:12px">
+                                        Phê duyệt báo cáo sự cố này để giao cho nhân viên vận hành tiến hành sửa chữa.
                                       </p>
-                                    </c:if>
-                                  </div>
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/receive" class="mb-3">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <button type="submit" class="quick-action-btn primary w-100" style="background-color: var(--hms-success, #10b981); border-color: var(--hms-success, #10b981);"
+                                          onclick="return confirm('Phê duyệt báo cáo sự cố này?')">
+                                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" style="margin-right:4px">
+                                            <polyline points="20 6 9 17 4 12" />
+                                          </svg>
+                                          Phê duyệt yêu cầu
+                                        </button>
+                                      </form>
+                                      <hr style="border-color:var(--hms-border)">
+                                      <%-- Từ chối --%>
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reject"
+                                        onsubmit="return confirm('Xác nhận từ chối yêu cầu này?')">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <div class="mb-2">
+                                          <label for="rejectReason" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Lý do từ chối <span class="text-danger">*</span></label>
+                                          <textarea class="form-control form-control-sm" id="rejectReason"
+                                            name="reason" rows="2" maxlength="500" required
+                                            placeholder="Nhập lý do từ chối..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                          Từ chối yêu cầu
+                                        </button>
+                                      </form>
+                                    </c:when>
+
+                                    <%-- Nếu trạng thái là ĐÃ DUYỆT / ĐANG XỬ LÝ / ĐÃ GIAO VIỆC --%>
+                                    <c:when test="${ticket.status == 'RECEIVED' or ticket.status == 'ASSIGNED' or ticket.status == 'IN_PROGRESS'}">
+                                      <div class="text-center p-3 rounded" style="background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;">
+                                        <span class="badge bg-info text-white px-3 py-2 rounded-pill mb-2">ĐÃ PHÊ DUYỆT</span>
+                                        <p class="mb-0" style="font-size:0.8125rem">Sự cố đã được duyệt. Đang chờ nhân viên vận hành sửa chữa và báo cáo hoàn thành.</p>
+                                      </div>
+                                    </c:when>
+
+                                    <%-- Đã hoàn thành --%>
+                                    <c:when test="${ticket.status == 'DONE' or ticket.status == 'RESOLVED'}">
+                                      <div style="background:#f0fdf4;border:1px solid #bbf7d0;
+                                        border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
+                                        <span class="badge-hms badge-success"
+                                          style="display:inline-block;margin-bottom:6px">Đã hoàn thành</span>
+                                        <p style="font-size:0.8125rem;color:#166534;margin:0">
+                                          Sự cố đã được sửa chữa hoàn tất.
+                                        </p>
+                                      </div>
+                                    </c:when>
+
+                                    <%-- Từ chối --%>
+                                    <c:when test="${ticket.status == 'REJECTED'}">
+                                      <div style="background:#fef2f2;border:1px solid #fecaca;
+                                        border-radius:var(--hms-radius);padding:0.75rem 1rem">
+                                        <span class="badge-hms badge-danger"
+                                          style="display:inline-block;margin-bottom:6px">Đã từ chối</span>
+                                        <c:if test="${not empty ticket.rejectionReason}">
+                                          <p style="font-size:0.8125rem;color:#7f1d1d;margin:0">
+                                            <strong>Lý do:</strong>
+                                            <c:out value="${ticket.rejectionReason}" />
+                                          </p>
+                                        </c:if>
+                                      </div>
+                                    </c:when>
+
+                                    <%-- Đã hủy --%>
+                                    <c:otherwise>
+                                      <div style="background:var(--hms-bg-surface);border:1px solid var(--hms-border);
+                                        border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
+                                        <span class="badge-hms badge-neutral"
+                                          style="display:inline-block;margin-bottom:6px">Đã hủy</span>
+                                      </div>
+                                    </c:otherwise>
+                                  </c:choose>
                                 </c:when>
 
-                                <%-- CANCELLED --%>
-                                <c:when test="${ticket.status == 'CANCELLED'}">
-                                  <div style="background:var(--hms-bg-surface);border:1px solid var(--hms-border);
-                                    border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
-                                    <span class="badge-hms badge-neutral"
-                                      style="display:inline-block;margin-bottom:6px">Đã hủy</span>
-                                    <p style="font-size:0.8125rem;color:var(--hms-text-muted);margin:0">
-                                      Yêu cầu đã bị hủy bởi cư dân.
-                                    </p>
-                                  </div>
-                                </c:when>
+                                <%-- GIỮ NGUYÊN LUỒNG CŨ CHO CƯ DÂN (TENANT) --%>
+                                <c:otherwise>
+                                  <c:choose>
+                                    <%-- PENDING / NEW: Tiếp nhận hoặc Từ chối --%>
+                                    <c:when test="${ticket.status == 'PENDING' or ticket.status == 'NEW'}">
+                                      <p class="text-muted" style="font-size:0.8125rem;margin-bottom:12px">
+                                        Tiếp nhận yêu cầu để bắt đầu xử lý.
+                                      </p>
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/receive" class="mb-3">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <button type="submit" class="quick-action-btn primary w-100"
+                                          onclick="return confirm('Tiếp nhận yêu cầu này?')">
+                                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" style="margin-right:4px">
+                                            <polyline points="20 6 9 17 4 12" />
+                                          </svg>
+                                          Tiếp nhận yêu cầu
+                                        </button>
+                                      </form>
+                                      <hr style="border-color:var(--hms-border)">
+                                      <%-- Từ chối --%>
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reject"
+                                        onsubmit="return confirm('Xác nhận từ chối yêu cầu này?')">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <div class="mb-2">
+                                          <label for="rejectReason" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Lý do từ chối <span class="text-danger">*</span></label>
+                                          <textarea class="form-control form-control-sm" id="rejectReason"
+                                            name="reason" rows="2" maxlength="500" required
+                                            placeholder="Nhập lý do từ chối..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                          Từ chối yêu cầu
+                                        </button>
+                                      </form>
+                                    </c:when>
+
+                                    <%-- RECEIVED / ASSIGNED: Bắt đầu xử lý hoặc Từ chối --%>
+                                    <c:when test="${ticket.status == 'RECEIVED' or ticket.status == 'ASSIGNED'}">
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/schedule" class="mb-3">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <div class="mb-3">
+                                          <label for="appointmentDate" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Lịch hẹn xử lý <span class="text-danger">*</span></label>
+                                          <input type="datetime-local" class="form-control form-control-sm" id="appointmentDate" name="appointmentDate" required />
+                                        </div>
+                                        <button type="submit" class="quick-action-btn primary w-100">
+                                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" style="margin-right:4px">
+                                            <polyline points="20 6 9 17 4 12" />
+                                          </svg>
+                                          Bắt đầu xử lý
+                                        </button>
+                                      </form>
+                                      <hr style="border-color:var(--hms-border)">
+                                      <%-- Từ chối --%>
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reject"
+                                        onsubmit="return confirm('Xác nhận từ chối yêu cầu này?')">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <div class="mb-2">
+                                          <label for="rejectReason" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Lý do từ chối <span class="text-danger">*</span></label>
+                                          <textarea class="form-control form-control-sm" id="rejectReason"
+                                            name="reason" rows="2" maxlength="500" required
+                                            placeholder="Nhập lý do từ chối..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                          Từ chối yêu cầu
+                                        </button>
+                                      </form>
+                                    </c:when>
+
+                                    <%-- IN_PROGRESS: Hoàn thành --%>
+                                    <c:when test="${ticket.status == 'IN_PROGRESS'}">
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/complete" enctype="multipart/form-data">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <div class="mb-3">
+                                          <label for="completeNotes" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Ghi chú hoàn thành <span class="text-danger">*</span></label>
+                                          <textarea class="form-control form-control-sm" id="completeNotes"
+                                            name="notes" rows="3" maxlength="500" required
+                                            placeholder="Mô tả kết quả xử lý..."></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                          <label for="after_images" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Ảnh kết quả (Tùy chọn)</label>
+                                          <input type="file" class="form-control form-control-sm" id="after_images" name="after_images" accept="image/*" multiple />
+                                        </div>
+                                        <button type="submit" class="quick-action-btn primary w-100" style="background-color: var(--hms-success, #10b981); border-color: var(--hms-success, #10b981);">
+                                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" style="margin-right:4px">
+                                            <polyline points="20 6 9 17 4 12" />
+                                          </svg>
+                                          Hoàn thành yêu cầu
+                                        </button>
+                                      </form>
+                                      <hr style="border-color:var(--hms-border)">
+                                      <%-- Form dời lịch hẹn --%>
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reschedule">
+                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                        <div class="mb-3">
+                                          <label for="newAppointmentDate" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Dời lịch hẹn xử lý <span class="text-danger">*</span></label>
+                                          <input type="datetime-local" class="form-control form-control-sm" id="newAppointmentDate" name="appointmentDate" required />
+                                        </div>
+                                        <div class="mb-3">
+                                          <label for="rescheduleReason" class="form-label"
+                                            style="font-size:0.8125rem;font-weight:600">Lý do dời lịch <span class="text-danger">*</span></label>
+                                          <textarea class="form-control form-control-sm" id="rescheduleReason" name="reason" rows="2" maxlength="500" required placeholder="Lý do đổi lịch hẹn..."></textarea>
+                                        </div>
+                                        <button type="submit" class="quick-action-btn primary w-100" style="background-color: var(--hms-info, #0284c7); border-color: var(--hms-info, #0284c7);">
+                                          Xác nhận dời lịch
+                                        </button>
+                                      </form>
+                                    </c:when>
+
+                                    <%-- DONE / RESOLVED --%>
+                                    <c:when test="${ticket.status == 'DONE' or ticket.status == 'RESOLVED'}">
+                                      <div style="background:#f0fdf4;border:1px solid #bbf7d0;
+                                        border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
+                                        <span class="badge-hms badge-success"
+                                          style="display:inline-block;margin-bottom:6px">Đã hoàn thành</span>
+                                        <p style="font-size:0.8125rem;color:#166534;margin:0">
+                                          Yêu cầu đã được xử lý thành công.
+                                        </p>
+                                      </div>
+                                    </c:when>
+
+                                    <%-- REJECTED --%>
+                                    <c:when test="${ticket.status == 'REJECTED'}">
+                                      <div style="background:#fef2f2;border:1px solid #fecaca;
+                                        border-radius:var(--hms-radius);padding:0.75rem 1rem">
+                                        <span class="badge-hms badge-danger"
+                                          style="display:inline-block;margin-bottom:6px">Đã từ chối</span>
+                                        <c:if test="${not empty ticket.rejectionReason}">
+                                          <p style="font-size:0.8125rem;color:#7f1d1d;margin:0">
+                                            <strong>Lý do:</strong>
+                                            <c:out value="${ticket.rejectionReason}" />
+                                          </p>
+                                        </c:if>
+                                      </div>
+                                    </c:when>
+
+                                    <%-- CANCELLED --%>
+                                    <c:when test="${ticket.status == 'CANCELLED'}">
+                                      <div style="background:var(--hms-bg-surface);border:1px solid var(--hms-border);
+                                        border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
+                                        <span class="badge-hms badge-neutral"
+                                          style="display:inline-block;margin-bottom:6px">Đã hủy</span>
+                                        <p style="font-size:0.8125rem;color:var(--hms-text-muted);margin:0">
+                                          Yêu cầu đã bị hủy bởi cư dân.
+                                        </p>
+                                      </div>
+                                    </c:when>
+                                  </c:choose>
+                                </c:otherwise>
                               </c:choose>
                             </div>
                           </div>

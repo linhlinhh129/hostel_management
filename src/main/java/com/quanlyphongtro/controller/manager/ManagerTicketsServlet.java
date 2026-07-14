@@ -22,10 +22,9 @@ import java.util.Map;
         "/manager/tickets",
         "/manager/tickets/*"
 })
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
-        maxFileSize = 1024 * 1024 * 10,       // 10MB
-        maxRequestSize = 1024 * 1024 * 50     // 50MB
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50 // 50MB
 )
 public class ManagerTicketsServlet extends BaseServlet {
 
@@ -69,6 +68,8 @@ public class ManagerTicketsServlet extends BaseServlet {
                     handleSchedule(ticketId, req, resp);
                 } else if ("complete".equals(action)) {
                     handleComplete(ticketId, req, resp);
+                } else if ("reschedule".equals(action)) {
+                    handleReschedule(ticketId, req, resp);
                 } else {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
@@ -108,7 +109,8 @@ public class ManagerTicketsServlet extends BaseServlet {
         int pageSize = 10;
 
         int totalTickets = requestService.countManagerTickets(currentUser.getId(), type, status, keyword);
-        List<Map<String, Object>> tickets = requestService.getManagerTickets(currentUser.getId(), type, status, keyword, page, pageSize);
+        List<Map<String, Object>> tickets = requestService.getManagerTickets(currentUser.getId(), type, status, keyword,
+                page, pageSize);
 
         int totalPages = totalTickets > 0 ? (int) Math.ceil((double) totalTickets / pageSize) : 1;
 
@@ -189,7 +191,14 @@ public class ManagerTicketsServlet extends BaseServlet {
                 ldt = java.time.LocalDateTime.parse(appointmentDateStr.trim());
             } catch (Exception e) {
                 logger.error("Failed to parse appointment date", e);
+                setFlashMessage(req, "danger", "Ngày hẹn không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                return;
             }
+        } else {
+            setFlashMessage(req, "danger", "Vui lòng chọn ngày hẹn xử lý sự cố.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
         }
         boolean success = requestService.scheduleTicket(ticketId, ldt);
         if (success) {
@@ -200,7 +209,60 @@ public class ManagerTicketsServlet extends BaseServlet {
         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
     }
 
-    private void handleComplete(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleReschedule(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        String appointmentDateStr = req.getParameter("appointmentDate");
+        String reason = req.getParameter("reason");
+
+        if (appointmentDateStr == null || appointmentDateStr.trim().isEmpty()) {
+            setFlashMessage(req, "danger", "Vui lòng chọn ngày hẹn mới.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            setFlashMessage(req, "danger", "Vui lòng nhập lý do dời lịch hẹn.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
+
+        java.time.LocalDateTime newLdt = null;
+        try {
+            newLdt = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+        } catch (Exception e) {
+            logger.error("Failed to parse reschedule appointment date", e);
+            setFlashMessage(req, "danger", "Ngày hẹn mới không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
+
+        String ipAddress = req.getRemoteAddr();
+        try {
+            boolean success = requestService.rescheduleTicket(ticketId, newLdt, reason.trim(), currentUser.getId(),
+                    ipAddress);
+            if (success) {
+                setFlashMessage(req, "success", "Thay đổi lịch hẹn thành công!");
+            } else {
+                setFlashMessage(req, "danger", "Lỗi thay đổi lịch hẹn.");
+            }
+        } catch (java.nio.file.AccessDeniedException e) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            return;
+        } catch (Exception e) {
+            logger.error("Failed to reschedule ticket", e);
+            setFlashMessage(req, "danger", "Lỗi: " + e.getMessage());
+        }
+
+        resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+    }
+
+    private void handleComplete(int ticketId, HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         String notes = req.getParameter("notes");
         if (notes == null || notes.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Ghi chú hoàn thành không được để trống.");
@@ -210,7 +272,8 @@ public class ManagerTicketsServlet extends BaseServlet {
 
         List<String> fileNames = new ArrayList<>();
         try {
-            String uploadPath = req.getServletContext().getRealPath("") + java.io.File.separator + "uploads" + java.io.File.separator + "requests";
+            String uploadPath = req.getServletContext().getRealPath("") + java.io.File.separator + "uploads"
+                    + java.io.File.separator + "requests";
             java.io.File uploadDir = new java.io.File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
@@ -222,8 +285,9 @@ public class ManagerTicketsServlet extends BaseServlet {
                     String contentType = part.getContentType();
 
                     if (!com.quanlyphongtro.util.ValidationUtil.isValidFileType(originalFileName) ||
-                        !com.quanlyphongtro.util.ValidationUtil.isValidMimeType(contentType)) {
-                        setFlashMessage(req, "danger", "File upload không hợp lệ. Chỉ chấp nhận các định dạng ảnh JPG, PNG hoặc tài liệu PDF.");
+                            !com.quanlyphongtro.util.ValidationUtil.isValidMimeType(contentType)) {
+                        setFlashMessage(req, "danger",
+                                "File upload không hợp lệ. Chỉ chấp nhận các định dạng ảnh JPG, PNG hoặc tài liệu PDF.");
                         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
                         return;
                     }

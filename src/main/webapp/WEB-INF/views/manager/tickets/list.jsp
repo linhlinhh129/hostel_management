@@ -58,6 +58,7 @@
                       <select class="form-select" name="status">
                         <option value="">Tất cả</option>
                         <option value="PENDING" ${filterStatus=='PENDING' ? 'selected' : '' }>Mới</option>
+                        <option value="RECEIVED" ${filterStatus=='RECEIVED' ? 'selected' : '' }>Đã tiếp nhận</option>
                         <option value="ASSIGNED" ${filterStatus=='ASSIGNED' ? 'selected' : '' }>Đã phân công</option>
                         <option value="IN_PROGRESS" ${filterStatus=='IN_PROGRESS' ? 'selected' : '' }>Đang xử lý
                         </option>
@@ -134,12 +135,15 @@
                               </td>
                               <td class="d-none d-md-table-cell"
                                 style="font-size:0.8125rem;color:var(--hms-text-muted)">
-                                <fmt:formatDate value="${ticket.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
+                                <c:out value="${ticket.createdAt}" />
                               </td>
                               <td>
                                 <c:choose>
                                   <c:when test="${ticket.status == 'PENDING'}">
                                     <span class="badge-hms badge-info">Mới</span>
+                                  </c:when>
+                                  <c:when test="${ticket.status == 'RECEIVED'}">
+                                    <span class="badge-hms badge-warning">Đã tiếp nhận</span>
                                   </c:when>
                                   <c:when test="${ticket.status == 'ASSIGNED'}">
                                     <span class="badge-hms badge-warning">Đã phân công</span>

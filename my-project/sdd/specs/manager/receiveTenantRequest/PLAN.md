@@ -1,159 +1,70 @@
-# PLAN: Kế hoạch Thực thi Tiếp nhận và xử lý yêu cầu người thuê
+# PLAN: Kế hoạch Thực thi Tiếp nhận và xử lý yêu cầu người thuê (Manager)
 
-**Status:** Planning  
-**Date:** 2026-06-11  
+**Status:** Completed  
+**Date:** 2026-07-13  
 **Priority:** High  
-**Estimated Duration:** 10-12 weeks
+**Estimated Duration:** Completed
 
 ---
 
 ## 1. Tổng quan Giải pháp
 
-Feature cho phép người thuê gửi yêu cầu hỗ trợ và cho phép Manager tiếp nhận, phân công, theo dõi, và cập nhật trạng thái xử lý yêu cầu.
+Tính năng Tiếp nhận và xử lý yêu cầu người thuê giúp Manager giám sát, xử lý các phản hồi/sự cố từ phía cư dân và Operator.
 
 **Kiến trúc:**
-- Backend API: Create request, manage status flow, assign staff
-- State machine: NEW → RECEIVED → ASSIGNED → IN_PROGRESS → RESOLVED/REJECTED
-- Audit trail: Log all status changes
-- Frontend UI: Tenant request form, manager dashboard, assignment UI
-- Email notifications: Notify on status changes
+- Backend API: Servlet Controller (`ManagerTicketsServlet.java`) tiếp nhận và phân chia luồng qua các Servlet Path.
+- Service & DAO: `RequestServiceImpl.java` và `RequestDAO.java` xử lý logic lưu trữ trạng thái, lịch hẹn, ghi chú giải quyết và cập nhật hình ảnh hoàn thành.
+- Database: Bảng `dbo.requests` lưu thông tin chi tiết sự cố, trạng thái, người phụ trách, ảnh đính kèm ban đầu (`attachment_urls1`) và ảnh nghiệm thu (`attachment_urls2`).
+- Giao diện JSP: `list.jsp` hiển thị danh sách phân trang và các bộ lọc; `detail.jsp` hiển thị chi tiết, dòng thời gian lịch sử xử lý và các nút tác vụ (tiếp nhận, từ chối, lên lịch hẹn, hoàn thành).
 
 ---
 
 ## 2. Giai đoạn Thực thi
 
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Tuần 1-2)
+### Giai đoạn 1: Thiết kế & Chuẩn bị (Hoàn thành)
+- Thiết kế luồng Servlet điều phối yêu cầu: `/manager/tickets` và `/manager/tickets/{id}/...`.
+- Thiết kế cơ cấu dòng thời gian lịch sử xử lý (History timeline) động dựa trên vai trò người gửi (Cư dân hoặc Operator) và trạng thái hiện tại.
+- Thiết kế cấu trúc thư mục lưu trữ file nghiệm thu `/uploads/requests/`.
 
-**Mục tiêu:** Design state machine, database schema, API contract
+### Giai đoạn 2: Backend Development (Hoàn thành)
+- Implement `getManagerTickets()` và `countManagerTickets()` hỗ trợ lọc theo keyword, phân loại, trạng thái và phân trang.
+- Implement các phương thức cập nhật trạng thái trong DAO: `receiveTicket()`, `rejectTicket()`, `scheduleTicket()`, `completeTicket()`.
+- Xây dựng phương thức sinh dòng thời gian lịch sử (`getManagerTicketDetail()`) tự động tùy biến mô tả theo các bước chuyển đổi trạng thái thực tế.
 
-**Công việc:**
-- Design request status flow & validation
-- Design database schema (Request, RequestHistory, RequestAssignment)
-- Define API contract for each status transition
-- Design audit logging strategy
-- Plan notification triggers
+### Giai đoạn 3: Frontend Development (Hoàn thành)
+- Phát triển trang danh sách sự cố hỗ trợ tìm kiếm và chuyển đổi phân loại (Cư dân/Operator).
+- Phát triển trang chi tiết hiển thị toàn diện thông tin sự cố, ảnh đính kèm và dòng thời gian xử lý sự cố.
+- Thiết kế các form tương tác trực quan: form nhập lý do từ chối, form đặt lịch ngày giờ sửa chữa, và form tải ảnh nghiệm thu thực tế.
 
----
-
-### Giai đoạn 2: Backend Development - Core (Tuần 3-5)
-
-**Mục tiêu:** Implement request creation & status management
-
-**Công việc:**
-- Implement Request entity & repository
-- Implement RequestHistory & RequestAssignment
-- Implement request creation service
-- Implement status transition validators
-- Implement audit logging
-
----
-
-### Giai đoạn 3: Backend Development - Management (Tuần 6-7)
-
-**Mục tiêu:** Implement manager operations
-
-**Công việc:**
-- Implement receive/accept request
-- Implement assign staff to request
-- Implement reject request (with reason)
-- Implement list & search requests
-- Implement get request detail
-
----
-
-### Giai đoạn 4: Frontend Development (Tuần 8-9)
-
-**Mục tiêu:** Implement UI for both tenant & manager
-
-**Công việc:**
-- Tenant request form (create request)
-- Manager request dashboard (list, search, filter)
-- Request detail view
-- Assignment UI
-- Status update UI
-
----
-
-### Giai đoạn 5: Testing & Deployment (Tuần 10-12)
-
-**Mục tiêu:** Testing, UAT, deployment
+### Giai đoạn 4: Testing & Deployment (Hoàn thành)
 
 ---
 
 ## 3. Key Technical Aspects
 
-### State Machine
-```
-NEW → RECEIVED → ASSIGNED → IN_PROGRESS → RESOLVED
-                ↓
-              REJECTED
-```
+### Status Flow Control
+- The servlet and services strictly check previous states before updating (e.g. `receive` requires `NEW` or `PENDING`, updates are rejected if status is already closed).
+- Uses standard status codes: `PENDING`/`NEW`, `RECEIVED`, `ASSIGNED`, `IN_PROGRESS`, `DONE`, `REJECTED`, `CANCELLED`.
 
-### Validation Rules
-- Tenant must be ACTIVE to create
-- Only NEW requests can be RECEIVED
-- Only RECEIVED requests can be ASSIGNED
-- Only ASSIGNED can go to IN_PROGRESS
-- Only IN_PROGRESS can be RESOLVED
-- NEW/RECEIVED can be REJECTED
-- No transitions back from RESOLVED/REJECTED
+### Completion Uploads
+- Handled via Servlet multipart config validation.
+- Validates file extensions (jpg, png, pdf) and size limit (10MB).
+- Stores file paths separated by commas in `attachment_urls2`.
 
-### Staff Assignment
-- One staff per request at a time
-- Only assigned staff can update status
-- Can reassign before IN_PROGRESS (needs review)
-
-### Audit Trail
-- Log all status changes
-- Store who made the change & when
-- Store old & new values
+### Timeline Generator
+- Dynamically maps DB status records to clear human-readable activities (e.g., "Tiếp nhận yêu cầu", "Đang xử lý", "Từ chối yêu cầu", "Đã hoàn thành").
 
 ---
 
-## 4. Dependencies
+## 4. Success Criteria
 
-### External Dependencies
-- Tenant service (tenant validation)
-- Staff service (staff assignment)
-- Email service (notifications)
-- Room/Facility service (auto-linking)
-
-### Blocking Issues
-- None - can start parallel
+- ✓ Manager can view, filter, paginated tickets.
+- ✓ Status transitions (receive, reject, schedule, complete) working successfully.
+- ✓ Completion images uploaded and saved correctly.
+- ✓ Ticket timeline renders correct actions.
+- ✓ Operations validated under scope restrictions.
 
 ---
 
-## 5. Risk Management
-
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| State machine complexity | High | Implement validators at each transition |
-| Permission bypass | High | Check assigned staff before updates |
-| Data consistency | Medium | Use transactions for status updates |
-| Lost notifications | Medium | Implement retry logic for emails |
-
----
-
-## 6. Success Criteria
-
-- ✓ All status transitions working correctly
-- ✓ Staff assignment enforced
-- ✓ Tenant can create requests
-- ✓ Manager can manage request lifecycle
-- ✓ Audit trail complete
-- ✓ List, search, filter working
-- ✓ Response time < 500ms
-- ✓ >= 80% code coverage
-- ✓ UAT passed
-
----
-
-## 7. Timeline
-
-- **Week 1-2:** Design & preparation
-- **Week 3-5:** Backend core development
-- **Week 6-7:** Backend management development
-- **Week 8-9:** Frontend development
-- **Week 10-12:** Testing & deployment
-
-**Total:** 12 weeks
+## 5. Timeline
+- Completed.

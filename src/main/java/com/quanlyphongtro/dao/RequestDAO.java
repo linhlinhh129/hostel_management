@@ -49,19 +49,18 @@ public class RequestDAO extends BaseDAO {
         return r;
     }
 
-
     // ==================== HEAD (OPERATOR) METHODS ====================
 
     public Request getRequestById(int requestId) {
         String sql = "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
-                     "FROM requests rq " +
-                     "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                     "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                     "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "WHERE rq.request_id = ? AND rq.deleted_at IS NULL";
+                "FROM requests rq " +
+                "LEFT JOIN users u ON rq.sender_id = u.user_id " +
+                "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
+                "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                "WHERE rq.request_id = ? AND rq.deleted_at IS NULL";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, requestId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -74,13 +73,15 @@ public class RequestDAO extends BaseDAO {
         return null;
     }
 
-    public boolean updateRequestStatus(int requestId, String newStatus, String expectedOldStatus, Integer staffId, String rejectReason) {
-        String sql = "UPDATE requests SET status = ?, assigned_staff_id = ?, rejection_reason = ?, updated_at = GETDATE() " +
-                     "WHERE request_id = ? AND status = ?";
-        
+    public boolean updateRequestStatus(int requestId, String newStatus, String expectedOldStatus, Integer staffId,
+            String rejectReason) {
+        String sql = "UPDATE requests SET status = ?, assigned_staff_id = ?, rejection_reason = ?, updated_at = GETDATE() "
+                +
+                "WHERE request_id = ? AND status = ?";
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, newStatus);
             if (staffId != null) {
                 ps.setInt(2, staffId);
@@ -90,10 +91,10 @@ public class RequestDAO extends BaseDAO {
             ps.setString(3, rejectReason);
             ps.setInt(4, requestId);
             ps.setString(5, expectedOldStatus);
-            
+
             int affectedRows = ps.executeUpdate();
             return affectedRows > 0;
-            
+
         } catch (SQLException e) {
             logger.error("updateRequestStatus failed", e);
             return false;
@@ -102,9 +103,10 @@ public class RequestDAO extends BaseDAO {
 
     public int countRequests(Integer assigneeId, String status, String category) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM requests rq WHERE rq.deleted_at IS NULL");
-        
+
         if (assigneeId != null) {
-            sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(" OR (rq.status = 'PENDING' AND EXISTS(SELECT 1 FROM users u WHERE u.user_id = rq.sender_id AND u.role = 'TENANT')))");
+            sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(
+                    " OR (rq.status = 'PENDING' AND EXISTS(SELECT 1 FROM users u WHERE u.user_id = rq.sender_id AND u.role = 'TENANT')))");
         }
         if (status != null && !status.isEmpty()) {
             sql.append(" AND rq.status = ?");
@@ -114,8 +116,8 @@ public class RequestDAO extends BaseDAO {
         }
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
             int paramIndex = 1;
             if (status != null && !status.isEmpty()) {
                 ps.setString(paramIndex++, status);
@@ -138,16 +140,16 @@ public class RequestDAO extends BaseDAO {
     public List<Request> getRequests(Integer assigneeId, String status, String category, int offset, int limit) {
         List<Request> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
-            "FROM requests rq " +
-            "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-            "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-            "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
-            "WHERE rq.deleted_at IS NULL"
-        );
+                "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
+                        "FROM requests rq " +
+                        "LEFT JOIN users u ON rq.sender_id = u.user_id " +
+                        "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
+                        "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                        "WHERE rq.deleted_at IS NULL");
 
         if (assigneeId != null) {
-            sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(" OR (rq.status = 'PENDING' AND EXISTS(SELECT 1 FROM users uu WHERE uu.user_id = rq.sender_id AND uu.role = 'TENANT')))");
+            sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(
+                    " OR (rq.status = 'PENDING' AND EXISTS(SELECT 1 FROM users uu WHERE uu.user_id = rq.sender_id AND uu.role = 'TENANT')))");
         }
         if (status != null && !status.isEmpty()) {
             sql.append(" AND rq.status = ?");
@@ -159,8 +161,8 @@ public class RequestDAO extends BaseDAO {
         sql.append(" ORDER BY rq.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
             int paramIndex = 1;
             if (status != null && !status.isEmpty()) {
                 ps.setString(paramIndex++, status);
@@ -168,7 +170,7 @@ public class RequestDAO extends BaseDAO {
             if (category != null && !category.isEmpty()) {
                 ps.setString(paramIndex++, category);
             }
-            
+
             ps.setInt(paramIndex++, offset);
             ps.setInt(paramIndex++, limit);
 
@@ -186,7 +188,7 @@ public class RequestDAO extends BaseDAO {
     public boolean completeRequest(int requestId, String notes, String attachmentUrls2) {
         String sql = "UPDATE requests SET status = 'DONE', rejection_reason = ?, attachment_urls2 = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, notes);
             ps.setString(2, attachmentUrls2);
             ps.setInt(3, requestId);
@@ -200,7 +202,7 @@ public class RequestDAO extends BaseDAO {
     public boolean updateAppointmentSchedule(int requestId, java.time.LocalDateTime appointSchedule) {
         String sql = "UPDATE requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'ASSIGNED'";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setTimestamp(1, java.sql.Timestamp.valueOf(appointSchedule));
             ps.setInt(2, requestId);
             return ps.executeUpdate() > 0;
@@ -213,7 +215,7 @@ public class RequestDAO extends BaseDAO {
     public boolean insertIncidentReport(Request req) {
         String sql = "INSERT INTO requests (code, sender_id, category, title, content, status, attachment_urls1, assigned_staff_id, created_at) VALUES (?, ?, ?, ?, ?, 'PENDING', ?, ?, GETDATE())";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, req.getCode());
             ps.setInt(2, req.getSenderId());
             ps.setString(3, req.getCategory());
@@ -235,7 +237,7 @@ public class RequestDAO extends BaseDAO {
     public boolean updateIncidentReport(Request req) {
         String sql = "UPDATE requests SET category = ?, title = ?, content = ?, attachment_urls1 = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'PENDING' AND sender_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, req.getCategory());
             ps.setString(2, req.getTitle());
             ps.setString(3, req.getContent());
@@ -252,10 +254,11 @@ public class RequestDAO extends BaseDAO {
     public int countIncidentsBySender(int senderId) {
         String sql = "SELECT COUNT(*) FROM requests rq WHERE rq.sender_id = ? AND rq.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, senderId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next())
+                    return rs.getInt(1);
             }
         } catch (SQLException e) {
             logger.error("countIncidentsBySender failed", e);
@@ -266,15 +269,15 @@ public class RequestDAO extends BaseDAO {
     public List<Request> getIncidentsBySender(int senderId, int offset, int limit) {
         List<Request> list = new ArrayList<>();
         String sql = "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
-                     "FROM requests rq " +
-                     "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                     "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                     "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "WHERE rq.sender_id = ? AND rq.deleted_at IS NULL " +
-                     "ORDER BY rq.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM requests rq " +
+                "LEFT JOIN users u ON rq.sender_id = u.user_id " +
+                "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
+                "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                "WHERE rq.sender_id = ? AND rq.deleted_at IS NULL " +
+                "ORDER BY rq.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, senderId);
             ps.setInt(2, offset);
             ps.setInt(3, limit);
@@ -294,12 +297,12 @@ public class RequestDAO extends BaseDAO {
     public List<Request> findBySenderId(int senderId) {
         List<Request> list = new ArrayList<>();
         String sql = "SELECT r.*, u.full_name as assigned_to " +
-                     "FROM dbo.requests r " +
-                     "LEFT JOIN dbo.users u ON r.assigned_staff_id = u.user_id " +
-                     "WHERE r.sender_id = ? AND r.deleted_at IS NULL " +
-                     "ORDER BY r.created_at DESC";
+                "FROM dbo.requests r " +
+                "LEFT JOIN dbo.users u ON r.assigned_staff_id = u.user_id " +
+                "WHERE r.sender_id = ? AND r.deleted_at IS NULL " +
+                "ORDER BY r.created_at DESC";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, senderId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -314,11 +317,11 @@ public class RequestDAO extends BaseDAO {
 
     public Optional<Request> findByIdAndSenderId(int id, int senderId) {
         String sql = "SELECT r.*, u.full_name as assigned_to " +
-                     "FROM dbo.requests r " +
-                     "LEFT JOIN dbo.users u ON r.assigned_staff_id = u.user_id " +
-                     "WHERE r.request_id = ? AND r.sender_id = ? AND r.deleted_at IS NULL";
+                "FROM dbo.requests r " +
+                "LEFT JOIN dbo.users u ON r.assigned_staff_id = u.user_id " +
+                "WHERE r.request_id = ? AND r.sender_id = ? AND r.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.setInt(2, senderId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -334,10 +337,11 @@ public class RequestDAO extends BaseDAO {
 
     public boolean insert(Request r) {
         String code = "REQ" + System.currentTimeMillis();
-        String sql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, attachment_urls1, assigned_staff_id) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, attachment_urls1, assigned_staff_id) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code);
             ps.setInt(2, r.getSenderId());
             ps.setString(3, r.getCategory());
@@ -359,10 +363,11 @@ public class RequestDAO extends BaseDAO {
     public int countPendingBySenderId(int senderId) {
         String sql = "SELECT COUNT(*) FROM dbo.requests WHERE sender_id = ? AND status IN ('PENDING', 'ASSIGNED', 'IN_PROGRESS') AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, senderId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next())
+                    return rs.getInt(1);
             }
         } catch (Exception e) {
             logger.error("countPendingBySenderId failed for senderId={}", senderId, e);
@@ -402,7 +407,7 @@ public class RequestDAO extends BaseDAO {
                 + whereClause.toString();
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(countSql)) {
+                PreparedStatement ps = conn.prepareStatement(countSql)) {
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
@@ -417,7 +422,8 @@ public class RequestDAO extends BaseDAO {
         return totalTickets;
     }
 
-    public List<Map<String, Object>> getManagerTickets(int managerId, String type, String status, String keyword, int offset, int limit) {
+    public List<Map<String, Object>> getManagerTickets(int managerId, String type, String status, String keyword,
+            int offset, int limit) {
         List<Map<String, Object>> tickets = new ArrayList<>();
         StringBuilder whereClause = new StringBuilder(
                 " WHERE f.manager_id = ? AND req.deleted_at IS NULL AND u.role = ?");
@@ -451,7 +457,7 @@ public class RequestDAO extends BaseDAO {
                 " ORDER BY req.request_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(selectSql)) {
+                PreparedStatement ps = conn.prepareStatement(selectSql)) {
             int i = 0;
             for (; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
@@ -472,7 +478,8 @@ public class RequestDAO extends BaseDAO {
                     ticket.put("roomCode", rs.getString("room_code"));
                     ticket.put("facilityName", rs.getString("facility_name"));
                     Timestamp cAt = rs.getTimestamp("created_at");
-                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
+                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     ticket.put("status", rs.getString("status"));
                     tickets.add(ticket);
                 }
@@ -495,7 +502,7 @@ public class RequestDAO extends BaseDAO {
                 "WHERE req.request_id = ? AND req.deleted_at IS NULL";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(ticketSql)) {
+                PreparedStatement ps = conn.prepareStatement(ticketSql)) {
             ps.setInt(1, ticketId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -517,16 +524,23 @@ public class RequestDAO extends BaseDAO {
                     ticket.put("managerId", rs.getInt("manager_id"));
                     Timestamp cAt = rs.getTimestamp("created_at");
                     Timestamp uAt = rs.getTimestamp("updated_at");
-                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
-                    ticket.put("updatedAt", uAt != null ? uAt.toLocalDateTime().toString().replace("T", " ") : "");
+                    ticket.put("createdAtRaw", cAt);
+                    ticket.put("updatedAtRaw", uAt);
+                    ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                    ticket.put("updatedAt", uAt != null ? uAt.toLocalDateTime()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     ticket.put("assignedOperatorName", rs.getString("assigned_operator_name"));
                     ticket.put("rejectionReason", rs.getString("rejection_reason"));
                     ticket.put("attachmentUrls1", rs.getString("attachment_urls1"));
                     ticket.put("attachmentUrls2", rs.getString("attachment_urls2"));
                     Timestamp appointAt = rs.getTimestamp("appoint_schedule");
                     if (appointAt != null) {
-                        ticket.put("appointSchedule", appointAt.toLocalDateTime().toString().replace("T", " "));
-                        ticket.put("appointScheduleFormatted", appointAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")));
+                        ticket.put("appointScheduleRaw", appointAt);
+                        ticket.put("appointSchedule", appointAt.toLocalDateTime()
+                                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                        ticket.put("appointScheduleFormatted", appointAt.toLocalDateTime()
+                                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")));
                     }
                 }
             }
@@ -553,7 +567,7 @@ public class RequestDAO extends BaseDAO {
                     "ORDER BY u.full_name";
         }
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(opsSql)) {
+                PreparedStatement ps = conn.prepareStatement(opsSql)) {
             if (facilityId > 0) {
                 ps.setInt(1, facilityId);
             } else {
@@ -576,7 +590,7 @@ public class RequestDAO extends BaseDAO {
     public boolean receiveTicket(int ticketId) {
         String sql = "UPDATE dbo.requests SET status = 'RECEIVED', updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticketId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -588,7 +602,7 @@ public class RequestDAO extends BaseDAO {
     public boolean assignTicket(int ticketId, int operatorId) {
         String sql = "UPDATE dbo.requests SET status = 'ASSIGNED', assigned_staff_id = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, operatorId);
             ps.setInt(2, ticketId);
             return ps.executeUpdate() > 0;
@@ -601,7 +615,7 @@ public class RequestDAO extends BaseDAO {
     public boolean rejectTicket(int ticketId, String reason) {
         String sql = "UPDATE dbo.requests SET status = 'REJECTED', rejection_reason = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reason);
             ps.setInt(2, ticketId);
             return ps.executeUpdate() > 0;
@@ -614,7 +628,7 @@ public class RequestDAO extends BaseDAO {
     public boolean scheduleTicket(int ticketId, java.time.LocalDateTime scheduleTime) {
         String sql = "UPDATE dbo.requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             if (scheduleTime != null) {
                 ps.setTimestamp(1, java.sql.Timestamp.valueOf(scheduleTime));
             } else {
@@ -631,7 +645,7 @@ public class RequestDAO extends BaseDAO {
     public boolean completeTicket(int ticketId, String notes, String attachmentUrls2) {
         String sql = "UPDATE dbo.requests SET status = 'DONE', rejection_reason = ?, attachment_urls2 = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, notes);
             if (attachmentUrls2 != null) {
                 ps.setString(2, attachmentUrls2);
@@ -644,5 +658,48 @@ public class RequestDAO extends BaseDAO {
             logger.error("completeTicket failed for id={}", ticketId, e);
             return false;
         }
+    }
+
+    public boolean rescheduleTicket(int ticketId, java.time.LocalDateTime newTime) {
+        String sql = "UPDATE dbo.requests SET appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(newTime));
+            ps.setInt(2, ticketId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            logger.error("rescheduleTicket failed for id={}", ticketId, e);
+            return false;
+        }
+    }
+
+    public List<Map<String, Object>> getRescheduleHistory(int ticketId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT al.old_value, al.new_value, al.comment, al.created_at, u.full_name AS performer_name " +
+                "FROM dbo.audit_logs al " +
+                "LEFT JOIN dbo.users u ON al.created_by = u.user_id " +
+                "WHERE al.entity_type = 'requests' AND al.entity_id = ? AND al.action = 'RESCHEDULE' " +
+                "ORDER BY al.created_at ASC";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ticketId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("oldValue", rs.getString("old_value"));
+                    map.put("newValue", rs.getString("new_value"));
+                    map.put("comment", rs.getString("comment"));
+                    Timestamp cAt = rs.getTimestamp("created_at");
+                    map.put("createdAtRaw", cAt);
+                    map.put("createdAt", cAt != null ? cAt.toLocalDateTime()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                    map.put("performerName", rs.getString("performer_name"));
+                    list.add(map);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("getRescheduleHistory failed for id={}", ticketId, e);
+        }
+        return list;
     }
 }
