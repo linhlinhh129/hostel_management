@@ -3,638 +3,165 @@
 **Status:** Draft
 **Author:** [Tên]
 **Reviewer:** [Tên]
-**Date:** [YYYY-MM-DD]
+**Date:** 2026-07-13
 **Priority:** High
 
 ## 1. Bối cảnh nghiệp vụ (Business Context)
 
-Tính năng Tiếp nhận và xử lý yêu cầu người thuê cho phép người thuê gửi các yêu cầu hỗ trợ lên hệ thống và cho phép Ban quản lý tiếp nhận, theo dõi, phân công và xử lý các yêu cầu đó.
+Tính năng Tiếp nhận và xử lý yêu cầu người thuê cho phép Ban quản lý (Manager) tiếp nhận, từ chối, lên lịch hẹn xử lý, và xác nhận hoàn thành các yêu cầu hỗ trợ (gồm các sự cố cơ sở vật chất, điện nước hoặc dịch vụ khác) do Cư dân (Tenant) gửi lên hệ thống, cũng như các yêu cầu sửa đổi chỉ số từ Operator.
 
-Tính năng này giúp chuẩn hóa quy trình xử lý yêu cầu trong nhà trọ, đảm bảo mọi yêu cầu đều được ghi nhận, phân công rõ ràng và theo dõi minh bạch trong toàn bộ quá trình xử lý.
-
-Feature này hỗ trợ mục tiêu nâng cao chất lượng dịch vụ quản lý nhà trọ, cải thiện trải nghiệm người thuê và tăng hiệu quả vận hành của Ban quản lý.
+Tính năng này chuẩn hóa quy trình tiếp nhận và vận hành xử lý sự cố trong nhà trọ. Nó giúp Manager dễ dàng phân loại, giám sát tiến độ của từng phòng/cơ sở và phản hồi nhanh chóng cho người thuê. Đồng thời, hệ thống ghi nhận lịch sử thay đổi trạng thái tự động để đảm bảo tính minh bạch.
 
 ## 2. User Stories
 
 ### Story 1 (Luồng chính)
 
-Là Người thuê, tôi muốn gửi yêu cầu hỗ trợ để Ban quản lý có thể tiếp nhận và xử lý vấn đề của tôi.
+Là Manager, tôi muốn xem danh sách các yêu cầu/sự cố của các cơ sở tôi quản lý để nắm bắt các vấn đề phát sinh của cư dân.
 
 ### Story 2 (Luồng chính)
 
-Là Ban quản lý, tôi muốn tiếp nhận các yêu cầu từ người thuê để có thể xử lý hoặc phân công xử lý phù hợp.
+Là Manager, tôi muốn tiếp nhận một yêu cầu mới gửi lên để chuyển trạng thái sang tiếp nhận và đưa vào hàng chờ xử lý.
 
 ### Story 3 (Luồng chính)
 
-Là Ban quản lý, tôi muốn phân công yêu cầu cho nhân sự phụ trách để đảm bảo yêu cầu được xử lý đúng người và đúng trách nhiệm.
+Là Manager, tôi muốn đặt lịch hẹn ngày giờ xử lý sự cố để cư dân biết thời điểm Ban quản lý sẽ tiến hành sửa chữa, đồng thời hệ thống tự động cập nhật trạng thái yêu cầu sang Đang xử lý.
 
 ### Story 4 (Luồng chính)
 
-Là Nhân sự, tôi muốn cập nhật trạng thái xử lý yêu cầu được phân công để Ban quản lý có thể theo dõi tiến độ xử lý.
+Là Manager, tôi muốn cập nhật trạng thái hoàn thành yêu cầu, nhập ghi chú giải quyết và tải lên các ảnh sau khi sửa chữa để hoàn tất yêu cầu của cư dân.
 
-### Story 5 (Luồng chính)
+### Story 5 (Ngoại lệ)
 
-Là Ban quản lý, tôi muốn xem lịch sử xử lý yêu cầu để theo dõi toàn bộ quá trình xử lý.
+Là Manager, khi gặp yêu cầu không hợp lệ hoặc nằm ngoài khả năng, tôi muốn từ chối yêu cầu và ghi rõ lý do để cư dân nhận được phản hồi.
 
 ### Story 6 (Ngoại lệ)
 
-Là Ban quản lý, khi yêu cầu không hợp lệ hoặc không thuộc phạm vi hỗ trợ, tôi muốn từ chối yêu cầu và ghi rõ lý do từ chối.
-
-### Story 7 (Ngoại lệ)
-
-Là Nhân sự, khi không được phân công xử lý yêu cầu, tôi không được phép cập nhật thông tin xử lý của yêu cầu đó.
+Là Manager, tôi không được phép truy cập hoặc xử lý các yêu cầu thuộc phòng/cơ sở do Manager khác quản lý.
 
 ## 3. Tiêu chí chấp nhận (Acceptance Criteria - EARS)
 
-### AC-01 Gửi yêu cầu
+### AC-01 Xem danh sách yêu cầu
 
-KHI Người thuê gửi yêu cầu với thông tin hợp lệ
-HỆ THỐNG PHẢI tạo yêu cầu mới với trạng thái NEW và liên kết yêu cầu với người thuê, phòng và cơ sở tương ứng.
-
-### AC-02 Kiểm tra dữ liệu yêu cầu
-
-KHI Người thuê gửi yêu cầu thiếu thông tin bắt buộc
-HỆ THỐNG PHẢI từ chối yêu cầu và hiển thị lỗi kiểm tra dữ liệu.
-
-Các trường bắt buộc bao gồm:
-
-* Tiêu đề yêu cầu
-* Nội dung mô tả
-* Loại yêu cầu
-
-### AC-03 Xem danh sách yêu cầu
-
-KHI Ban quản lý truy cập màn hình quản lý yêu cầu
-HỆ THỐNG PHẢI hiển thị danh sách các yêu cầu của người thuê theo phân trang.
+KHI Manager mở trang danh sách yêu cầu
+HỆ THỐNG PHẢI lọc ra các yêu cầu thuộc phạm vi quản lý của Manager đó. 
 
 Danh sách hỗ trợ lọc theo:
+* `type`: Phân loại đối tượng gửi (`TENANT` - Cư dân hoặc `OPERATOR` - Nhân viên vận hành)
+* `status`: Trạng thái yêu cầu
+* `keyword`: Tìm kiếm theo tiêu đề hoặc mã yêu cầu
+* Phân trang 10 bản ghi/trang.
 
-* Từ khóa
-* Trạng thái yêu cầu
-* Loại yêu cầu
-* Cơ sở
-* Phòng
-* Nhân sự được phân công
+### AC-02 Tiếp nhận yêu cầu
 
-### AC-04 Tiếp nhận yêu cầu
+KHI Manager thực hiện tiếp nhận yêu cầu đang có trạng thái `NEW` hoặc `PENDING`
+HỆ THỐNG PHẢI cập nhật trạng thái yêu cầu thành `RECEIVED` và lưu lại thông tin cập nhật.
 
-KHI Ban quản lý tiếp nhận một yêu cầu có trạng thái NEW
-HỆ THỐNG PHẢI cập nhật trạng thái yêu cầu từ NEW sang RECEIVED.
+### AC-03 Đặt lịch hẹn xử lý (Schedule)
 
-### AC-05 Phân công xử lý
+KHI Manager lên lịch xử lý yêu cầu và chọn ngày giờ cụ thể
+HỆ THỐNG PHẢI lưu lịch hẹn (`appoint_schedule`), tự động chuyển trạng thái yêu cầu sang `IN_PROGRESS` (Đang xử lý) và hiển thị lịch hẹn lên dòng thời gian.
 
-KHI Ban quản lý phân công yêu cầu có trạng thái RECEIVED cho nhân sự
-HỆ THỐNG PHẢI lưu thông tin nhân sự được phân công và cập nhật trạng thái yêu cầu sang ASSIGNED.
+### AC-04 Hoàn thành yêu cầu
 
-### AC-06 Cập nhật đang xử lý
+KHI Manager xác nhận hoàn thành yêu cầu và nhập đầy đủ ghi chú giải quyết cùng ảnh xác nhận (tùy chọn)
+HỆ THỐNG PHẢI cập nhật trạng thái yêu cầu thành `DONE` và lưu trữ nội dung ghi chú cùng ảnh chụp hoàn thành.
 
-KHI Nhân sự được phân công bắt đầu xử lý yêu cầu
-HỆ THỐNG PHẢI cập nhật trạng thái yêu cầu từ ASSIGNED sang IN_PROGRESS.
+### AC-05 Từ chối yêu cầu
 
-### AC-07 Cập nhật đã xử lý
+KHI Manager từ chối yêu cầu và nhập lý do từ chối
+HỆ THỐNG PHẢI cập nhật trạng thái yêu cầu thành `REJECTED`, lưu trữ lý do từ chối và hiển thị phản hồi cho cư dân.
 
-KHI Nhân sự được phân công hoàn thành xử lý yêu cầu
-HỆ THỐNG PHẢI cập nhật trạng thái yêu cầu từ IN_PROGRESS sang RESOLVED.
+### AC-06 Xem chi tiết & Lịch sử xử lý
 
-### AC-08 Từ chối yêu cầu
-
-KHI Ban quản lý từ chối yêu cầu
-HỆ THỐNG PHẢI bắt buộc nhập lý do từ chối và cập nhật trạng thái yêu cầu sang REJECTED.
-
-### AC-09 Xem chi tiết yêu cầu
-
-KHI Ban quản lý xem chi tiết yêu cầu
-HỆ THỐNG PHẢI hiển thị:
-
-* Thông tin yêu cầu
-* Thông tin người thuê gửi yêu cầu
-* Thông tin phòng
-* Thông tin cơ sở
-* Loại yêu cầu
-* File đính kèm nếu có
-* Trạng thái hiện tại
-* Nhân sự được phân công
-* Lịch sử xử lý
-
-### AC-10 Xem lịch sử xử lý
-
-KHI Ban quản lý xem lịch sử xử lý
-HỆ THỐNG PHẢI hiển thị toàn bộ các lần thay đổi trạng thái và thao tác đã thực hiện theo thứ tự thời gian.
-
-### AC-11 Nhân sự không được phân công
-
-KHI Nhân sự không được phân công cập nhật yêu cầu
-HỆ THỐNG PHẢI từ chối thao tác và trả về lỗi không có quyền xử lý yêu cầu này.
-
-### AC-12 Phân quyền
-
-TRONG KHI người dùng không có quyền xử lý yêu cầu
-HỆ THỐNG PHẢI từ chối truy cập các chức năng tiếp nhận, phân công, từ chối và cập nhật trạng thái yêu cầu.
+KHI Manager truy cập trang chi tiết yêu cầu
+HỆ THỐNG PHẢI hiển thị thông tin người gửi, phòng, cơ sở, nội dung mô tả, ảnh đính kèm ban đầu, ảnh hoàn thành (nếu có), lịch hẹn xử lý, và tái hiện dòng thời gian lịch sử trạng thái (từ lúc tạo, tiếp nhận, lên lịch, hoàn thành hoặc từ chối).
 
 ## 4. API Contract
 
-### 4.1 Tạo yêu cầu
+Mọi hành động của Manager được điều phối bởi [ManagerTicketsServlet.java](file:///d:/Ki_5/hostel_management/src/main/java/com/quanlyphongtro/controller/manager/ManagerTicketsServlet.java) thông qua phương thức GET và POST:
 
-Endpoint
+### 4.1 Xem danh sách yêu cầu
+* **URL:** `GET /manager/tickets`
+* **Query Parameters:**
+  * `type`: Phân loại nguồn gửi (`TENANT` hoặc `OPERATOR`, mặc định `TENANT`)
+  * `keyword`: Tìm kiếm theo tiêu đề hoặc mã yêu cầu
+  * `status`: Trạng thái cần lọc
+  * `page`: Trang hiện tại (mặc định trang 1)
 
-```http
-POST /api/v1/requests
-```
-
-Request
-
-```json
-{
-  "title": "Máy lạnh không hoạt động",
-  "description": "Máy lạnh không làm mát",
-  "category": "MAINTENANCE",
-  "attachmentUrls": [
-    "https://example.com/files/air-conditioner.jpg"
-  ]
-}
-```
-
-Response 201
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": 101,
-    "title": "Máy lạnh không hoạt động",
-    "status": "NEW"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "REQUEST_VALIDATION_ERROR",
-    "message": "Thông tin yêu cầu không hợp lệ"
-  }
-}
-```
-
-### 4.2 Lấy danh sách yêu cầu
-
-Endpoint
-
-```http
-GET /api/v1/requests?page=0&size=10&status=NEW&category=MAINTENANCE&facilityId=1&roomId=101&assignedStaffId=15&keyword=may%20lanh
-```
-
-Tham số truy vấn
-
-| Trường          | Kiểu dữ liệu | Bắt buộc | Mô tả                                       |
-| --------------- | ------------ | -------- | ------------------------------------------- |
-| page            | number       | Không    | Số trang                                    |
-| size            | number       | Không    | Số lượng bản ghi trên một trang             |
-| status          | string       | Không    | Lọc theo trạng thái yêu cầu                 |
-| category        | string       | Không    | Lọc theo loại yêu cầu                       |
-| facilityId      | number       | Không    | Lọc theo cơ sở                              |
-| roomId          | number       | Không    | Lọc theo phòng                              |
-| assignedStaffId | number       | Không    | Lọc theo nhân sự được phân công             |
-| keyword         | string       | Không    | Tìm kiếm theo tiêu đề hoặc nội dung yêu cầu |
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "requestId": 101,
-        "title": "Máy lạnh không hoạt động",
-        "category": "MAINTENANCE",
-        "status": "NEW",
-        "tenant": {
-          "tenantId": 15,
-          "tenantCode": "NT000001",
-          "fullName": "Nguyen Van A"
-        },
-        "room": {
-          "roomId": 101,
-          "roomCode": "HL0101"
-        },
-        "facility": {
-          "facilityId": 1,
-          "facilityName": "Hoa Lac Facility"
-        },
-        "assignedStaffId": null,
-        "createdAt": "2026-06-11T09:00:00"
-      }
-    ],
-    "page": 0,
-    "size": 10,
-    "totalElements": 1,
-    "totalPages": 1
-  }
-}
-```
+### 4.2 Xem chi tiết yêu cầu
+* **URL:** `GET /manager/tickets/{id}`
 
 ### 4.3 Tiếp nhận yêu cầu
+* **URL:** `POST /manager/tickets/{id}/receive`
+* **Ràng buộc:** Chỉ cho phép tiếp nhận nếu yêu cầu ở trạng thái `NEW` hoặc `PENDING`.
 
-Endpoint
+### 4.4 Từ chối yêu cầu
+* **URL:** `POST /manager/tickets/{id}/reject`
+* **Form Parameters:** `reason` (Lý do từ chối - bắt buộc)
 
-```http
-PUT /api/v1/requests/{id}/receive
-```
+### 4.5 Đặt lịch hẹn xử lý
+* **URL:** `POST /manager/tickets/{id}/schedule`
+* **Form Parameters:** `appointmentDate` (Định dạng ngày giờ)
 
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": 101,
-    "status": "RECEIVED"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_REQUEST_STATUS",
-    "message": "Chỉ yêu cầu có trạng thái NEW mới được tiếp nhận"
-  }
-}
-```
-
-### 4.4 Phân công xử lý
-
-Endpoint
-
-```http
-PUT /api/v1/requests/{id}/assign
-```
-
-Request
-
-```json
-{
-  "staffId": 15
-}
-```
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": 101,
-    "staffId": 15,
-    "status": "ASSIGNED"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_REQUEST_STATUS",
-    "message": "Chỉ yêu cầu đã tiếp nhận mới được phân công"
-  }
-}
-```
-
-Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "STAFF_NOT_FOUND",
-    "message": "Không tìm thấy nhân sự được phân công"
-  }
-}
-```
-
-### 4.5 Cập nhật đang xử lý
-
-Endpoint
-
-```http
-PUT /api/v1/requests/{id}/start-processing
-```
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": 101,
-    "status": "IN_PROGRESS"
-  }
-}
-```
-
-Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "NOT_ASSIGNED_STAFF",
-    "message": "Nhân sự không được phân công không được phép cập nhật yêu cầu này"
-  }
-}
-```
-
-### 4.6 Cập nhật đã xử lý
-
-Endpoint
-
-```http
-PUT /api/v1/requests/{id}/resolve
-```
-
-Request
-
-```json
-{
-  "resolutionNote": "Đã kiểm tra và sửa lại máy lạnh"
-}
-```
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": 101,
-    "status": "RESOLVED"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "RESOLUTION_NOTE_REQUIRED",
-    "message": "Bắt buộc nhập nội dung xử lý"
-  }
-}
-```
-
-### 4.7 Từ chối yêu cầu
-
-Endpoint
-
-```http
-PUT /api/v1/requests/{id}/reject
-```
-
-Request
-
-```json
-{
-  "reason": "Không thuộc phạm vi hỗ trợ"
-}
-```
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": 101,
-    "status": "REJECTED"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "REJECTION_REASON_REQUIRED",
-    "message": "Bắt buộc nhập lý do từ chối"
-  }
-}
-```
-
-### 4.8 Xem chi tiết yêu cầu
-
-Endpoint
-
-```http
-GET /api/v1/requests/{id}
-```
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": 101,
-    "title": "Máy lạnh không hoạt động",
-    "description": "Máy lạnh không làm mát",
-    "category": "MAINTENANCE",
-    "status": "ASSIGNED",
-    "tenant": {
-      "tenantId": 15,
-      "tenantCode": "NT000001",
-      "fullName": "Nguyen Van A",
-      "phone": "0912345678"
-    },
-    "room": {
-      "roomId": 101,
-      "roomCode": "HL0101"
-    },
-    "facility": {
-      "facilityId": 1,
-      "facilityCode": "HL",
-      "facilityName": "Hoa Lac Facility"
-    },
-    "assignedStaff": {
-      "staffId": 15,
-      "fullName": "Tran Van B",
-      "role": "TECHNICIAN"
-    },
-    "attachmentUrls": [
-      "https://example.com/files/air-conditioner.jpg"
-    ],
-    "history": [
-      {
-        "status": "NEW",
-        "action": "CREATE_REQUEST",
-        "performedBy": "tenant01",
-        "performedAt": "2026-06-11T09:00:00",
-        "note": "Người thuê tạo yêu cầu"
-      },
-      {
-        "status": "RECEIVED",
-        "action": "RECEIVE_REQUEST",
-        "performedBy": "manager01",
-        "performedAt": "2026-06-11T09:10:00",
-        "note": "Ban quản lý tiếp nhận yêu cầu"
-      },
-      {
-        "status": "ASSIGNED",
-        "action": "ASSIGN_REQUEST",
-        "performedBy": "manager01",
-        "performedAt": "2026-06-11T09:20:00",
-        "note": "Phân công cho nhân sự kỹ thuật"
-      }
-    ],
-    "audit": {
-      "createdBy": "tenant01",
-      "createdAt": "2026-06-11T09:00:00",
-      "updatedBy": "manager01",
-      "updatedAt": "2026-06-11T09:20:00"
-    }
-  }
-}
-```
-
-Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "REQUEST_NOT_FOUND",
-    "message": "Không tìm thấy yêu cầu"
-  }
-}
-```
+### 4.6 Hoàn thành yêu cầu
+* **URL:** `POST /manager/tickets/{id}/complete`
+* **Enctype:** `multipart/form-data`
+* **Form Parameters:**
+  * `notes`: Ghi chú hoàn thành (bắt buộc)
+  * `after_images`: Các file ảnh thực tế sau khi sửa chữa (upload dạng Multipart)
 
 ## 5. Ràng buộc kỹ thuật (Technical Constraints)
 
-Thời gian phản hồi tối đa: 500ms tại p95.
-
-Danh sách yêu cầu phải hỗ trợ phân trang.
-
-Danh sách yêu cầu phải hỗ trợ lọc theo trạng thái, loại yêu cầu, cơ sở, phòng và nhân sự được phân công.
-
-Danh sách yêu cầu phải hỗ trợ tìm kiếm theo tiêu đề hoặc nội dung yêu cầu.
-
-Lịch sử xử lý yêu cầu phải được lưu trữ đầy đủ.
-
-Mọi thay đổi trạng thái phải được ghi nhận vào lịch sử xử lý và Audit Log.
-
-Chỉ người dùng có quyền phù hợp mới được tiếp nhận, phân công, từ chối hoặc cập nhật trạng thái yêu cầu.
-
-Chỉ nhân sự được phân công mới được cập nhật trạng thái xử lý yêu cầu.
-
-Không cho phép xóa cứng dữ liệu yêu cầu.
-
-File đính kèm nếu có phải được lưu dưới dạng URL hoặc đường dẫn file, không lưu trực tiếp nội dung file trong bảng request.
-
-Yêu cầu phải được liên kết với người thuê, phòng và cơ sở tại thời điểm tạo.
+* Dữ liệu yêu cầu được lưu trữ trong bảng `dbo.requests` trong cơ sở dữ liệu.
+* Manager chỉ có quyền xem và xử lý các yêu cầu liên quan đến cơ sở mình phụ trách. Việc kiểm tra quyền quản lý được thực hiện bằng cách đối chiếu trường `manager_id` của cơ sở chứa phòng của người thuê gửi yêu cầu.
+* Ảnh hoàn thành (`after_images`) tải lên qua form được xác thực định dạng đuôi file và kiểu MIME trước khi ghi vào thư mục `/uploads/requests/` và lưu tên file dạng UUID vào cột `attachment_urls2` (ngăn cách bởi dấu phẩy nếu có nhiều ảnh).
+* Dòng thời gian lịch sử xử lý (History timeline) được sinh động hóa từ dữ liệu lịch sử trạng thái của yêu cầu trong DB.
+* Hệ thống tuyệt đối không thực hiện xóa vật lý các bản ghi yêu cầu trong DB.
 
 ## 6. Phụ thuộc (Dependencies)
 
-* Quản lý Người thuê
-* Quản lý Phòng
-* Quản lý Cơ sở
-* Quản lý Nhân sự
-* Xác thực và Phân quyền
-* Audit Log
-* Quản lý File đính kèm nếu hệ thống có upload file
+* **Quản lý Cư dân (Tenants) & Phòng:** Cung cấp thông tin người gửi, tên phòng và cơ sở của yêu cầu.
+* **Quản lý Vận hành (Operators):** Dùng cho việc tiếp nhận hoặc gán xử lý yêu cầu hệ thống/chỉ số điện nước.
+* **Bộ xác thực file tải lên:** Để kiểm tra độ an toàn của tệp ảnh trước khi lưu trữ máy chủ.
+* **Audit Log:** Ghi log thao tác thay đổi trạng thái của Manager.
 
 ## 7. Quy tắc nghiệp vụ (Business Rules)
 
 ### BR-01
-
-Chỉ người thuê có tài khoản ACTIVE mới được gửi yêu cầu.
+Yêu cầu mới gửi lên từ cư dân mặc định có trạng thái ban đầu là `PENDING` hoặc `NEW`.
 
 ### BR-02
-
-Khi người thuê gửi yêu cầu, hệ thống phải tự động liên kết yêu cầu với phòng và cơ sở hiện tại của người thuê.
+Chỉ cho phép tiếp nhận yêu cầu khi trạng thái hiện tại là `PENDING` hoặc `NEW`. Các yêu cầu đã đóng (DONE, REJECTED, CANCELLED) không thể mở lại hay xử lý.
 
 ### BR-03
-
-Yêu cầu mới được tạo sẽ có trạng thái mặc định là NEW.
+Khi Manager cập nhật lịch hẹn xử lý sự cố thành công, hệ thống sẽ tự động chuyển đổi trạng thái yêu cầu sang `IN_PROGRESS`.
 
 ### BR-04
-
-Chỉ các yêu cầu có trạng thái NEW mới được tiếp nhận.
+Khi Manager từ chối yêu cầu, bắt buộc phải nhập lý do từ chối (`reason`). 
 
 ### BR-05
-
-Chỉ các yêu cầu có trạng thái RECEIVED mới được phân công xử lý.
-
-### BR-06
-
-Một yêu cầu chỉ được phân công cho một nhân sự tại cùng một thời điểm.
-
-### BR-07
-
-Chỉ nhân sự được phân công mới được cập nhật trạng thái xử lý yêu cầu.
-
-### BR-08
-
-Yêu cầu có trạng thái ASSIGNED mới được chuyển sang IN_PROGRESS.
-
-### BR-09
-
-Yêu cầu có trạng thái IN_PROGRESS mới được chuyển sang RESOLVED.
-
-### BR-10
-
-Khi từ chối yêu cầu, bắt buộc phải nhập lý do từ chối.
-
-### BR-11
-
-Mọi thay đổi trạng thái phải được lưu vào lịch sử xử lý.
-
-### BR-12
-
-Yêu cầu đã ở trạng thái REJECTED hoặc RESOLVED không được tiếp nhận hoặc phân công lại.
+Khi Manager xác nhận hoàn thành yêu cầu, bắt buộc phải nhập nội dung ghi chú kết quả sửa chữa (`notes`).
 
 ## 8. Định nghĩa trạng thái yêu cầu
 
-| Trạng thái  | Mô tả                                 |
-| ----------- | ------------------------------------- |
-| NEW         | Người thuê vừa tạo yêu cầu            |
-| RECEIVED    | Ban quản lý đã tiếp nhận yêu cầu      |
-| ASSIGNED    | Yêu cầu đã được phân công cho nhân sự |
-| IN_PROGRESS | Nhân sự đang xử lý yêu cầu            |
-| RESOLVED    | Yêu cầu đã được xử lý xong            |
-| REJECTED    | Yêu cầu bị từ chối                    |
+| Trạng thái | Ý nghĩa trong hệ thống |
+| --- | --- |
+| `NEW` / `PENDING` | Yêu cầu mới khởi tạo, chờ xử lý |
+| `RECEIVED` | Ban quản lý đã tiếp nhận yêu cầu |
+| `ASSIGNED` | Yêu cầu đã được phân phối cho nhân sự (áp dụng cho Operator) |
+| `IN_PROGRESS` | Ban quản lý đang tiến hành xử lý (đã cập nhật lịch hẹn) |
+| `DONE` | Yêu cầu đã được xử lý hoàn thành |
+| `REJECTED` | Yêu cầu bị Ban quản lý từ chối |
+| `CANCELLED` | Yêu cầu do Cư dân tự động hủy bỏ |
 
-Luồng trạng thái chính:
-
+Luồng chuyển đổi trạng thái chính của cư dân:
 ```text
-NEW → RECEIVED → ASSIGNED → IN_PROGRESS → RESOLVED
-```
-
-Luồng từ chối:
-
-```text
-NEW / RECEIVED → REJECTED
+NEW / PENDING → RECEIVED → IN_PROGRESS → DONE
 ```
 
 ## 9. Ngoài phạm vi (Out of Scope)
 
-* Tự động phân công nhân sự xử lý.
-* Theo dõi SLA xử lý yêu cầu.
-* Đánh giá mức độ hài lòng của người thuê.
-* Tích hợp Email hoặc SMS.
-* Báo cáo thống kê hiệu suất xử lý yêu cầu.
-* Quy trình nghiệm thu hoặc xác nhận hoàn thành từ phía người thuê.
-* Thanh toán chi phí sửa chữa.
-* Quản lý kho vật tư sửa chữa.
+* Tự động điều phối công việc/phân lịch thông minh cho nhân sự.
+* Đánh giá chất lượng xử lý của cư dân (Rating/Feedback).
+* Quản lý kho vật tư tiêu hao phục vụ sửa chữa.
+* Thanh toán chi phí sửa chữa dịch vụ trực tiếp trên trang yêu cầu.
