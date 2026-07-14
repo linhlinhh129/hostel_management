@@ -48,10 +48,7 @@ THE SYSTEM SHALL trả về lỗi VALIDATION_ERROR.
 WHEN Admin chọn đối tượng nhận khác "ALL" 
 THE SYSTEM SHALL trả về lỗi VALIDATION_ERROR.
 
-WHEN hệ thống không có user đang hoạt động 
-THE SYSTEM SHALL trả về lỗi NO_RECIPIENT_FOUND.
-
-WHEN tiêu đề vượt quá 100 ký tự
+WHEN tiêu đề vượt quá 255 ký tự
 THE SYSTEM SHALL trả về lỗi TITLE_TOO_LONG.
 
 WHEN nội dung thông báo vượt quá 1000 ký tự
@@ -104,89 +101,209 @@ THE SYSTEM SHALL trả về lỗi UNAUTHORIZED.
 WHILE người dùng đã được xác thực nhưng không có quyền quản lý thông báo
 THE SYSTEM SHALL trả về lỗi FORBIDDEN.
 
-## 4. Servlet Contract
+## 4. API Contract
 
-### 4.1 Servlet Entry Point
+### Tạo thông báo
 
-| Thuộc tính | Giá trị |
-|---|---|
-| **Servlet** | `AdminNotificationServlet` |
-| **URL Pattern** | `GET /admin/notifications` — danh sách |
-| **URL Pattern** | `GET /admin/notifications/create` — form tạo |
-| **URL Pattern** | `POST /admin/notifications/create` — lưu tạo mới |
-| **URL Pattern** | `GET /admin/notifications/{id}` — chi tiết |
-| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
+Endpoint
 
----
+```http
+POST /api/v1/notifications
+```
 
-### 4.2 Request Attributes — Danh sách (list.jsp)
+Request
 
-| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
-|---|---|---|---|
-| `page` | `PageDTO<Notification>` | `NotificationDAO.findAll(keyword, page, 10)` | Dữ liệu phân trang, `PAGE_SIZE = 10` |
-| `keyword` | `String` | Query param `keyword` | Giữ lại giá trị tìm kiếm trên form |
+```json
+{
+  "title": "Thông báo bảo trì thang máy",
+  "content": "Thang máy A sẽ bảo trì từ 08:00 đến 12:00 ngày 01/01/2026.",
+  "recipientType": "ALL"
+}
+```
 
-**Lưu ý:** `NotificationDAO.findAll()` chỉ lấy thông báo có `target_type = 'ALL'`.
+Response 201
 
----
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "code": "NTF-ALL-001",
+    "title": "Thông báo bảo trì thang máy"
+  }
+}
+```
 
-### 4.3 Request Attributes — Chi tiết (detail.jsp)
+Response 400
 
-| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
-|---|---|---|---|
-| `notification` | `Notification` | `NotificationDAO.findById(id)` | Thông tin đầy đủ thông báo |
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Dữ liệu không hợp lệ"
+  }
+}
+```
 
----
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TITLE_TOO_LONG",
+    "message": "Tiêu đề không được vượt quá 255 ký tự"
+  }
+}
+```
 
-### 4.4 Request Attributes — Form tạo (create.jsp)
+```json
+{
+  "success": false,
+  "error": {
+    "code": "CONTENT_TOO_LONG",
+    "message": "Nội dung không được vượt quá 1000 ký tự"
+  }
+}
+```
 
-| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
-|---|---|---|---|
-| `errorMessage` | `String` | `ValidationException.getMessage()` | Thông báo lỗi khi submit thất bại |
+Response 401
 
----
+```json
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Vui lòng đăng nhập để tiếp tục"
+  }
+}
+```
 
-### 4.5 Validation — POST /admin/notifications/create
+Response 403
 
-| Form param | Điều kiện hợp lệ | Lỗi ném ra |
-|---|---|---|
-| `title` | Không rỗng | `ValidationException` |
-| `title` | Tối đa 255 ký tự | `ValidationException` |
-| `content` | Không rỗng | `ValidationException` |
-| `content` | Tối đa 1000 ký tự | `ValidationException` |
-| `recipientType` | Phải là `"ALL"` | `ValidationException` |
+```json
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Bạn không có quyền truy cập chức năng này"
+  }
+}
+```
 
-**Khi tạo thành công:** mã thông báo tự động sinh qua `NotificationDAO.generateCode("ALL")`, format `NTF-ALL-001`, status = `SENT`, `createdBy` = ID user hiện tại từ session.
+### Danh sách thông báo
 
----
+Endpoint
 
-### 4.6 Notification Model
+```http
+GET /api/v1/notifications
+```
 
-| Field | Type | Mô tả |
-|---|---|---|
-| `id` | `int` | ID bản ghi (`notification_id`) |
-| `code` | `String` | Mã tự sinh (`NTF-ALL-001`) |
-| `title` | `String` | Tiêu đề |
-| `content` | `String` | Nội dung |
-| `targetType` | `String` | Loại đối tượng (`ALL`) |
-| `facilityId` | `Integer` | ID cơ sở (null với loại `ALL`) |
-| `roomId` | `Integer` | ID phòng (null với loại `ALL`) |
-| `status` | `String` | Trạng thái (`DRAFT`, `SENT`) |
-| `createdBy` | `Integer` | `user_id` người tạo |
-| `createdByName` | `String` | `full_name` người tạo (từ JOIN) |
-| `createdAt` | `LocalDateTime` | Thời gian tạo |
-| `sentAt` | `LocalDateTime` | Thời gian gửi |
+Query Parameters
 
----
+| Tham số | Kiểu | Bắt buộc | Mô tả |
+|---------|------|----------|-------|
+| keyword | string | Không | Tìm kiếm theo tiêu đề |
+| page | number | Không | Số trang (0-based, mặc định 0) |
+| size | number | Không | Số bản ghi/trang (mặc định 10) |
 
-### 4.7 Xử lý lỗi
+Response 200
 
-| Tình huống | Hành vi |
-|---|---|
-| Chưa đăng nhập | Redirect về `/login` (xử lý bởi `BaseServlet`) |
-| Role không phải ADMIN | HTTP 403 Forbidden |
-| `{id}` không tồn tại | `NotFoundException` → HTTP 404 |
-| Validation thất bại (POST) | Forward về `create.jsp` với `errorMessage` |
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "code": "NTF-ALL-001",
+        "title": "Thông báo bảo trì thang máy",
+        "recipientType": "ALL",
+        "createdAt": "28/06/2026 09:00:00",
+        "createdBy": "Admin"
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+```
+
+Response 200 (không có dữ liệu)
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [],
+    "page": 0,
+    "size": 10,
+    "totalElements": 0,
+    "totalPages": 0
+  }
+}
+```
+
+### Chi tiết thông báo
+
+Endpoint
+
+```http
+GET /api/v1/notifications/{notificationId}
+```
+
+Response 200
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "code": "NTF-ALL-001",
+    "title": "Thông báo bảo trì thang máy",
+    "content": "Nội dung thông báo",
+    "createdAt": "28/06/2026 09:00:00",
+    "createdBy": "Admin",
+    "recipientType": "ALL"
+  }
+}
+```
+Response 401
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Vui lòng đăng nhập để tiếp tục"
+  }
+}
+```
+
+Response 403
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Bạn không có quyền truy cập chức năng này"
+  }
+}
+```
+
+Response 404
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NOTIFICATION_NOT_FOUND",
+    "message": "Không tìm thấy thông báo"
+  }
+}
+```
 
 ## 5. Technical Constraints
 
