@@ -22,10 +22,9 @@ import java.util.Map;
         "/manager/tickets",
         "/manager/tickets/*"
 })
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
-        maxFileSize = 1024 * 1024 * 10,       // 10MB
-        maxRequestSize = 1024 * 1024 * 50     // 50MB
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50 // 50MB
 )
 public class ManagerTicketsServlet extends BaseServlet {
 
@@ -110,7 +109,8 @@ public class ManagerTicketsServlet extends BaseServlet {
         int pageSize = 10;
 
         int totalTickets = requestService.countManagerTickets(currentUser.getId(), type, status, keyword);
-        List<Map<String, Object>> tickets = requestService.getManagerTickets(currentUser.getId(), type, status, keyword, page, pageSize);
+        List<Map<String, Object>> tickets = requestService.getManagerTickets(currentUser.getId(), type, status, keyword,
+                page, pageSize);
 
         int totalPages = totalTickets > 0 ? (int) Math.ceil((double) totalTickets / pageSize) : 1;
 
@@ -243,7 +243,8 @@ public class ManagerTicketsServlet extends BaseServlet {
 
         String ipAddress = req.getRemoteAddr();
         try {
-            boolean success = requestService.rescheduleTicket(ticketId, newLdt, reason.trim(), currentUser.getId(), ipAddress);
+            boolean success = requestService.rescheduleTicket(ticketId, newLdt, reason.trim(), currentUser.getId(),
+                    ipAddress);
             if (success) {
                 setFlashMessage(req, "success", "Thay đổi lịch hẹn thành công!");
             } else {
@@ -260,7 +261,8 @@ public class ManagerTicketsServlet extends BaseServlet {
         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
     }
 
-    private void handleComplete(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleComplete(int ticketId, HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         String notes = req.getParameter("notes");
         if (notes == null || notes.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Ghi chú hoàn thành không được để trống.");
@@ -270,7 +272,8 @@ public class ManagerTicketsServlet extends BaseServlet {
 
         List<String> fileNames = new ArrayList<>();
         try {
-            String uploadPath = req.getServletContext().getRealPath("") + java.io.File.separator + "uploads" + java.io.File.separator + "requests";
+            String uploadPath = req.getServletContext().getRealPath("") + java.io.File.separator + "uploads"
+                    + java.io.File.separator + "requests";
             java.io.File uploadDir = new java.io.File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
@@ -282,8 +285,9 @@ public class ManagerTicketsServlet extends BaseServlet {
                     String contentType = part.getContentType();
 
                     if (!com.quanlyphongtro.util.ValidationUtil.isValidFileType(originalFileName) ||
-                        !com.quanlyphongtro.util.ValidationUtil.isValidMimeType(contentType)) {
-                        setFlashMessage(req, "danger", "File upload không hợp lệ. Chỉ chấp nhận các định dạng ảnh JPG, PNG hoặc tài liệu PDF.");
+                            !com.quanlyphongtro.util.ValidationUtil.isValidMimeType(contentType)) {
+                        setFlashMessage(req, "danger",
+                                "File upload không hợp lệ. Chỉ chấp nhận các định dạng ảnh JPG, PNG hoặc tài liệu PDF.");
                         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
                         return;
                     }

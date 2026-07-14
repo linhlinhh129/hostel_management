@@ -50,7 +50,8 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public boolean rejectRequest(int requestId, int operatorId, String reason) {
-        // Reject request, keeping staff ID but updating status to REJECTED and adding reason
+        // Reject request, keeping staff ID but updating status to REJECTED and adding
+        // reason
         return requestDAO.updateRequestStatus(requestId, "REJECTED", "PENDING", operatorId, reason);
     }
 
@@ -70,7 +71,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<java.util.Map<String, Object>> getManagerTickets(int managerId, String type, String status, String keyword, int page, int pageSize) {
+    public List<java.util.Map<String, Object>> getManagerTickets(int managerId, String type, String status,
+            String keyword, int page, int pageSize) {
         return requestDAO.getManagerTickets(managerId, type, status, keyword, (page - 1) * pageSize, pageSize);
     }
 
@@ -199,7 +201,8 @@ public class RequestServiceImpl implements RequestService {
                 h3.put("action", "Đã hoàn thành");
                 h3.put("performedAt", updatedAt);
                 h3.put("performedBy", "Ban Quản lý");
-                h3.put("note", (rejectionReason != null && !rejectionReason.trim().isEmpty()) ? rejectionReason : "Yêu cầu đã được xử lý hoàn tất.");
+                h3.put("note", (rejectionReason != null && !rejectionReason.trim().isEmpty()) ? rejectionReason
+                        : "Yêu cầu đã được xử lý hoàn tất.");
                 h3.put("sequence", 3);
                 h3.put("performedAtRaw", ticket.get("updatedAtRaw"));
                 historyList.add(h3);
@@ -208,7 +211,9 @@ public class RequestServiceImpl implements RequestService {
                 h2.put("action", "Từ chối yêu cầu");
                 h2.put("performedAt", updatedAt);
                 h2.put("performedBy", "Ban Quản lý");
-                h2.put("note", "Lý do: " + ((rejectionReason != null && !rejectionReason.trim().isEmpty()) ? rejectionReason : "Không có lý do cụ thể."));
+                h2.put("note",
+                        "Lý do: " + ((rejectionReason != null && !rejectionReason.trim().isEmpty()) ? rejectionReason
+                                : "Không có lý do cụ thể."));
                 h2.put("sequence", 2);
                 h2.put("performedAtRaw", ticket.get("updatedAtRaw"));
                 historyList.add(h2);
@@ -233,12 +238,14 @@ public class RequestServiceImpl implements RequestService {
             hn.put("performedAt", r.get("createdAt"));
             hn.put("performedAtRaw", r.get("createdAtRaw"));
             hn.put("performedBy", r.get("performerName"));
-            hn.put("note", "Lịch mới: " + r.get("newValue") + " (Lịch cũ: " + r.get("oldValue") + "). Lý do: " + r.get("comment"));
+            hn.put("note", "Lịch mới: " + r.get("newValue") + " (Lịch cũ: " + r.get("oldValue") + "). Lý do: "
+                    + r.get("comment"));
             hn.put("sequence", rescheduleSeq++);
             historyList.add(hn);
         }
 
-        // Sort historyList chronologically using raw timestamps and stable sequence numbers
+        // Sort historyList chronologically using raw timestamps and stable sequence
+        // numbers
         java.util.Collections.sort(historyList, (a, b) -> {
             Object rawA = a.get("performedAtRaw");
             Object rawB = b.get("performedAtRaw");
@@ -246,11 +253,15 @@ public class RequestServiceImpl implements RequestService {
             java.sql.Timestamp tsA = null;
             java.sql.Timestamp tsB = null;
 
-            if (rawA instanceof java.sql.Timestamp) tsA = (java.sql.Timestamp) rawA;
-            else if (rawA instanceof java.time.LocalDateTime) tsA = java.sql.Timestamp.valueOf((java.time.LocalDateTime) rawA);
+            if (rawA instanceof java.sql.Timestamp)
+                tsA = (java.sql.Timestamp) rawA;
+            else if (rawA instanceof java.time.LocalDateTime)
+                tsA = java.sql.Timestamp.valueOf((java.time.LocalDateTime) rawA);
 
-            if (rawB instanceof java.sql.Timestamp) tsB = (java.sql.Timestamp) rawB;
-            else if (rawB instanceof java.time.LocalDateTime) tsB = java.sql.Timestamp.valueOf((java.time.LocalDateTime) rawB);
+            if (rawB instanceof java.sql.Timestamp)
+                tsB = (java.sql.Timestamp) rawB;
+            else if (rawB instanceof java.time.LocalDateTime)
+                tsB = java.sql.Timestamp.valueOf((java.time.LocalDateTime) rawB);
 
             if (tsA != null && tsB != null) {
                 int cmp = tsA.compareTo(tsB);
@@ -280,7 +291,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     private boolean isClosedStatus(String status) {
-        return "REJECTED".equals(status) || "RESOLVED".equals(status) || "DONE".equals(status) || "CANCELLED".equals(status);
+        return "REJECTED".equals(status) || "RESOLVED".equals(status) || "DONE".equals(status)
+                || "CANCELLED".equals(status);
     }
 
     @Override
@@ -310,6 +322,10 @@ public class RequestServiceImpl implements RequestService {
         if (status == null || isClosedStatus(status)) {
             return false;
         }
+        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        if (ticket != null && "OPERATOR".equals(ticket.get("senderRole"))) {
+            return false; // Manager cannot schedule Operator tickets
+        }
         return requestDAO.scheduleTicket(ticketId, scheduleTime);
     }
 
@@ -319,14 +335,23 @@ public class RequestServiceImpl implements RequestService {
         if (status == null || isClosedStatus(status)) {
             return false;
         }
+        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        if (ticket != null && "OPERATOR".equals(ticket.get("senderRole"))) {
+            return false; // Manager cannot complete Operator tickets
+        }
         return requestDAO.completeTicket(ticketId, notes, attachmentUrls2);
     }
 
     @Override
-    public boolean rescheduleTicket(int ticketId, java.time.LocalDateTime newTime, String reason, int managerId, String ipAddress) throws Exception {
+    public boolean rescheduleTicket(int ticketId, java.time.LocalDateTime newTime, String reason, int managerId,
+            String ipAddress) throws Exception {
         java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
         if (ticket == null) {
             return false;
+        }
+
+        if ("OPERATOR".equals(ticket.get("senderRole"))) {
+            throw new IllegalStateException("Manager không có quyền dời lịch hẹn sự cố của Operator.");
         }
 
         int ownerManagerId = (Integer) ticket.get("managerId");
@@ -351,15 +376,14 @@ public class RequestServiceImpl implements RequestService {
             if (success) {
                 // Write reschedule trace to audit log
                 auditLogDAO.logWithComment(
-                    "requests",
-                    ticketId,
-                    "RESCHEDULE",
-                    oldTimeStr,
-                    newTimeStr,
-                    ipAddress,
-                    managerId,
-                    reason
-                );
+                        "requests",
+                        ticketId,
+                        "RESCHEDULE",
+                        oldTimeStr,
+                        newTimeStr,
+                        ipAddress,
+                        managerId,
+                        reason);
                 return true;
             }
         } catch (Exception e) {
