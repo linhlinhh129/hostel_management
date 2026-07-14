@@ -3,455 +3,158 @@
 **Trạng thái:** Draft
 **Người viết:** [Tên]
 **Người duyệt:** [Tên]
-**Ngày:** [YYYY-MM-DD]
+**Ngày:** 2026-07-13
 **Độ ưu tiên:** High
 
 ## 1. Bối cảnh nghiệp vụ
 
-Tính năng Quản lý Người thuê cho phép hệ thống quản lý thông tin người thuê đang đại diện cho một phòng thuộc cơ sở nhà trọ. Người thuê trong feature này là người có tài khoản đăng nhập và được gán trực tiếp với một phòng cụ thể.
+Tính năng Quản lý Người thuê cho phép Manager quản lý thông tin các người thuê chính đại diện cho các phòng thuộc cơ sở được giao. Người thuê chính là người có tài khoản đăng nhập hệ thống, đứng tên trên hợp đồng thuê và được liên kết với một phòng cụ thể.
 
-Feature này hỗ trợ mục tiêu kinh doanh là số hóa thông tin cư trú, giúp Ban quản lý theo dõi chính xác phòng nào đang có người thuê, người thuê đại diện là ai và trạng thái thuê hiện tại của từng phòng.
+Hệ thống không cho phép Manager tạo mới trực tiếp tài khoản người thuê từ phân hệ này. Thay vào đó, tài khoản người thuê bắt buộc phải được khởi tạo đi kèm với thông tin hợp đồng thuê tại phân hệ Hợp đồng (`/manager/contracts`). Mỗi phòng tại một thời điểm chỉ có tối đa một người thuê chính ở trạng thái ACTIVE.
 
-Khi tạo mới người thuê, hệ thống bắt buộc phải gán người thuê vào một phòng đang hoạt động. Mỗi phòng chỉ được có một người thuê ở trạng thái ACTIVE tại một thời điểm. Những người ở cùng người thuê chính sẽ được quản lý trong feature Quản lý Người phụ thuộc và không có tài khoản đăng nhập riêng.
-
-Mỗi người thuê sẽ có một mã người thuê riêng do hệ thống tự động sinh để phục vụ việc tìm kiếm, tra cứu và quản lý dữ liệu.
+Ngoài ra, Manager có quyền xem danh sách, lọc và tìm kiếm người thuê, cập nhật thông tin cá nhân, khóa/mở khóa tài khoản, kết thúc hợp đồng thuê (trả phòng) và thực hiện xóa mềm tài khoản khi ngừng thuê.
 
 ## 2. Câu chuyện người dùng
 
 ### Story 1 (Luồng chính)
 
-Là Manager, tôi muốn tạo tài khoản người thuê và gán người thuê vào một phòng để hệ thống có thể quản lý người thuê đại diện cho phòng đó.
+Là Manager, tôi muốn xem danh sách và tìm kiếm người thuê ở các cơ sở của tôi để dễ dàng kiểm soát thông tin cư dân.
 
 ### Story 2 (Luồng chính)
 
-Là Manager, tôi muốn xem thông tin chi tiết người thuê để có thể theo dõi thông tin cá nhân, tài khoản đăng nhập, thông tin phòng và danh sách người phụ thuộc liên quan.
+Là Manager, tôi muốn xem hồ sơ chi tiết của người thuê để kiểm tra thông tin cá nhân, phòng đang ở, hợp đồng hiện tại và danh sách người phụ thuộc ở cùng phòng.
 
 ### Story 3 (Luồng chính)
 
-Là Manager, tôi muốn xem và tìm kiếm danh sách người thuê để có thể nhanh chóng tra cứu thông tin người thuê theo mã người thuê, số điện thoại, phòng, cơ sở hoặc trạng thái.
+Là Manager, tôi muốn chỉnh sửa và cập nhật thông tin cá nhân của người thuê (họ tên, email, SĐT, số định danh CCCD/CMND, giới tính, ngày sinh, địa chỉ thường trú) để đảm bảo dữ liệu luôn chính xác.
 
-### Story 4 (Trường hợp ngoại lệ)
+### Story 4 (Luồng chính)
 
-Là Manager, khi một phòng đã có người thuê đang ACTIVE, tôi muốn hệ thống ngăn không cho tạo thêm tài khoản người thuê khác cho phòng đó.
+Là Manager, tôi muốn khóa hoặc mở khóa tài khoản đăng nhập của người thuê để tạm ngưng truy cập của họ khi cần thiết hoặc khôi phục lại quyền truy cập sau khi xử lý vi phạm.
 
-### Story 5 (Trường hợp ngoại lệ)
+### Story 5 (Luồng chính)
 
-Là Manager, khi người thuê đã kết thúc thời gian thuê, tôi muốn đánh dấu người thuê là không còn hoạt động và vô hiệu hóa tài khoản đăng nhập mà không xóa dữ liệu lịch sử.
+Là Manager, khi người thuê trả phòng, tôi muốn thực hiện hành động kết thúc thuê để giải phóng phòng cho người khác thuê, đồng thời đưa tài khoản người thuê đó về trạng thái lưu trữ lịch sử cư trú.
+
+### Story 6 (Luồng chính)
+
+Là Manager, đối với các người thuê đã ngừng thuê, tôi muốn thực hiện xóa mềm họ khỏi danh sách hiển thị để giữ màn hình gọn gàng nhưng vẫn lưu lịch sử trong cơ sở dữ liệu.
+
+### Story 7 (Trường hợp ngoại lệ)
+
+Là Manager, khi tôi cố tạo trực tiếp người thuê từ phân hệ này, tôi muốn hệ thống hiển thị thông báo yêu cầu thực hiện thông qua chức năng tạo Hợp đồng.
 
 ## 3. Tiêu chí chấp nhận (EARS)
 
-### AC-01 Tạo người thuê và gán phòng
+### AC-01 Ngăn chặn tạo trực tiếp người thuê
 
-KHI Manager gửi biểu mẫu tạo người thuê với thông tin hợp lệ và đã chọn phòng
-HỆ THỐNG PHẢI tạo bản ghi người thuê mới, tự động sinh mã người thuê, tạo tài khoản đăng nhập, gán người thuê vào phòng đã chọn và trả về phản hồi thành công.
+KHI Manager cố truy cập trang tạo mới người thuê trực tiếp
+HỆ THỐNG PHẢI hiển thị thông báo yêu cầu tạo thông qua chi tiết hợp đồng và chuyển hướng đến trang Quản lý Hợp đồng.
 
-### AC-02 Sinh mã người thuê
-
-KHI hệ thống tạo mới người thuê
-HỆ THỐNG PHẢI tự động sinh một mã người thuê duy nhất.
-
-Mã người thuê không được phép chỉnh sửa thủ công.
-
-### AC-03 Kiểm tra các trường bắt buộc
-
-KHI Manager gửi biểu mẫu thiếu các trường bắt buộc
-HỆ THỐNG PHẢI từ chối yêu cầu và hiển thị lỗi kiểm tra dữ liệu.
-
-Các trường bắt buộc bao gồm:
-
-* Họ và tên
-* Số điện thoại
-* Số CCCD/CMND
-* Email đăng nhập
-* Phòng
-
-### AC-04 Kiểm tra phòng hợp lệ
-
-KHI Manager chọn phòng cho người thuê
-HỆ THỐNG PHẢI kiểm tra phòng được chọn đang ở trạng thái ACTIVE.
-
-### AC-05 Kiểm tra phòng đã có người thuê
-
-KHI phòng được chọn đã có người thuê ở trạng thái ACTIVE
-HỆ THỐNG PHẢI ngăn không cho tạo thêm người thuê mới cho phòng đó và trả về phản hồi lỗi.
-
-### AC-06 Xem danh sách người thuê
+### AC-02 Xem danh sách người thuê
 
 KHI Manager mở trang danh sách người thuê
-HỆ THỐNG PHẢI hiển thị danh sách người thuê có phân trang.
+HỆ THỐNG PHẢI hiển thị danh sách người thuê thuộc cơ sở được quản lý kèm phân trang (10 bản ghi/trang). 
 
-Danh sách hỗ trợ lọc theo:
+Giao diện hỗ trợ bộ lọc và tìm kiếm:
+* `keyword`: Tìm theo tên hoặc mã người thuê.
+* `status`: Lọc theo trạng thái cư trú (`ACTIVE`, `LOCKED`, `INACTIVE`).
 
-* Từ khóa
-* Trạng thái người thuê
-* Phòng
-* Cơ sở
-
-### AC-07 Xem chi tiết người thuê
+### AC-03 Xem chi tiết người thuê
 
 KHI Manager mở trang chi tiết người thuê
-HỆ THỐNG PHẢI hiển thị:
+HỆ THỐNG PHẢI hiển thị đầy đủ thông tin cá nhân, thông tin phòng và cơ sở, thông tin hợp đồng liên quan, danh sách người phụ thuộc hiện tại, và các nút chức năng tương ứng với trạng thái (Sửa, Khóa/Mở khóa, Kết thúc thuê, Xóa mềm).
 
-* Thông tin người thuê
-* Mã người thuê
-* Thông tin tài khoản đăng nhập
-* Thông tin phòng hiện tại
-* Thông tin cơ sở
-* Danh sách người phụ thuộc
-* Trạng thái thuê
-* Thông tin audit
+### AC-04 Cập nhật thông tin người thuê
 
-### AC-08 Kết thúc thuê
+KHI Manager cập nhật thông tin người thuê với dữ liệu hợp lệ qua biểu mẫu chỉnh sửa
+HỆ THỐNG PHẢI lưu các thông tin thay đổi vào bảng `dbo.users`, ghi nhận log cập nhật và hiển thị thông báo thành công.
 
-KHI Manager đánh dấu người thuê đã kết thúc thuê
-HỆ THỐNG PHẢI chuyển trạng thái người thuê thành INACTIVE, vô hiệu hóa tài khoản đăng nhập của người thuê và giữ lại dữ liệu lịch sử.
+### AC-05 Khóa tài khoản người thuê
 
-### AC-09 Phân quyền
+KHI Manager thực hiện hành động khóa tài khoản của người thuê đang `ACTIVE`
+HỆ THỐNG PHẢI cập nhật trạng thái tài khoản thành `LOCKED`, ngăn không cho người thuê đăng nhập hệ thống và ghi nhận vào Audit Log.
 
-TRONG KHI người dùng không có quyền quản lý người thuê
-HỆ THỐNG PHẢI từ chối truy cập vào các chức năng quản lý người thuê.
+### AC-06 Mở khóa tài khoản người thuê
+
+KHI Manager mở khóa tài khoản của người thuê đang bị `LOCKED`
+HỆ THỐNG PHẢI khôi phục trạng thái tài khoản về `ACTIVE`, reset bộ đếm số lần đăng nhập sai của tài khoản đó và ghi nhận vào Audit Log.
+
+### AC-07 Kết thúc thuê (Trả phòng)
+
+KHI Manager xác nhận kết thúc hợp đồng thuê của một người thuê `ACTIVE` và nhập ngày kết thúc cùng lý do trả phòng
+HỆ THỐNG PHẢI cập nhật trạng thái người thuê thành `INACTIVE`, giải phóng phòng tương ứng (gỡ liên kết `tenant_id` tại phòng), vô hiệu hóa tài khoản đăng nhập của người thuê nhưng vẫn giữ nguyên dữ liệu lịch sử để tra cứu.
+
+### AC-08 Xóa mềm người thuê
+
+KHI Manager thực hiện xóa người thuê đã ở trạng thái `INACTIVE`
+HỆ THỐNG PHẢI thực hiện xóa mềm bằng cách cập nhật trường `deleted_at = GETDATE()` trong cơ sở dữ liệu để ẩn tài khoản khỏi các danh sách hoạt động.
 
 ## 4. Hợp đồng API
 
-### 4.1 Tạo người thuê
+Mọi hành động được xử lý thông qua [ManagerTenantsServlet.java](file:///d:/Ki_5/hostel_management/src/main/java/com/quanlyphongtro/controller/manager/ManagerTenantsServlet.java):
 
-Endpoint
-
-```http
-POST /api/v1/tenants
-```
-
-Request
-
-```json
-{
-  "fullName": "Nguyen Van A",
-  "phone": "0912345678",
-  "identityNumber": "001203000001",
-  "email": "tenant01@example.com",
-  "roomId": 101
-}
-```
-
-Response 201
-
-```json
-{
-  "success": true,
-  "data": {
-    "tenantId": 15,
-    "tenantCode": "TEN00015",
-    "fullName": "Nguyen Van A",
-    "email": "tenant01@example.com",
-    "roomId": 101,
-    "status": "ACTIVE",
-    "accountStatus": "ACTIVE"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "TENANT_VALIDATION_ERROR",
-    "message": "Thông tin người thuê không hợp lệ"
-  }
-}
-```
-
-Response 400 - Phòng đã có người thuê
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ROOM_ALREADY_HAS_ACTIVE_TENANT",
-    "message": "Phòng được chọn đã có người thuê đang hoạt động"
-  }
-}
-```
-
-Response 400 - Phòng không hoạt động
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ROOM_NOT_ACTIVE",
-    "message": "Không thể gán người thuê vào phòng không hoạt động"
-  }
-}
-```
-
-Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED"
-  }
-}
-```
-
-Response 403
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Người dùng không có quyền quản lý người thuê"
-  }
-}
-```
+### 4.1 Tạo người thuê trực tiếp (Bị chặn)
+* **URL:** `GET /manager/tenants/create` hoặc `POST /manager/tenants/create`
+* **Redirect:** Quay về `/manager/contracts` kèm thông báo flash báo lỗi.
 
 ## 4.2 Lấy danh sách người thuê
-
-Endpoint
-
-```http
-GET /api/v1/tenants?page=0&size=10&keyword=Nguyen&status=ACTIVE&facilityId=1&roomId=101
-```
-
-Tham số truy vấn
-
-| Trường     | Kiểu dữ liệu | Bắt buộc | Mô tả                                                                               |
-| ---------- | ------------ | -------- | ----------------------------------------------------------------------------------- |
-| page       | number       | Không    | Số trang                                                                            |
-| size       | number       | Không    | Số lượng bản ghi trên một trang                                                     |
-| keyword    | string       | Không    | Tìm kiếm theo tên người thuê, mã người thuê, email, số điện thoại hoặc số CCCD/CMND |
-| status     | string       | Không    | ACTIVE hoặc INACTIVE                                                                |
-| facilityId | number       | Không    | Lọc theo cơ sở                                                                      |
-| roomId     | number       | Không    | Lọc theo phòng                                                                      |
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "tenantId": 15,
-        "tenantCode": "TEN00015",
-        "fullName": "Nguyen Van A",
-        "phone": "0912345678",
-        "identityNumber": "001203000001",
-        "email": "tenant01@example.com",
-        "roomId": 101,
-        "roomCode": "HL0101",
-        "facilityId": 1,
-        "facilityName": "Hoa Lac Facility",
-        "status": "ACTIVE",
-        "accountStatus": "ACTIVE"
-      }
-    ],
-    "page": 0,
-    "size": 10,
-    "totalElements": 1,
-    "totalPages": 1
-  }
-}
-```
+* **URL:** `GET /manager/tenants`
+* **Query Parameters:**
+  * `keyword`: Từ khóa tìm kiếm theo họ tên hoặc mã người thuê.
+  * `status`: Trạng thái cần lọc (`ACTIVE`, `LOCKED`, `INACTIVE`).
+  * `page`: Trang hiện tại (mặc định trang 1).
 
 ## 4.3 Lấy chi tiết người thuê
-
-Endpoint
-
-```http
-GET /api/v1/tenants/{tenantId}
-```
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "tenantId": 15,
-    "tenantCode": "TEN00015",
-    "fullName": "Nguyen Van A",
-    "phone": "0912345678",
-    "identityNumber": "001203000001",
-    "email": "tenant01@example.com",
-    "status": "ACTIVE",
-    "account": {
-      "userId": 20,
-      "email": "tenant01@example.com",
-      "role": "TENANT",
-      "accountStatus": "ACTIVE"
-    },
-    "room": {
-      "roomId": 101,
-      "roomCode": "HL0101",
-      "floor": 1,
-      "roomNumber": 1
-    },
-    "facility": {
-      "facilityId": 1,
-      "facilityCode": "HL",
-      "facilityName": "Hoa Lac Facility"
-    },
-    "dependents": [
-      {
-        "dependentId": 1,
-        "fullName": "Nguyen Van B",
-        "relationship": "Brother",
-        "phone": "0987654321"
-      }
-    ],
-    "audit": {
-      "createdBy": "manager01",
-      "createdAt": "2026-06-11T09:00:00",
-      "updatedBy": "manager01",
-      "updatedAt": "2026-06-11T09:30:00"
-    }
-  }
-}
-```
-
-Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "TENANT_NOT_FOUND",
-    "message": "Không tìm thấy người thuê"
-  }
-}
-```
+* **URL:** `GET /manager/tenants/{id}`
 
 ## 4.4 Kết thúc thuê
+* **URL:** `POST /manager/tenants/{id}/end-rental`
+* **Request Parameters:**
+  * `endDate`: Ngày kết thúc thuê (bắt buộc).
+  * `reason`: Ghi chú lý do kết thúc thuê.
+* **Redirect:** Chuyển hướng về trang chi tiết người thuê `/manager/tenants/{id}` kèm thông báo flash.
 
-Endpoint
+### 4.5 Cập nhật thông tin cá nhân
+* **URL:** `POST /manager/tenants/{id}/edit`
+* **Request Parameters:** `fullName` (bắt buộc), `email` (bắt buộc), `phone` (bắt buộc), `identityNumber` (bắt buộc), `gender`, `dob`, `permanentAddress`.
 
-```http
-PATCH /api/v1/tenants/{tenantId}/end-rental
-```
+### 4.6 Khóa tài khoản
+* **URL:** `POST /manager/tenants/{id}/lock`
 
-Request
+### 4.7 Mở khóa tài khoản
+* **URL:** `POST /manager/tenants/{id}/unlock`
 
-```json
-{
-  "endDate": "2026-06-11",
-  "reason": "Tenant moved out"
-}
-```
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "tenantId": 15,
-    "tenantCode": "TEN00015",
-    "fullName": "Nguyen Van A",
-    "status": "INACTIVE",
-    "accountStatus": "DISABLED",
-    "endDate": "2026-06-11"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "TENANT_ALREADY_INACTIVE",
-    "message": "Người thuê đã kết thúc thuê trước đó"
-  }
-}
-```
-
-Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "TENANT_NOT_FOUND",
-    "message": "Không tìm thấy người thuê"
-  }
-}
-```
+### 4.8 Xóa mềm người thuê
+* **URL:** `POST /manager/tenants/{id}/delete`
 
 ## 5. Ràng buộc kỹ thuật
 
-Thời gian phản hồi tối đa: 500ms tại p95.
-
-Danh sách người thuê phải hỗ trợ phân trang.
-
-Danh sách người thuê phải hỗ trợ tìm kiếm theo mã người thuê, họ tên, email, số điện thoại và số CCCD/CMND.
-
-Mã người thuê phải được hệ thống tự động sinh.
-
-Mã người thuê phải là duy nhất và không được phép chỉnh sửa thủ công.
-
-Mỗi phòng chỉ được có một người thuê ở trạng thái ACTIVE tại một thời điểm.
-
-Người thuê ACTIVE là tài khoản đại diện cho phòng.
-
-Người phụ thuộc không có tài khoản đăng nhập riêng.
-
-Email đăng nhập phải là duy nhất trong hệ thống.
-
-Số CCCD/CMND phải là duy nhất trong toàn hệ thống.
-
-Số điện thoại phải là duy nhất đối với các người thuê đang ACTIVE.
-
-Khi tạo mới, người thuê bắt buộc phải được gán vào một phòng đang hoạt động.
-
-Hệ thống không được cho phép tạo người thuê mới cho phòng đã có người thuê ACTIVE.
-
-Hệ thống không được cho phép gán người thuê vào phòng không hoạt động.
-
-Khi người thuê kết thúc thuê, hệ thống phải chuyển trạng thái người thuê thành INACTIVE.
-
-Khi người thuê kết thúc thuê, tài khoản đăng nhập của người thuê phải bị vô hiệu hóa.
-
-Sau khi người thuê chuyển sang INACTIVE, phòng có thể được gán cho người thuê mới.
-
-Chỉ cho phép xóa mềm, không được xóa vật lý dữ liệu.
-
-Dữ liệu lịch sử phải được giữ lại sau khi người thuê chuyển sang trạng thái INACTIVE.
-
-Thông tin audit phải được ghi nhận, bao gồm createdBy, createdAt, updatedBy và updatedAt.
+* Mọi thông tin tài khoản người thuê được lưu trữ trong bảng `dbo.users` (với vai trò `role = 'TENANT'`).
+* Số điện thoại (`phone`) và số CCCD/CMND (`identityNumber`) của người thuê phải tuân thủ định dạng số hợp lệ tại Việt Nam khi Manager cập nhật thông tin.
+* Manager chỉ được xem và quản lý những người thuê thuộc các cơ sở được phân công (đối chiếu cột `manager_id` trong bảng `dbo.facilities`).
+* Khi kết thúc thuê, hệ thống sẽ thực hiện cập nhật trạng thái cư trú của người thuê thành `INACTIVE` và gỡ bỏ `tenant_id` tại bảng `dbo.rooms` của phòng đó.
+* Các hành động khóa, mở khóa, cập nhật thông tin và kết thúc thuê đều phải ghi nhận log chi tiết vào bảng `dbo.audit_logs`.
+* Chỉ cho phép xóa mềm người thuê (cập nhật trường `deleted_at = GETDATE()`) để đảm bảo không mất mát dữ liệu lịch sử đối chiếu tài chính.
 
 ## 6. Định nghĩa trạng thái người thuê
 
-| Trạng thái | Mô tả                                                                                                  |
-| ---------- | ------------------------------------------------------------------------------------------------------ |
-| ACTIVE     | Người thuê hiện đang là tài khoản đại diện cho một phòng                                               |
-| INACTIVE   | Người thuê đã kết thúc thời gian thuê, tài khoản bị vô hiệu hóa nhưng dữ liệu lịch sử vẫn được giữ lại |
-
-Người thuê có trạng thái ACTIVE được xem là người thuê hiện tại của phòng.
-
-Một phòng chỉ được liên kết với một người thuê ACTIVE tại một thời điểm.
-
-Người thuê có trạng thái INACTIVE không còn được xem là người thuê hiện tại của phòng nhưng vẫn phải có thể tra cứu trong lịch sử.
+| Trạng thái | Ý nghĩa |
+| --- | --- |
+| `ACTIVE` | Người thuê hiện tại của phòng, có tài khoản hoạt động bình thường |
+| `LOCKED` | Tài khoản của người thuê tạm thời bị khóa đăng nhập |
+| `INACTIVE`| Người thuê đã ngừng thuê phòng (trả phòng), tài khoản bị vô hiệu hóa cư trú |
 
 ## 7. Phụ thuộc
 
-* Quản lý Cơ sở
-* Quản lý Phòng
-* Quản lý Người phụ thuộc
-* Xác thực và Phân quyền
-* Audit Log
+* **Quản lý Cơ sở:** Để xác minh quyền quản lý của Manager đối với cơ sở của người thuê.
+* **Quản lý Phòng:** Để gán/gỡ bỏ người thuê đại diện của phòng.
+* **Quản lý Hợp đồng:** Cung cấp chức năng tạo người thuê đi kèm khi ký kết hợp đồng thuê phòng mới.
+* **Quản lý Người phụ thuộc:** Hiển thị danh sách đi kèm trong hồ sơ chi tiết người thuê.
+* **Audit Log:** Ghi nhận nhật ký lịch sử quản lý.
 
 ## 8. Ngoài phạm vi
 
-* Quản lý hợp đồng thuê
-* Quản lý thanh toán tiền thuê
-* Quản lý hóa đơn điện nước
-* Quản lý lịch sử chuyển phòng chi tiết
-* Đồng bộ dữ liệu với hệ thống bên thứ ba
-* Quản lý chi tiết tài khoản nhân sự
-* Quản lý người ở cùng dưới dạng tài khoản đăng nhập riêng
+* Quản lý chuyển phòng chi tiết của cư dân.
+* Thiết lập hóa đơn/chỉ số điện nước trực tiếp tại giao diện người thuê.
+* Khôi phục mật khẩu tài khoản người thuê bằng tay (người thuê tự thực hiện qua luồng quên mật khẩu).
