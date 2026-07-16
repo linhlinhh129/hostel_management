@@ -40,40 +40,34 @@
                   </li>
                 </ul>
 
-                <form method="get" action="${ctx}/manager/tickets" id="filterForm" class="mb-4 p-3 rounded"
-                  style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
+                <form method="get" action="${ctx}/manager/tickets" id="filterForm"
+                  style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
                   <input type="hidden" name="type" value="${filterType}" />
-                  <div class="row g-3 align-items-end">
-                    <div class="col-12 col-md-5">
-                      <label class="form-label"
-                        style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm
-                        kiếm</label>
+                  <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                    <div style="flex:2; min-width:200px;">
+                      <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
                       <input type="text" class="form-control" name="keyword" placeholder="Tiêu đề / mã yêu cầu..."
-                        value="<c:out value='${keyword}'/>">
+                        value="<c:out value='${keyword}'/>" style="width:100%">
                     </div>
-                    <div class="col-12 col-md-3">
-                      <label class="form-label"
-                        style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng
-                        thái</label>
-                      <select class="form-select" name="status">
+                    <div style="flex:1; min-width:150px;">
+                      <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
+                      <select class="form-select" name="status" style="width:100%">
                         <option value="">Tất cả</option>
-                        <option value="PENDING" ${filterStatus=='PENDING' ? 'selected' : '' }>Mới</option>
-                        <option value="RECEIVED" ${filterStatus=='RECEIVED' ? 'selected' : '' }>Đã tiếp nhận</option>
-                        <option value="ASSIGNED" ${filterStatus=='ASSIGNED' ? 'selected' : '' }>Đã phân công</option>
-                        <option value="IN_PROGRESS" ${filterStatus=='IN_PROGRESS' ? 'selected' : '' }>Đang xử lý
-                        </option>
-                        <option value="DONE" ${filterStatus=='DONE' ? 'selected' : '' }>Hoàn thành</option>
-                        <option value="REJECTED" ${filterStatus=='REJECTED' ? 'selected' : '' }>Từ chối</option>
-                        <option value="CANCELLED" ${filterStatus=='CANCELLED' ? 'selected' : '' }>Đã hủy</option>
+                        <option value="PENDING"     ${filterStatus=='PENDING'     ? 'selected' : ''}>Mới</option>
+                        <option value="RECEIVED"    ${filterStatus=='RECEIVED'    ? 'selected' : ''}>Đã tiếp nhận</option>
+                        <option value="ASSIGNED"    ${filterStatus=='ASSIGNED'    ? 'selected' : ''}>Đã phân công</option>
+                        <option value="IN_PROGRESS" ${filterStatus=='IN_PROGRESS' ? 'selected' : ''}>Đang xử lý</option>
+                        <option value="DONE"        ${filterStatus=='DONE'        ? 'selected' : ''}>Hoàn thành</option>
+                        <option value="REJECTED"    ${filterStatus=='REJECTED'    ? 'selected' : ''}>Từ chối</option>
+                        <option value="CANCELLED"   ${filterStatus=='CANCELLED'   ? 'selected' : ''}>Đã hủy</option>
                       </select>
                     </div>
-                    <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
-                      <a href="${ctx}/manager/tickets?type=${filterType}"
-                        class="btn btn-light border text-decoration-none"
-                        style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
-                      <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc dữ
-                        liệu</button>
-                    </div>
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
+                    <a href="${ctx}/manager/tickets?type=${filterType}"
+                       style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
+                    <button type="submit"
+                            style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm kiếm</button>
                   </div>
                 </form>
 

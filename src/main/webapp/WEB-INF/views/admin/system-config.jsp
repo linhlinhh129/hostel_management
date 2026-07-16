@@ -28,31 +28,7 @@
                                     </div>
                                 </div>
 
-                                <%-- ── Flash messages ───────────────────────────────── --%>
-                                    <c:if test="${not empty successMessage}">
-                                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert"
-                                            id="flash-success">
-                                            <c:choose>
-                                                <c:when test="${successMessage == 'email_updated'}">Cấu hình Email đã
-                                                    được cập nhật thành công.</c:when>
-                                                <c:when test="${successMessage == 'vnpay_updated'}">Cấu hình VNPay đã
-                                                    được cập nhật thành công.</c:when>
-                                                <c:otherwise>
-                                                    <c:out value="${successMessage}" />
-                                                </c:otherwise>
-                                            </c:choose>
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                                aria-label="Đóng"></button>
-                                        </div>
-                                    </c:if>
-                                    <c:if test="${not empty errorMessage}">
-                                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert"
-                                            id="flash-error">
-                                            <c:out value="${errorMessage}" />
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                                aria-label="Đóng"></button>
-                                        </div>
-                                    </c:if>
+                                <%-- Flash messages được xử lý bởi alerts.jsp đã include ở trên --%>
 
                                     <%-- ── Tabs ─────────────────────────────────────────── --%>
                                         <style>
@@ -392,12 +368,11 @@
                                                 <label for="emailPassword" class="form-label">
                                                     <span style="margin-right:4px">🔒</span>
                                                     Mật khẩu ứng dụng (App Password)
-                                                    <span class="text-danger">*</span>
                                                 </label>
                                                 <div class="input-group">
                                                     <input type="password" class="form-control" id="emailPassword"
                                                         name="password" placeholder="••••••••"
-                                                        autocomplete="new-password" required>
+                                                        autocomplete="new-password">
                                                     <button type="button" class="btn btn-outline-secondary"
                                                         onclick="togglePassword('emailPassword', this)"
                                                         title="Ẩn / Hiện mật khẩu"
@@ -480,12 +455,11 @@
                                                     <label for="vnpaySecretKey" class="form-label">
                                                         <span style="margin-right:4px">🔒</span>
                                                         Khóa bí mật (Secret Key)
-                                                        <span class="text-danger">*</span>
                                                     </label>
                                                     <div class="input-group">
                                                         <input type="password" class="form-control" id="vnpaySecretKey"
                                                             name="secretKey" placeholder="••••••••"
-                                                            autocomplete="new-password" required>
+                                                            autocomplete="new-password">
                                                         <button type="button" class="btn btn-outline-secondary"
                                                             onclick="togglePassword('vnpaySecretKey', this)"
                                                             title="Ẩn / Hiện khóa bí mật"
@@ -534,14 +508,6 @@
 
                             (function () {
                                 'use strict';
-                                ['flash-success', 'flash-error'].forEach(function (id) {
-                                    var el = document.getElementById(id);
-                                    if (el) setTimeout(function () {
-                                        var bsAlert = bootstrap.Alert.getOrCreateInstance(el);
-                                        if (bsAlert) bsAlert.close();
-                                    }, 5000);
-                                });
-
                                 /* ── Active tab đúng theo success param ── */
                                 var url = new URL(window.location.href);
                                 var success = url.searchParams.get('success');

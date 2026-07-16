@@ -37,39 +37,34 @@
 
                 <%-- Filter bar --%>
                   <div class="data-surface">
-                    <form method="get" action="${ctx}/manager/invoices" id="filterForm" class="mb-4 p-3 rounded"
-                      style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
-                      <div class="row g-3 align-items-end">
-                        <div class="col-12 col-md-4">
-                          <label class="form-label"
-                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm
-                            kiếm</label>
+                    <form method="get" action="${ctx}/manager/invoices" id="filterForm"
+                      style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                      <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                        <div style="flex:2; min-width:200px;">
+                          <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
                           <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
-                            placeholder="Mã HĐ, phòng..." />
+                            placeholder="Mã HĐ, phòng..." style="width:100%"/>
                         </div>
-                        <div class="col-12 col-md-3">
-                          <label class="form-label"
-                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Kỳ
-                            HĐ</label>
+                        <div style="flex:1; min-width:150px;">
+                          <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Kỳ HĐ</label>
                           <input type="text" class="form-control" name="billingPeriod"
-                            value="<c:out value='${billingPeriod}'/>" placeholder="VD: 202606" />
+                            value="<c:out value='${billingPeriod}'/>" placeholder="VD: 202606" style="width:100%"/>
                         </div>
-                        <div class="col-12 col-md-3">
-                          <label class="form-label"
-                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng
-                            thái</label>
-                          <select class="form-select" name="status">
+                        <div style="flex:1; min-width:150px;">
+                          <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
+                          <select class="form-select" name="status" style="width:100%">
                             <option value="">Tất cả</option>
-                            <option value="UNPAID" ${status=='UNPAID' ? 'selected' : '' }>Chưa thanh toán</option>
-                            <option value="PAID" ${status=='PAID' ? 'selected' : '' }>Đã thanh toán</option>
-                            <option value="OVERDUE" ${status=='OVERDUE' ? 'selected' : '' }>Quá hạn</option>
+                            <option value="UNPAID"  ${status=='UNPAID'  ? 'selected' : ''}>Chưa thanh toán</option>
+                            <option value="PAID"    ${status=='PAID'    ? 'selected' : ''}>Đã thanh toán</option>
+                            <option value="OVERDUE" ${status=='OVERDUE' ? 'selected' : ''}>Quá hạn</option>
                           </select>
                         </div>
-                        <div class="col-12 col-md-2 d-flex justify-content-md-end gap-2">
-                          <a href="${ctx}/manager/invoices" class="btn btn-light border text-decoration-none"
-                            style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
-                          <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc</button>
-                        </div>
+                      </div>
+                      <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
+                        <a href="${ctx}/manager/invoices"
+                           style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
+                        <button type="submit"
+                                style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm kiếm</button>
                       </div>
                     </form>
 
