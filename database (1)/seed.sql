@@ -316,9 +316,8 @@ BEGIN TRY
         INSERT INTO dbo.system_config (config_key, config_value) VALUES
             (N'email.host',      N'smtp.gmail.com'),
             (N'email.port',      N'587'),
-            (N'email.username',  N'a2k55ndu@gmail.com'),
-            (N'email.password',  N'khul ujup nmzr bcvu'),
-            (N'email.from',      N'a2k55ndu@gmail.com'),
+            (N'email.username',  N'nguyentham260574@gmail.com'),
+            (N'email.password',  N'tbfh xtdh gajl fdkg'),
             (N'vnpay.payUrl',    N'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'),
             (N'vnpay.returnUrl', N'http://localhost:8080/HostelManagement/tenant/invoices/vnpay-return'),
             (N'vnpay.tmnCode',   N'9J47G09W'),

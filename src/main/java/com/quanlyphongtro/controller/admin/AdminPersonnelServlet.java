@@ -63,8 +63,6 @@ public class AdminPersonnelServlet extends BaseServlet {
                 doUpdate(req, resp, idPrefix(path));
             } else if (path.matches("/\\d+/status")) {
                 doToggleStatus(req, resp, idPrefix(path));
-            } else if (path.matches("/\\d+/delete")) {
-                doDelete(req, resp, idPrefix(path));
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -200,21 +198,6 @@ public class AdminPersonnelServlet extends BaseServlet {
             setFlashMessage(req, "error", e.getMessage());
         }
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
-    }
-
-    private void doDelete(HttpServletRequest req, HttpServletResponse resp, int id)
-            throws Exception {
-        UserSessionDTO me = getCurrentUser(req);
-        int currentUserId = (me != null && me.getId() != null) ? me.getId() : -1;
-
-        try {
-            personnelService.softDelete(id, currentUserId);
-            setFlashMessage(req, "success", "Đã xóa nhân sự thành công.");
-            resp.sendRedirect(req.getContextPath() + BASE_PATH);
-        } catch (ValidationException e) {
-            setFlashMessage(req, "error", e.getMessage());
-            resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
-        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
