@@ -34,12 +34,11 @@
               </div>
 
               <div class="data-surface p-3 mb-4" style="border: 1px solid var(--hms-border);">
-                <form action="${ctx}/manager/contracts" method="get" id="filterForm">
-                  <div class="row g-3 align-items-end">
-                    <div class="col-12 col-md-6">
-                      <label class="form-label"
-                        style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm
-                        kiếm</label>
+                <form action="${ctx}/manager/contracts" method="get" id="filterForm"
+                      style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                  <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                    <div style="flex:2; min-width:200px;">
+                      <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
                       <div class="position-relative">
                         <svg class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" width="16"
                           height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -47,16 +46,15 @@
                           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                         <input type="text" name="searchName" class="form-control ps-5"
-                          placeholder="Tìm kiếm theo tên người đại diện..." value="${searchName}">
+                          placeholder="Tìm kiếm theo tên người đại diện..." value="${searchName}" style="width:100%">
                       </div>
                     </div>
-                    <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
-                      <c:if test="${not empty searchName}">
-                        <a href="${ctx}/manager/contracts" class="btn btn-light border text-decoration-none"
-                          style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
-                      </c:if>
-                      <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
-                    </div>
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
+                    <a href="${ctx}/manager/contracts"
+                       style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
+                    <button type="submit"
+                            style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm kiếm</button>
                   </div>
                 </form>
               </div>

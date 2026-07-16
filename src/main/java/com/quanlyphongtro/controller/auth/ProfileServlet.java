@@ -87,7 +87,7 @@ public class ProfileServlet extends BaseServlet {
                 if (phone != null && !phone.trim().isEmpty()) {
                     if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
                         setFlashMessage(request, "error",
-                            "So dien thoai khong hop le (chi chap nhan so dien thoai di dong Viet Nam gom 10 so).");
+                            "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
                         response.sendRedirect(request.getContextPath() + "/profile");
                         return;
                     }
@@ -95,7 +95,7 @@ public class ProfileServlet extends BaseServlet {
                 if (identityNumber != null && !identityNumber.trim().isEmpty()) {
                     if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
                         setFlashMessage(request, "error",
-                            "So CMND/CCCD khong hop le (phai gom 9 hoac 12 chu so).");
+                            "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
                         response.sendRedirect(request.getContextPath() + "/profile");
                         return;
                     }
@@ -132,7 +132,7 @@ public class ProfileServlet extends BaseServlet {
                 HttpSession session = request.getSession(false);
                 if (session != null) session.setAttribute("currentUser", currentUser);
 
-                setFlashMessage(request, "success", "Cap nhat thong tin ho so thanh cong!");
+                setFlashMessage(request, "success", "Cập nhật thông tin hồ sơ thành công!");
                 response.sendRedirect(request.getContextPath() + "/profile");
 
             // ── change_password ──────────────────────────────────────────
@@ -144,22 +144,22 @@ public class ProfileServlet extends BaseServlet {
 
                 if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
                     setFlashMessage(request, "error",
-                        "Mat khau moi khong dat chuan bao mat (can it nhat 8 ky tu, co chu hoa, chu so va ky tu dac biet).");
+                        "Mật khẩu mới không đạt chuẩn bảo mật (cần ít nhất 8 ký tự, có chữ hoa, chữ số và ký tự đặc biệt).");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
                 if (!newPassword.equals(confirmPassword)) {
-                    setFlashMessage(request, "error", "Xac nhan mat khau moi khong khop!");
+                    setFlashMessage(request, "error", "Xác nhận mật khẩu mới không khớp!");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
                 if (newPassword.equals(currentPassword)) {
-                    setFlashMessage(request, "error", "Mat khau moi khong duoc trung voi mat khau cu.");
+                    setFlashMessage(request, "error", "Mật khẩu mới không được trùng với mật khẩu cũ.");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
-                    setFlashMessage(request, "error", "Mat khau hien tai khong chinh xac!");
+                    setFlashMessage(request, "error", "Mật khẩu hiện tại không chính xác!");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
@@ -172,7 +172,7 @@ public class ProfileServlet extends BaseServlet {
                     if (session != null) session.setAttribute("currentUser", currentUser);
                 }
 
-                setFlashMessage(request, "success", "Doi mat khau thanh cong!");
+                setFlashMessage(request, "success", "Đổi mật khẩu thành công!");
                 response.sendRedirect(request.getContextPath() + "/profile");
 
             } else {
@@ -181,7 +181,7 @@ public class ProfileServlet extends BaseServlet {
 
         } catch (Throwable t) {
             logger.error("ProfileServlet error", t);
-            setFlashMessage(request, "error", "Da xay ra loi he thong. Vui long thu lai.");
+            setFlashMessage(request, "error", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại.");
             response.sendRedirect(request.getContextPath() + "/profile");
         }
     }
