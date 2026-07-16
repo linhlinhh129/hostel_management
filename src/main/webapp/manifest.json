@@ -2,8 +2,8 @@
   "name": "HomeX",
   "short_name": "HomeX",
   "description": "Hệ thống quản lý nhà trọ toàn diện",
-  "start_url": "/hostel-management/login",
-  "scope": "/hostel-management/",
+  "start_url": "login",
+  "scope": ".",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0f172a",
@@ -11,25 +11,25 @@
   "lang": "vi",
   "icons": [
     {
-      "src": "/hostel-management/assets/img/icons/icon-96x96.png",
+      "src": "assets/img/icons/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/hostel-management/assets/img/icons/icon-144x144.png",
+      "src": "assets/img/icons/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/hostel-management/assets/img/icons/icon-192x192.png",
+      "src": "assets/img/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/hostel-management/assets/img/icons/icon-512x512.png",
+      "src": "assets/img/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -40,10 +40,10 @@
       "name": "Dashboard Admin",
       "short_name": "Admin",
       "description": "Trang quan tri",
-      "url": "/hostel-management/admin/dashboard",
+      "url": "admin/dashboard",
       "icons": [
         {
-          "src": "/hostel-management/assets/img/icons/icon-96x96.png",
+          "src": "assets/img/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
@@ -52,10 +52,10 @@
       "name": "Dashboard Tenant",
       "short_name": "Tenant",
       "description": "Trang thue nha",
-      "url": "/hostel-management/tenant/dashboard",
+      "url": "tenant/dashboard",
       "icons": [
         {
-          "src": "/hostel-management/assets/img/icons/icon-96x96.png",
+          "src": "assets/img/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
