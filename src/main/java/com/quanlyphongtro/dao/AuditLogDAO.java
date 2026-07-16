@@ -117,7 +117,8 @@ public class AuditLogDAO extends BaseDAO {
                     
                     java.sql.Timestamp createdTs = rs.getTimestamp("created_at");
                     if (createdTs != null) {
-                        dto.setChangedAt(createdTs.toLocalDateTime().toString());
+                        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                        dto.setChangedAt(createdTs.toLocalDateTime().format(formatter));
                     }
                     
                     dto.setChangedBy(rs.getInt("created_by"));
@@ -440,5 +441,30 @@ public class AuditLogDAO extends BaseDAO {
             logger.error("AuditLogDAO.findRecent failed", e);
         }
         return list;
+    }
+
+    public java.util.Map<String, java.time.LocalDateTime> getLatestPriceUpdates(int facilityId) {
+        java.util.Map<String, java.time.LocalDateTime> map = new java.util.HashMap<>();
+        String sql = "SELECT action, MAX(created_at) as last_updated " +
+                     "FROM dbo.audit_logs " +
+                     "WHERE entity_type = 'SERVICE_PRICE' AND entity_id = ? " +
+                     "GROUP BY action";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, facilityId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String action = rs.getString("action");
+                    java.sql.Timestamp ts = rs.getTimestamp("last_updated");
+                    if (action != null && ts != null && action.startsWith("UPDATE_")) {
+                        String priceType = action.substring("UPDATE_".length());
+                        map.put(priceType, ts.toLocalDateTime());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("getLatestPriceUpdates failed for facilityId={}", facilityId, e);
+        }
+        return map;
     }
 }

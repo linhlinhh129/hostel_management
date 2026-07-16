@@ -119,6 +119,17 @@
               </button>
             </form>
           </c:if>
+          <c:if test="${contract.status == 'ACTIVE' || contract.status == 'INACTIVE'}">
+            <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500; height: 38px; border-radius: var(--hms-radius-full, 9999px); border-color: var(--hms-primary-color, #10b981); color: var(--hms-primary-color, #10b981);" data-bs-toggle="modal" data-bs-target="#extendContractModal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Gia hạn hợp đồng
+            </button>
+          </c:if>
           <button onclick="window.print()" class="btn-mintlify-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
               <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>
@@ -252,6 +263,40 @@
       </div>
 
     </main>
+  </div>
+</div>
+
+<!-- Extend Contract Modal -->
+<div class="modal fade" id="extendContractModal" tabindex="-1" aria-labelledby="extendContractModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      <form action="${ctx}/manager/contracts/extend" method="post">
+        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+        <input type="hidden" name="contractId" value="${contract.contractId}"/>
+        <div class="modal-header" style="border-bottom: 1px dashed var(--hms-border-soft); padding: 20px;">
+          <h5 class="modal-title" id="extendContractModalLabel" style="font-weight: 700; color: var(--hms-text);">Gia hạn hợp đồng</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <div class="mb-3">
+            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Mã hợp đồng</label>
+            <input type="text" class="form-control" value="${contract.code}" readonly style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Ngày hết hạn hiện tại</label>
+            <input type="text" class="form-control" value="${contract.formattedEndDate}" readonly style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label required" style="font-weight: 600; font-size: 13px; color: var(--hms-text);">Ngày hết hạn mới <span class="text-danger">*</span></label>
+            <input type="date" name="newEndDate" class="form-control" required min="${contract.endDate}" style="border-color: var(--hms-border);" />
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px dashed var(--hms-border-soft); padding: 20px;">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 20px; padding: 6px 20px;">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="background-color: var(--hms-primary-color, #10b981); border: none; border-radius: 20px; padding: 6px 20px;">Xác nhận gia hạn</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 

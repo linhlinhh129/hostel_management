@@ -242,4 +242,12 @@ public class Contract {
     public String getSignedYear() {
         return signedDate != null ? String.valueOf(signedDate.getYear()) : "......";
     }
+
+    public String getFormattedEndDate() {
+        return endDate != null ? endDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+    }
+
+    public String getFormattedStartDate() {
+        return startDate != null ? startDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+    }
 }

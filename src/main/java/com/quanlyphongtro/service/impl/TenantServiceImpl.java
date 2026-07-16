@@ -73,6 +73,10 @@ public class TenantServiceImpl implements TenantService {
             throw new java.nio.file.AccessDeniedException("Bạn không có quyền chỉnh sửa thông tin người thuê này.");
         }
 
+        if (dob != null && dob.isAfter(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày sinh của người thuê không thể ở tương lai.");
+        }
+
         // 2. Check for duplicate username/email
         String username = email.trim();
         boolean duplicate = userDAO.isDuplicateEmail(username, tenantId);
