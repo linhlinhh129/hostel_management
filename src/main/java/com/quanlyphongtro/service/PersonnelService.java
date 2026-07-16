@@ -31,7 +31,7 @@ public interface PersonnelService {
     void create(String fullName, String email, String phone, String role,
                 String identityNumber, String dobStr, String gender,
                 String permanentAddress, String facilityIdStr,
-                int createdByUserId)
+                int createdByUserId, String loginLink)
             throws ValidationException;
 
     /**

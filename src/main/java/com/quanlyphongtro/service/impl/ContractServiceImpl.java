@@ -141,7 +141,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public Map<String, Object> addTenantFromContract(int contractId, int roomId, String fullName, String phone, String email, String identityNumber, String permanentAddress, String gender, String dobStr, String contractStartDateStr, boolean confirmReactivate, int managerId) throws Exception {
+    public Map<String, Object> addTenantFromContract(int contractId, int roomId, String fullName, String phone, String email, String identityNumber, String permanentAddress, String gender, String dobStr, String contractStartDateStr, boolean confirmReactivate, int managerId, String loginLink) throws Exception {
         Map<String, Object> result = new HashMap<>();
         // Validate inputs
         if (fullName == null || fullName.trim().isEmpty()) {
@@ -217,7 +217,7 @@ public class ContractServiceImpl implements ContractService {
         }
 
         // Send email asynchronously
-        EmailService.sendTempPassword(email.trim(), fullName.trim(), username, plainPassword);
+        EmailService.sendTempPassword(email.trim(), fullName.trim(), username, plainPassword, loginLink);
 
         result.put("status", "SUCCESS");
         result.put("userExists", userExists);

@@ -160,13 +160,7 @@
                                                                                     ẩn</span>
                                                                             </dd>
 
-                                                                            <dt class="col-sm-4"
-                                                                                style="color:var(--hms-stone);font-weight:500">
-                                                                                Email gửi đi</dt>
-                                                                            <dd class="col-sm-8 mb-0"
-                                                                                style="font-weight:600;word-break:break-all">
-                                                                                <c:out value="${emailConfig.from}" />
-                                                                            </dd>
+
                                                                         </dl>
 
                                                                         <c:if test="${not empty emailConfig.updatedAt}">
@@ -416,14 +410,7 @@
                                                     thường.
                                                 </div>
                                             </div>
-                                            <div class="col-12">
-                                                <label for="emailFrom" class="form-label">
-                                                    Email gửi đi (From) <span class="text-danger">*</span>
-                                                </label>
-                                                <input type="text" class="form-control" id="emailFrom" name="from"
-                                                    value="<c:out value='${emailConfig.from}'/>"
-                                                    placeholder="email@example.com" required>
-                                            </div>
+
                                         </div>
                                     </div>
 

@@ -15,6 +15,16 @@
         <session-timeout>30</session-timeout>
     </session-config>
 
+    <!-- PWA: MIME types cho manifest -->
+    <mime-mapping>
+        <extension>json</extension>
+        <mime-type>application/json</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>webmanifest</extension>
+        <mime-type>application/manifest+json</mime-type>
+    </mime-mapping>
+
     <!-- JNDI DataSource for SQL Server -->
     <resource-ref>
         <description>SQL Server DataSource</description>

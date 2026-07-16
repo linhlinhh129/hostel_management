@@ -64,8 +64,7 @@ public class PersonnelServiceImpl implements PersonnelService {
     public void create(String fullName, String email, String phone, String role,
                        String identityNumber, String dobStr, String gender,
                        String permanentAddress, String facilityIdStr,
-                       int createdByUserId)
-            throws ValidationException {
+                       int createdByUserId, String loginLink) throws ValidationException {
 
         fullName       = trim(fullName);
         email          = trim(email);
@@ -141,7 +140,7 @@ public class PersonnelServiceImpl implements PersonnelService {
         final String finalFullName = fullName;
         final String finalPwd      = tempPassword;
         try {
-            EmailService.sendTempPassword(finalEmail, finalFullName, finalEmail, finalPwd);
+            EmailService.sendTempPassword(finalEmail, finalFullName, finalEmail, finalPwd, loginLink);
         } catch (Exception ex) {
             logger.warn("Email send failed for new user id={}", newId, ex);
         }

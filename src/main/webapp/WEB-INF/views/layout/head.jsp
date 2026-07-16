@@ -8,6 +8,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><c:out value="${pageTitle}"/></title>
+    <%-- PWA: Web App Manifest --%>
+    <link rel="manifest" href="${ctx}/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <%-- PWA: iOS / Safari support --%>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HomeX">
+    <link rel="apple-touch-icon" href="${ctx}/assets/img/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="${ctx}/assets/img/icons/icon-96x96.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

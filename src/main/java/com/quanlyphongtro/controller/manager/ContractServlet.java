@@ -256,8 +256,9 @@ public class ContractServlet extends BaseServlet {
         boolean confirmReactivate = "true".equals(req.getParameter("confirmReactivate"));
 
         try {
+            String loginLink = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/login";
             Map<String, Object> result = contractService.addTenantFromContract(
-                contractId, roomId, fullName, phone, email, identityNumber, permanentAddress, gender, dobStr, contractStartDateStr, confirmReactivate, currentUser.getId()
+                contractId, roomId, fullName, phone, email, identityNumber, permanentAddress, gender, dobStr, contractStartDateStr, confirmReactivate, currentUser.getId(), loginLink
             );
 
             if ("REACTIVATE_CONFIRM".equals(result.get("status"))) {
