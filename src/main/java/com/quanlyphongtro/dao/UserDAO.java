@@ -260,7 +260,7 @@ public class UserDAO extends BaseDAO {
                     tenant.put("roomId", rs.getInt("room_id"));
                     tenant.put("roomCode", rs.getString("room_code"));
                     java.sql.Date sDate = rs.getDate("contract_start_date");
-                    tenant.put("contractStartDate", sDate != null ? sDate.toString() : null);
+                    tenant.put("contractStartDate", sDate != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(sDate) : null);
                     tenant.put("status", rs.getString("status"));
                     tenants.add(tenant);
                 }
@@ -298,7 +298,7 @@ public class UserDAO extends BaseDAO {
                     tenant.put("roomId", rs.getInt("room_id"));
                     tenant.put("roomCode", rs.getString("room_code"));
                     java.sql.Date sDate = rs.getDate("contract_start_date");
-                    tenant.put("contractStartDate", sDate != null ? sDate.toString() : null);
+                    tenant.put("contractStartDate", sDate != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(sDate) : null);
                     int contractId = rs.getInt("contract_id");
                     tenant.put("contractId", rs.wasNull() ? null : contractId);
                 }

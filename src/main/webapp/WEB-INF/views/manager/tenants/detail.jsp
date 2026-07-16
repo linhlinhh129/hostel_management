@@ -80,7 +80,8 @@
                         <tr>
                           <td style="padding:6px 0;color:var(--hms-text-muted)">Ngày sinh</td>
                           <td style="padding:6px 0">
-                            <c:out value="${tenant.dob}" />
+                            <fmt:parseDate value="${tenant.dob}" pattern="yyyy-MM-dd" var="parsedTenantDob" type="date" />
+                            <fmt:formatDate value="${parsedTenantDob}" pattern="dd/MM/yyyy" />
                           </td>
                         </tr>
                         <tr>
@@ -231,9 +232,10 @@
                                     <td>
                                       <c:out value="${dep.relationship}" />
                                     </td>
-                                    <td style="font-size:0.8125rem">
-                                      <c:out value="${dep.dob}" />
-                                    </td>
+                                     <td style="font-size:0.8125rem">
+                                       <fmt:parseDate value="${dep.dob}" pattern="yyyy-MM-dd" var="parsedDepDob" type="date" />
+                                       <fmt:formatDate value="${parsedDepDob}" pattern="dd/MM/yyyy" />
+                                     </td>
                                     <td>
                                       <c:choose>
                                         <c:when test="${dep.gender == 'MALE'}">Nam</c:when>

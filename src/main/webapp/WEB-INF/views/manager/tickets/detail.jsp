@@ -254,16 +254,16 @@
                                   <c:out value="${ticket.senderPhone}" />
                                 </td>
                               </tr>
+                              <c:if test="${not empty ticket.roomId and ticket.roomId != 0}">
                               <tr style="border-bottom:1px solid var(--hms-border)">
                                 <td style="padding:9px 14px;color:var(--hms-text-muted)">Phòng</td>
                                 <td style="padding:9px 14px">
-                                  <c:if test="${not empty ticket.roomId}">
-                                    <a href="${ctx}/manager/rooms/${ticket.roomId}">
-                                      <c:out value="${ticket.roomCode}" />
-                                    </a>
-                                  </c:if>
+                                  <a href="${ctx}/manager/rooms/${ticket.roomId}">
+                                    <c:out value="${ticket.roomCode}" />
+                                  </a>
                                 </td>
                               </tr>
+                              </c:if>
                               <tr style="border-bottom:1px solid var(--hms-border)">
                                 <td style="padding:9px 14px;color:var(--hms-text-muted)">Cơ sở</td>
                                 <td style="padding:9px 14px">
@@ -302,17 +302,6 @@
                                 </td>
                               </tr>
                               </c:if>
-                              <tr>
-                                <td style="padding:9px 14px;color:var(--hms-text-muted)">Nhân sự phân công</td>
-                                <td style="padding:9px 14px">
-                                  <c:choose>
-                                    <c:when test="${not empty ticket.assignedOperatorName}">
-                                      <c:out value="${ticket.assignedOperatorName}" />
-                                    </c:when>
-                                    <c:otherwise><em class="text-muted">Chưa phân công</em></c:otherwise>
-                                  </c:choose>
-                                </td>
-                              </tr>
                             </table>
                           </div>
                         </div>
@@ -361,8 +350,8 @@
                                       </form>
                                     </c:when>
 
-                                    <%-- Nếu trạng thái là ĐÃ DUYỆT / ĐANG XỬ LÝ / ĐÃ GIAO VIỆC --%>
-                                    <c:when test="${ticket.status == 'RECEIVED' or ticket.status == 'ASSIGNED' or ticket.status == 'IN_PROGRESS'}">
+                                    <%-- Nếu trạng thái là ĐÃ PHÊ DUYỆT --%>
+                                    <c:when test="${ticket.status == 'RECEIVED'}">
                                       <div class="text-center p-3 rounded" style="background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;">
                                         <span class="badge bg-info text-white px-3 py-2 rounded-pill mb-2">ĐÃ PHÊ DUYỆT</span>
                                         <p class="mb-0" style="font-size:0.8125rem">Sự cố đã được duyệt. Đang chờ nhân viên vận hành sửa chữa và báo cáo hoàn thành.</p>

@@ -145,7 +145,10 @@
           <div class="mt-3 mb-3">
             <p class="text-bold">1. Đại diện bên cho thuê phòng trọ (Bên A)</p>
             <p>Ông/Bà: <strong><c:out value="${contract.manager.fullName}"/></strong></p>
-            <p>Sinh ngày: <strong><c:out value="${contract.manager.dob}"/></strong></p>
+            <p>Sinh ngày: <strong>
+              <fmt:parseDate value="${contract.manager.dob}" pattern="yyyy-MM-dd" var="parsedManagerDob" type="date" />
+              <fmt:formatDate value="${parsedManagerDob}" pattern="dd/MM/yyyy" />
+            </strong></p>
             <p>CMND/CCCD số: <strong><c:out value="${contract.manager.identityNumber}"/></strong>, cấp tại: <strong>Cục Cảnh sát quản lý hành chính về trật tự xã hội</strong></p>
             <p>Số điện thoại: <strong><c:out value="${contract.manager.phone}"/></strong></p>
           </div>
@@ -153,9 +156,15 @@
           <div class="mb-3">
             <p class="text-bold">2. Bên thuê phòng trọ (Bên B)</p>
             <p>Ông/Bà: <strong><c:out value="${contract.tenantFullName}"/></strong></p>
-            <p>Sinh ngày: <strong><c:out value="${contract.tenantDob}"/></strong></p>
+            <p>Sinh ngày: <strong>
+              <fmt:parseDate value="${contract.tenantDob}" pattern="yyyy-MM-dd" var="parsedTenantDob" type="date" />
+              <fmt:formatDate value="${parsedTenantDob}" pattern="dd/MM/yyyy" />
+            </strong></p>
             <p>Nơi đăng ký hộ khẩu thường trú: <strong><c:out value="${contract.tenantPermanentAddress}"/></strong></p>
-            <p>Số CMND/CCCD: <strong><c:out value="${contract.tenantIdentityNumber}"/></strong>, cấp ngày <strong><c:out value="${contract.tenantIdentityIssueDate}"/></strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
+            <p>Số CMND/CCCD: <strong><c:out value="${contract.tenantIdentityNumber}"/></strong>, cấp ngày <strong>
+              <fmt:parseDate value="${contract.tenantIdentityIssueDate}" pattern="yyyy-MM-dd" var="parsedIssueDate" type="date" />
+              <fmt:formatDate value="${parsedIssueDate}" pattern="dd/MM/yyyy" />
+            </strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
             <p>Số điện thoại: <strong><c:out value="${contract.tenantPhone}"/></strong></p>
           </div>
 
@@ -181,7 +190,13 @@
           <p>Phòng số: <strong><c:out value="${contract.room.roomLabel}"/></strong></p>
           <p>Tầng: <strong><c:out value="${contract.room.floorLabel}"/></strong></p>
           <p>Hình thức thanh toán: Tiền mặt hoặc chuyển khoản vào đầu tháng, từ ngày 01 đến ngày 05 hàng tháng.</p>
-          <p>Hợp đồng có giá trị kể từ <strong><c:out value="${contract.startDate}"/></strong> đến <strong><c:out value="${contract.endDate}"/></strong></p>
+          <p>Hợp đồng có giá trị kể từ <strong>
+            <fmt:parseDate value="${contract.startDate}" pattern="yyyy-MM-dd" var="parsedStartDate" type="date" />
+            <fmt:formatDate value="${parsedStartDate}" pattern="dd/MM/yyyy" />
+          </strong> đến <strong>
+            <fmt:parseDate value="${contract.endDate}" pattern="yyyy-MM-dd" var="parsedEndDate" type="date" />
+            <fmt:formatDate value="${parsedEndDate}" pattern="dd/MM/yyyy" />
+          </strong></p>
           <p>Tiền điện: <strong><fmt:formatNumber value="${contract.facility.electricityPrice}" pattern="#,##0"/> đ/số</strong>, tính theo chỉ số công tơ, thanh toán vào cuối các tháng.</p>
           <p>Tiền Internet: <strong><fmt:formatNumber value="${contract.facility.internetFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
           <p>Tiền dịch vụ: <strong><fmt:formatNumber value="${contract.facility.serviceFee}" pattern="#,##0"/> đ/người/tháng</strong></p>

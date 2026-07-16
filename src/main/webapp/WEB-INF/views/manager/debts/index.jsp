@@ -111,7 +111,8 @@
                                                                     pattern="#,##0" /> đ
                                                             </td>
                                                             <td class="d-none d-md-table-cell">
-                                                                <c:out value="${debt.dueDate}" />
+                                                                <fmt:parseDate value="${debt.dueDate}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
+                                                                <fmt:formatDate value="${parsedDueDate}" pattern="dd/MM/yyyy" />
                                                             </td>
                                                             <td>
                                                                 <c:choose>

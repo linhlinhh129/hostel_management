@@ -23,55 +23,99 @@
       <div class="row g-4">
         <%-- Cột trái: Form nhập --%>
         <div class="col-lg-7">
-          <div class="data-surface" style="height:100%">
-            <form method="post" action="${ctx}/manager/notifications/send-operator" class="p-4">
-              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-              <input type="hidden" name="invoiceId" value="${invoice.id}"/>
+          <div class="data-surface" style="padding:2rem">
+            <%-- Tiến độ xử lý hiện tại nếu đã gửi --%>
+            <c:choose>
+              <c:when test="${invoice.meterStatus == 'REPORTED' or invoice.meterStatus == 'UPDATED'}">
+                <div class="p-4" style="border:1px solid var(--hms-border); border-radius:var(--hms-radius-lg); background:var(--hms-surface-2);">
+                  <h3 style="font-size:1.15rem; font-weight:700; color:var(--hms-ink); margin-bottom:1.25rem;">Tiến độ xử lý hiện tại</h3>
+                  
+                  <div class="mb-3">
+                    <span class="text-muted d-block" style="font-size:0.85rem">Nhân viên phụ trách:</span>
+                    <strong style="font-size:1rem; color:var(--hms-ink)"><c:out value="${invoice.operatorName}"/></strong>
+                  </div>
+
+                  <div class="mb-3">
+                    <span class="text-muted d-block" style="font-size:0.85rem; margin-bottom:0.25rem">Trạng thái công việc:</span>
+                    <c:choose>
+                      <c:when test="${invoice.ticketStatus == 'PENDING'}">
+                        <span class="badge-hms badge-warning">Chờ nhận việc</span>
+                      </c:when>
+                      <c:when test="${invoice.ticketStatus == 'ASSIGNED'}">
+                        <span class="badge-hms badge-info">Đã tiếp nhận</span>
+                      </c:when>
+                      <c:when test="${invoice.ticketStatus == 'IN_PROGRESS'}">
+                        <span class="badge-hms badge-warning">Đang xử lý</span>
+                      </c:when>
+                      <c:when test="${invoice.ticketStatus == 'DONE'}">
+                        <span class="badge-hms badge-success">Hoàn thành</span>
+                      </c:when>
+                      <c:when test="${invoice.ticketStatus == 'REJECTED'}">
+                        <span class="badge-hms badge-danger">Từ chối</span>
+                      </c:when>
+                      <c:otherwise>
+                        <span class="badge-hms badge-neutral"><c:out value="${invoice.ticketStatus}"/></span>
+                      </c:otherwise>
+                    </c:choose>
+                  </div>
 
 
 
-              <%-- Chọn Operator --%>
-              <div class="mb-3">
-                <label for="operatorId" class="form-label">Chọn nhân viên vận hành (Operator) <span class="text-danger">*</span></label>
-                <select class="form-select" id="operatorId" name="operatorId" required>
-                  <option value="">-- Chọn Operator nhận việc --</option>
-                  <c:forEach var="op" items="${operators}">
-                    <option value="${op.id}">
-                      <c:out value="${op.fullName}"/> (ID: <c:out value="${op.id}"/>)
-                    </option>
-                  </c:forEach>
-                </select>
-                <div class="form-text">Nhân viên sẽ nhận được yêu cầu xử lý lỗi trong trang tác vụ của họ.</div>
-              </div>
+                  <div class="d-flex gap-2">
+                    <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn-mintlify-secondary text-decoration-none">Quay lại</a>
+                  </div>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <%-- Form nhập gửi yêu cầu --%>
+                <form method="post" action="${ctx}/manager/notifications/send-operator">
+                  <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                  <input type="hidden" name="invoiceId" value="${invoice.id}"/>
 
-              <%-- Tiêu đề yêu cầu --%>
-              <div class="mb-3">
-                <label for="title" class="form-label">Tiêu đề yêu cầu <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="title" name="title"
-                       required maxlength="200"
-                       value="<c:out value='${defaultTitle}'/>">
-              </div>
+                  <%-- Chọn Nhân viên vận hành --%>
+                  <div class="mb-3">
+                    <label for="operatorId" class="form-label">Chọn nhân viên vận hành <span class="text-danger">*</span></label>
+                    <select class="form-select" id="operatorId" name="operatorId" required>
+                      <option value="">-- Chọn nhân viên vận hành --</option>
+                      <c:forEach var="op" items="${operators}">
+                        <option value="${op.id}">
+                          <c:out value="${op.fullName}"/>
+                        </option>
+                      </c:forEach>
+                    </select>
+                    <div class="form-text">Nhân viên sẽ nhận được yêu cầu xử lý lỗi trong trang tác vụ của họ.</div>
+                  </div>
 
-              <%-- Nội dung yêu cầu --%>
-              <div class="mb-3">
-                <label for="content" class="form-label">Nội dung chi tiết <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="content" name="content"
-                          rows="8" required maxlength="5000"><c:out value="${defaultContent}"/></textarea>
-                <div class="form-text">Mô tả cụ thể lý do sai và yêu cầu đo đạc/chốt số lại.</div>
-              </div>
+                  <%-- Tiêu đề yêu cầu --%>
+                  <div class="mb-3">
+                    <label for="title" class="form-label">Tiêu đề yêu cầu <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="title" name="title"
+                           required maxlength="200"
+                           value="<c:out value='${defaultTitle}'/>">
+                  </div>
 
-              <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="quick-action-btn primary">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" stroke-width="2.5" style="margin-right:4px">
-                    <line x1="22" y1="2" x2="11" y2="13"/>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                  </svg>
-                  Gửi Operator
-                </button>
-                <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn-mintlify-secondary text-decoration-none">Quay lại</a>
-              </div>
-            </form>
+                  <%-- Nội dung yêu cầu --%>
+                  <div class="mb-3">
+                    <label for="content" class="form-label">Nội dung chi tiết <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="content" name="content"
+                              rows="8" required maxlength="5000"><c:out value="${defaultContent}"/></textarea>
+                    <div class="form-text">Mô tả cụ thể lý do sai và yêu cầu đo đạc/chốt số lại.</div>
+                  </div>
+
+                  <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="quick-action-btn primary">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2.5" style="margin-right:4px">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                      </svg>
+                      Gửi Operator
+                    </button>
+                    <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn-mintlify-secondary text-decoration-none">Quay lại</a>
+                  </div>
+                </form>
+              </c:otherwise>
+            </c:choose>
           </div>
         </div>
 

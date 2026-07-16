@@ -99,7 +99,7 @@
                         <th class="d-none d-md-table-cell">Kỳ hạn</th>
                         <th>Số điện nước báo sai</th>
                         <th class="d-none d-md-table-cell">Tổng tiền</th>
-                        <th>Trạng thái chỉ số</th>
+                        <th>Trạng thái</th>
                         <th class="d-none d-md-table-cell">Thao tác</th>
                       </tr>
                     </thead>
@@ -125,8 +125,15 @@
                               <c:when test="${item.meterStatus == 'INCORRECT'}">
                                 <span class="badge-hms badge-danger">Chờ xử lý</span>
                               </c:when>
-                              <c:when test="${item.meterStatus == 'REPORTED'}">
-                                <span class="badge-hms badge-info">Đã gửi Operator</span>
+                              <c:when test="${item.meterStatus == 'REPORTED' or item.meterStatus == 'UPDATED'}">
+                                <c:choose>
+                                  <c:when test="${item.ticketStatus == 'DONE'}">
+                                    <span class="badge-hms badge-success">Hoàn thành</span>
+                                  </c:when>
+                                  <c:otherwise>
+                                    <span class="badge-hms badge-info">Đang xử lý</span>
+                                  </c:otherwise>
+                                </c:choose>
                               </c:when>
                               <c:otherwise>
                                 <span class="badge-hms badge-neutral"><c:out value="${item.meterStatus}"/></span>
@@ -134,23 +141,12 @@
                             </c:choose>
                           </td>
                           <td class="d-none d-md-table-cell">
-                            <c:choose>
-                              <c:when test="${item.meterStatus == 'INCORRECT'}">
-                                <a href="${ctx}/manager/notifications/send-operator?invoiceId=${item.id}"
-                                   class="quick-action-btn primary"
-                                   style="padding:6px 14px; font-size:0.8125rem; white-space:nowrap; text-decoration:none">
-                                  Gửi Operator
-                                </a>
-                              </c:when>
-                              <c:otherwise>
-                                <a href="${ctx}/manager/notifications/send-operator?invoiceId=${item.id}"
-                                   class="btn-mintlify-secondary text-decoration-none"
-                                   style="padding:6px 14px; font-size:0.8125rem; white-space:nowrap">
-                                  Gửi lại
-                                </a>
-                              </c:otherwise>
-                            </c:choose>
-                          </td>
+                             <a href="${ctx}/manager/notifications/send-operator?invoiceId=${item.id}"
+                                class="btn-mintlify-secondary text-decoration-none"
+                                style="padding:6px 14px; font-size:0.8125rem; white-space:nowrap">
+                               Xem
+                             </a>
+                           </td>
                         </tr>
                       </c:forEach>
                     </tbody>

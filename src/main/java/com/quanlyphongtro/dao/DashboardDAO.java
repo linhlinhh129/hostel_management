@@ -251,7 +251,7 @@ public class DashboardDAO extends BaseDAO {
                         ticket.put("roomCode", rCode != null ? rCode : "Sự cố trọ");
 
                         Timestamp cAt = rs.getTimestamp("created_at");
-                        ticket.put("createdDateLabel", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ").substring(0, 16) : "");
+                        ticket.put("createdDateLabel", cAt != null ? cAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
 
                         String status = rs.getString("status");
                         String statusLabel = status;

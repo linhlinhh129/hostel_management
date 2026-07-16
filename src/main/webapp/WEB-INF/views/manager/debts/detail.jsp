@@ -168,7 +168,10 @@
                             </li>
                             <li class="mb-3">
                                 <span class="text-muted d-block" style="font-size:0.875rem">Hạn thanh toán</span>
-                                <span class="fw-bold"><c:out value="${debt.dueDate}"/></span>
+                                <span class="fw-bold">
+                                    <fmt:parseDate value="${debt.dueDate}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
+                                    <fmt:formatDate value="${parsedDueDate}" pattern="dd/MM/yyyy" />
+                                </span>
                             </li>
                         </ul>
                         

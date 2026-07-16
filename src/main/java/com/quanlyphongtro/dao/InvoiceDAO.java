@@ -288,7 +288,7 @@ public class InvoiceDAO extends BaseDAO {
                      dto.setInvoiceCode(rs.getString("code"));
                      dto.setTotalAmount(rs.getBigDecimal("total_amount"));
                      java.sql.Date d = rs.getDate("due_date");
-                     if (d != null) dto.setDueDate(d.toString());
+                     if (d != null) dto.setDueDate(new java.text.SimpleDateFormat("dd/MM/yyyy").format(d));
                      dto.setStatus(rs.getString("status"));
                      dto.setRoomCode(rs.getString("room_code"));
                      dto.setTenantName(rs.getString("tenant_name"));
@@ -394,7 +394,7 @@ public class InvoiceDAO extends BaseDAO {
                       dto.setStatus(rs.getString("status"));
                       
                       java.sql.Date d = rs.getDate("due_date");
-                      if (d != null) dto.setDueDate(d.toString());
+                      if (d != null) dto.setDueDate(new java.text.SimpleDateFormat("dd/MM/yyyy").format(d));
                       
                       java.sql.Timestamp created = rs.getTimestamp("created_at");
                       if (created != null) dto.setCreatedAt(created.toString());

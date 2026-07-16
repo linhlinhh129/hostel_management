@@ -258,7 +258,7 @@ public class MeterReadingDAO extends BaseDAO {
     }
 
     public boolean updateMeterReading(int meterId, int electric, int water, String electricImg, String waterImg) {
-        String sql = "UPDATE meter_readings SET electric = ?, water = ?, electric_img = ?, water_img = ?, updated_at = GETDATE() " +
+        String sql = "UPDATE meter_readings SET electric = ?, water = ?, electric_img = ?, water_img = ?, status = 'UPDATED', updated_at = GETDATE() " +
                      "WHERE meter_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -83,8 +83,9 @@ public class RequestServiceImpl implements RequestService {
             return null;
         }
 
-        int ownerManagerId = (Integer) ticket.get("managerId");
-        if (ownerManagerId != managerId) {
+        Integer ownerManagerId = (Integer) ticket.get("managerId");
+        Integer senderId = (Integer) ticket.get("senderId");
+        if ((ownerManagerId == null || ownerManagerId != managerId) && (senderId == null || senderId != managerId)) {
             throw new java.nio.file.AccessDeniedException("Bạn không quản lý cơ sở của yêu cầu này.");
         }
 
@@ -119,18 +120,6 @@ public class RequestServiceImpl implements RequestService {
                 h2.put("sequence", 2);
                 h2.put("performedAtRaw", ticket.get("updatedAtRaw"));
                 historyList.add(h2);
-
-                if ("ASSIGNED".equals(status) || "IN_PROGRESS".equals(status) || "DONE".equals(status)
-                        || "RESOLVED".equals(status)) {
-                    java.util.Map<String, Object> h3 = new java.util.HashMap<>();
-                    h3.put("action", "Phân công xử lý");
-                    h3.put("performedAt", updatedAt);
-                    h3.put("performedBy", "Ban Quản lý");
-                    h3.put("note", "Phân công cho nhân viên: " + assignedOperatorName);
-                    h3.put("sequence", 3);
-                    h3.put("performedAtRaw", ticket.get("updatedAtRaw"));
-                    historyList.add(h3);
-                }
 
                 if ("DONE".equals(status) || "RESOLVED".equals(status)) {
                     java.util.Map<String, Object> h4 = new java.util.HashMap<>();
@@ -354,8 +343,9 @@ public class RequestServiceImpl implements RequestService {
             throw new IllegalStateException("Manager không có quyền dời lịch hẹn sự cố của Operator.");
         }
 
-        int ownerManagerId = (Integer) ticket.get("managerId");
-        if (ownerManagerId != managerId) {
+        Integer ownerManagerId = (Integer) ticket.get("managerId");
+        Integer senderId = (Integer) ticket.get("senderId");
+        if ((ownerManagerId == null || ownerManagerId != managerId) && (senderId == null || senderId != managerId)) {
             throw new java.nio.file.AccessDeniedException("Bạn không quản lý cơ sở của yêu cầu này.");
         }
 

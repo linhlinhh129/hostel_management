@@ -267,7 +267,7 @@ public class PaymentDAO extends BaseDAO {
                      
                      dto.setInvoiceCode(rs.getString("invoice_code"));
                      java.sql.Date dueD = rs.getDate("due_date");
-                     if (dueD != null) dto.setDueDate(dueD.toString());
+                      if (dueD != null) dto.setDueDate(new java.text.SimpleDateFormat("dd/MM/yyyy").format(dueD));
                      dto.setInvoiceTotal(rs.getBigDecimal("invoice_total"));
                      dto.setInvoiceNote(rs.getString("invoice_note"));
                      

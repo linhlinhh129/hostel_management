@@ -97,12 +97,15 @@
                                   <c:out value="${c.tenantIdentityNumber}" />
                                 </small>
                               </td>
-                              <td class="d-none d-md-table-cell">
-                                <c:out value="${c.signedDate}" />
+                               <td class="d-none d-md-table-cell">
+                                <fmt:parseDate value="${c.signedDate}" pattern="yyyy-MM-dd" var="parsedSignedDate" type="date" />
+                                <fmt:formatDate value="${parsedSignedDate}" pattern="dd/MM/yyyy" />
                               </td>
                               <td class="d-none d-md-table-cell">
-                                <c:out value="${c.startDate}" /> -
-                                <c:out value="${c.endDate}" />
+                                <fmt:parseDate value="${c.startDate}" pattern="yyyy-MM-dd" var="parsedStartDate" type="date" />
+                                <fmt:formatDate value="${parsedStartDate}" pattern="dd/MM/yyyy" /> -
+                                <fmt:parseDate value="${c.endDate}" pattern="yyyy-MM-dd" var="parsedEndDate" type="date" />
+                                <fmt:formatDate value="${parsedEndDate}" pattern="dd/MM/yyyy" />
                               </td>
                               <td>
                                 <c:choose>

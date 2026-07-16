@@ -498,12 +498,15 @@ public class NotificationDAO extends BaseDAO {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder incorrectSql = new StringBuilder(
                 "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
-                "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount " +
+                "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount, " +
+                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
+                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
+                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                 "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
-                "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL"
+                "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED', 'UPDATED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL"
         );
         List<Object> incParams = new ArrayList<>();
         incParams.add(managerId);
@@ -538,6 +541,9 @@ public class NotificationDAO extends BaseDAO {
                     item.put("water", rs.getInt("water"));
                     item.put("meterStatus", rs.getString("meter_status"));
                     item.put("totalAmount", rs.getDouble("total_amount"));
+                    item.put("ticketStatus", rs.getString("ticket_status"));
+                    item.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
+                    item.put("operatorName", rs.getString("operator_name"));
                     
                     java.sql.Date rDate = rs.getDate("reading_date");
                     if (rDate != null) {
@@ -741,7 +747,10 @@ public class NotificationDAO extends BaseDAO {
     public Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId) {
         Map<String, Object> invoice = null;
         String sql = "SELECT i.*, r.code AS room_code, f.facility_id, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
-                "mr.electric, mr.water, mr.reading_date " +
+                "mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, " +
+                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
+                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
+                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
@@ -761,6 +770,10 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("electric", rs.getInt("electric"));
                     invoice.put("water", rs.getInt("water"));
                     invoice.put("totalAmount", rs.getDouble("total_amount"));
+                    invoice.put("meterStatus", rs.getString("meter_status"));
+                    invoice.put("ticketStatus", rs.getString("ticket_status"));
+                    invoice.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
+                    invoice.put("operatorName", rs.getString("operator_name"));
 
                     java.sql.Date rDate = rs.getDate("reading_date");
                     if (rDate != null) {

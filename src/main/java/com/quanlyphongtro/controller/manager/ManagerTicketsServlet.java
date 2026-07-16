@@ -147,7 +147,7 @@ public class ManagerTicketsServlet extends BaseServlet {
             logger.error("Failed to query ticket detail", e);
         }
 
-        if (ticket == null) {
+        if (ticket == null || "UTILITY".equals(ticket.get("category"))) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
