@@ -11,6 +11,10 @@ public class MeterStatusDTO {
     private Integer currentWaterReading;
     private Timestamp updatedAt;
     private String status;
+    private Integer meterId;
+    private String electricImg;
+    private String waterImg;
+    private String updatedByName;
 
     public MeterStatusDTO() {}
 
@@ -76,5 +80,37 @@ public class MeterStatusDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getMeterId() {
+        return meterId;
+    }
+
+    public void setMeterId(Integer meterId) {
+        this.meterId = meterId;
+    }
+
+    public String getElectricImg() {
+        return electricImg;
+    }
+
+    public void setElectricImg(String electricImg) {
+        this.electricImg = electricImg;
+    }
+
+    public String getWaterImg() {
+        return waterImg;
+    }
+
+    public void setWaterImg(String waterImg) {
+        this.waterImg = waterImg;
+    }
+
+    public String getUpdatedByName() {
+        return updatedByName;
+    }
+
+    public void setUpdatedByName(String updatedByName) {
+        this.updatedByName = updatedByName;
     }
 }

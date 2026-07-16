@@ -65,9 +65,8 @@ public class AdminSystemConfigServlet extends BaseServlet {
                 String port = request.getParameter("port");
                 String username = request.getParameter("username");
                 String password = request.getParameter("password");
-                String from = request.getParameter("from");
 
-                configService.updateEmailConfig(host, port, username, password, from, currentUser.getId());
+                configService.updateEmailConfig(host, port, username, password, username, currentUser.getId());
                 response.sendRedirect(request.getContextPath() + "/admin/system-config?success=email_updated");
                 return;
 

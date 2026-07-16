@@ -151,6 +151,8 @@ public class AdminPersonnelServlet extends BaseServlet {
         UserSessionDTO me = getCurrentUser(req);
         int createdBy = (me != null && me.getId() != null) ? me.getId() : 0;
 
+        String loginLink = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/login";
+
         personnelService.create(
             req.getParameter("fullName"),
             req.getParameter("email"),
@@ -161,7 +163,8 @@ public class AdminPersonnelServlet extends BaseServlet {
             req.getParameter("gender"),
             req.getParameter("permanentAddress"),
             req.getParameter("facilityId"),
-            createdBy
+            createdBy,
+            loginLink
         );
 
         setFlashMessage(req, "success", "Tạo nhân sự thành công.");

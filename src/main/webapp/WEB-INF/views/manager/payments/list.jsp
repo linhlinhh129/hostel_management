@@ -28,69 +28,54 @@
 
                 <%-- Filter bar --%>
                   <div class="data-surface">
-                    <form method="get" action="${ctx}/manager/payments" id="filterForm" class="mb-4 p-3 rounded"
-                      style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
-                      <div class="row g-3 align-items-end">
-                        <div class="col-12 col-md-3">
-                          <label class="form-label"
-                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm
-                            kiếm</label>
+                    <form method="get" action="${ctx}/manager/payments" id="filterForm"
+                      style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                      <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                        <div style="flex:2; min-width:180px;">
+                          <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
                           <input type="text" class="form-control" name="keyword" value="<c:out value='${keyword}'/>"
-                            placeholder="Mã GD, phòng, người thuê..." />
+                            placeholder="Mã GD, phòng, người thuê..." style="width:100%"/>
                         </div>
-
-                        <div class="col-12 col-md-2">
-                          <label class="form-label"
-                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng
-                            thái</label>
-                          <select class="form-select" name="status">
+                        <div style="flex:1; min-width:140px;">
+                          <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
+                          <select class="form-select" name="status" style="width:100%">
                             <option value="">Tất cả</option>
-                            <option value="PENDING" ${status=='PENDING' ? 'selected' : '' }>Chờ duyệt</option>
-                            <option value="SUCCESS" ${status=='SUCCESS' ? 'selected' : '' }>Thành công</option>
-                            <option value="REJECTED" ${status=='REJECTED' ? 'selected' : '' }>Từ chối</option>
+                            <option value="PENDING"  ${status=='PENDING'  ? 'selected' : ''}>Chờ duyệt</option>
+                            <option value="SUCCESS"  ${status=='SUCCESS'  ? 'selected' : ''}>Thành công</option>
+                            <option value="REJECTED" ${status=='REJECTED' ? 'selected' : ''}>Từ chối</option>
                           </select>
                         </div>
-
-                        <div class="col-12 col-md-4">
-                          <label class="form-label"
-                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Thời
-                            gian thanh toán</label>
+                        <div style="flex:2; min-width:200px;">
+                          <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Khoảng thời gian</label>
                           <div class="input-group">
-                            <input type="date" class="form-control" name="fromDate" value="<c:out value='${fromDate}'/>"
-                              id="fromDate" title="Từ ngày" />
+                            <input type="date" class="form-control" name="fromDate" value="<c:out value='${fromDate}'/>" id="fromDate" title="Từ ngày"/>
                             <span class="input-group-text bg-light text-muted border-start-0 border-end-0">đến</span>
-                            <input type="date" class="form-control" name="toDate" value="<c:out value='${toDate}'/>"
-                              id="toDate" title="Đến ngày" />
+                            <input type="date" class="form-control" name="toDate"   value="<c:out value='${toDate}'/>"   id="toDate"   title="Đến ngày"/>
                           </div>
                         </div>
-
-                        <div class="col-12 col-md-3">
-                          <label class="form-label"
-                            style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Kỳ
-                            thanh toán</label>
+                        <div style="flex:1; min-width:160px;">
+                          <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Kỳ thanh toán</label>
                           <div class="input-group">
                             <select class="form-select" name="month" id="month">
                               <option value="">Tháng</option>
                               <c:forEach var="m" begin="1" end="12">
-                                <option value="${m}" ${month==m.toString() ? 'selected' : '' }>T${m}</option>
+                                <option value="${m}" ${month==m.toString() ? 'selected' : ''}>T${m}</option>
                               </c:forEach>
                             </select>
                             <select class="form-select" name="year" id="year">
                               <option value="">Năm</option>
                               <c:forEach var="y" begin="2020" end="2030">
-                                <option value="${y}" ${year==y.toString() ? 'selected' : '' }>${y}</option>
+                                <option value="${y}" ${year==y.toString() ? 'selected' : ''}>${y}</option>
                               </c:forEach>
                             </select>
                           </div>
                         </div>
-
-                        <div class="col-12 d-flex justify-content-end gap-2 mt-3 pt-2"
-                          style="border-top: 1px dashed var(--hms-border);">
-                          <a href="${ctx}/manager/payments" class="btn btn-light border text-decoration-none"
-                            style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa bộ lọc</a>
-                          <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc dữ
-                            liệu</button>
-                        </div>
+                      </div>
+                      <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
+                        <a href="${ctx}/manager/payments"
+                           style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
+                        <button type="submit"
+                                style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm kiếm</button>
                       </div>
                     </form>
 
