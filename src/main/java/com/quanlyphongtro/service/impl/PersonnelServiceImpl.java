@@ -243,19 +243,6 @@ public class PersonnelServiceImpl implements PersonnelService {
         personnelDAO.updateStatus(id, newStatus);
     }
 
-    @Override
-    public void softDelete(int id, int currentUserId) throws NotFoundException, ValidationException {
-        if (currentUserId == id)
-            throw new ValidationException("Không thể xóa tài khoản của chính mình.");
-
-        User user = personnelDAO.findById(id).orElseThrow(NotFoundException::new);
-        if (!"INACTIVE".equals(user.getStatus()))
-            throw new ValidationException("Chỉ có thể xóa nhân sự đang ở trạng thái bị khóa.");
-
-        int affected = personnelDAO.softDelete(id);
-        if (affected == 0)
-            throw new ValidationException("Xóa nhân sự thất bại. Vui lòng thử lại.");
-    }
 
     // ── Private helpers ───────────────────────────────────────────────────
 
