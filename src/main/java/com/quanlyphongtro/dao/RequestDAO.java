@@ -185,6 +185,21 @@ public class RequestDAO extends BaseDAO {
         return list;
     }
 
+    public List<String> getDistinctCategories() {
+        List<String> categories = new ArrayList<>();
+        String sql = "SELECT DISTINCT category FROM requests WHERE category IS NOT NULL AND deleted_at IS NULL ORDER BY category";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                categories.add(rs.getString("category"));
+            }
+        } catch (SQLException e) {
+            logger.error("getDistinctCategories failed", e);
+        }
+        return categories;
+    }
+
     public boolean completeRequest(int requestId, String notes, String attachmentUrls2) {
         String sql = "UPDATE requests SET status = 'DONE', rejection_reason = ?, attachment_urls2 = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -251,11 +266,16 @@ public class RequestDAO extends BaseDAO {
         return false;
     }
 
-    public int countIncidentsBySender(int senderId) {
-        String sql = "SELECT COUNT(*) FROM requests rq WHERE rq.sender_id = ? AND rq.deleted_at IS NULL";
+    public int countIncidentsBySender(int senderId, String status, String category) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM requests rq WHERE rq.sender_id = ? AND rq.deleted_at IS NULL");
+        if (status != null && !status.isEmpty()) sql.append(" AND rq.status = ?");
+        if (category != null && !category.isEmpty()) sql.append(" AND rq.category = ?");
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, senderId);
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, senderId);
+            if (status != null && !status.isEmpty()) ps.setString(paramIndex++, status);
+            if (category != null && !category.isEmpty()) ps.setString(paramIndex++, category);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next())
                     return rs.getInt(1);
@@ -266,21 +286,26 @@ public class RequestDAO extends BaseDAO {
         return 0;
     }
 
-    public List<Request> getIncidentsBySender(int senderId, int offset, int limit) {
+    public List<Request> getIncidentsBySender(int senderId, String status, String category, int offset, int limit) {
         List<Request> list = new ArrayList<>();
-        String sql = "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
+        StringBuilder sql = new StringBuilder("SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
                 "FROM requests rq " +
                 "LEFT JOIN users u ON rq.sender_id = u.user_id " +
                 "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
                 "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
-                "WHERE rq.sender_id = ? AND rq.deleted_at IS NULL " +
-                "ORDER BY rq.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "WHERE rq.sender_id = ? AND rq.deleted_at IS NULL ");
+        if (status != null && !status.isEmpty()) sql.append(" AND rq.status = ?");
+        if (category != null && !category.isEmpty()) sql.append(" AND rq.category = ?");
+        sql.append(" ORDER BY rq.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, senderId);
-            ps.setInt(2, offset);
-            ps.setInt(3, limit);
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, senderId);
+            if (status != null && !status.isEmpty()) ps.setString(paramIndex++, status);
+            if (category != null && !category.isEmpty()) ps.setString(paramIndex++, category);
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex++, limit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapRow(rs));

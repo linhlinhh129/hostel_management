@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:set var="activeMenu" value="tickets"/>
 <!DOCTYPE html>
 <html lang="vi">
@@ -68,10 +69,23 @@
                             <label style="font-size: 12px; font-weight: 600; color: var(--color-steel); margin-bottom: 4px; display: block;">THỂ LOẠI</label>
                             <select name="category" class="form-select mintlify-text-input w-100 shadow-sm" style="padding: 8px 12px; font-size: 14px;" onchange="this.form.submit()">
                                 <option value="">Tất cả</option>
-                                <option value="Điện lạnh" ${paramCategory == 'Điện lạnh' ? 'selected' : ''}>Điện lạnh</option>
-                                <option value="Điện nước" ${paramCategory == 'Điện nước' ? 'selected' : ''}>Điện nước</option>
-                                <option value="Mộc" ${paramCategory == 'Mộc' ? 'selected' : ''}>Mộc</option>
-                                <option value="Khác" ${paramCategory == 'Khác' ? 'selected' : ''}>Khác</option>
+                                <c:forEach var="cat" items="${availableCategories}">
+                                    <c:if test="${cat != 'Khác'}">
+                                        <option value="${cat}" ${paramCategory == cat ? 'selected' : ''}>
+                                            <c:choose>
+                                                <c:when test="${cat == 'ELECTRIC'}">Điện</c:when>
+                                                <c:when test="${cat == 'WATER'}">Nước</c:when>
+                                                <c:when test="${cat == 'INTERNET'}">Internet</c:when>
+                                                <c:when test="${cat == 'INFRASTRUCTURE'}">Cơ sở vật chất</c:when>
+                                                <c:when test="${cat == 'MAINTENANCE'}">Bảo trì</c:when>
+                                                <c:when test="${cat == 'CLEANING'}">Vệ sinh</c:when>
+                                                <c:when test="${cat == 'COMPLAINT'}">Khiếu nại</c:when>
+                                                <c:when test="${cat == 'OTHER'}">Khác</c:when>
+                                                <c:otherwise>${cat}</c:otherwise>
+                                            </c:choose>
+                                        </option>
+                                    </c:if>
+                                </c:forEach>
                             </select>
                         </div>
                         <c:if test="${not empty paramStatus or not empty paramCategory}">
@@ -111,27 +125,60 @@
                                         </tr>
                                     </c:when>
                                     <c:otherwise>
-                                        <c:forEach var="req" items="${requestList}">
+                                        <c:forEach var="req" items="${requestList}" varStatus="loop">
                                             <tr>
-                                                <td class="d-none d-md-table-cell" style="font-family: 'Geist Mono', monospace; font-size: 13px;">${req.code}</td>
+                                                <td class="d-none d-md-table-cell" style="font-family: 'Geist Mono', monospace; font-size: 13px;">
+                                                    <c:set var="facCode" value="" />
+                                                    <c:choose>
+                                                        <c:when test="${not empty req.code and fn:startsWith(req.code, 'REQ-') and fn:contains(req.code, '-')}">
+                                                            <c:set var="parts" value="${fn:split(req.code, '-')}" />
+                                                            <c:if test="${fn:length(parts) > 1}">
+                                                                <c:set var="facCode" value="${fn:substring(parts[1], 0, 2)}" />
+                                                            </c:if>
+                                                        </c:when>
+                                                        <c:when test="${not empty req.roomCode}">
+                                                            <c:set var="facCode" value="${fn:substring(req.roomCode, 0, 2)}" />
+                                                        </c:when>
+                                                    </c:choose>
+                                                    <c:if test="${empty facCode}">
+                                                        <c:set var="facCode" value="CG" />
+                                                    </c:if>
+                                                    REQ-${facCode}-<fmt:formatNumber value="${(currentPage != null ? (currentPage - 1) * 20 : 0) + loop.count}" pattern="0001"/>
+                                                </td>
                                                 <td style="font-weight: 500; color: var(--color-ink); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                                     ${req.title}
                                                 </td>
                                                 <td class="d-none d-md-table-cell">${req.displayLocation}</td>
-                                                <td class="d-none d-lg-table-cell"><span class="mintlify-badge-type" style="text-transform: uppercase;">${req.category}</span></td>
+                                                <td class="d-none d-lg-table-cell">
+                                                    <span class="mintlify-badge-type" style="text-transform: uppercase;">
+                                                        <c:choose>
+                                                            <c:when test="${req.category == 'MAINTENANCE'}">BẢO TRÌ</c:when>
+                                                            <c:when test="${req.category == 'CLEANING'}">VỆ SINH</c:when>
+                                                            <c:when test="${req.category == 'COMPLAINT'}">KHIẾU NẠI</c:when>
+                                                            <c:when test="${req.category == 'OTHER'}">KHÁC</c:when>
+                                                            <c:otherwise>${req.category}</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
+                                                </td>
                                                 <td class="d-none d-md-table-cell"><fmt:formatDate value="${req.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${req.status == 'PENDING'}">
                                                             <span class="mintlify-badge-status-pending">CHỜ XỬ LÝ</span>
                                                         </c:when>
+                                                        <c:when test="${req.status == 'RECEIVED'}">
+                                                            <span class="mintlify-badge-type" style="background-color: #e3f2fd; color: #1976d2;">ĐÃ TIẾP NHẬN</span>
+                                                        </c:when>
+                                                        <c:when test="${req.status == 'ASSIGNED'}">
+                                                            <span class="mintlify-badge-type">ĐÃ PHÂN CÔNG</span>
+                                                        </c:when>
                                                         <c:when test="${req.status == 'IN_PROGRESS'}">
                                                             <span class="mintlify-badge-status-inprogress">ĐANG XỬ LÝ</span>
                                                         </c:when>
-                                                        <c:when test="${req.status == 'COMPLETED'}">
+                                                        <c:when test="${req.status == 'COMPLETED' or req.status == 'DONE' or req.status == 'RESOLVED'}">
                                                             <span class="mintlify-badge-status-resolved" style="background-color: var(--color-surface-soft); color: var(--color-brand-annotate); padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">HOÀN THÀNH</span>
                                                         </c:when>
-                                                        <c:when test="${req.status == 'REJECTED'}">
+                                                        <c:when test="${req.status == 'REJECTED' or req.status == 'CANCELLED'}">
                                                             <span class="mintlify-badge-status-rejected">TỪ CHỐI</span>
                                                         </c:when>
                                                         <c:otherwise>

@@ -6,9 +6,11 @@
   - [x] Code logic ánh xạ `/operator/meter-readings/history`.
   - [x] Code logic lấy tham số `month` và `year` từ request, đổ dữ liệu xuống DAO.
 - [x] **3. Tạo mới Frontend (JSP) cho "Lịch sử"**
-  - [x] Copy `list.jsp` sang file mới `history.jsp`.
-  - [x] Thêm bộ lọc Tháng/Năm vào `history.jsp`.
-  - [x] Xóa bỏ cột "Thao tác" (chứa nút Cập nhật/Sửa) ở `history.jsp`.
+  - [x] Tạo `history.jsp` bằng cách copy `list.jsp`.
+  - [x] Bỏ cột "Thao tác" cũ (nút Nhập số / Sửa).
+  - [x] Thêm cột "Thao tác" mới với nút **Chi tiết** cho các bản ghi đã cập nhật.
+  - [x] Thêm Bootstrap Modal để hiển thị chi tiết (ảnh công tơ, số tiêu thụ, người cập nhật).
+  - [x] Thêm JavaScript đọc dữ liệu từ data attributes để đổ vào Modal. ở `history.jsp`.
 - [x] **4. Cập nhật Sidebar Menu**
   - [x] Mở file `sidebar.jsp`.
   - [x] Thêm link mới cho "Lịch sử điện nước" trỏ tới `/operator/meter-readings/history`.

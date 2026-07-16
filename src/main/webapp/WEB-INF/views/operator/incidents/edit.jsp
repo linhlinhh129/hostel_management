@@ -1,6 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<c:set var="activeMenu" value="incident-report"/>
+<c:choose>
+    <c:when test="${source == 'requests'}">
+        <c:set var="activeMenu" value="requests" scope="request"/>
+    </c:when>
+    <c:otherwise>
+        <c:set var="activeMenu" value="my-incidents" scope="request"/>
+    </c:otherwise>
+</c:choose>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -25,7 +32,23 @@
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="card-title fw-bold mb-0">Cập nhật thông tin sự cố</h5>
-                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">PENDING</span>
+                            <c:choose>
+                                <c:when test="${requestObj.status == 'PENDING' || empty requestObj.status}">
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">CHỜ XỬ LÝ</span>
+                                </c:when>
+                                <c:when test="${requestObj.status == 'IN_PROGRESS'}">
+                                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill">ĐANG XỬ LÝ</span>
+                                </c:when>
+                                <c:when test="${requestObj.status == 'COMPLETED' || requestObj.status == 'DONE'}">
+                                    <span class="badge bg-success px-3 py-2 rounded-pill">HOÀN THÀNH</span>
+                                </c:when>
+                                <c:when test="${requestObj.status == 'REJECTED'}">
+                                    <span class="badge bg-danger px-3 py-2 rounded-pill">TỪ CHỐI</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">${requestObj.status}</span>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         
                         <c:if test="${not empty error}">

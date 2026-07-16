@@ -25,6 +25,10 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append("    curr_mr.electric AS currentElectricReading, ");
         sqlBuilder.append("    curr_mr.water AS currentWaterReading, ");
         sqlBuilder.append("    curr_mr.updated_at AS updatedAt, ");
+        sqlBuilder.append("    curr_mr.meter_id AS meterId, ");
+        sqlBuilder.append("    curr_mr.electric_img AS electricImg, ");
+        sqlBuilder.append("    curr_mr.water_img AS waterImg, ");
+        sqlBuilder.append("    u.full_name AS updatedByName, ");
         sqlBuilder.append("    CASE ");
         sqlBuilder.append("        WHEN curr_mr.meter_id IS NOT NULL THEN 'DA_CAP_NHAT' ");
         sqlBuilder.append("        ELSE 'CHUA_CAP_NHAT' ");
@@ -36,6 +40,7 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append("    AND MONTH(curr_mr.reading_date) = ? ");
         sqlBuilder.append("    AND YEAR(curr_mr.reading_date) = ? ");
         sqlBuilder.append("    AND curr_mr.deleted_at IS NULL ");
+        sqlBuilder.append("LEFT JOIN users u ON curr_mr.created_by = u.user_id ");
         sqlBuilder.append("OUTER APPLY ( ");
         sqlBuilder.append("    SELECT TOP 1 electric, water ");
         sqlBuilder.append("    FROM meter_readings ");
@@ -100,6 +105,13 @@ public class MeterReadingDAO extends BaseDAO {
                     
                     dto.setUpdatedAt(rs.getTimestamp("updatedAt"));
                     dto.setStatus(rs.getString("status"));
+                    
+                    int mId = rs.getInt("meterId");
+                    if (!rs.wasNull()) dto.setMeterId(mId);
+                    
+                    dto.setElectricImg(rs.getString("electricImg"));
+                    dto.setWaterImg(rs.getString("waterImg"));
+                    dto.setUpdatedByName(rs.getString("updatedByName"));
                     
                     list.add(dto);
                 }

@@ -133,9 +133,6 @@
                                             Quay lại danh sách</a>
                                     </div>
 
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <span class="mintlify-badge-type">${reqDetail.category}</span>
-                                    </div>
                                     <h1 class="mintlify-prose-title">${reqDetail.title}</h1>
                                     <div class="mintlify-prose-meta">Mã yêu cầu: <span
                                             style="font-family: 'Geist Mono', monospace;">${reqDetail.code}</span></div>
@@ -178,13 +175,19 @@
                                                     <c:when test="${reqDetail.status == 'PENDING'}">
                                                         <span class="mintlify-badge-status-pending">CHỜ XỬ LÝ</span>
                                                     </c:when>
+                                                    <c:when test="${reqDetail.status == 'RECEIVED'}">
+                                                        <span class="mintlify-badge-type" style="background-color: #e3f2fd; color: #1976d2;">ĐÃ TIẾP NHẬN</span>
+                                                    </c:when>
+                                                    <c:when test="${reqDetail.status == 'ASSIGNED'}">
+                                                        <span class="mintlify-badge-type">ĐÃ PHÂN CÔNG</span>
+                                                    </c:when>
                                                     <c:when test="${reqDetail.status == 'IN_PROGRESS'}">
                                                         <span class="mintlify-badge-status-inprogress">ĐANG XỬ LÝ</span>
                                                     </c:when>
-                                                    <c:when test="${reqDetail.status == 'COMPLETED' || reqDetail.status == 'DONE'}">
+                                                    <c:when test="${reqDetail.status == 'COMPLETED' || reqDetail.status == 'DONE' || reqDetail.status == 'RESOLVED'}">
                                                         <span class="mintlify-badge-status-done" style="display:inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; background: var(--color-brand-green); color: var(--color-primary);">HOÀN THÀNH</span>
                                                     </c:when>
-                                                    <c:when test="${reqDetail.status == 'REJECTED'}">
+                                                    <c:when test="${reqDetail.status == 'REJECTED' || reqDetail.status == 'CANCELLED'}">
                                                         <span class="mintlify-badge-status-rejected">TỪ CHỐI</span>
                                                     </c:when>
                                                     <c:otherwise>
@@ -207,12 +210,6 @@
                                                 <fmt:formatDate value="${reqDetail.createdAtAsDate}" pattern="dd/MM/yyyy HH:mm:ss" />
                                             </div>
                                         </div>
-                                        <c:if test="${not empty reqDetail.assignedStaffId}">
-                                            <div class="mintlify-property-row">
-                                                <div class="mintlify-property-label">Nhân viên tiếp nhận</div>
-                                                <div class="mintlify-property-value" style="font-family: 'Geist Mono', monospace;">ID: ${reqDetail.assignedStaffId}</div>
-                                            </div>
-                                        </c:if>
                                         <c:if test="${reqDetail.status == 'REJECTED' && not empty reqDetail.rejectionReason}">
                                             <div class="mintlify-property-row" style="border-bottom: none;">
                                                 <div class="mintlify-property-label text-danger">Lý do từ chối</div>
@@ -276,12 +273,12 @@
                                                         </div>
                                                     </c:if>
                                                     
-                                                    <form action="${pageContext.request.contextPath}/operator/requests/detail" method="POST" class="m-0">
+                                                    <form action="${pageContext.request.contextPath}/operator/requests/detail" method="POST" class="m-0" onsubmit="return validateAppointment(this)">
                                                         <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                                         <input type="hidden" name="id" value="${reqDetail.requestId}" />
                                                         <input type="hidden" name="action" value="schedule" />
                                                         <div class="position-relative mb-3">
-                                                            <input type="datetime-local" name="appointmentDate" value="${reqDetail.appointScheduleForInput}" class="form-control shadow-sm" style="border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 14px; color: #334155; width: 100%; transition: all 0.2s; outline: none;" required onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.2)';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';" />
+                                                            <input type="datetime-local" id="appointmentDateInput" name="appointmentDate" value="${reqDetail.appointScheduleForInput}" class="form-control shadow-sm" style="border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 14px; color: #334155; width: 100%; transition: all 0.2s; outline: none;" required onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 0 3px rgba(56, 189, 248, 0.2)';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';" />
                                                         </div>
                                                         <button type="submit" class="w-100 btn d-flex align-items-center justify-content-center gap-2" style="background: #0ea5e9; color: white; border: none; padding: 10px; font-weight: 500; font-size: 14px; border-radius: 8px; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);" onmouseover="this.style.background='#0284c7'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#0ea5e9'; this.style.transform='translateY(0)';">
                                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -396,10 +393,14 @@
                     function openLightbox(src) {
                         document.getElementById('lightboxModal').style.display = "block";
                         document.getElementById('lightboxImage').src = src;
+                        var sidebar = document.querySelector('.sidebar');
+                        if (sidebar) sidebar.style.display = 'none';
                     }
 
                     function closeLightbox() {
                         document.getElementById('lightboxModal').style.display = "none";
+                        var sidebar = document.querySelector('.sidebar');
+                        if (sidebar) sidebar.style.display = '';
                     }
 
                     function openRejectModal() {
@@ -435,6 +436,8 @@
                         var lbModal = document.getElementById('lightboxModal');
                         if (event.target == lbModal) {
                             lbModal.style.display = "none";
+                            var sidebar = document.querySelector('.sidebar');
+                            if (sidebar) sidebar.style.display = '';
                         }
                         var rejectModal = document.getElementById('rejectModal');
                         if (event.target == rejectModal) {
@@ -444,6 +447,28 @@
                         if (event.target == completeModal) {
                             completeModal.style.display = "none";
                         }
+                    }
+
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var apptInput = document.getElementById("appointmentDateInput");
+                        if(apptInput) {
+                            var now = new Date();
+                            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                            apptInput.min = now.toISOString().slice(0, 16);
+                        }
+                    });
+
+                    function validateAppointment(form) {
+                        var apptInput = document.getElementById("appointmentDateInput");
+                        if(apptInput && apptInput.value) {
+                            var selectedDate = new Date(apptInput.value);
+                            var now = new Date();
+                            if(selectedDate < now) {
+                                alert("Không thể chọn lịch hẹn trong quá khứ. Vui lòng chọn thời gian từ hiện tại trở đi.");
+                                return false;
+                            }
+                        }
+                        return true;
                     }
                 </script>
             </body>

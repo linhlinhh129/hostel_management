@@ -35,15 +35,21 @@ public class MyIncidentListServlet extends BaseServlet {
 
         int offset = (page - 1) * limit;
 
+        String status = request.getParameter("status");
+        String category = request.getParameter("category");
+
         RequestDAO dao = new RequestDAO();
-        int total = dao.countIncidentsBySender(currentUser.getId());
-        List<Request> items = dao.getIncidentsBySender(currentUser.getId(), offset, limit);
+        int total = dao.countIncidentsBySender(currentUser.getId(), status, category);
+        List<Request> items = dao.getIncidentsBySender(currentUser.getId(), status, category, offset, limit);
         int totalPages = (int) Math.ceil((double) total / limit);
 
         request.setAttribute("items", items);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", total);
+        request.setAttribute("paramStatus", status);
+        request.setAttribute("paramCategory", category);
+        request.setAttribute("availableCategories", dao.getDistinctCategories());
 
         request.getRequestDispatcher("/WEB-INF/views/operator/incidents/list.jsp").forward(request, response);
     }

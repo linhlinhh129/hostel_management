@@ -61,6 +61,16 @@
         color: var(--hms-text-muted);
         cursor: default;
     }
+    .was-validated .profile-input:invalid,
+    .was-validated .profile-textarea:invalid,
+    .was-validated .profile-select:invalid {
+        border-color: var(--hms-danger);
+    }
+    .was-validated .profile-input:invalid ~ .invalid-feedback,
+    .was-validated .profile-textarea:invalid ~ .invalid-feedback,
+    .was-validated .profile-select:invalid ~ .invalid-feedback {
+        display: block;
+    }
     .profile-input.is-invalid {
         border-color: var(--hms-danger);
     }
@@ -223,9 +233,7 @@
                                         <label class="profile-field-label">Họ và tên<span class="required">*</span></label>
                                         <input type="text" class="profile-input" name="fullName"
                                                value="<c:out value='${userProfile.fullName}'/>" required>
-                                        <p class="profile-hint" style="color:var(--hms-danger);display:none" id="fullNameErr">
-                                            Vui lòng nhập họ và tên.
-                                        </p>
+                                        <div class="invalid-feedback">Vui lòng nhập họ và tên.</div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="profile-field-label">Email</label>
@@ -234,19 +242,22 @@
                                         <p class="profile-hint">Liên hệ Admin nếu muốn đổi email.</p>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Số điện thoại</label>
+                                        <label class="profile-field-label">Số điện thoại<span class="required">*</span></label>
                                         <input type="text" class="profile-input" name="phone"
-                                               value="<c:out value='${userProfile.phone}'/>">
+                                               value="<c:out value='${userProfile.phone}'/>" required>
+                                        <div class="invalid-feedback">Vui lòng nhập số điện thoại.</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Số CCCD / CMND</label>
+                                        <label class="profile-field-label">Số CCCD / CMND<span class="required">*</span></label>
                                         <input type="text" class="profile-input" name="identityNumber"
-                                               value="<c:out value='${userProfile.identityNumber}'/>">
+                                               value="<c:out value='${userProfile.identityNumber}'/>" required>
+                                        <div class="invalid-feedback">Vui lòng nhập số CCCD / CMND.</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Ngày sinh</label>
+                                        <label class="profile-field-label">Ngày sinh<span class="required">*</span></label>
                                         <input type="date" class="profile-input" name="dob"
-                                               value="<c:out value='${userProfile.dob}'/>">
+                                               value="<c:out value='${userProfile.dob}'/>" required>
+                                        <div class="invalid-feedback">Vui lòng chọn ngày sinh.</div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="profile-field-label">Giới tính</label>
@@ -258,9 +269,10 @@
                                         </select>
                                     </div>
                                     <div class="col-12">
-                                        <label class="profile-field-label">Địa chỉ thường trú</label>
+                                        <label class="profile-field-label">Địa chỉ thường trú<span class="required">*</span></label>
                                         <textarea class="profile-textarea" name="permanentAddress"
-                                                  rows="2"><c:out value="${userProfile.permanentAddress}"/></textarea>
+                                                  rows="2" required><c:out value="${userProfile.permanentAddress}"/></textarea>
+                                        <div class="invalid-feedback">Vui lòng nhập địa chỉ thường trú.</div>
                                     </div>
                                 </div>
 
