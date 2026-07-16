@@ -25,11 +25,24 @@ public class TenantContractServlet extends BaseServlet {
             String idParam = req.getParameter("id");
 
             if (idParam == null || idParam.trim().isEmpty()) {
-                // View Contract List
                 List<Contract> contracts = contractService.getContractsByTenant(currentUser.getId());
-                req.setAttribute("contracts", contracts);
-                req.setAttribute("activeMenu", "contracts");
-                req.getRequestDispatcher("/WEB-INF/views/tenant/contracts/list.jsp").forward(req, resp);
+                if (contracts == null || contracts.isEmpty()) {
+                    req.setAttribute("activeMenu", "contracts");
+                    req.getRequestDispatcher("/WEB-INF/views/tenant/contracts/list.jsp").forward(req, resp);
+                } else {
+                    // Forward directly to the latest contract details
+                    Contract latestContract = contracts.get(0);
+                    Contract contract = contractService.getContractDetailForTenant(latestContract.getContractId(), currentUser.getId());
+                    if (contract == null) {
+                        req.setAttribute("contracts", contracts);
+                        req.setAttribute("activeMenu", "contracts");
+                        req.getRequestDispatcher("/WEB-INF/views/tenant/contracts/list.jsp").forward(req, resp);
+                    } else {
+                        req.setAttribute("contract", contract);
+                        req.setAttribute("activeMenu", "contracts");
+                        req.getRequestDispatcher("/WEB-INF/views/tenant/contracts/detail.jsp").forward(req, resp);
+                    }
+                }
             } else {
                 // View Contract Detail
                 int contractId;

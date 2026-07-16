@@ -24,7 +24,8 @@ import java.util.Map;
         "/manager/contracts/create",
         "/manager/contracts/detail",
         "/manager/contracts/add-tenant",
-        "/manager/contracts/delete"
+        "/manager/contracts/delete",
+        "/manager/contracts/extend"
 })
 public class ContractServlet extends BaseServlet {
 
@@ -97,14 +98,17 @@ public class ContractServlet extends BaseServlet {
         String path = req.getServletPath();
         if ("/manager/contracts/create".equals(path)) {
             UserSessionDTO user = getCurrentUser(req);
+            Contract contract = new Contract();
             try {
                 if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
                     return;
                 }
 
-                Contract contract = new Contract();
-                contract.setRoomId(Integer.parseInt(req.getParameter("roomId")));
+                String roomIdStr = req.getParameter("roomId");
+                if (roomIdStr != null && !roomIdStr.trim().isEmpty()) {
+                    contract.setRoomId(Integer.parseInt(roomIdStr));
+                }
 
                 String tenantIdStr = req.getParameter("tenantId");
                 if (tenantIdStr != null && !tenantIdStr.trim().isEmpty()) {
@@ -114,20 +118,83 @@ public class ContractServlet extends BaseServlet {
                 contract.setTenantFullName(req.getParameter("tenantFullName"));
                 String dobStr = req.getParameter("tenantDob");
                 if (dobStr != null && !dobStr.trim().isEmpty()) {
-                    contract.setTenantDob(LocalDate.parse(dobStr));
+                    try {
+                        contract.setTenantDob(LocalDate.parse(dobStr));
+                    } catch (Exception ex) {
+                        logger.warn("Failed to parse tenantDob: {}", dobStr);
+                    }
                 }
                 contract.setTenantPermanentAddress(req.getParameter("tenantPermanentAddress"));
                 contract.setTenantIdentityNumber(req.getParameter("tenantIdentityNumber"));
                 String issueDateStr = req.getParameter("tenantIdentityIssueDate");
                 if (issueDateStr != null && !issueDateStr.trim().isEmpty()) {
-                    contract.setTenantIdentityIssueDate(LocalDate.parse(issueDateStr));
+                    try {
+                        contract.setTenantIdentityIssueDate(LocalDate.parse(issueDateStr));
+                    } catch (Exception ex) {
+                        logger.warn("Failed to parse tenantIdentityIssueDate: {}", issueDateStr);
+                    }
                 }
                 contract.setTenantIdentityIssuePlace(req.getParameter("tenantIdentityIssuePlace"));
                 contract.setTenantPhone(req.getParameter("tenantPhone"));
                 contract.setAmountInWords(req.getParameter("amountInWords"));
-                contract.setSignedDate(LocalDate.parse(req.getParameter("signedDate")));
-                contract.setStartDate(LocalDate.parse(req.getParameter("startDate")));
-                contract.setEndDate(LocalDate.parse(req.getParameter("endDate")));
+                
+                String signedDateStr = req.getParameter("signedDate");
+                if (signedDateStr != null && !signedDateStr.trim().isEmpty()) {
+                    try {
+                        contract.setSignedDate(LocalDate.parse(signedDateStr));
+                    } catch (Exception ex) {
+                        logger.warn("Failed to parse signedDate: {}", signedDateStr);
+                    }
+                }
+                
+                String startDateStr = req.getParameter("startDate");
+                if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+                    try {
+                        contract.setStartDate(LocalDate.parse(startDateStr));
+                    } catch (Exception ex) {
+                        logger.warn("Failed to parse startDate: {}", startDateStr);
+                    }
+                }
+                
+                String endDateStr = req.getParameter("endDate");
+                if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+                    try {
+                        contract.setEndDate(LocalDate.parse(endDateStr));
+                    } catch (Exception ex) {
+                        logger.warn("Failed to parse endDate: {}", endDateStr);
+                    }
+                }
+
+                if (contract.getRoomId() <= 0) {
+                    throw new IllegalArgumentException("Vui lòng chọn phòng thuê hợp lệ.");
+                }
+                if (contract.getSignedDate() == null) {
+                    throw new IllegalArgumentException("Vui lòng chọn ngày ký hợp đồng hợp lệ.");
+                }
+                if (contract.getStartDate() == null) {
+                    throw new IllegalArgumentException("Vui lòng chọn ngày bắt đầu hợp đồng hợp lệ.");
+                }
+                if (contract.getEndDate() == null) {
+                    throw new IllegalArgumentException("Vui lòng chọn ngày kết thúc hợp đồng hợp lệ.");
+                }
+
+                if (contract.getEndDate().isBefore(contract.getStartDate()) || contract.getEndDate().isEqual(contract.getStartDate())) {
+                    throw new IllegalArgumentException("Ngày hết hạn hợp đồng phải sau ngày bắt đầu hợp đồng.");
+                }
+                if (contract.getStartDate().isBefore(contract.getSignedDate())) {
+                    throw new IllegalArgumentException("Ngày bắt đầu hợp đồng phải bằng hoặc sau ngày ký hợp đồng.");
+                }
+                if (contract.getTenantDob() != null && contract.getTenantDob().isAfter(LocalDate.now())) {
+                    throw new IllegalArgumentException("Ngày sinh của người thuê không thể ở tương lai.");
+                }
+                if (contract.getTenantIdentityIssueDate() != null) {
+                    if (contract.getTenantIdentityIssueDate().isAfter(LocalDate.now())) {
+                        throw new IllegalArgumentException("Ngày cấp CCCD không thể ở tương lai.");
+                    }
+                    if (contract.getTenantDob() != null && !contract.getTenantIdentityIssueDate().isAfter(contract.getTenantDob())) {
+                        throw new IllegalArgumentException("Ngày cấp CCCD phải sau ngày sinh của người thuê.");
+                    }
+                }
 
                 if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(contract.getTenantPhone())) {
                     throw new IllegalArgumentException(
@@ -155,6 +222,7 @@ public class ContractServlet extends BaseServlet {
             } catch (Exception e) {
                 e.printStackTrace();
                 req.setAttribute("errorMessage", "Lỗi: " + e.getMessage());
+                req.setAttribute("contract", contract);
                 req.setAttribute("availableRooms", contractService.getAvailableRooms(user.getId()));
                 req.getRequestDispatcher("/WEB-INF/views/manager/contracts/create.jsp").forward(req, resp);
             }
@@ -178,6 +246,18 @@ public class ContractServlet extends BaseServlet {
                     return;
                 }
                 handleDeleteContract(req, resp);
+            } catch (Exception e) {
+                e.printStackTrace();
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi hệ thống");
+            }
+        } else if ("/manager/contracts/extend".equals(path)) {
+            try {
+                UserSessionDTO user = getCurrentUser(req);
+                if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                    return;
+                }
+                handleExtendContract(req, resp);
             } catch (Exception e) {
                 e.printStackTrace();
                 resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi hệ thống");
@@ -350,5 +430,46 @@ public class ContractServlet extends BaseServlet {
             setFlashMessage(req, "error", "Lỗi: " + e.getMessage());
             resp.sendRedirect(req.getContextPath() + "/manager/contracts");
         }
+    }
+
+    private void handleExtendContract(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        UserSessionDTO user = getCurrentUser(req);
+        String contractIdStr = req.getParameter("contractId");
+        String newEndDateStr = req.getParameter("newEndDate");
+
+        if (contractIdStr == null || contractIdStr.trim().isEmpty() || newEndDateStr == null || newEndDateStr.trim().isEmpty()) {
+            setFlashMessage(req, "error", "Thiếu tham số bắt buộc.");
+            resp.sendRedirect(req.getContextPath() + "/manager/contracts");
+            return;
+        }
+
+        int contractId;
+        try {
+            contractId = Integer.parseInt(contractIdStr.trim());
+        } catch (NumberFormatException e) {
+            setFlashMessage(req, "error", "ID hợp đồng không hợp lệ.");
+            resp.sendRedirect(req.getContextPath() + "/manager/contracts");
+            return;
+        }
+
+        try {
+            LocalDate newEndDate = LocalDate.parse(newEndDateStr.trim());
+            contractService.extendContract(contractId, newEndDate, user.getId());
+            
+            try {
+                AuditLogHelper.log(auditLogDAO, req, "contracts", contractId, "UPDATE", "Extend Contract", "New End Date: " + newEndDate, user.getId());
+            } catch (Exception ex) {
+                logger.warn("AuditLog failed after extend contract", ex);
+            }
+            
+            setFlashMessage(req, "success", "Gia hạn hợp đồng thành công!");
+        } catch (IllegalArgumentException e) {
+            setFlashMessage(req, "error", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Failed to extend contract contractId={}", contractId, e);
+            setFlashMessage(req, "error", "Lỗi khi gia hạn hợp đồng: " + e.getMessage());
+        }
+
+        resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contractId);
     }
 }

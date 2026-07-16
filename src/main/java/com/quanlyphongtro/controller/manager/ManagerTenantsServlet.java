@@ -280,6 +280,11 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
                 dob = LocalDate.parse(dobStr.trim());
+                if (dob.isAfter(LocalDate.now())) {
+                    setFlashMessage(req, "danger", "Ngày sinh của người phụ thuộc không thể ở tương lai.");
+                    resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                    return;
+                }
             } catch (Exception e) {
                 setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
                 resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
@@ -362,6 +367,26 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
+        }
+
+        String endDateStr = req.getParameter("endDate");
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            try {
+                LocalDate endDate = LocalDate.parse(endDateStr.trim());
+                java.util.Optional<com.quanlyphongtro.model.Room> roomOpt = tenantService.getTenantRoom(tenantId);
+                if (roomOpt.isPresent() && roomOpt.get().getContractStartDate() != null) {
+                    LocalDate startDate = roomOpt.get().getContractStartDate();
+                    if (endDate.isBefore(startDate)) {
+                        setFlashMessage(req, "danger", "Ngày kết thúc thuê không thể trước ngày bắt đầu hợp đồng (" + startDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
+                        resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                setFlashMessage(req, "danger", "Ngày kết thúc thuê không đúng định dạng (yyyy-MM-dd).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                return;
+            }
         }
 
         boolean success = tenantService.endRental(tenantId);
@@ -454,6 +479,15 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
                 dob = LocalDate.parse(dobStr.trim());
+                if (dob.isAfter(LocalDate.now())) {
+                    setFlashMessage(req, "danger", "Ngày sinh của người phụ thuộc không thể ở tương lai.");
+                    if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
+                        resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
+                    } else {
+                        resp.sendRedirect(req.getContextPath() + "/manager/dependents/" + dependentId);
+                    }
+                    return;
+                }
             } catch (Exception e) {
                 setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
                 if (tenantIdStr != null && !tenantIdStr.isEmpty()) {

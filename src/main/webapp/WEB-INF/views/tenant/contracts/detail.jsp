@@ -116,7 +116,6 @@
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
            style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
-          <a href="${ctx}/tenant/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
           <h1>
             Chi tiết Hợp đồng: <c:out value="${contract.code}"/>
             <c:choose>

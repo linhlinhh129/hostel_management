@@ -149,11 +149,11 @@ public class Request {
     public String getTypeLabel() {
         if (category == null) return "Khác";
         return switch (category) {
-            case "ELECTRIC" -> "⚡ Điện";
-            case "WATER" -> "💧 Nước";
-            case "INTERNET" -> "🌐 Internet";
-            case "INFRASTRUCTURE" -> "🏗 Cơ sở vật chất";
-            default -> "📌 Khác";
+            case "ELECTRIC" -> "Điện";
+            case "WATER" -> "Nước";
+            case "INTERNET" -> "Internet";
+            case "INFRASTRUCTURE" -> "Cơ sở vật chất";
+            default -> "Khác";
         };
     }
 

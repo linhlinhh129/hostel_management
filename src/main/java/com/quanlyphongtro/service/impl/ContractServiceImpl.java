@@ -54,10 +54,13 @@ public class ContractServiceImpl implements ContractService {
         Room room = roomOpt.get();
 
         // Validate manager has access to this room
-        Optional<Facility> facilityOpt = roomDAO.findFacilityByRoomId(room.getId() > 0 ? room.getId() : contract.getRoomId());
-        // Since RoomDAO.findById might set roomId or id, just use contract.getRoomId() directly
+        Optional<Facility> facilityOpt = roomDAO
+                .findFacilityByRoomId(room.getId() > 0 ? room.getId() : contract.getRoomId());
+        // Since RoomDAO.findById might set roomId or id, just use contract.getRoomId()
+        // directly
         facilityOpt = roomDAO.findFacilityByRoomId(contract.getRoomId());
-        if (facilityOpt.isEmpty() || facilityOpt.get().getManagerId() == null || facilityOpt.get().getManagerId() != managerId) {
+        if (facilityOpt.isEmpty() || facilityOpt.get().getManagerId() == null
+                || facilityOpt.get().getManagerId() != managerId) {
             throw new Exception("Bạn không có quyền tạo hợp đồng cho phòng này.");
         }
 
@@ -68,7 +71,8 @@ public class ContractServiceImpl implements ContractService {
         }
 
         // Generate Code: HD-RoomCode-YearMonthDay-Sequence
-        String code = "HD-" + room.getCode() + "-" + LocalDate.now().toString().replace("-", "") + "-" + System.currentTimeMillis() % 10000;
+        String code = "HD-" + room.getCode() + "-" + LocalDate.now().toString().replace("-", "") + "-"
+                + System.currentTimeMillis() % 10000;
         contract.setCode(code);
         contract.setStatus("ACTIVE");
         contract.setCreatedBy(managerId);
@@ -141,7 +145,9 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public Map<String, Object> addTenantFromContract(int contractId, int roomId, String fullName, String phone, String email, String identityNumber, String permanentAddress, String gender, String dobStr, String contractStartDateStr, boolean confirmReactivate, int managerId, String loginLink) throws Exception {
+    public Map<String, Object> addTenantFromContract(int contractId, int roomId, String fullName, String phone,
+            String email, String identityNumber, String permanentAddress, String gender, String dobStr,
+            String contractStartDateStr, boolean confirmReactivate, int managerId, String loginLink) throws Exception {
         Map<String, Object> result = new HashMap<>();
         // Validate inputs
         if (fullName == null || fullName.trim().isEmpty()) {
@@ -157,7 +163,8 @@ public class ContractServiceImpl implements ContractService {
             throw new IllegalArgumentException("Số điện thoại không được để trống.");
         }
         if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone.trim())) {
-            throw new IllegalArgumentException("Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+            throw new IllegalArgumentException(
+                    "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
         }
         if (identityNumber == null || identityNumber.trim().isEmpty()) {
             throw new IllegalArgumentException("Số CMND/CCCD không được để trống.");
@@ -171,16 +178,21 @@ public class ContractServiceImpl implements ContractService {
         Integer existingUserId = contractDAO.getUserIdByUsername(username);
 
         if (personnelDAO.existsByPhone(phone.trim(), existingUserId)) {
-            throw new IllegalArgumentException("Số điện thoại '" + phone.trim() + "' đã được sử dụng bởi tài khoản khác.");
+            throw new IllegalArgumentException(
+                    "Số điện thoại '" + phone.trim() + "' đã được sử dụng bởi tài khoản khác.");
         }
         if (personnelDAO.existsByIdentityNumber(identityNumber.trim(), existingUserId)) {
-            throw new IllegalArgumentException("Số CMND/CCCD '" + identityNumber.trim() + "' đã được sử dụng bởi tài khoản khác.");
+            throw new IllegalArgumentException(
+                    "Số CMND/CCCD '" + identityNumber.trim() + "' đã được sử dụng bởi tài khoản khác.");
         }
 
         String plainPassword = PasswordUtil.generateTempPassword();
         String passwordHash = PasswordUtil.hash(plainPassword);
 
         LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
+        if (dob != null && dob.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày sinh không thể ở tương lai.");
+        }
         LocalDate startDate = (contractStartDateStr != null && !contractStartDateStr.isEmpty())
                 ? LocalDate.parse(contractStartDateStr)
                 : LocalDate.now();
@@ -199,7 +211,8 @@ public class ContractServiceImpl implements ContractService {
             // Check active checks
             int activeCount = contractDAO.countActiveChecksForUser(userId);
             if (activeCount > 0) {
-                throw new IllegalArgumentException("Email/Tên đăng nhập đã tồn tại trong hệ thống và đang hoạt động ở phòng/cơ sở khác.");
+                throw new IllegalArgumentException(
+                        "Email/Tên đăng nhập đã tồn tại trong hệ thống và đang hoạt động ở phòng/cơ sở khác.");
             }
 
             if (!confirmReactivate) {
@@ -211,7 +224,8 @@ public class ContractServiceImpl implements ContractService {
             userExists = true;
         }
 
-        boolean success = contractDAO.addTenantTransaction(userExists, userId, passwordHash, fullName, phone, identityNumber, dob, gender, permanentAddress, email, roomId, startDate, contractId);
+        boolean success = contractDAO.addTenantTransaction(userExists, userId, passwordHash, fullName, phone,
+                identityNumber, dob, gender, permanentAddress, email, roomId, startDate, contractId);
         if (!success) {
             throw new Exception("Lỗi cập nhật cơ sở dữ liệu khi tạo tài khoản người thuê.");
         }
@@ -234,5 +248,52 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public boolean softDeleteContract(int contractId) {
         return contractDAO.softDeleteContract(contractId);
+    }
+
+    @Override
+    public void extendContract(int contractId, LocalDate newEndDate, int managerId) throws Exception {
+        Contract contract = contractDAO.findByIdAndManagerId(contractId, managerId)
+                .orElseThrow(() -> new IllegalArgumentException("Hợp đồng không tồn tại hoặc bạn không có quyền gia hạn."));
+
+        if (contract.getDeletedAt() != null) {
+            throw new IllegalArgumentException("Không thể gia hạn hợp đồng đã xóa.");
+        }
+
+        if (newEndDate == null) {
+            throw new IllegalArgumentException("Ngày kết thúc gia hạn không được để trống.");
+        }
+
+        if (newEndDate.isBefore(contract.getEndDate()) || newEndDate.isEqual(contract.getEndDate())) {
+            throw new IllegalArgumentException("Ngày hết hạn mới phải sau ngày hết hạn hiện tại (" + contract.getEndDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
+        }
+
+        if (newEndDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày hết hạn mới không thể ở quá khứ.");
+        }
+
+        // Chặn nếu đã kết thúc hợp đồng quá 7 ngày
+        if ("INACTIVE".equals(contract.getStatus()) && contract.getEndDate().plusDays(7).isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Hợp đồng này đã kết thúc quá 7 ngày. Vui lòng tạo hợp đồng mới thay vì gia hạn.");
+        }
+
+        // Chặn nếu có hợp đồng ACTIVE khác đang tồn tại cho phòng này
+        Optional<Contract> activeContractOpt = contractDAO.findActiveContractByRoomId(contract.getRoomId());
+        if (activeContractOpt.isPresent() && activeContractOpt.get().getContractId() != contractId) {
+            throw new IllegalArgumentException("Phòng này hiện đã có hợp đồng hoạt động khác (" + activeContractOpt.get().getCode() + "). Không thể gia hạn hợp đồng cũ.");
+        }
+
+        // Chặn nếu phòng đã được bàn giao cho người khác thuê
+        Optional<Room> roomOpt = roomDAO.findById(contract.getRoomId());
+        if (roomOpt.isPresent()) {
+            Room room = roomOpt.get();
+            if (room.getTenantId() != null && !room.getTenantId().equals(contract.getTenantId())) {
+                throw new IllegalArgumentException("Phòng này hiện đã được thuê bởi người khác, không thể gia hạn hợp đồng cũ.");
+            }
+        }
+
+        boolean success = contractDAO.extendContractTransaction(contractId, newEndDate, contract.getTenantId(), contract.getRoomId());
+        if (!success) {
+            throw new Exception("Lỗi cập nhật cơ sở dữ liệu khi gia hạn hợp đồng.");
+        }
     }
 }
