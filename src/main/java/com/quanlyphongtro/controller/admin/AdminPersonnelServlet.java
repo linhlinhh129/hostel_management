@@ -2,6 +2,7 @@ package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.PageDTO;
+import com.quanlyphongtro.dto.PersonnelFormDTO;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.exception.NotFoundException;
 import com.quanlyphongtro.exception.ValidationException;
@@ -69,6 +70,7 @@ public class AdminPersonnelServlet extends BaseServlet {
         } catch (ValidationException e) {
             req.setAttribute("errorMessage", e.getMessage());
             if (path.equals("/create")) {
+                req.setAttribute("dto", PersonnelFormDTO.of(req));
                 req.setAttribute("managerFacilities",  personnelService.findFacilitiesForManager(null));
                 req.setAttribute("operatorFacilities", personnelService.findFacilitiesForOperator(null));
                 req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
