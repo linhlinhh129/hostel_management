@@ -1,6 +1,7 @@
 package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
+import com.quanlyphongtro.dto.FacilityFormDTO;
 import com.quanlyphongtro.dto.PageDTO;
 import com.quanlyphongtro.exception.NotFoundException;
 import com.quanlyphongtro.exception.ValidationException;
@@ -85,6 +86,7 @@ public class AdminFacilityServlet extends BaseServlet {
                 }
             } else {
                 req.setAttribute("errorMessage", e.getMessage());
+                req.setAttribute("dto", FacilityFormDTO.of(req));
                 req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
             }
         } catch (NotFoundException e) {

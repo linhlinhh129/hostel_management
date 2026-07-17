@@ -123,6 +123,8 @@
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
+var _restoredFacilityId = '${dto.facilityId}';
+
 function toggleFacilitySection(role) {
     var show = (role === 'MANAGER' || role === 'OPERATOR');
     document.getElementById('facilitySection').style.display = show ? 'block' : 'none';
@@ -145,6 +147,11 @@ function populateFacilities(role) {
     }
 
     warning.style.display = opts.length === 0 ? 'block' : 'none';
+
+    // Khôi phục lại lựa chọn cơ sở khi server trả về lỗi validation
+    if (_restoredFacilityId) {
+        target.value = _restoredFacilityId;
+    }
 }
 
 // Init on load
