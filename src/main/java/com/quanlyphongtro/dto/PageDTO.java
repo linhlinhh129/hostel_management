@@ -38,7 +38,7 @@ public class PageDTO<T> {
 
     public int getTotalPages() {
         if (pageSize <= 0) return 1;
-        return (int) Math.ceil((double) total / pageSize);
+        return total == 0 ? 1 : (int) Math.ceil((double) total / pageSize);
     }
 
     public boolean hasPreviousPage() { return page > 1; }
