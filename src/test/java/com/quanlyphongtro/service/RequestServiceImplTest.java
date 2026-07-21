@@ -199,7 +199,6 @@ class RequestServiceImplTest {
         @Test @DisplayName("trả về null khi ticket không tồn tại")
         void notFound_returnsNull() throws Exception {
             when(mockRequestDAO.getManagerTicketDetail(99)).thenReturn(null);
-            when(mockRequestDAO.getRescheduleHistory(99)).thenReturn(java.util.List.of());
             assertThat(service.getManagerTicketDetail(99, 1)).isNull();
         }
 
