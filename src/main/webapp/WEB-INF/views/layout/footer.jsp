@@ -19,6 +19,60 @@ document.addEventListener('DOMContentLoaded', function () {
         tr.style.cursor = 'pointer';
     });
 });
+
+/**
+ * Client-side pagination dùng chung cho các trang load toàn bộ data.
+ * @param {string} tbodyId   - id của <tbody>
+ * @param {string} totalId   - id của <strong> hiển thị tổng số
+ * @param {string} pageId    - id của <span> hiển thị trang hiện tại
+ * @param {string} totalPagesId - id của <span> hiển thị tổng trang
+ * @param {string} btnsId    - id của <div> chứa nút Trước/Sau
+ * @param {number} [pageSize=10]
+ */
+function clientPaginate(tbodyId, totalId, pageId, totalPagesId, btnsId, pageSize) {
+    pageSize = pageSize || 10;
+    var tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var total = rows.length;
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    var current = 1;
+
+    var elTotal      = document.getElementById(totalId);
+    var elPage       = document.getElementById(pageId);
+    var elTotalPages = document.getElementById(totalPagesId);
+    var elBtns       = document.getElementById(btnsId);
+
+    if (elTotal)      elTotal.textContent      = total;
+    if (elTotalPages) elTotalPages.textContent = totalPages;
+
+    function render(page) {
+        current = page;
+        var start = (page - 1) * pageSize;
+        rows.forEach(function(row, i) {
+            row.style.display = (i >= start && i < start + pageSize) ? '' : 'none';
+        });
+        if (elPage) elPage.textContent = page;
+        if (!elBtns) return;
+        elBtns.innerHTML = '';
+        if (page > 1) {
+            var prev = document.createElement('a');
+            prev.href = '#'; prev.className = 'btn-mintlify-secondary text-decoration-none';
+            prev.style.padding = '6px 14px'; prev.textContent = 'Trước';
+            prev.onclick = function(e) { e.preventDefault(); render(page - 1); };
+            elBtns.appendChild(prev);
+        }
+        if (page < totalPages) {
+            var next = document.createElement('a');
+            next.href = '#'; next.className = 'btn-mintlify-secondary text-decoration-none';
+            next.style.padding = '6px 14px'; next.textContent = 'Sau';
+            next.onclick = function(e) { e.preventDefault(); render(page + 1); };
+            elBtns.appendChild(next);
+        }
+    }
+
+    render(1);
+}
 </script>
 
 <c:if test="${currentFacilityStatus == 'INACTIVE'}">

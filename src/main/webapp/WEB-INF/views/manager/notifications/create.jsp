@@ -20,7 +20,7 @@
         <p>Gửi thông báo đến cư dân trong phạm vi cơ sở được phân công</p>
       </div>
 
-      <div class="data-surface" style="max-width:680px">
+      <div class="data-surface" style="max-width:680px;margin:0 auto">
         <form method="post" action="${ctx}/manager/notifications/create" class="p-4">
           <input type="hidden" name="csrfToken" value="${csrfToken}"/>
           <input type="hidden" name="isDebtReminder" value="${(param.isDebtReminder == 'true' or dto.isDebtReminder == true) ? 'true' : 'false'}"/>
