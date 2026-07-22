@@ -142,7 +142,7 @@ public class PersonnelServiceImpl implements PersonnelService {
         try {
             EmailService.sendTempPassword(finalEmail, finalFullName, finalEmail, finalPwd, loginLink);
         } catch (Exception ex) {
-            logger.warn("Email send failed for new user id={}", newId, ex);
+            logger.warn("Lỗi gửi email", newId, ex);
         }
     }
 

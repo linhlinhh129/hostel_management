@@ -75,7 +75,7 @@
                             <th class="d-none d-md-table-cell">Thao tác</th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="contractsTbody">
                           <c:forEach var="c" items="${contracts}">
                             <tr data-href="${ctx}/manager/contracts/detail?id=${c.contractId}">
                               <td>
@@ -141,6 +141,13 @@
                         </tbody>
                       </table>
                     </div>
+                    <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2" id="contractsFooter">
+                      <span class="text-muted" style="font-size:0.875rem">
+                        Tổng <strong id="contractsTotal"></strong> hợp đồng
+                        · Trang <span id="contractsPage">1</span> / <span id="contractsTotalPages">1</span>
+                      </span>
+                      <div class="d-flex gap-1" id="contractsBtns"></div>
+                    </div>
                   </c:when>
                   <c:otherwise>
                     <jsp:include page="/WEB-INF/views/layout/fragments/empty-state.jsp">
@@ -154,6 +161,7 @@
           </div>
         </div>
         <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
+        <script>clientPaginate('contractsTbody','contractsTotal','contractsPage','contractsTotalPages','contractsBtns');</script>
       </body>
 
       </html>

@@ -21,7 +21,7 @@
                     <p>Thêm thông báo hoặc tin tức mới cho cộng đồng cư dân</p>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1">
-                    <a href="${ctx}/manager/articles" class="btn-accent">
+                    <a href="${ctx}/manager/articles" class="btn-mintlify-secondary text-decoration-none">
                         Trở về danh sách
                     </a>
                 </div>
@@ -51,35 +51,20 @@
                     background-color: #fff;
                     outline: none;
                 }
-                .btn-submit-custom {
-                    border-radius: 12px;
-                    background-color: #0a0a0a;
-                    color: #fff;
-                    padding: 14px 24px;
-                    font-weight: 600;
-                    transition: all 0.2s ease;
-                    border: none;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .btn-submit-custom:hover {
-                    background-color: #1a1a1a;
-                    color: #fff;
-                    transform: translateY(-1px);
-                }
                 .upload-btn-outline {
                     border-radius: 10px;
-                    border: 1px solid #e5e5e5;
-                    background: #fff;
-                    color: #0a0a0a;
+                    border: 1px solid var(--hms-border);
+                    background: var(--hms-canvas);
+                    color: var(--hms-ink);
                     transition: all 0.2s ease;
                     padding: 8px 16px;
+                    font-size: 0.875rem;
+                    font-weight: 500;
                 }
                 .upload-btn-outline:hover {
-                    background: #f7f7f7;
-                    border-color: #d5d5d5;
-                    color: #0a0a0a;
+                    background: var(--hms-surface);
+                    border-color: var(--hms-border-strong);
+                    color: var(--hms-ink);
                 }
             </style>
 
@@ -129,7 +114,7 @@
                         </div>
 
                         <div class="d-grid mt-5">
-                            <button type="submit" class="btn-submit-custom shadow-sm w-100">
+                            <button type="submit" class="btn btn-mintlify-primary w-100">
                                 <i class="bi bi-send-fill me-2"></i> Lưu bản tin
                             </button>
                         </div>
@@ -153,7 +138,7 @@
         <canvas id="webcamCanvas" class="d-none"></canvas>
       </div>
       <div class="modal-footer border-0 justify-content-center">
-        <button type="button" class="btn btn-primary fw-medium px-4" id="btnCaptureWebcam">
+        <button type="button" class="btn btn-mintlify-primary fw-medium px-4" id="btnCaptureWebcam">
             <i class="bi bi-camera-fill me-1"></i> Chụp ngay
         </button>
       </div>

@@ -136,9 +136,12 @@
                                             <div class="list-group-item list-group-item-action d-flex gap-3 align-items-start border-0 border-bottom py-3"
                                                  style="cursor:pointer; animation:fadeInUp 0.4s ease ${st.index * 0.04}s both"
                                                  onclick="location.href='${ctx}/tenant/notifications/${notification.id}'">
-                                                <div class="rounded d-flex align-items-center justify-content-center text-white" 
-                                                     style="width: 28px; height: 28px; background: var(--hms-primary); font-size: 0.625rem; font-weight: 800; flex-shrink: 0;">
-                                                    🔔
+                                                <div class="rounded d-flex align-items-center justify-content-center" 
+                                                     style="width: 36px; height: 36px; background: var(--hms-warning-bg); border: 1px solid var(--hms-warning-border); flex-shrink: 0;">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--hms-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                                        <line x1="13.73" y1="21" x2="10.27" y2="21"/>
+                                                    </svg>
                                                 </div>
                                                 <div class="flex-grow-1 min-w-0">
                                                     <p class="mb-0 fw-bold text-truncate" style="font-size: 0.875rem; color: ${notification.unread ? 'var(--hms-ink)' : 'var(--hms-slate)'}">

@@ -55,7 +55,8 @@ public class PaymentServlet extends BaseServlet {
         
         request.setAttribute("payments", payments);
         request.setAttribute("currentPage", page);
-        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalPages", Math.max(1, totalPages));
+        request.setAttribute("totalRecords", totalItems);
         request.setAttribute("keyword", keyword);
         request.setAttribute("status", status);
         request.setAttribute("fromDate", fromDate);

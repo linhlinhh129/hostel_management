@@ -49,7 +49,9 @@
                                                     </thead>
                                                     <tbody>
                                                         <c:forEach var="post" items="${posts}">
-                                                            <tr id="post-row-${post.id}">
+                                                            <tr id="post-row-${post.id}"
+                                                                data-href="${ctx}/manager/articles/detail?id=${post.id}"
+                                                                style="cursor:pointer;">
                                                                 <td>
                                                                     <c:out value="${post.title}" />
                                                                 </td>
@@ -172,6 +174,15 @@
                                 alert("Lỗi kết nối.");
                             });
                     }
+
+                    // Click anywhere on row → navigate to detail
+                    document.querySelectorAll('tr[data-href]').forEach(function(row) {
+                        row.addEventListener('click', function(e) {
+                            // Bỏ qua nếu click vào nút hoặc link trong cột Thao tác
+                            if (e.target.closest('a, button')) return;
+                            window.location.href = row.dataset.href;
+                        });
+                    });
                 </script>
             </body>
 

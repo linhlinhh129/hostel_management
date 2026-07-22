@@ -160,17 +160,7 @@
               </table>
             </div>
           </div>
-          <div class="mt-3" style="background:var(--hms-surface-2);border:1px solid var(--hms-border);
-                      border-radius:var(--hms-radius);padding:1rem;
-                      font-size:0.8125rem;color:var(--hms-text-muted);line-height:1.6">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 style="margin-right:5px;vertical-align:-2px">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <strong>Quy trình xử lý:</strong> Sau khi gửi, một yêu cầu công việc (ticket) thuộc danh mục <strong>UTILITY</strong> sẽ được tạo tự động và gán cho Operator đã chọn. Operator sẽ tiến hành đo đạc và cập nhật lại chỉ số thực tế tại phòng để tính toán lại hóa đơn.
-          </div>
+         
         </div>
       </div>
 

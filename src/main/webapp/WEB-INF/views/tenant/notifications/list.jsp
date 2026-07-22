@@ -103,7 +103,6 @@
               <span class="text-muted" style="font-size:0.875rem;">
                 Tổng <strong>${totalNotifications}</strong> thông báo
                 <c:if test="${totalPages > 1}"> · Trang ${currentPage} / ${totalPages}</c:if>
-              </span>
               <div class="d-flex gap-1">
                 <c:if test="${currentPage > 1}">
                   <a href="${ctx}/tenant/notifications?page=${currentPage - 1}&keyword=${keyword}&status=${status}"

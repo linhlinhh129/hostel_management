@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Sửa nhân sự - Admin"/>
-<c:set var="pageRole" value="ADMIN"/>
+<c:set var="ctx"        value="${pageContext.request.contextPath}"/>
+<c:set var="pageTitle"  value="Sửa nhân sự - Admin"/>
+<c:set var="pageRole"   value="ADMIN"/>
 <c:set var="activeMenu" value="personnel"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 <body>
@@ -14,13 +14,17 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header hero-sky-gradient">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+            <div class="page-header hero-sky-gradient"
+                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;
+                            flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
                     <div>
                         <h1>Chỉnh sửa nhân sự</h1>
                         <p><c:out value="${user.fullName}"/> — #<c:out value="${user.id}"/></p>
                     </div>
-                    <a href="${ctx}/admin/personnel/${user.id}" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Quay lại</a>
+                    <a href="${ctx}/admin/personnel/${user.id}"
+                       class="btn-mintlify-secondary text-decoration-none"
+                       style="position:relative;z-index:1">&#8592; Quay lại</a>
                 </div>
             </div>
 
@@ -28,9 +32,6 @@
                 <form method="post" action="${ctx}/admin/personnel/${user.id}/edit" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
-
-
-                    <%-- ── Thông tin cá nhân ─────────────────────────── --%>
                     <h2 class="h6 mb-3">Thông tin cá nhân</h2>
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -77,8 +78,7 @@
                         </div>
                     </div>
 
-                    <%-- ── Vai trò & Cơ sở ──────────────────────────── --%>
-                    <h2 class="h6 mb-3 mt-2">Vai trò & Cơ sở</h2>
+                    <h2 class="h6 mb-3 mt-2">Vai trò &amp; Cơ sở</h2>
                     <div class="mb-3">
                         <label for="role" class="form-label">Vai trò <span class="text-danger">*</span></label>
                         <select class="form-select" id="role" name="role" required
@@ -98,7 +98,7 @@
                             </select>
                             <div id="noFacilityWarning" class="form-text text-warning" style="display:none">
                                 Không có cơ sở khả dụng cho vai trò này.
-                                <a href="${ctx}/admin/facilities">Quản lý cơ sở →</a>
+                                <a href="${ctx}/admin/facilities">Quản lý cơ sở &#8594;</a>
                             </div>
                             <div class="form-text">
                                 Danh sách chỉ hiển thị cơ sở ACTIVE chưa có người phụ trách
@@ -109,11 +109,12 @@
 
                     <div class="d-flex gap-2 mt-3">
                         <button type="submit" class="btn btn-mintlify-primary" style="width:auto">Lưu thay đổi</button>
-                        <a href="${ctx}/admin/personnel/${user.id}" class="btn-mintlify-secondary text-decoration-none">Hủy</a>
+                        <a href="${ctx}/admin/personnel/${user.id}"
+                           class="btn-mintlify-secondary text-decoration-none">Hủy</a>
                     </div>
                 </form>
 
-                <%-- Dữ liệu cơ sở cho JS — ngoài form --%>
+                <%-- Dữ liệu cơ sở cho JS --%>
                 <select id="managerFacilitiesSelect" style="display:none" aria-hidden="true">
                     <c:forEach var="fac" items="${managerFacilities}">
                         <option value="${fac.id}"
@@ -140,7 +141,7 @@ var CURRENT_FACILITY_ID = '${currentFacilityId}';
 var CURRENT_ROLE        = '<c:out value="${user.role}"/>';
 
 function onRoleChange(role) {
-    populateFacilities(role, null); // khi user đổi role, không pre-select cơ sở cũ
+    populateFacilities(role, null);
 }
 
 function populateFacilities(role, preselectId) {
@@ -149,25 +150,14 @@ function populateFacilities(role, preselectId) {
     var target   = document.getElementById('facilityId');
     var warning  = document.getElementById('noFacilityWarning');
 
-    var opts = source.options;
     target.length = 0;
     target.add(new Option('— Chọn cơ sở —', ''));
-
-    for (var i = 0; i < opts.length; i++) {
-        var o = new Option(opts[i].text, opts[i].value);
-        target.add(o);
+    for (var i = 0; i < source.options.length; i++) {
+        target.add(new Option(source.options[i].text, source.options[i].value));
     }
-
-    // Pre-select cơ sở hiện tại nếu được chỉ định
-    if (preselectId) {
-        target.value = preselectId;
-    }
-
-    warning.style.display = opts.length === 0 ? 'block' : 'none';
+    if (preselectId) target.value = preselectId;
+    warning.style.display = source.options.length === 0 ? 'block' : 'none';
 }
 
-// Init: load đúng list theo role hiện tại và pre-select cơ sở đang được gán
 populateFacilities(CURRENT_ROLE, CURRENT_FACILITY_ID);
 </script>
-</body>
-</html>

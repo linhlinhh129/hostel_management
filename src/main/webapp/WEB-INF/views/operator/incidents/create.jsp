@@ -36,6 +36,7 @@
           </div>
       </c:if>
 
+      <div style="max-width:800px;margin:0 auto">
       <div class="mintlify-card-base">
           <form id="incidentForm" action="${ctx}/operator/incidents/create" method="post" enctype="multipart/form-data" novalidate>
               <input type="hidden" name="csrfToken" value="${csrfToken}">
@@ -140,7 +141,8 @@
                   </div>
               </div>
           </form>
-      </div>
+      </div><%-- /mintlify-card-base --%>
+      </div><%-- /max-width wrapper --%>
 
     </main>
   </div>

@@ -51,7 +51,8 @@ public class InvoiceServlet extends BaseServlet {
 
             req.setAttribute("invoices", invoices);
             req.setAttribute("currentPage", page);
-            req.setAttribute("totalPages", totalPages);
+            req.setAttribute("totalPages", Math.max(1, totalPages));
+            req.setAttribute("totalRecords", total);
             req.setAttribute("keyword", keyword);
             req.setAttribute("status", status);
             req.setAttribute("billingPeriod", billingPeriod);

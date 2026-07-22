@@ -23,7 +23,7 @@
           <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1">← Quay lại danh sách</a>
         </div>
 
-        <div class="data-surface p-4" style="max-width: 800px;">
+        <div class="data-surface p-4" style="max-width: 800px;margin:0 auto">
           <form action="${ctx}/manager/invoices" method="post">
             <input type="hidden" name="action" value="create">
             <input type="hidden" name="csrfToken" value="${csrfToken}">
