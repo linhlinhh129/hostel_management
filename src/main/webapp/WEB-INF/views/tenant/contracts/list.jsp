@@ -52,7 +52,7 @@
                                             <th class="text-center">Hành động</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="tenantContractsTbody">
                                         <c:forEach var="c" items="${contracts}" varStatus="st">
                                             <tr style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both">
                                                 <td style="font-weight:600;color:var(--hms-ink)">
@@ -101,6 +101,13 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2" id="tenantContractsFooter">
+                              <span class="text-muted" style="font-size:0.875rem">
+                                Tổng <strong id="tenantContractsTotal"></strong> hợp đồng
+                                · Trang <span id="tenantContractsPage">1</span> / <span id="tenantContractsTotalPages">1</span>
+                              </span>
+                              <div class="d-flex gap-1" id="tenantContractsBtns"></div>
+                            </div>
                         </div>
                     </div>
                 </c:otherwise>
@@ -110,3 +117,4 @@
 </div>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
+<script>clientPaginate('tenantContractsTbody','tenantContractsTotal','tenantContractsPage','tenantContractsTotalPages','tenantContractsBtns');</script>

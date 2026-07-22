@@ -14,13 +14,22 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-                <h1>Tạo thông báo</h1>
-                <%-- Admin.md §12: đối tượng gửi chỉ là "Tất cả cơ sở" --%>
-                <p>Gửi thông báo đến toàn bộ cư dân trong hệ thống</p>
+            <div class="page-header hero-sky-gradient"
+                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;
+                            flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Tạo thông báo</h1>
+                        <%-- Admin.md §12: đối tượng gửi chỉ là "Tất cả cơ sở" --%>
+                        <p>Gửi thông báo đến toàn bộ cư dân trong hệ thống</p>
+                    </div>
+                    <a href="${ctx}/admin/notifications"
+                       class="btn-mintlify-secondary text-decoration-none"
+                       style="position:relative;z-index:1">&#8592; Danh sách</a>
+                </div>
             </div>
 
-            <div class="data-surface" style="max-width:680px">
+            <div class="data-surface" style="max-width:680px;margin:0 auto">
                 <form method="post" action="${ctx}/admin/notifications/create" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
                     <%-- Admin chỉ gửi ALL — cố định theo Admin.md §12 --%>

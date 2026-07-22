@@ -135,67 +135,38 @@
                           </div>
 
                           <%-- Phân trang --%>
-                            <c:if test="${totalPages > 1}">
-                              <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
-                                <span style="font-size:0.875rem;color:var(--hms-text-muted)">
-                                  Trang
-                                  <c:out value="${currentPage}" /> /
-                                  <c:out value="${totalPages}" />
-                                </span>
-                                <div class="d-flex gap-1">
-                                  <c:url var="prevUrl" value="/manager/payments">
-                                    <c:param name="page" value="${currentPage - 1}" />
-                                    <c:if test="${not empty keyword}">
-                                      <c:param name="keyword" value="${keyword}" />
-                                    </c:if>
-                                    <c:if test="${not empty status}">
-                                      <c:param name="status" value="${status}" />
-                                    </c:if>
-                                    <c:if test="${not empty fromDate}">
-                                      <c:param name="fromDate" value="${fromDate}" />
-                                    </c:if>
-                                    <c:if test="${not empty toDate}">
-                                      <c:param name="toDate" value="${toDate}" />
-                                    </c:if>
-                                    <c:if test="${not empty month}">
-                                      <c:param name="month" value="${month}" />
-                                    </c:if>
-                                    <c:if test="${not empty year}">
-                                      <c:param name="year" value="${year}" />
-                                    </c:if>
-                                  </c:url>
-                                  <c:url var="nextUrl" value="/manager/payments">
-                                    <c:param name="page" value="${currentPage + 1}" />
-                                    <c:if test="${not empty keyword}">
-                                      <c:param name="keyword" value="${keyword}" />
-                                    </c:if>
-                                    <c:if test="${not empty status}">
-                                      <c:param name="status" value="${status}" />
-                                    </c:if>
-                                    <c:if test="${not empty fromDate}">
-                                      <c:param name="fromDate" value="${fromDate}" />
-                                    </c:if>
-                                    <c:if test="${not empty toDate}">
-                                      <c:param name="toDate" value="${toDate}" />
-                                    </c:if>
-                                    <c:if test="${not empty month}">
-                                      <c:param name="month" value="${month}" />
-                                    </c:if>
-                                    <c:if test="${not empty year}">
-                                      <c:param name="year" value="${year}" />
-                                    </c:if>
-                                  </c:url>
-                                  <c:if test="${currentPage > 1}">
-                                    <a href="${prevUrl}" class="btn-mintlify-secondary text-decoration-none"
-                                      style="padding:6px 14px">← Trước</a>
-                                  </c:if>
-                                  <c:if test="${currentPage < totalPages}">
-                                    <a href="${nextUrl}" class="btn-mintlify-secondary text-decoration-none"
-                                      style="padding:6px 14px">Sau →</a>
-                                  </c:if>
-                                </div>
-                              </div>
-                            </c:if>
+                          <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
+                            <span class="text-muted" style="font-size:0.875rem">
+                              Tổng <fmt:formatNumber value="${totalRecords}" groupingUsed="true"/> giao dịch
+                              · Trang <c:out value="${currentPage}"/> / <c:out value="${totalPages}"/>
+                            </span>
+                            <div class="d-flex gap-1">
+                              <c:url var="prevUrl" value="/manager/payments">
+                                <c:param name="page" value="${currentPage - 1}" />
+                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}" /></c:if>
+                                <c:if test="${not empty status}"><c:param name="status" value="${status}" /></c:if>
+                                <c:if test="${not empty fromDate}"><c:param name="fromDate" value="${fromDate}" /></c:if>
+                                <c:if test="${not empty toDate}"><c:param name="toDate" value="${toDate}" /></c:if>
+                                <c:if test="${not empty month}"><c:param name="month" value="${month}" /></c:if>
+                                <c:if test="${not empty year}"><c:param name="year" value="${year}" /></c:if>
+                              </c:url>
+                              <c:url var="nextUrl" value="/manager/payments">
+                                <c:param name="page" value="${currentPage + 1}" />
+                                <c:if test="${not empty keyword}"><c:param name="keyword" value="${keyword}" /></c:if>
+                                <c:if test="${not empty status}"><c:param name="status" value="${status}" /></c:if>
+                                <c:if test="${not empty fromDate}"><c:param name="fromDate" value="${fromDate}" /></c:if>
+                                <c:if test="${not empty toDate}"><c:param name="toDate" value="${toDate}" /></c:if>
+                                <c:if test="${not empty month}"><c:param name="month" value="${month}" /></c:if>
+                                <c:if test="${not empty year}"><c:param name="year" value="${year}" /></c:if>
+                              </c:url>
+                              <c:if test="${currentPage > 1}">
+                                <a href="${prevUrl}" class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Trước</a>
+                              </c:if>
+                              <c:if test="${currentPage < totalPages}">
+                                <a href="${nextUrl}" class="btn-mintlify-secondary text-decoration-none" style="padding:6px 14px">Sau</a>
+                              </c:if>
+                            </div>
+                          </div>
                         </c:when>
 
                         <c:otherwise>

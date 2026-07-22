@@ -1452,6 +1452,12 @@ body {
   transition: box-shadow var(--t) var(--hms-ease);
 }
 
+/* Căn giữa khi có max-width inline (trang create/form) */
+.data-surface[style*="max-width"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .data-surface:hover {
   box-shadow: var(--hms-shadow-sm);
 }
@@ -2912,4 +2918,454 @@ textarea.form-control {
   .table-mintlify .hide-tablet {
     display: table-cell !important;
   }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  AUDIT LOGS — shared utility classes                         ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ── detail.jsp: info panel rows ─────────────────────────────── */
+
+/* Mỗi hàng trong panel thông tin chung — dùng <div>+<span>, không dùng dl/dt/dd */
+.audit-detail-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  gap: 12px;
+}
+
+/* Modifier: align top cho hàng nhiều dòng (Đối tượng, Ghi chú) */
+.audit-detail-row--top {
+  align-items: flex-start;
+}
+
+/* Hàng cuối không có border */
+.audit-detail-row:last-child {
+  border-bottom: none;
+}
+
+/* Nhãn bên trái */
+.audit-detail-label {
+  width: 44%;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: var(--hms-text-muted);
+  font-weight: 500;
+}
+
+/* Giá trị text thông thường */
+.audit-detail-value {
+  font-size: 0.8125rem;
+  color: var(--hms-text-secondary);
+  min-width: 0;
+}
+
+/* Giá trị monospace (IP address) */
+.audit-detail-value--mono {
+  font-family: var(--hms-font-mono);
+  font-size: 0.8125rem;
+  color: var(--hms-text-secondary);
+  min-width: 0;
+}
+
+/* Log ID */
+.audit-detail-value--id {
+  font-family: var(--hms-font-mono);
+  font-weight: 700;
+  color: var(--hms-accent-deep);
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+/* Tên người / đối tượng */
+.audit-detail-value--name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--hms-text);
+  line-height: 1.4;
+  min-width: 0;
+}
+
+/* ── _diff-table.jsp: bảng so sánh ──────────────────────────── */
+
+/* Banner "N trường thay đổi" */
+.diff-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: rgba(255, 200, 0, 0.08);
+  border: 1px solid rgba(255, 200, 0, 0.25);
+}
+
+.diff-banner__text {
+  font-size: 0.8rem;
+  color: #c37d0d;
+  font-weight: 600;
+}
+
+/* Bảng diff */
+.diff-table {
+  width: 100%;
+  font-size: 0.8125rem;
+  border-collapse: collapse;
+}
+
+.diff-table thead tr {
+  background: var(--hms-surface-soft);
+}
+
+.diff-th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--hms-border);
+  color: var(--hms-text-muted);
+}
+
+.diff-th--field { width: 30%; }
+.diff-th--old   { color: var(--hms-danger); }
+.diff-th--new   { color: var(--hms-success); }
+
+.diff-td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-text-secondary);
+}
+
+.diff-td--field {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-text-muted);
+  font-weight: 500;
+}
+
+.diff-row--changed {
+  background: rgba(255, 200, 0, 0.05);
+}
+
+.diff-td--old-changed {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-danger);
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.diff-td--new-changed {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-success);
+  font-weight: 600;
+}
+
+.diff-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+
+.diff-empty__icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.diff-empty__text {
+  color: var(--hms-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ── list.jsp: filter bar label ──────────────────────────────── */
+.filter-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hms-text-muted);
+  margin-bottom: 8px;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  FACILITIES — shared utility classes                         ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* detail.jsp: bảng thông tin cơ sở */
+.info-table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.info-table td {
+  padding: 6px 0;
+  vertical-align: top;
+}
+
+.info-label {
+  color: var(--hms-text-muted);
+  width: 48%;
+}
+
+.info-value {
+  font-size: 0.875rem;
+}
+
+.info-value--bold {
+  font-weight: 600;
+}
+
+/* edit.jsp: field readonly khi ACTIVE */
+.field-readonly {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  REVENUE — shared utility classes                            ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* 2-column grid layout cho trang index */
+.revenue-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .revenue-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* Bảng revenue — amount cell */
+.rev-amount {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rev-amount--paid {
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.rev-amount--outstanding {
+  font-weight: 600;
+  color: var(--hms-warning);
+  white-space: nowrap;
+}
+
+.rev-amount--total {
+  font-weight: 700;
+  color: var(--hms-accent-deep);
+  white-space: nowrap;
+}
+
+.rev-sub {
+  font-size: 0.75rem;
+  color: var(--hms-stone);
+  margin-top: 2px;
+}
+
+/* Hàng tháng mới nhất trong by-period */
+.row-highlight {
+  background: var(--hms-accent-bg);
+}
+
+/* Responsive cho bảng facility */
+@media (max-width: 768px) {
+  .facility-tbl th:nth-child(1),
+  .facility-tbl td:nth-child(1) { display: none; }
+
+  .facility-tbl,
+  .period-tbl { font-size: 0.75rem; }
+
+  .facility-tbl th,
+  .facility-tbl td,
+  .period-tbl th,
+  .period-tbl td { padding: 0.5rem 0.375rem; }
+
+  .facility-tbl .rev-amount--paid,
+  .period-tbl .rev-amount--paid { font-size: 0.8125rem !important; }
+
+  .facility-tbl .rev-sub,
+  .period-tbl .rev-sub { font-size: 0.625rem !important; }
+
+  #byFacilityPicker { width: 140px !important; font-size: 0.8125rem !important; }
+}
+
+/* Nút "Xem tháng/Xem" trong hero header trang revenue */
+.rev-period-btn {
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 7px 16px;
+  border-radius: var(--hms-radius-full);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--hms-accent-deep);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow var(--t-fast) var(--hms-ease);
+}
+
+.rev-period-btn:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  DASHBOARD — shared utility classes                          ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* Quick action bar */
+.quick-actions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+/* Activity list item */
+.activity-item {
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--hms-border-soft);
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--hms-radius-sm);
+  background: linear-gradient(135deg, var(--hms-accent), var(--hms-accent-soft));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.activity-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-actor {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-desc {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--hms-stone);
+}
+
+.activity-time {
+  font-size: 0.625rem;
+  color: var(--hms-muted);
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  SYSTEM CONFIG — tab styles                                  ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+#config-tabs .nav-link {
+  color: var(--hms-stone);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--hms-radius-full);
+  padding: 7px 20px;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+  background: transparent;
+}
+
+#config-tabs .nav-link:hover:not(.active) {
+  color: var(--hms-accent-deep);
+  background: var(--hms-accent-bg);
+  border-color: var(--hms-border-soft);
+}
+
+#config-tabs .nav-link.active {
+  color: var(--hms-accent-deep);
+  background: var(--hms-accent-bg);
+  border-color: var(--hms-accent);
+  box-shadow: none;
+}
+
+/* Config dl row: label/value */
+.config-dl dt {
+  color: var(--hms-stone);
+  font-weight: 500;
+}
+
+.config-dl dd {
+  font-weight: 600;
+  word-break: break-all;
+  margin-bottom: 0;
+}
+
+/* "Cập nhật lần cuối" footer */
+.config-updated {
+  margin-top: 1.25rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--hms-border-soft);
+  font-size: 0.75rem;
+  color: var(--hms-stone);
+}
+
+/* Hint box trong side card */
+.config-hint {
+  background: var(--hms-surface-soft);
+  border-radius: var(--hms-radius-sm);
+  padding: 0.625rem 0.75rem;
+}
+
+.config-hint--warning { border-left: 3px solid var(--hms-warning); }
+.config-hint--danger  { border-left: 3px solid var(--hms-danger); }
+
+/* Modal header/footer của system-config */
+.config-modal-header {
+  border-bottom: 1px solid var(--hms-border-soft);
+  padding: 1.25rem 1.5rem;
+}
+
+.config-modal-footer {
+  border-top: 1px solid var(--hms-border-soft);
+  padding: 1rem 1.5rem;
+  gap: 8px;
+}
+
+/* Nút toggle ẩn/hiện password trong input-group */
+.btn-toggle-password {
+  border-color: #dee2e6;
+  background: #fff;
+  padding: 0 12px;
+  font-size: 1rem;
+  line-height: 1;
 }

@@ -38,6 +38,7 @@ public class PageDTO<T> {
 
     public int getTotalPages() {
         if (pageSize <= 0) return 1;
+        if (total <= 0) return 1;
         return (int) Math.ceil((double) total / pageSize);
     }
 

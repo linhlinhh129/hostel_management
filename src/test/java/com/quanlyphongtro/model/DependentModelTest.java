@@ -65,9 +65,8 @@ class DependentModelTest {
             assertThat(result).isEqualTo("012******678");
         }
 
-        @Test
-        @DisplayName("trả về nguyên bản khi identity quá ngắn (< 6 ký tự)")
         @ParameterizedTest(name = "identity={0}")
+        @DisplayName("trả về nguyên bản khi identity quá ngắn (< 6 ký tự)")
         @ValueSource(strings = {"12345", "abc", ""})
         void shortIdentity_returnsOriginal(String identity) {
             assertThat(dep(null, identity).getMaskedIdentityNumber())
