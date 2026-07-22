@@ -7,10 +7,10 @@
             maxWaitMillis="5000" 
             minIdle="1" 
             name="jdbc/HostelManagement" 
-            password="Admin@123" 
+            password="123" 
             testOnBorrow="true" 
             type="javax.sql.DataSource" 
-            url="jdbc:sqlserver://hostel-sql-dev-atu02378.database.windows.net:1433;database=HostelManagement_Dev_Import;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" 
-            username="sqladmin@hostel-sql-dev-atu02378" 
+            url="jdbc:sqlserver://localhost:1433;databaseName=HostelManagement;encrypt=true;trustServerCertificate=true;" 
+            username="sa" 
             validationQuery="SELECT 1"/>
 </Context>

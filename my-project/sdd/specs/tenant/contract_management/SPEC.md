@@ -1,260 +1,110 @@
-# Feature: Xem hợp đồng thuê (Tenant Contract)
+# Feature Specification: Kiểm Thử Luồng Quản Lý Hợp Đồng (Toàn Hệ Thống)
 
-**Status:** Draft\
-**Priority:** Medium
+**Feature Branch**: `tenant-contract-tests`
 
-# 1. Business Context
+**Created**: 2026-07-21
 
-Chức năng **Xem hợp đồng thuê** cho phép người thuê xem thông tin hợp đồng thuê phòng đang có hiệu lực hoặc các hợp đồng trước đây của chính mình.
+**Status**: Clarified & Updated
 
-Người thuê chỉ có quyền xem hợp đồng đã được Ban quản lý tạo. Người thuê không được tạo, chỉnh sửa, xóa hoặc thay đổi trạng thái hợp đồng.
+**Input**: User description: "viết file test luồng hoạt động của 'quản lí hợp đồng của người thuê ' của cả hệ thống vào file"
 
-Thông tin hợp đồng được hiển thị nhằm giúp người thuê tra cứu các điều khoản thuê phòng, thời hạn hợp đồng, tiền thuê, tiền cọc và các khoản phí đã được thỏa thuận.
+## Clarifications
 
----
+### Session 2026-07-21
+- Q: Mâu thuẫn về tính năng Gia hạn/Chấm dứt giữa Manager và Tenant? → A: Giữ lại luồng Yêu cầu ở Tenant, Manager sẽ nhận yêu cầu nhưng xử lý offline.
+- Q: Mâu thuẫn về việc Ký hợp đồng điện tử? → A: Xóa luồng Ký online của Tenant. Hệ thống chỉ quản lý hợp đồng giấy (in ra).
 
-# 2. User Stories
+## User Scenarios & Testing *(mandatory)*
 
-## Story 1: Xem danh sách hợp đồng
+### User Story 1 - Tạo và In Hợp Đồng Mới (Manager) (Priority: P1)
 
-Là **Người thuê**, tôi muốn xem danh sách các hợp đồng của mình để biết các hợp đồng đang có hoặc đã kết thúc.
+Ban quản lý có thể tạo hợp đồng mới, hệ thống tự động điền thông tin phòng và có thể in ra bản cứng cho người thuê ký. Hệ thống cũng có thể tạo tài khoản cho người thuê từ hợp đồng này.
 
----
+**Why this priority**: Đây là điểm khởi đầu của vòng đời hợp đồng, tạo ra dữ liệu cho toàn bộ hệ thống.
 
-## Story 2: Xem chi tiết hợp đồng
+**Independent Test**: Test API tạo hợp đồng, kiểm tra thông tin tự động điền và tạo account.
 
-Là **Người thuê**, tôi muốn xem đầy đủ nội dung của một hợp đồng để kiểm tra các điều khoản đã ký.
+**Acceptance Scenarios**:
 
----
-
-## Story 3: Kiểm tra quyền truy cập
-
-Là **Hệ thống**, tôi chỉ cho phép người thuê xem các hợp đồng thuộc tài khoản của chính họ nhằm bảo vệ dữ liệu.
-
----
-
-# 3. Acceptance Criteria (EARS)
-
-## 3.1 Xem danh sách hợp đồng
-
-KHI người thuê truy cập màn hình **Hợp đồng của tôi**,\
-THE SYSTEM SHALL hiển thị danh sách hợp đồng có `tenant_id` bằng người dùng đang đăng nhập.
-
-KHI danh sách được hiển thị,\
-THE SYSTEM SHALL hiển thị:
-
-- Mã hợp đồng
-
-- Mã phòng
-
-- Ngày bắt đầu
-
-- Ngày hết hạn
-
-- Tiền thuê
-
-- Tiền cọc
-
-- Trạng thái hợp đồng
-
-- Nút **Xem chi tiết**
-
-KHI người thuê chưa có hợp đồng nào,\
-THE SYSTEM SHALL hiển thị:
-
-```text
-Bạn chưa có hợp đồng thuê nào.
-```
+1. **Given** Ban quản lý chọn phòng trống, **When** tạo hợp đồng, **Then** hệ thống tự động sinh `contract_id` và mã hợp đồng chuẩn `HD-{roomCode}-{date}-{seq}`.
+2. **Given** một hợp đồng mới được tạo, **When** Manager chọn tính năng in, **Then** hệ thống xuất ra mẫu in hợp đồng giấy với đầy đủ dữ liệu.
+3. **Given** Manager nhập email người thuê, **When** nhấn thêm người thuê, **Then** hệ thống tạo tài khoản ROLE_TENANT và gán `tenant_id` vào hợp đồng.
 
 ---
 
-## 3.2 Xem chi tiết hợp đồng
+### User Story 2 - Xem Chi Tiết Hợp Đồng (Tenant & Manager) (Priority: P1)
 
-KHI người thuê chọn một hợp đồng,\
-THE SYSTEM SHALL hiển thị:
+Người thuê có thể xem chi tiết hợp đồng đang có hiệu lực của họ. Ban quản lý có thể xem tất cả các hợp đồng thuộc cơ sở mình quản lý.
 
-- Mã hợp đồng
+**Why this priority**: Đảm bảo quyền truy cập và tính minh bạch thông tin, đồng thời bảo mật dữ liệu giữa các Tenant.
 
-- Thông tin phòng
+**Independent Test**: Kiểm tra phân quyền (Authorization) dựa trên ROLE và sở hữu.
 
-- Địa chỉ phòng
+**Acceptance Scenarios**:
 
-- Ngày lập hợp đồng
-
-- Ngày bắt đầu
-
-- Ngày hết hạn
-
-- Tiền thuê
-
-- Tiền cọc
-
-- Giá điện
-
-- Giá nước
-
-- Phí Internet
-
-- Phí dịch vụ
-
-- Điều khoản hợp đồng
-
-- Trạng thái hợp đồng
+1. **Given** Tenant đăng nhập, **When** truy cập hợp đồng của mình, **Then** hệ thống hiển thị đúng thông tin.
+2. **Given** Tenant cố tình truy cập ID hợp đồng của người khác, **When** gửi request, **Then** hệ thống báo lỗi 403 Access Denied.
+3. **Given** Manager quản lý Cơ sở A, **When** cố gắng xem hợp đồng thuộc Cơ sở B, **Then** hệ thống báo lỗi 403.
 
 ---
 
-## 3.3 Phân quyền
+### User Story 3 - Gửi Yêu Cầu Chấm Dứt/Gia Hạn (Tenant) (Priority: P2)
 
-KHI người thuê yêu cầu xem hợp đồng,\
-THE SYSTEM SHALL chỉ trả về hợp đồng có `tenant_id` trùng với tài khoản đang đăng nhập.
+Người thuê có thể gửi yêu cầu chấm dứt hợp đồng trước hạn hoặc gia hạn khi sắp hết hạn. Yêu cầu này sẽ được Manager tiếp nhận nhưng việc gia hạn/chấm dứt thực tế diễn ra offline ngoài hệ thống (hệ thống chỉ lưu trạng thái yêu cầu).
 
-KHI người thuê cố truy cập hợp đồng của người khác,\
-THE SYSTEM SHALL trả về HTTP 403 với mã lỗi:
+**Why this priority**: Hỗ trợ quy trình nghiệp vụ giao tiếp giữa Tenant và Manager.
 
-```text
-CONTRACT_ACCESS_DENIED
-```
+**Independent Test**: Kiểm tra việc tạo mới bản ghi yêu cầu (request) liên kết với hợp đồng hiện tại.
 
-KHI hợp đồng không tồn tại,\
-THE SYSTEM SHALL trả về HTTP 404 với mã lỗi:
+**Acceptance Scenarios**:
 
-```text
-CONTRACT_NOT_FOUND
-```
+1. **Given** hợp đồng đang có hiệu lực, **When** người thuê gửi yêu cầu chấm dứt/gia hạn, **Then** hệ thống ghi nhận yêu cầu và hiển thị cho Manager.
 
 ---
 
-# 4. API Contract
+### User Story 4 - Quản Lý Trạng Thái Hợp Đồng (Manager) (Priority: P2)
 
-## 4.1 Danh sách hợp đồng của tôi
+Manager có thể chuyển trạng thái hợp đồng thành INACTIVE khi hết hiệu lực và xóa (soft delete) các hợp đồng INACTIVE.
 
-### Endpoint
+**Acceptance Scenarios**:
 
-```http
-GET /api/v1/tenant/contracts
-```
-
-### Response
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "contractId": 1,
-      "code": "HD-0001",
-      "roomCode": "A101",
-      "startDate": "2026-01-01",
-      "endDate": "2026-12-31",
-      "status": "ACTIVE"
-    }
-  ]
-}
-```
+1. **Given** hợp đồng đang ở trạng thái INACTIVE, **When** Manager bấm Xóa, **Then** hệ thống thực hiện soft delete thành công và ghi AuditLog.
+2. **Given** hợp đồng đang ACTIVE, **When** Manager bấm Xóa, **Then** hệ thống từ chối và báo lỗi.
 
 ---
 
-## 4.2 Chi tiết hợp đồng
+### Edge Cases
 
-### Endpoint
+- Xử lý khi Manager nhập sai định dạng ngày tháng (ngày kết thúc < ngày lập).
+- Hệ thống xử lý thế nào nếu người thuê nhấn gửi yêu cầu gia hạn nhiều lần liên tiếp?
+- Tạo hợp đồng cho phòng đã có hợp đồng ACTIVE khác.
 
-```http
-GET /api/v1/tenant/contracts/{contractId}
-```
+## Requirements *(mandatory)*
 
----
+### Functional Requirements
 
-# 5. Business Rules
+- **FR-001**: Kịch bản kiểm thử (Test Suite) PHẢI bao phủ luồng tạo, in hợp đồng và tạo tài khoản của Manager.
+- **FR-002**: Kịch bản kiểm thử PHẢI xác minh cơ chế phân quyền: Tenant chỉ xem hợp đồng của mình, Manager chỉ xem hợp đồng thuộc cơ sở quản lý.
+- **FR-003**: Kịch bản kiểm thử PHẢI kiểm tra việc gửi yêu cầu gia hạn hoặc chấm dứt từ Tenant và ghi nhận ở phía Manager.
+- **FR-004**: Kịch bản kiểm thử PHẢI kiểm tra luồng xóa hợp đồng (chỉ cho phép khi INACTIVE).
+- **FR-005**: Kịch bản kiểm thử PHẢI xác minh AuditLog được ghi lại khi Tạo, Thêm Tenant và Xóa.
 
-- Người thuê chỉ xem được hợp đồng của chính mình.
+### Key Entities
 
-- Không được tạo hợp đồng.
+- **Contract**: Hợp đồng thuê phòng (chứa thông tin về phòng, giá, trạng thái, thời hạn).
+- **Tenant**: Người thuê.
+- **Manager**: Ban quản lý.
+- **ContractRequest**: Yêu cầu gia hạn/chấm dứt từ người thuê.
 
-- Không được chỉnh sửa hợp đồng.
+## Success Criteria *(mandatory)*
 
-- Không được xóa hợp đồng.
+### Measurable Outcomes
 
-- Không được thay đổi trạng thái hợp đồng.
+- **SC-001**: 100% các Acceptance Scenarios được tự động hóa.
+- **SC-002**: Test Coverage cho luồng Contract của cả Manager và Tenant đạt tối thiểu 85%.
+- **SC-003**: Các bài test chạy hoàn tất dưới 2 phút.
 
-- Không được xem hợp đồng của người thuê khác.
+## Assumptions
 
-- Thông tin hiển thị là dữ liệu đã được Ban quản lý xác nhận.
-
----
-
-# 6. UI/UX
-
-## Màn hình "Hợp đồng của tôi"
-
-Hiển thị:
-
-- Mã hợp đồng
-
-- Mã phòng
-
-- Ngày bắt đầu
-
-- Ngày hết hạn
-
-- Trạng thái
-
-- Nút **Xem chi tiết**
-
----
-
-## Màn hình chi tiết
-
-Hiển thị đầy đủ nội dung hợp đồng ở chế độ chỉ đọc (Read-only).
-
-Không hiển thị các nút:
-
-- Tạo
-
-- Chỉnh sửa
-
-- Xóa
-
-- Cập nhật trạng thái
-
----
-
-# 7. Technical Constraints
-
-- Chỉ người dùng có vai trò `TENANT` mới được truy cập.
-
-- Chỉ truy vấn các hợp đồng có `tenant_id = currentUser.id`.
-
-- Toàn bộ dữ liệu hiển thị ở chế độ chỉ đọc.
-
-- Không cho phép thay đổi dữ liệu thông qua API của người thuê.
-
----
-
-# 8. Error Codes
-
-| Error Code | HTTP | Description |
-| --- | --- | --- |
-| UNAUTHORIZED | 401 | Chưa đăng nhập |
-| FORBIDDEN | 403 | Không có quyền truy cập |
-| CONTRACT_ACCESS_DENIED | 403 | Không có quyền xem hợp đồng này |
-| CONTRACT_NOT_FOUND | 404 | Không tìm thấy hợp đồng |
-
----
-
-# 9. Out of Scope
-
-- Tạo hợp đồng
-
-- Chỉnh sửa hợp đồng
-
-- Xóa hợp đồng
-
-- Gia hạn hợp đồng
-
-- Thanh lý hợp đồng
-
-- Ký hợp đồng điện tử
-
-- In hợp đồng
-
-- Thay đổi trạng thái hợp đồng
+- Tính năng "Xử lý gia hạn/thanh lý hợp đồng" không được làm trong hệ thống (Manager tự làm ở ngoài).
+- Tính năng ký điện tử là Out of scope.

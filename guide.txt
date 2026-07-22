@@ -1,0 +1,61 @@
+# Hướng Dẫn Sử Dụng Các Lệnh SpecKit / Specify (Thư mục .specify)
+
+Thư mục `.specify` chứa các công cụ, kịch bản (scripts) và quy trình (workflows) để quản lý vòng đời phát triển phần mềm bằng AI thông qua hệ thống SpecKit (Software Design & Development).
+
+Dưới đây là hướng dẫn chi tiết các lệnh, ngữ cảnh và khi nào cần sử dụng:
+
+---
+
+## 1. Các Lệnh Script Tự Động (Tệp PowerShell trong `.specify/scripts/powershell`)
+
+Đây là các lệnh bạn có thể chạy trực tiếp trên Terminal để cấu trúc hệ thống thư mục và tệp cho một tính năng mới.
+
+### Lệnh: `create-new-feature.ps1`
+- **Mục đích:** Tạo một thư mục mới cho tính năng (feature) bên trong thư mục `specs/`, đồng thời tự động khởi tạo file đặc tả `spec.md`.
+- **Ngữ cảnh sử dụng:** Khi bạn bắt đầu làm một tính năng mới, một luồng công việc mới hoặc cần tạo không gian để lưu tài liệu trước khi code.
+- **Cách dùng ví dụ:** 
+  `./.specify/scripts/powershell/create-new-feature.ps1 "Thêm chức năng đăng nhập"`
+- **Khi nào dùng:** Đây là **bước ĐẦU TIÊN nhất** của bất kỳ quy trình làm tính năng nào.
+
+### Lệnh: `setup-plan.ps1`
+- **Mục đích:** Khởi tạo file kế hoạch triển khai `plan.md` từ template.
+- **Ngữ cảnh sử dụng:** Sau khi bạn đã mô tả xong yêu cầu trong `spec.md`, và chuẩn bị lên kế hoạch kiến trúc code (file nào cần tạo, thư viện nào cần dùng).
+- **Khi nào dùng:** **Bước thứ hai**, trước khi chia nhỏ thành các task.
+
+### Lệnh: `setup-tasks.ps1`
+- **Mục đích:** Khởi tạo danh sách công việc `tasks.md` dựa trên tài liệu `spec.md` và `plan.md`.
+- **Ngữ cảnh sử dụng:** Khi kế hoạch triển khai đã chốt, bạn cần một danh sách TODO rõ ràng để lập trình viên (hoặc AI Agent) làm từng bước.
+- **Khi nào dùng:** **Bước thứ ba**, là bước đệm giữa kế hoạch và thực thi code.
+
+---
+
+## 2. Các Lệnh AI Agent Workflows (Kỹ năng SpecKit)
+
+Trong quy trình làm việc với Agent (AI), thư mục `.specify` tích hợp sâu với các "Skills" (kỹ năng) của SpecKit. Bạn có thể yêu cầu AI chạy các công việc này.
+
+### Các lệnh cốt lõi (Core Cycle):
+- **`/speckit-specify`**: AI sẽ viết hoặc cập nhật file `spec.md` từ yêu cầu thô của bạn bằng ngôn ngữ tự nhiên. 
+  *(Dùng khi bắt đầu dự án hoặc tính năng để chốt yêu cầu).*
+- **`/speckit-plan`**: AI đọc `spec.md` và tự động lập bản thiết kế kỹ thuật (`plan.md`). 
+  *(Dùng để thiết kế hệ thống, kiến trúc trước khi code).*
+- **`/speckit-tasks`**: AI đọc `plan.md` để sinh ra file `tasks.md` với các đầu việc có thứ tự ưu tiên (Dependency-ordered). 
+  *(Dùng khi cần chia nhỏ việc để code).*
+- **`/speckit-implement`**: AI đọc `tasks.md` và trực tiếp nhúng tay vào viết code, giải quyết từng task một. 
+  *(Dùng để AI tự động code theo đúng kế hoạch đã đề ra).*
+
+### Các lệnh hỗ trợ và kiểm tra (Utilities):
+- **`/speckit-clarify`**: AI sẽ đọc spec hiện tại và hỏi bạn 1-5 câu hỏi trọng tâm nhất nếu thấy yêu cầu của bạn còn sơ sài, thiếu logic hoặc chưa rõ ràng.
+- **`/speckit-analyze`**: Phân tích và soát lỗi chéo (cross-check) giữa `spec.md`, `plan.md` và `tasks.md` xem có nhất quán không.
+- **`/speckit-converge`**: Đánh giá code hiện hành so với `spec` và `plan`. Nếu có gì chưa làm hoặc làm sai, lệnh này sẽ tự động thêm task bổ sung vào `tasks.md` để làm bù.
+- **`/speckit-taskstoissues`**: Chuyển đổi các task đang có trong file `tasks.md` thành các GitHub Issues để team theo dõi.
+- **`/speckit-constitution`**: Tạo hoặc cập nhật tệp nguyên tắc dự án, để mọi mã nguồn sinh ra đều tuân theo nguyên tắc thiết kế đó.
+
+---
+
+## Tóm Tắt Quy Trình Hoạt Động (Full SDD Cycle)
+
+1. Yêu cầu tính năng mới ➔ Chạy lệnh `create-new-feature` hoặc gọi `/speckit-specify` (ra được `spec.md`)
+2. Lên giải pháp ➔ Chạy lệnh `setup-plan` hoặc gọi `/speckit-plan` (ra được `plan.md`)
+3. Chia đầu việc ➔ Chạy lệnh `setup-tasks` hoặc gọi `/speckit-tasks` (ra được `tasks.md`)
+4. Code ➔ Gọi `/speckit-implement`
+5. Kiểm tra ➔ Dùng `/speckit-analyze` hoặc `/speckit-converge`

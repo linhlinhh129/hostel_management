@@ -315,9 +315,18 @@ Changing the technology stack requires an RFC and Tech Lead approval before impl
 
 ## ENG-01: Test Coverage
 
-Business logic SHALL maintain a minimum line coverage of 80%.
+THE system SHALL enforce a three-tier testing strategy:
 
-Critical flows (authentication, payments, data modifications) SHALL maintain 100% coverage.
+1. **Unit Tests (Kiểm thử mức đơn vị)**: 
+   - SHALL maintain a minimum line coverage of 80% for all business logic.
+   - Critical flows (authentication, payments, data modifications) SHALL maintain 100% unit test coverage.
+
+2. **Integration Tests (Kiểm thử tích hợp)**: 
+   - SHALL be mandatory for all API endpoints.
+   - Integration tests MUST cover both happy paths and error paths.
+
+3. **End-to-End (E2E) Tests (Kiểm thử End-to-End)**: 
+   - Are optional but strongly recommended for the most critical user flows.
 
 Proof-of-concept code SHALL NOT be merged into main.
 

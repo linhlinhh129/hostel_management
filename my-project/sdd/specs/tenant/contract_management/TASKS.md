@@ -1,38 +1,77 @@
-# TASKS: Xem hợp đồng thuê (Tenant Contract)
+# Tasks: Tenant Contract Tests
 
-Dựa trên yêu cầu trong `SPEC.md` và `CONTEXT.md`, dưới đây là danh sách các công việc (tasks) cần thực hiện để hoàn thành chức năng **Xem hợp đồng thuê** dành cho Khách thuê (Tenant).
+**Input**: Design documents from `specs/tenant/contract_management/`
+**Prerequisites**: plan.md, spec.md, data-model.md
 
-## 1. Database & DAO (Data Access Object)
-- [ ] Kiểm tra và cập nhật Entity/Model `Contract` đảm bảo có đầy đủ các trường thông tin cần thiết: Mã hợp đồng, Mã phòng, Ngày bắt đầu, Ngày hết hạn, Tiền thuê, Tiền cọc, Trạng thái hợp đồng, các loại phí (Điện, nước, internet, dịch vụ), và `tenant_id`.
-- [ ] Viết hàm `getContractsByTenantId(int tenantId)` trong `ContractDAO` để lấy danh sách hợp đồng của một user.
-- [ ] Viết hàm `getContractByIdAndTenantId(int contractId, int tenantId)` trong `ContractDAO` để lấy chi tiết một hợp đồng và đảm bảo hợp đồng đó thuộc về user đang truy cập.
+---
 
-## 2. Controller (Servlet)
-- [ ] Tạo `TenantContractServlet` để xử lý các yêu cầu liên quan đến hợp đồng của khách thuê.
-- [ ] Cấu hình routing cho Servlet (ví dụ: `/tenant/contracts/*`).
-- [ ] Xử lý `doGet`:
-  - Kiểm tra xem người dùng đã đăng nhập và có role `TENANT` hay chưa (nếu chưa có Filter xử lý chung).
-  - Lấy `tenantId` từ Session.
-  - Nếu URL là `/tenant/contracts` (hoặc không truyền ID): Gọi `getContractsByTenantId`, set attribute và forward sang trang danh sách hợp đồng.
-  - Nếu URL có truyền ID hợp đồng (ví dụ `/tenant/contracts?id=...` hoặc path variable): Gọi `getContractByIdAndTenantId`.
-    - Nếu hợp đồng không tồn tại hoặc không thuộc `tenantId`, trả về lỗi `403` hoặc `404` (redirect/forward tới trang báo lỗi).
-    - Nếu thành công, set attribute và forward sang trang chi tiết hợp đồng.
+## Phase 1: Foundational (Setup Mock & Helpers)
 
-## 3. View (JSP/UI)
-- [ ] Tạo file `tenant/contracts/list.jsp` (hoặc tương tự):
-  - Hiển thị danh sách các hợp đồng dưới dạng bảng hoặc card.
-  - Hiển thị các trường: Mã hợp đồng, Mã phòng, Ngày bắt đầu, Ngày hết hạn, Tiền thuê, Tiền cọc, Trạng thái.
-  - Xử lý trạng thái rỗng ("Bạn chưa có hợp đồng thuê nào.").
-  - Nút "Xem chi tiết" dẫn đến trang chi tiết của hợp đồng tương ứng.
-- [ ] Tạo file `tenant/contracts/detail.jsp`:
-  - Hiển thị đầy đủ thông tin hợp đồng ở chế độ chỉ đọc (Read-only).
-  - Bao gồm: Mã hợp đồng, Thông tin phòng, Địa chỉ, Ngày lập, Ngày bắt đầu, Ngày hết hạn, Tiền thuê, Tiền cọc, các loại phí (Điện, nước, Internet, dịch vụ), Điều khoản, Trạng thái.
-  - Đảm bảo KHÔNG có các nút thao tác như Thêm/Sửa/Xóa.
+**Goal**: Initialize test class and setup common mock behaviors.
 
-## 4. Kiểm thử (Testing & Validation)
-- [ ] Test trường hợp user khách thuê xem danh sách hợp đồng của mình.
-- [ ] Test trường hợp user khách thuê chưa có hợp đồng nào.
-- [ ] Test trường hợp user xem chi tiết một hợp đồng hợp lệ.
-- [ ] Test bảo mật (IDOR): Đăng nhập với tư cách Khách thuê A, cố tình thay đổi URL để truy cập ID hợp đồng của Khách thuê B xem có bị chặn (403) không.
-- [ ] Test trường hợp ID hợp đồng không tồn tại (404).
-- [ ] Test trường hợp chưa đăng nhập mà truy cập link (401).
+- [x] T001 Setup `ContractServiceImplTest.java` class with Mockito extensions.
+- [x] T002 [P] Mock dependencies (`ContractDAO`, `UserDAO`, etc.) and create `MockDataHelper`.
+- [x] T003 Implement `@BeforeEach setUp()` to initialize common mock behaviors.
+
+---
+
+## Phase 2: User Story 1 (Create and Print Contract)
+
+**Priority**: P1
+
+- [x] T004 [P] [US1] Write `testCreateContract_Success` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T005 [P] [US1] Write `testPrintContract_Success` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T006 [P] [US1] Write `testCreateContract_AddTenant` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T007 [P] [US1] Write `testCreateContract_InvalidDates` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+
+---
+
+## Phase 3: User Story 2 (View Contract Details)
+
+**Priority**: P1
+
+- [x] T008 [P] [US2] Write `testViewContract_TenantOwner_Success` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T009 [P] [US2] Write `testViewContract_TenantNotOwner_AccessDenied` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T010 [P] [US2] Write `testViewContract_ManagerSameFacility_Success` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T011 [P] [US2] Write `testViewContract_ManagerOtherFacility_AccessDenied` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+
+---
+
+## Phase 4: User Story 3 (Extend Contract - Manager Flow)
+
+**Priority**: P2
+
+- [x] T012 [P] [US3] Write `testExtendContract_Success` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T013 [P] [US3] Write `testExtendContract_InvalidDate` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T014 [P] [US3] Write `testExtendContract_NotManager` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+
+---
+
+## Phase 5: User Story 4 (Manage Contract Status)
+
+**Priority**: P2
+
+- [x] T015 [P] [US4] Write `testDeleteContract_Inactive_Success` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+- [x] T016 [P] [US4] Write `testDeleteContract_Active_Fail` in `src/test/java/com/quanlyphongtro/service/impl/ContractServiceImplTest.java`
+
+---
+
+## Phase 6: Polish & Cross-Cutting Concerns
+
+- [ ] T017 Execute `mvn test -Dtest=ContractServiceImplTest` and generate JaCoCo coverage report.
+- [ ] T018 Refactor tests: Extract common assertions and mock setups into private helper methods to improve maintainability.
+
+---
+
+## Dependencies & Execution Order
+- **Phase 1** must be completed first as it provides the mocks for all subsequent phases.
+- **Phase 2 to 5** can be executed in parallel as unit tests are independent of each other.
+- **Phase 6** must be executed after all tests are implemented.
+
+## Parallel Execution Example
+```bash
+# Developer A
+Task: "T012 [P] [US3] Write testSubmitRequest_Extension_Success"
+# Developer B 
+Task: "T013 [P] [US3] Write testSubmitRequest_Termination_Success"
+```
