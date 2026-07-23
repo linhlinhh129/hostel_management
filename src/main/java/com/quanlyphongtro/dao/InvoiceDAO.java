@@ -17,6 +17,141 @@ import java.util.Optional;
 
 public class InvoiceDAO extends BaseDAO {
 
+    public static class InvoiceRoomSnapshot {
+        public int roomId;
+        public String status;
+        public boolean hasTenant;
+        public BigDecimal roomFee;
+        public BigDecimal electricityPrice;
+        public BigDecimal waterPrice;
+        public BigDecimal internetFee;
+        public BigDecimal serviceFee;
+    }
+    
+    public static class InvoicePriceSnapshot {
+        public BigDecimal roomFee;
+        public BigDecimal electricityPrice;
+        public BigDecimal waterPrice;
+        public BigDecimal internetFee;
+        public BigDecimal serviceFee;
+        public LocalDate dueDate;
+        public LocalDate readingDate;
+    }
+
+    public InvoiceRoomSnapshot getRoomSnapshotForInvoice(String roomCode, int managerId) throws SQLException {
+        String sql = "SELECT r.room_id, r.status, r.tenant_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee " +
+                     "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                     "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, roomCode);
+            ps.setInt(2, managerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    InvoiceRoomSnapshot snapshot = new InvoiceRoomSnapshot();
+                    snapshot.status = rs.getString("status");
+                    rs.getInt("tenant_id");
+                    snapshot.hasTenant = !rs.wasNull();
+                    snapshot.roomId = rs.getInt("room_id");
+                    snapshot.roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
+                    snapshot.electricityPrice = rs.getBigDecimal("electricity_price") != null ? rs.getBigDecimal("electricity_price") : BigDecimal.ZERO;
+                    snapshot.waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price") : BigDecimal.ZERO;
+                    snapshot.internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
+                    snapshot.serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
+                    return snapshot;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean checkInvoiceCodeExists(String invoiceCode) throws SQLException {
+        String sql = "SELECT invoice_id FROM invoices WHERE code = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, invoiceCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public InvoicePriceSnapshot getInvoicePriceSnapshot(int invoiceId) throws SQLException {
+        String sql = "SELECT i.room_fee, i.electricity_price, i.water_price, i.internet_fee, i.service_fee, i.due_date, mr.reading_date " +
+                     "FROM invoices i LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id WHERE i.invoice_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    InvoicePriceSnapshot snap = new InvoicePriceSnapshot();
+                    snap.roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
+                    snap.electricityPrice = rs.getBigDecimal("electricity_price") != null ? rs.getBigDecimal("electricity_price") : BigDecimal.ZERO;
+                    snap.waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price") : BigDecimal.ZERO;
+                    snap.internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
+                    snap.serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
+                    
+                    java.sql.Date existingDue = rs.getDate("due_date");
+                    if (existingDue != null) snap.dueDate = existingDue.toLocalDate();
+                    
+                    java.sql.Date rdDate = rs.getDate("reading_date");
+                    if (rdDate != null) snap.readingDate = rdDate.toLocalDate();
+                    
+                    return snap;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Integer getMeterIdByInvoiceId(int invoiceId) throws SQLException {
+        String sql = "SELECT meter_id FROM invoices WHERE invoice_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int mId = rs.getInt("meter_id");
+                    if (!rs.wasNull()) return mId;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void softDeleteInvoiceWithMeter(int invoiceId, Integer meterId, String meterStatus) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DatabaseUtil.getConnection();
+            conn.setAutoCommit(false);
+
+            String deleteInvoiceSql = "UPDATE invoices SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE invoice_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(deleteInvoiceSql)) {
+                ps.setInt(1, invoiceId);
+                ps.executeUpdate();
+            }
+
+            if (meterId != null && ("INCORRECT".equals(meterStatus) || "REPORTED".equals(meterStatus))) {
+                String deleteMeterSql = "UPDATE meter_readings SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE meter_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(deleteMeterSql)) {
+                    ps.setInt(1, meterId);
+                    ps.executeUpdate();
+                }
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
+            }
+        }
+    }
+
     // --- Methods from HEAD (Tenant / Room specific) ---
 
     private Invoice mapRow(ResultSet rs) throws SQLException {
