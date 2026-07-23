@@ -6,7 +6,6 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Dùng context riêng để connect Azure SQL
 COPY docker/context.azure.xml ./src/main/webapp/META-INF/context.xml
 
 RUN mvn -B clean package -DskipTests
@@ -17,10 +16,15 @@ FROM tomcat:10.1-jdk17-temurin
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Cho Tomcat đọc biến môi trường trong context.xml
 ENV CATALINA_OPTS="-Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource"
 
-COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+COPY --from=build /app/target/*.war /tmp/app.war
+
+RUN mkdir -p /usr/local/tomcat/webapps/ROOT \
+    && cd /usr/local/tomcat/webapps/ROOT \
+    && jar -xf /tmp/app.war \
+    && mkdir -p /usr/local/tomcat/webapps/ROOT/uploads \
+    && rm -f /tmp/app.war
 
 EXPOSE 8080
 
