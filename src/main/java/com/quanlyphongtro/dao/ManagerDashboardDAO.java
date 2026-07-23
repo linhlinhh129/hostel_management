@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DashboardDAO extends BaseDAO {
+public class ManagerDashboardDAO extends BaseDAO {
 
     public Map<String, Object> getManagerDashboardStats(int managerId) {
         Map<String, Object> stats = new HashMap<>();

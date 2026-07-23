@@ -8,32 +8,32 @@
 
 ## Epic 1: Thiết kế & Chuẩn bị (8 points)
 
-### Task 1.1: Rà soát schema và xác định API contract (3 points)
+### Task 1.1: Rà soát schema và xác định Servlet contract (3 points)
 **Duration:** 1-2 ngày  
 **Description:**
 - Kiểm tra schema bảng `audit_log` hiện có (các cột, kiểu dữ liệu, index)
 - Xác định các giá trị hợp lệ của `entityType` (Tenant, Employee, Facility, Notification, Contract, ...)
 - Xác định các giá trị hợp lệ của `action` (CREATE, UPDATE, DELETE)
-- Định nghĩa API contract: `GET /api/v1/audit-logs`
-- Xác định query parameters: entityType, action, createdBy, fromDate, toDate, page, size
+- Định nghĩa Servlet contract: `GET /admin/audit-logs` và `GET /admin/audit-logs/*`
+- Xác định query parameters: entityType, action, actor, fromDate, toDate, page
 
 **Acceptance Criteria:**
 - ✓ Schema audit_log được xác nhận đầy đủ
 - ✓ Danh sách entityType và action hợp lệ được liệt kê
-- ✓ API contract rõ ràng, khớp với SPEC.md
+- ✓ Servlet contract rõ ràng, khớp với SPEC.md
 
 ---
 
-### Task 1.2: Xác định validation và mã lỗi (2 points)
+### Task 1.2: Xác định validation và phân quyền (2 points)
 **Duration:** 1 ngày  
 **Description:**
 - Định nghĩa luật validate từng query parameter
-- Xác định mã lỗi: `INVALID_FILTER`, `INVALID_DATE_RANGE`, `FORBIDDEN`, `UNAUTHORIZED`
-- Xác định HTTP status tương ứng
+- Xác định cách thức xử lý an toàn lỗi khoảng ngày và lỗi định dạng đầu vào (trả về danh sách rỗng)
+- Xác định cấu hình phân quyền qua AuthFilter/RoleFilter
 
 **Acceptance Criteria:**
-- ✓ Bảng validation rõ ràng cho từng tham số
-- ✓ Mã lỗi mapped đúng
+- ✓ Quy định validate rõ ràng cho từng tham số
+- ✓ Xử lý phân quyền được tích hợp chính xác
 
 ---
 
@@ -53,34 +53,33 @@
 
 ## Epic 2: Backend Implementation (18 points)
 
-### Task 2.1: Repository với dynamic filter (5 points)
+### Task 2.1: DAO với dynamic filter (5 points)
 **Duration:** 2 ngày  
 **Description:**
-- Tạo `AuditLogRepository` với query động theo filter
-- Sử dụng JPA Specification hoặc JPQL để build câu query theo điều kiện có/không có filter
-- Hỗ trợ phân trang (Pageable) và sắp xếp mặc định createdAt DESC
-- Tối ưu tránh N+1 query
+- Tạo/Cập nhật `AuditLogDAO` với query động theo filter
+- Sử dụng PreparedStatement SQL động để build câu query theo điều kiện có/không có filter
+- Hỗ trợ phân trang bắt buộc (OFFSET ? ROWS FETCH NEXT ? ROWS ONLY) và sắp xếp mặc định createdAt DESC
+- Tối ưu tránh N+1 query bằng batch lookup tên entity hiển thị
 
 **Acceptance Criteria:**
 - ✓ Query đúng với từng combination filter
-- ✓ Pagination hoạt động chính xác
+- ✓ Pagination hoạt động chính xác (1-based page)
 - ✓ Sắp xếp createdAt DESC mặc định
-- ✓ Không có N+1 query
+- ✓ Không có N+1 query nhờ batch lookup
 
 ---
 
 ### Task 2.2: Service xem danh sách Audit Log (4 points)
 **Duration:** 2 ngày  
 **Description:**
-- Implement `getAuditLogs(filter, pageable)` service
-- Validate tham số đầu vào: kiểm tra fromDate/toDate, entityType, action hợp lệ
-- Trả về `INVALID_DATE_RANGE` nếu fromDate > toDate
-- Trả về `INVALID_FILTER` nếu tham số không hợp lệ
+- Triển khai phương thức list/count trong `AuditLogService`
+- Validate tham số đầu vào: kiểm tra fromDate/toDate đúng định dạng ngày YYYY-MM-DD
+- Trả về danh sách rỗng (hoặc count = 0) nếu fromDate > toDate hoặc tham số ngày không hợp lệ (xử lý an toàn)
 - Trả về danh sách rỗng nếu không có bản ghi khớp
 
 **Acceptance Criteria:**
 - ✓ Service trả về đúng dữ liệu theo filter
-- ✓ Validation lỗi đúng mã lỗi
+- ✓ Trả về danh sách rỗng khi tham số ngày bị lỗi hoặc không khớp thời gian
 - ✓ Empty result được xử lý
 
 **Unit Tests:**
@@ -92,32 +91,30 @@
 
 ---
 
-### Task 2.3: Controller và phân quyền (4 points)
+### Task 2.3: Servlet và phân quyền (4 points)
 **Duration:** 1-2 ngày  
 **Description:**
-- Tạo `AuditLogController` với endpoint `GET /api/v1/audit-logs`
-- Kiểm tra role ADMIN ở controller layer
-- Trả về 401 nếu chưa đăng nhập
-- Trả về 403 nếu không phải ADMIN
-- Chuẩn hóa response: `{ success, data: { items, page, size, totalElements, totalPages } }`
+- Cập nhật `AdminAuditLogServlet` với endpoint `GET /admin/audit-logs` và `GET /admin/audit-logs/*`
+- Kiểm tra quyền ADMIN bằng `RoleFilter`, người dùng chưa đăng nhập kiểm tra qua `AuthFilter`
+- Chuyển hướng người dùng về `/login` nếu chưa đăng nhập
+- Trả về 403 Forbidden nếu không phải ADMIN
+- Thiết lập các Request Attributes chuyển sang JSP: `auditLogs`, `totalCount`, `currentPage`, `hasNextPage`
 
 **Acceptance Criteria:**
-- ✓ Endpoint hoạt động đúng
-- ✓ 401/403 đúng trường hợp
-- ✓ Response format chuẩn
+- ✓ Servlet hoạt động đúng, forward thành công sang list.jsp và detail.jsp
+- ✓ Phân quyền 401/403 hoạt động đúng thông qua Filter
+- ✓ Gán chính xác các Request Attributes
 
 ---
 
-### Task 2.4: DTO và response mapping (3 points)
+### Task 2.4: Chuẩn hóa Model và hiển thị (3 points)
 **Duration:** 1 ngày  
 **Description:**
-- Tạo `AuditLogResponseDTO` với các trường: auditLogId, entityType, entityId, action, oldValue, newValue, ipAddress, comment, createdBy, createdAt
-- Mapping từ entity sang DTO
-- Chuẩn hóa format `oldValue`/`newValue` (JSON string)
+- Sử dụng model `AuditLog` với đầy đủ các trường: id, entityType, entityId, entityName, action, oldValue, newValue, ipAddress, comment, createdBy, createdByName, createdAt
+- Đảm bảo oldValue/newValue lưu trữ và hiển thị đúng theo quy tắc CREATE (old=null), UPDATE (old & new), DELETE (new=null)
 
 **Acceptance Criteria:**
-- ✓ DTO đầy đủ các trường theo SPEC
-- ✓ Mapping chính xác
+- ✓ Model đầy đủ các trường theo SPEC
 - ✓ oldValue/newValue hiển thị đúng theo rule CREATE/UPDATE/DELETE
 
 ---

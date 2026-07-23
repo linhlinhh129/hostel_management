@@ -83,14 +83,7 @@
                                 </thead>
                                 <tbody>
                                     <c:forEach var="item" items="${items}">
-                                        <tr class="tr-clickable"
-                                            data-href=""
-                                            data-title="<c:out value='${item.title}' escapeXml='true'/>"
-                                            data-content="<c:out value='${item.content}' escapeXml='true'/>"
-                                            data-status="${item.status}"
-                                            data-reason="<c:out value='${item.rejectionReason}' escapeXml='true'/>"
-                                            data-img="${item.attachmentUrls1}"
-                                            onclick="openIncidentDetail(this)">
+                                        <tr>
                                             <td class="d-none d-md-table-cell" style="font-family:'Geist Mono',monospace; font-size:13px;">
                                                 <c:out value="${item.code}"/>
                                             </td>
