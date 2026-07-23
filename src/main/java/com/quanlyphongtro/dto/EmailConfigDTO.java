@@ -4,17 +4,15 @@ public class EmailConfigDTO {
     private String host;
     private String port;
     private String username;
-    private String from;
     private String updatedAt;
     private String updatedBy;
 
     public EmailConfigDTO() {}
 
-    public EmailConfigDTO(String host, String port, String username, String from, String updatedAt, String updatedBy) {
+    public EmailConfigDTO(String host, String port, String username, String updatedAt, String updatedBy) {
         this.host = host;
         this.port = port;
         this.username = username;
-        this.from = from;
         this.updatedAt = updatedAt;
         this.updatedBy = updatedBy;
     }
@@ -43,13 +41,6 @@ public class EmailConfigDTO {
         this.username = username;
     }
 
-    public String getFrom() {
-        return from;
-    }
-
-    public void setFrom(String from) {
-        this.from = from;
-    }
 
     public String getUpdatedAt() {
         return updatedAt;

@@ -351,7 +351,7 @@ Ví dụ:
 | **URL Pattern** | `POST /admin/facilities/{id}/edit` — lưu chỉnh sửa |
 | **URL Pattern** | `POST /admin/facilities/{id}/activate` — kích hoạt |
 | **URL Pattern** | `POST /admin/facilities/{id}/deactivate` — vô hiệu hóa |
-| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
+| **Phân quyền**  | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
 ---
 

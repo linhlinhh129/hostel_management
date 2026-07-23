@@ -1,9 +1,9 @@
 # Feature: Xem Nhật ký Hệ thống (Audit Log)
 
 **Status:** Draft
-**Author:** [Tên]
-**Reviewer:** [Tên]
-**Date:** [YYYY-MM-DD]
+**Author:** Admin
+**Reviewer:** Tech Lead
+**Date:** 2026-06-29
 **Priority:** Medium
 
 ## 1. Business Context
@@ -91,11 +91,11 @@ THE SYSTEM SHALL hiển thị oldValue và newValue theo quy tắc sau:
 
 ### 3.3 Validation tham số lọc
 
-WHEN tham số lọc không hợp lệ được gửi lên
-THE SYSTEM SHALL trả về HTTP 400 với lỗi INVALID_FILTER.
-
 WHEN fromDate lớn hơn toDate
-THE SYSTEM SHALL xử lý an toàn và trả về danh sách rỗng (không ném lỗi 400).
+THE SYSTEM SHALL xử lý an toàn và trả về danh sách rỗng (không ném lỗi).
+
+WHEN tham số `page` nhỏ hơn 1
+THE SYSTEM SHALL mặc định về `page = 1`.
 
 ### 3.4 Phân quyền
 
@@ -114,10 +114,10 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 |---|---|
 | **Servlet** | `AdminAuditLogServlet` |
 | **URL Pattern** | `GET /admin/audit-logs` — danh sách |
-| **URL Pattern** | `GET /admin/audit-logs/{id}` — chi tiết |
+| **URL Pattern** | `GET /admin/audit-logs/*` — chi tiết |
 | **Forward đến (list)** | `/WEB-INF/views/admin/audit-logs/list.jsp` |
 | **Forward đến (detail)** | `/WEB-INF/views/admin/audit-logs/detail.jsp` |
-| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
+| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `RoleFilter`) |
 
 ---
 
@@ -139,8 +139,8 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 
 | Attribute | Java Type | Nguồn dữ liệu | Mô tả |
 |---|---|---|---|
-| `auditLogs` | `List<AuditLog>` | `AuditLogDAO.findAll(actor, role, entityType, action, dateFrom, dateTo, page, 10)` | Danh sách nhật ký trang hiện tại |
-| `totalCount` | `int` | `AuditLogDAO.count(actor, role, entityType, action, dateFrom, dateTo)` | Tổng số bản ghi khớp filter |
+| `auditLogs` | `List<AuditLog>` | `AuditLogService.list(actor, role, entityType, action, dateFrom, dateTo, page, 10)` | Danh sách nhật ký trang hiện tại |
+| `totalCount` | `int` | `AuditLogService.count(actor, role, entityType, action, dateFrom, dateTo)` | Tổng số bản ghi khớp filter |
 | `currentPage` | `int` | Parse từ query param `page` | Trang hiện tại |
 | `hasNextPage` | `boolean` | `currentPage * PAGE_SIZE < totalCount` | Có trang kế tiếp không |
 | `filterActor` | `String` | Query param `actor` | Giữ lại giá trị filter trên form |
@@ -158,7 +158,7 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 
 | Attribute | Java Type | Nguồn dữ liệu | Mô tả |
 |---|---|---|---|
-| `auditLog` | `AuditLog` | `AuditLogDAO.findById(id)` | Bản ghi nhật ký đầy đủ, kèm `entityName` được lookup |
+| `auditLog` | `AuditLog` | `AuditLogService.getById(id)` | Bản ghi nhật ký đầy đủ, kèm `entityName` được lookup |
 
 ---
 
@@ -189,7 +189,7 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 | Role không phải ADMIN | HTTP 403 Forbidden |
 | `{id}` không tồn tại | `NotFoundException` → HTTP 404 |
 | Path không hợp lệ | HTTP 404 |
-| DAO lỗi (exception) | Log `ERROR`, forward về `list.jsp` với thông báo lỗi |
+| DAO lỗi (exception) | Log `ERROR`, gọi `handleException` xử lý response chung |
 ---
 
 ## 5. Technical Constraints
@@ -197,7 +197,7 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi UNAUTHORIZED.
 * Thời gian phản hồi tối đa: 500ms (P95)
 * Rate limit: 100 requests/phút/người dùng
 * Danh sách nhật ký phải được sắp xếp theo createdAt giảm dần theo mặc định
-* Phân trang là bắt buộc (page 0-based, mặc định size=10)
+* Phân trang là bắt buộc (page 1-based, mặc định page=1, size=10)
 * Chỉ người dùng có vai trò ADMIN được truy cập tính năng này
 * Audit Log không thể bị sửa đổi hoặc xóa qua API này
 

@@ -27,6 +27,12 @@ public class AdminSystemConfigServlet extends BaseServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        UserSessionDTO currentUser = getCurrentUser(request);
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
         String path = request.getServletPath();
         
         if ("/admin/system-config".equals(path) || "/admin/system-config/email".equals(path) || "/admin/system-config/vnpay".equals(path)) {
@@ -61,12 +67,12 @@ public class AdminSystemConfigServlet extends BaseServlet {
 
         try {
             if ("/admin/system-config/email".equals(path)) {
-                String host = request.getParameter("host");
-                String port = request.getParameter("port");
+                String host     = request.getParameter("host");
+                String port     = request.getParameter("port");
                 String username = request.getParameter("username");
                 String password = request.getParameter("password");
 
-                configService.updateEmailConfig(host, port, username, password, username, currentUser.getId());
+                configService.updateEmailConfig(host, port, username, password, currentUser.getId());
                 response.sendRedirect(request.getContextPath() + "/admin/system-config?success=email_updated");
                 return;
 

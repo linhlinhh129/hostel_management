@@ -50,4 +50,7 @@ TEMPLATE.md
 USE_CASE_SPEC.md
 USE_CASE_SPEC copy.md
 
+# Local configuration
+src/main/webapp/META-INF/context-local.xml
+
 
