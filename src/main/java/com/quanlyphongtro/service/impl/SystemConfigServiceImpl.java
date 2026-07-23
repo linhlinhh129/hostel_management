@@ -63,8 +63,7 @@ public class SystemConfigServiceImpl implements SystemConfigService {
     public void updateEmailConfig(String host, String portStr, String username, String password, int updatedBy) throws ValidationException {
         if (host == null || host.trim().isEmpty() ||
             portStr == null || portStr.trim().isEmpty() ||
-            username == null || username.trim().isEmpty() ||
-            from == null || from.trim().isEmpty()) {
+            username == null || username.trim().isEmpty()) {
             throw new ValidationException("Vui lòng nhập đầy đủ các trường bắt buộc.");
         }
 
