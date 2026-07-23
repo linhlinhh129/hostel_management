@@ -46,9 +46,7 @@ public class FacilityServiceImpl implements FacilityService {
 
     @Override
     public void create(String code, String name, String address,
-                       String floorCountStr, String roomsPerFloorStr,
-                       String electricityPrice, String waterPrice,
-                       String internetFee, String serviceFee)
+                       String floorCountStr, String roomsPerFloorStr)
             throws ValidationException {
 
         code    = trim(code);
@@ -77,10 +75,10 @@ public class FacilityServiceImpl implements FacilityService {
         f.setFloorCount(floorCount);
         f.setRoomsPerFloor(roomsPerFloor);
         f.setStatus("DRAFT");
-        f.setElectricityPrice(parseBigDecimal(electricityPrice));
-        f.setWaterPrice(parseBigDecimal(waterPrice));
-        f.setInternetFee(parseBigDecimal(internetFee));
-        f.setServiceFee(parseBigDecimal(serviceFee));
+        f.setElectricityPrice(BigDecimal.ZERO);
+        f.setWaterPrice(BigDecimal.ZERO);
+        f.setInternetFee(BigDecimal.ZERO);
+        f.setServiceFee(BigDecimal.ZERO);
 
         facilityDAO.insert(f);
     }
@@ -90,28 +88,29 @@ public class FacilityServiceImpl implements FacilityService {
     @Override
     public void update(int id,
                        String code, String name, String address,
-                       String floorCountStr, String roomsPerFloorStr,
-                       String electricityPrice, String waterPrice,
-                       String internetFee, String serviceFee)
+                       String floorCountStr, String roomsPerFloorStr)
             throws NotFoundException, ValidationException {
 
         Facility existing = facilityDAO.findById(id).orElseThrow(NotFoundException::new);
+
+        if ("INACTIVE".equals(existing.getStatus())) {
+            throw new ValidationException("Cơ sở đã bị vô hiệu hóa. Không thể chỉnh sửa.");
+        }
 
         name    = trim(name);
         address = trim(address);
 
         if (name.isEmpty())    throw new ValidationException("Tên cơ sở không được để trống.");
-        if (address.isEmpty()) throw new ValidationException("Địa chỉ không được để trống.");
+        if (name.length() > 255) throw new ValidationException("Tên cơ sở tối đa 255 ký tự.");
 
         existing.setName(name);
-        existing.setAddress(address);
-        existing.setElectricityPrice(parseBigDecimal(electricityPrice));
-        existing.setWaterPrice(parseBigDecimal(waterPrice));
-        existing.setInternetFee(parseBigDecimal(internetFee));
-        existing.setServiceFee(parseBigDecimal(serviceFee));
 
-        // Khi không phải ACTIVE thì cho sửa thêm code/floors/rooms
-        if (!"ACTIVE".equals(existing.getStatus())) {
+        // Khi DRAFT thì cho sửa thêm code/floors/rooms/address
+        if ("DRAFT".equals(existing.getStatus())) {
+            if (address.isEmpty()) throw new ValidationException("Địa chỉ không được để trống.");
+            if (address.length() > 500) throw new ValidationException("Địa chỉ tối đa 500 ký tự.");
+            existing.setAddress(address);
+
             code = trim(code).toUpperCase();
             if (code.isEmpty()) throw new ValidationException("Mã cơ sở không được để trống.");
             if (!code.matches("[A-Za-z]{2,10}"))
@@ -174,33 +173,6 @@ public class FacilityServiceImpl implements FacilityService {
         facilityDAO.deactivateAllRooms(id);
     }
 
-    // ── Room area update ──────────────────────────────────────────────────
-
-    @Override
-    public void updateRoomArea(int facilityId, int roomId, String areaStr)
-            throws NotFoundException, ValidationException {
-
-        // Kiểm tra cơ sở tồn tại và không INACTIVE
-        Facility facility = facilityDAO.findById(facilityId).orElseThrow(NotFoundException::new);
-        if ("INACTIVE".equals(facility.getStatus()))
-            throw new ValidationException("Cơ sở đã bị vô hiệu hóa. Không thể chỉnh sửa thông tin phòng.");
-
-        BigDecimal area = null;
-        String raw = areaStr == null ? "" : areaStr.trim();
-        if (!raw.isEmpty()) {
-            try {
-                area = new BigDecimal(raw.replace(",", "."));
-                if (area.compareTo(BigDecimal.ZERO) < 0)
-                    throw new ValidationException("Diện tích không được âm.");
-            } catch (NumberFormatException e) {
-                throw new ValidationException("Diện tích không hợp lệ.");
-            }
-        }
-
-        boolean updated = roomDAO.updateArea(roomId, area);
-        if (!updated) throw new NotFoundException();
-    }
-
     // ── Lookup helpers ────────────────────────────────────────────────────
 
     @Override
@@ -219,23 +191,23 @@ public class FacilityServiceImpl implements FacilityService {
         return s == null ? "" : s.trim();
     }
 
-    private int parseFloorCount(String s) throws ValidationException {
-        if (s == null || s.trim().isEmpty()) throw new ValidationException("Số tầng không được để trống.");
+    private int parseFloorCount(String floorCountStr) throws ValidationException {
         try {
-            int v = Integer.parseInt(s.trim());
-            if (v < 1 || v > 99) throw new ValidationException("Số tầng phải từ 1 đến 99.");
-            return v;
+            int floorCount = Integer.parseInt(trim(floorCountStr));
+            if (floorCount < 1 || floorCount > 10)
+                throw new ValidationException("Số tầng phải từ 1 đến 10.");
+            return floorCount;
         } catch (NumberFormatException e) {
             throw new ValidationException("Số tầng không hợp lệ.");
         }
     }
 
-    private int parseRoomsPerFloor(String s) throws ValidationException {
-        if (s == null || s.trim().isEmpty()) throw new ValidationException("Số phòng mỗi tầng không được để trống.");
+    private int parseRoomsPerFloor(String roomsPerFloorStr) throws ValidationException {
         try {
-            int v = Integer.parseInt(s.trim());
-            if (v < 1 || v > 99) throw new ValidationException("Số phòng mỗi tầng phải từ 1 đến 99.");
-            return v;
+            int roomsPerFloor = Integer.parseInt(trim(roomsPerFloorStr));
+            if (roomsPerFloor < 1 || roomsPerFloor > 30)
+                throw new ValidationException("Số phòng mỗi tầng phải từ 1 đến 30.");
+            return roomsPerFloor;
         } catch (NumberFormatException e) {
             throw new ValidationException("Số phòng mỗi tầng không hợp lệ.");
         }

@@ -122,14 +122,8 @@ public class IncidentReportServlet extends HttpServlet {
             
             String formattedTitle = String.format("[%s] %s tại %s (%s)", priority, incidentName, locationStr, facility);
 
-            // Trích xuất mã cơ sở (facility code) từ chuỗi "Tên cơ sở (Mã cơ sở)"
-            String facilityCode = "";
-            if (facility != null && facility.contains("(") && facility.endsWith(")")) {
-                facilityCode = facility.substring(facility.lastIndexOf("(") + 1, facility.length() - 1).trim();
-            }
-
-            // Tạo mã yêu cầu bắt đầu bằng "REQ-" kèm mã cơ sở để tương thích với các câu SQL JOIN ở DAO/Dashboard
-            String code = "REQ-" + (facilityCode.isEmpty() ? "" : facilityCode + "-") + System.currentTimeMillis();
+            // Tạo mã yêu cầu theo format REQ-INC-{SEQ} đồng bộ với các mã khác
+            String code = requestDAO.generateCode("INC");
 
             Request req = new Request();
             req.setCode(code);

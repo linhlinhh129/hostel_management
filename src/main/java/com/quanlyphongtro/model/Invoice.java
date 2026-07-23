@@ -35,6 +35,7 @@ public class Invoice {
     private Integer newWaterReading;
     private BigDecimal electricAmount;
     private BigDecimal waterAmount;
+    private BigDecimal lateFee;          // phí chậm nộp tính runtime, không lưu DB
     private String billingPeriod; // Example: "Tháng 05/2026"
     // Transient from JOIN
     private String roomCodeCache;
@@ -135,6 +136,9 @@ public class Invoice {
 
     public BigDecimal getWaterAmount() { return waterAmount; }
     public void setWaterAmount(BigDecimal waterAmount) { this.waterAmount = waterAmount; }
+
+    public BigDecimal getLateFee() { return lateFee; }
+    public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
 
     public String getBillingPeriod() { return billingPeriod; }
     public void setBillingPeriod(String billingPeriod) { this.billingPeriod = billingPeriod; }

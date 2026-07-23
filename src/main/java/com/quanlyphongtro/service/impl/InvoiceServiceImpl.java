@@ -76,8 +76,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
         if (taxRate.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
 
-        BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
-        if (otherFee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
+        BigDecimal manualOtherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
+        if (manualOtherFee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
+
+        // Cộng tiền nợ cũ (chưa thanh toán) của phòng vào phí khác
+        BigDecimal previousDebt = invoiceDAO.getUnpaidDebtByRoomCode(roomCode, managerId);
+        BigDecimal otherFee = manualOtherFee.add(previousDebt != null ? previousDebt : BigDecimal.ZERO);
 
         int roomId = 0;
         BigDecimal roomFee = BigDecimal.ZERO;
@@ -121,7 +125,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         int newElectric = 0;
         int newWater = 0;
         LocalDate readingDate = null;
-        
+
         String meterSql = "SELECT meter_id, electric, water, reading_date FROM meter_readings " +
                           "WHERE room_id = ? AND YEAR(reading_date) = ? AND MONTH(reading_date) = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -180,7 +184,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         BigDecimal electricAmount = electricityPrice.multiply(new BigDecimal(electricUsage));
         BigDecimal waterAmount = waterPrice.multiply(new BigDecimal(waterUsage));
-        
+
         BigDecimal subtotal = roomFee.add(electricAmount).add(waterAmount).add(serviceFee).add(internetFee).add(otherFee);
         BigDecimal taxAmount = subtotal.multiply(taxRate).divide(new BigDecimal("100"));
         BigDecimal totalAmount = subtotal.add(taxAmount);
@@ -203,7 +207,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setCreatedBy(createdBy);
 
         invoiceDAO.insert(invoice);
-        
+
         try {
             AuditLogHelper.log(auditLogDAO, null, "invoices", invoice.getInvoiceId(), "CREATE", null, invoiceCode, createdBy);
         } catch (Exception e) {
@@ -264,14 +268,14 @@ public class InvoiceServiceImpl implements InvoiceService {
                  }
              }
         }
-        
+
         BigDecimal electricAmount = snapElec.multiply(new BigDecimal(dto.getElectricUsage()));
         BigDecimal waterAmount = snapWater.multiply(new BigDecimal(dto.getWaterUsage()));
-        
+
         BigDecimal newSubtotal = snapRoom.add(electricAmount).add(waterAmount).add(snapInt).add(snapSvc).add(otherFee);
         BigDecimal newTaxAmount = newSubtotal.multiply(taxRate).divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
         BigDecimal newTotal = newSubtotal.add(newTaxAmount);
-        
+
         Invoice invoiceToUpdate = new Invoice();
         invoiceToUpdate.setInvoiceId(invoiceId);
         invoiceToUpdate.setDueDate(dueDate);
@@ -281,7 +285,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceToUpdate.setNote(note);
 
         invoiceDAO.update(invoiceToUpdate);
-        
+
         try {
             AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "UPDATE", "Old Total: " + dto.getTotalAmount(), "New Total: " + newTotal, managerId);
         } catch (Exception e) {
@@ -296,7 +300,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new IllegalArgumentException("Trạng thái không hợp lệ.");
         }
         invoiceDAO.updateStatus(invoiceId, status);
-        
+
         try {
             AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "UPDATE", dto.getStatus(), status, managerId);
         } catch (Exception e) {
@@ -331,14 +335,12 @@ public class InvoiceServiceImpl implements InvoiceService {
             conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Soft-delete the invoice
             String deleteInvoiceSql = "UPDATE invoices SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE invoice_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(deleteInvoiceSql)) {
                 ps.setInt(1, invoiceId);
                 ps.executeUpdate();
             }
 
-            // 2. If associated meter reading status is 'INCORRECT' or 'REPORTED', soft-delete the meter reading as well
             if (meterId != null) {
                 String checkMeterStatusSql = "SELECT status FROM meter_readings WHERE meter_id = ? AND deleted_at IS NULL";
                 String meterStatus = null;

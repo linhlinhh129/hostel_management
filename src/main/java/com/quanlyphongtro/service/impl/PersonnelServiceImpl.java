@@ -102,6 +102,9 @@ public class PersonnelServiceImpl implements PersonnelService {
 
         // ── Facility ──────────────────────────────────────────────────────
         Integer facilityId = parseFacilityId(facilityIdStr);
+        if (("MANAGER".equals(role) || "OPERATOR".equals(role)) && facilityId == null) {
+            throw new ValidationException("Nhân sự phải được gán một cơ sở quản lý.");
+        }
         if (facilityId != null) {
             validateFacilityAssignment(facilityId, role, null);
         }

@@ -58,14 +58,14 @@
                         <div class="col-md-6 mb-3">
                             <label for="floorCount" class="form-label">Số tầng tối đa <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="floorCount" name="floorCount"
-                                   min="1" max="99" required value="<c:out value='${dto.floorCount}'/>">
-                            <div class="form-text">1 – 99 tầng</div>
+                                   min="1" max="10" required value="<c:out value='${dto.floorCount}'/>">
+                            <div class="form-text">1 – 10 tầng</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="roomsPerFloor" class="form-label">Số phòng tối đa / tầng <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="roomsPerFloor" name="roomsPerFloor"
-                                   min="1" max="99" required value="<c:out value='${dto.roomsPerFloor}'/>">
-                            <div class="form-text">1 – 99 phòng</div>
+                                   min="1" max="30" required value="<c:out value='${dto.roomsPerFloor}'/>">
+                            <div class="form-text">1 – 30 phòng</div>
                         </div>
                     </div>
 

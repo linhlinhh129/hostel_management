@@ -857,7 +857,7 @@ public class NotificationDAO extends BaseDAO {
 
     public Map<String, Object> getInvoiceDetailsForSendDebt(int invoiceId) {
         Map<String, Object> invoice = null;
-        String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.due_date, " +
+        String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.room_fee, i.due_date, " +
                 "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, " +
                 "u.full_name AS tenant_name, u.phone AS tenant_phone " +
                 "FROM dbo.invoices i " +
@@ -873,7 +873,8 @@ public class NotificationDAO extends BaseDAO {
                     invoice = new HashMap<>();
                     invoice.put("id", rs.getInt("invoice_id"));
                     invoice.put("code", rs.getString("invoice_code"));
-                    invoice.put("totalAmount", rs.getDouble("total_amount"));
+                    double baseTotal = rs.getDouble("total_amount");
+                    double roomFee = rs.getDouble("room_fee");
                     invoice.put("roomCode", rs.getString("room_code"));
                     invoice.put("roomId", rs.getInt("room_id"));
                     invoice.put("facilityId", rs.getInt("facility_id"));
@@ -887,13 +888,25 @@ public class NotificationDAO extends BaseDAO {
                         java.time.LocalDate localDate = dDate.toLocalDate();
                         invoice.put("dueDateLabel", String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear()));
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
-                        
+
                         long days = java.time.temporal.ChronoUnit.DAYS.between(localDate, java.time.LocalDate.now());
-                        invoice.put("overdueDays", days > 0 ? days : 0);
+                        long overdueDays = days > 0 ? days : 0;
+                        invoice.put("overdueDays", overdueDays);
+
+                        // Tính phí chậm nộp: 1%/ngày × tiền phòng × số ngày quá hạn
+                        double lateFee = overdueDays > 0 ? roomFee * 0.01 * overdueDays : 0.0;
+                        double totalWithLateFee = baseTotal + lateFee;
+
+                        invoice.put("baseAmount", baseTotal);
+                        invoice.put("lateFee", lateFee);
+                        invoice.put("totalAmount", totalWithLateFee);
                     } else {
                         invoice.put("dueDateLabel", "—");
                         invoice.put("billingPeriod", "—");
                         invoice.put("overdueDays", 0);
+                        invoice.put("baseAmount", baseTotal);
+                        invoice.put("lateFee", 0.0);
+                        invoice.put("totalAmount", baseTotal);
                     }
                 }
             }

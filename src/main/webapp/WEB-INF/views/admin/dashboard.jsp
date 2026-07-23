@@ -18,17 +18,13 @@
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
             <%-- Hero --%>
-            <div class="page-header hero-sky-gradient"
-                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;
-                            flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+            <div class="page-header hero-sky-gradient dash-hero">
+                <div class="dash-hero-inner">
                     <div>
                         <h1>Xin chào, <c:out value="${sessionScope.currentUser.fullName}"/></h1>
                         <p>Tổng quan tháng <c:out value="${currentPeriodLabel}"/></p>
                     </div>
-                    <a href="${ctx}/admin/revenue" class="btn-accent" style="position:relative;z-index:1">
-                        Báo cáo doanh thu
-                    </a>
+                    <a href="${ctx}/admin/revenue" class="btn-accent">Báo cáo doanh thu</a>
                 </div>
             </div>
 
@@ -36,7 +32,7 @@
             <div class="kpi-grid">
                 <div class="kpi-surface-card highlight-success">
                     <span class="kpi-label">Doanh thu tháng này</span>
-                    <span class="kpi-value" style="font-size:1.5rem;letter-spacing:-1.5px">
+                    <span class="kpi-value kpi-value--lg">
                         <c:choose>
                             <c:when test="${not empty monthlyRevenue}">
                                 <fmt:formatNumber value="${monthlyRevenue}" pattern="#,##0"/>đ
@@ -69,28 +65,25 @@
 
             <%-- Quick Actions --%>
             <div class="quick-actions-bar">
-                <a href="${ctx}/admin/facilities/create" class="quick-action-btn primary"
-                   style="white-space:nowrap">
+                <a href="${ctx}/admin/facilities/create" class="quick-action-btn primary">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5">
+                         stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
                     Thêm cơ sở
                 </a>
-                <a href="${ctx}/admin/personnel/create" class="quick-action-btn primary"
-                   style="white-space:nowrap">
+                <a href="${ctx}/admin/personnel/create" class="quick-action-btn primary">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5">
+                         stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
                     Thêm nhân sự
                 </a>
-                <a href="${ctx}/admin/notifications/create" class="quick-action-btn primary"
-                   style="white-space:nowrap">
+                <a href="${ctx}/admin/notifications/create" class="quick-action-btn primary">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2">
+                         stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                     </svg>
                     Tạo thông báo
@@ -102,20 +95,18 @@
 
                 <%-- Doanh thu từng cơ sở --%>
                 <div class="col-lg-8">
-                    <div class="widget-surface" style="height:100%">
+                    <div class="widget-surface widget-surface--full-height">
                         <div class="widget-surface-header">
                             <h3>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                                      stroke="var(--hms-accent)" stroke-width="2"
-                                     style="margin-right:6px;vertical-align:-2px">
+                                     class="widget-header-icon" aria-hidden="true">
                                     <line x1="12" y1="1" x2="12" y2="23"/>
                                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                                 </svg>
                                 Doanh thu — tháng <c:out value="${currentPeriodLabel}"/>
                             </h3>
-                            <a href="${ctx}/admin/revenue"
-                               style="font-size:0.8125rem;color:var(--hms-accent-deep);
-                                      font-weight:600;text-decoration:none">
+                            <a href="${ctx}/admin/revenue" class="widget-link">
                                 Xem báo cáo đầy đủ &#8594;
                             </a>
                         </div>
@@ -123,40 +114,36 @@
                             <c:choose>
                                 <c:when test="${not empty facilityRevenueStats}">
                                     <div class="table-responsive">
-                                        <table class="table-mintlify" style="font-size:0.8125rem">
+                                        <table class="table-mintlify table-mintlify--sm">
                                             <thead>
                                                 <tr>
-                                                    <th style="min-width:120px">Cơ sở</th>
-                                                    <th style="min-width:110px;text-align:right">Đã thu</th>
-                                                    <th style="text-align:center">Chưa TT</th>
-                                                    <th style="text-align:center">Quá hạn</th>
+                                                    <th class="col-facility">Cơ sở</th>
+                                                    <th class="text-right col-revenue">Đã thu</th>
+                                                    <th class="text-center">Chưa TT</th>
+                                                    <th class="text-center">Quá hạn</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <c:forEach var="stat" items="${facilityRevenueStats}">
                                                     <tr>
-                                                        <td style="max-width:140px">
+                                                        <td class="col-facility">
                                                             <a href="${ctx}/admin/facilities/${stat.facilityId}"
-                                                               style="font-weight:700;font-size:0.8125rem;
-                                                                      display:block;overflow:hidden;
-                                                                      text-overflow:ellipsis;white-space:nowrap">
+                                                               class="facility-link">
                                                                 <c:out value="${stat.facilityCode}"/>
                                                             </a>
-                                                            <div style="font-size:0.6875rem;color:var(--hms-stone);
-                                                                        overflow:hidden;text-overflow:ellipsis;
-                                                                        white-space:nowrap;max-width:130px">
+                                                            <div class="facility-name">
                                                                 <c:out value="${stat.facilityName}"/>
                                                             </div>
                                                         </td>
-                                                        <td style="font-weight:700;text-align:right;white-space:nowrap">
+                                                        <td class="text-right rev-amount rev-amount--paid">
                                                             <fmt:formatNumber value="${stat.totalRevenue}" pattern="#,##0"/>đ
                                                         </td>
-                                                        <td style="text-align:center">
+                                                        <td class="text-center">
                                                             <span class="badge-hms badge-warning">
                                                                 <c:out value="${stat.unpaidCount}"/>
                                                             </span>
                                                         </td>
-                                                        <td style="text-align:center">
+                                                        <td class="text-center">
                                                             <span class="badge-hms ${stat.overdueCount > 0 ? 'badge-danger' : 'badge-neutral'}">
                                                                 <c:out value="${stat.overdueCount}"/>
                                                             </span>
@@ -186,33 +173,29 @@
                     <div class="widget-surface mb-3">
                         <div class="widget-surface-header">
                             <h3>Thống kê nhân sự</h3>
-                            <a href="${ctx}/admin/personnel"
-                               style="font-size:0.8125rem;color:var(--hms-accent-deep);
-                                      font-weight:600;text-decoration:none">
-                                Quản lý &#8594;
-                            </a>
+                            <a href="${ctx}/admin/personnel" class="widget-link">Quản lý &#8594;</a>
                         </div>
                         <div class="widget-surface-body">
-                            <div class="d-flex justify-content-around">
-                                <div class="text-center">
-                                    <div style="font-size:1.75rem;font-weight:800;color:var(--hms-ink)">
+                            <div class="personnel-stats">
+                                <div class="personnel-stat">
+                                    <div class="personnel-stat__value">
                                         <fmt:formatNumber value="${totalPersonnel}" groupingUsed="true"/>
                                     </div>
-                                    <div style="font-size:0.75rem;color:var(--hms-stone)">Tổng nhân sự</div>
+                                    <div class="personnel-stat__label">Tổng nhân sự</div>
                                 </div>
-                                <div style="width:1px;background:var(--hms-border)"></div>
-                                <div class="text-center">
-                                    <div style="font-size:1.75rem;font-weight:800;color:var(--hms-info)">
+                                <div class="personnel-stat-divider"></div>
+                                <div class="personnel-stat">
+                                    <div class="personnel-stat__value text-info">
                                         <fmt:formatNumber value="${managerCount}" groupingUsed="true"/>
                                     </div>
-                                    <div style="font-size:0.75rem;color:var(--hms-stone)">Ban Quản lý</div>
+                                    <div class="personnel-stat__label">Ban Quản lý</div>
                                 </div>
-                                <div style="width:1px;background:var(--hms-border)"></div>
-                                <div class="text-center">
-                                    <div style="font-size:1.75rem;font-weight:800;color:var(--hms-warning)">
+                                <div class="personnel-stat-divider"></div>
+                                <div class="personnel-stat">
+                                    <div class="personnel-stat__value text-warning">
                                         <fmt:formatNumber value="${operatorCount}" groupingUsed="true"/>
                                     </div>
-                                    <div style="font-size:0.75rem;color:var(--hms-stone)">Vận hành</div>
+                                    <div class="personnel-stat__label">Vận hành</div>
                                 </div>
                             </div>
                         </div>
@@ -222,22 +205,18 @@
                     <div class="widget-surface">
                         <div class="widget-surface-header">
                             <h3>Hoạt động gần đây</h3>
-                            <a href="${ctx}/admin/audit-logs"
-                               style="font-size:0.8125rem;color:var(--hms-accent-deep);
-                                      font-weight:600;text-decoration:none">
-                                Xem chi tiết &#8594;
-                            </a>
+                            <a href="${ctx}/admin/audit-logs" class="widget-link">Xem chi tiết &#8594;</a>
                         </div>
                         <div class="widget-surface-body p-0">
                             <c:choose>
                                 <c:when test="${not empty recentActivities}">
-                                    <ul style="list-style:none;margin:0;padding:0">
+                                    <ul class="activity-list">
                                         <c:forEach var="act" items="${recentActivities}" varStatus="st">
                                             <li class="activity-item" data-anim-index="${st.index}">
                                                 <div class="activity-avatar">
                                                     <c:choose>
                                                         <c:when test="${not empty act.actorName}">
-                                                            ${fn:substring(act.actorName, 0, 1)}
+                                                            <c:out value="${fn:substring(act.actorName, 0, 1)}"/>
                                                         </c:when>
                                                         <c:otherwise>S</c:otherwise>
                                                     </c:choose>
@@ -272,7 +251,9 @@
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
 document.querySelectorAll('[data-anim-index]').forEach(function (el) {
-    var delay = (parseInt(el.getAttribute('data-anim-index'), 10) * 0.04) + 's';
-    el.style.animation = 'fadeInUp 0.4s ease ' + delay + ' both';
+    el.style.animation = 'fadeInUp 0.4s ease ' + (parseInt(el.dataset.animIndex, 10) * 0.04) + 's both';
 });
 </script>
+
+</body>
+</html>

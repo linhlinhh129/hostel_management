@@ -23,19 +23,7 @@
         <p>Ghi nhận nhanh sự cố phát sinh để Quản lý nắm thông tin</p>
       </div>
 
-      <!-- Alert Messages -->
-      <c:if test="${not empty error}">
-          <div class="alert alert-danger border-0" style="border-radius: 8px; background-color: #ffeaea; color: #d45656; margin-bottom: 24px;">
-              ${error}
-          </div>
-      </c:if>
-      <c:if test="${not empty sessionScope.successMessage}">
-          <div class="alert alert-success border-0" style="border-radius: 8px; background-color: #e0f8ef; color: #1ba673; margin-bottom: 24px;">
-              ${sessionScope.successMessage}
-              <c:remove var="successMessage" scope="session"/>
-          </div>
-      </c:if>
-
+      <!-- System Alerts handled by layout/alerts.jsp -->
       <div style="max-width:800px;margin:0 auto">
       <div class="mintlify-card-base">
           <form id="incidentForm" action="${ctx}/operator/incidents/create" method="post" enctype="multipart/form-data" novalidate>
@@ -43,17 +31,17 @@
               
               <div class="row mb-4">
                   <div class="col-md-6 mb-3 mb-md-0">
-                      <label for="facility" class="form-label" style="font-weight: 500;">Cơ sở / Tòa nhà <span style="color: #d45656;">*</span></label>
+                      <label for="facility" class="hms-form-label hms-form-label-required">Cơ sở / Tòa nhà</label>
                       <select class="form-select mintlify-text-input" id="facility" name="facility" required onchange="updateRoomDropdown()">
                           <option value="" selected disabled>-- Chọn cơ sở --</option>
                           <c:forEach var="f" items="${facilities}">
                               <option value="${f.name} (${f.code})" data-id="${f.id}"><c:out value="${f.name}"/> (<c:out value="${f.code}"/>)</option>
                           </c:forEach>
                       </select>
-                      <div class="invalid-feedback" style="font-size: 13px; margin-top: 4px;">Vui lòng chọn cơ sở/tòa nhà.</div>
+                      <div class="invalid-feedback hms-invalid-feedback">Vui lòng chọn cơ sở/tòa nhà.</div>
                   </div>
                   <div class="col-md-6">
-                      <label class="form-label" style="font-weight: 500;">Phân loại sự cố <span style="color: #d45656;">*</span></label>
+                      <label for="category" class="hms-form-label hms-form-label-required">Phân loại sự cố</label>
                       <select class="form-select mintlify-text-input" id="category" name="category" required>
                           <option value="" selected disabled>-- Chọn loại sự cố --</option>
                           <option value="Điện">Hệ thống Điện</option>
@@ -63,13 +51,13 @@
                           <option value="Vệ sinh">Vệ sinh / Rác thải</option>
                           <option value="Khác">Khác</option>
                       </select>
-                      <div class="invalid-feedback" style="font-size: 13px; margin-top: 4px;">Vui lòng chọn loại sự cố.</div>
+                      <div class="invalid-feedback hms-invalid-feedback">Vui lòng chọn loại sự cố.</div>
                   </div>
               </div>
 
               <div class="row mb-4">
                   <div class="col-md-6 mb-3 mb-md-0">
-                      <label class="form-label d-block" style="font-weight: 500;">Vị trí sự cố <span style="color: #d45656;">*</span></label>
+                      <label class="hms-form-label hms-form-label-required">Vị trí sự cố</label>
                       <div class="d-flex gap-4 mt-2">
                           <div class="form-check">
                               <input class="form-check-input" type="radio" name="locationType" id="locChung" value="Khu vực chung" checked>
@@ -82,30 +70,30 @@
                       </div>
                   </div>
                   <div class="col-md-6">
-                      <label class="form-label" style="font-weight: 500;">Chi tiết vị trí <span style="color: #d45656;">*</span></label>
+                      <label class="hms-form-label hms-form-label-required">Chi tiết vị trí</label>
                       
                       <!-- Khu vực chung -->
                       <input type="text" class="mintlify-text-input" id="locationDetailCommon" placeholder="VD: Hành lang tầng 2, Cổng chính..." required>
-                      <div class="invalid-feedback" id="feedbackCommon" style="font-size: 13px; margin-top: 4px;">Vui lòng nhập vị trí cụ thể.</div>
+                      <div class="invalid-feedback hms-invalid-feedback" id="feedbackCommon">Vui lòng nhập vị trí cụ thể.</div>
                       
                       <!-- Phòng cụ thể -->
                       <select class="form-select mintlify-text-input" id="locationDetailRoom" style="display: none;">
                           <option value="" selected disabled>-- Chọn mã phòng --</option>
                       </select>
-                      <div class="invalid-feedback" id="feedbackRoom" style="font-size: 13px; margin-top: 4px; display: none;">Vui lòng chọn mã phòng.</div>
+                      <div class="invalid-feedback hms-invalid-feedback" id="feedbackRoom" style="display: none;">Vui lòng chọn mã phòng.</div>
                       
                       <input type="hidden" id="locationDetail" name="locationDetail" value="">
                   </div>
               </div>
 
               <div class="mb-4">
-                  <label for="incidentName" class="form-label" style="font-weight: 500;">Tiêu đề ngắn gọn <span style="color: #d45656;">*</span></label>
+                  <label for="incidentName" class="hms-form-label hms-form-label-required">Tiêu đề ngắn gọn</label>
                   <input type="text" class="mintlify-text-input" id="incidentName" name="incidentName" placeholder="VD: Cháy bóng đèn, Rò rỉ ống nước..." required>
-                  <div class="invalid-feedback" style="font-size: 13px; margin-top: 4px;">Vui lòng nhập tiêu đề sự cố.</div>
+                  <div class="invalid-feedback hms-invalid-feedback">Vui lòng nhập tiêu đề sự cố.</div>
               </div>
 
               <div class="mb-4">
-                  <label for="priority" class="form-label" style="font-weight: 500;">Mức độ ưu tiên <span style="color: #d45656;">*</span></label>
+                  <label for="priority" class="hms-form-label hms-form-label-required">Mức độ ưu tiên</label>
                   <select class="form-select mintlify-text-input" id="priority" name="priority" required>
                       <option value="Bình thường" selected>Bình thường (Xử lý trong 24h-48h)</option>
                       <option value="Khẩn cấp">Khẩn cấp (Cần xử lý ngay)</option>
@@ -113,19 +101,19 @@
               </div>
 
               <div class="mb-4">
-                  <label for="content" class="form-label" style="font-weight: 500;">Mô tả chi tiết <span style="color: #d45656;">*</span></label>
+                  <label for="content" class="hms-form-label hms-form-label-required">Mô tả chi tiết</label>
                   <textarea class="mintlify-text-input" id="content" name="content" rows="4" placeholder="Mô tả cụ thể tình trạng sự cố đang diễn ra..." required></textarea>
-                  <div class="invalid-feedback" style="font-size: 13px; margin-top: 4px;">Vui lòng nhập mô tả chi tiết.</div>
+                  <div class="invalid-feedback hms-invalid-feedback">Vui lòng nhập mô tả chi tiết.</div>
               </div>
 
               <div class="mb-4">
-                  <label for="images" class="form-label" style="font-weight: 500;">Hình ảnh minh chứng (Tối đa 3 ảnh)</label>
+                  <label for="images" class="hms-form-label">Hình ảnh minh chứng (Tối đa 3 ảnh)</label>
                   <div class="d-flex align-items-center gap-3">
                       <button type="button" class="mintlify-btn-secondary" onclick="document.getElementById('images').click()" style="padding: 8px 16px;">
                           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                           Tải ảnh lên
                       </button>
-                      <span id="uploadHint" style="font-size: 13px; color: var(--color-steel);">Chưa có ảnh nào được chọn</span>
+                      <span id="uploadHint" class="hms-text-sm-steel">Chưa có ảnh nào được chọn</span>
                   </div>
                   <input class="d-none" type="file" id="images" name="images" accept="image/jpeg, image/png, image/jpg" multiple>
                   <div id="imagePreview" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px;"></div>
@@ -251,37 +239,15 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const wrapper = document.createElement('div');
-                wrapper.style.position = 'relative';
-                wrapper.style.width = '100px';
-                wrapper.style.height = '100px';
-                wrapper.style.borderRadius = '8px';
-                wrapper.style.overflow = 'hidden';
-                wrapper.style.border = '1px solid var(--color-hairline)';
+                wrapper.className = 'hms-image-preview-wrapper';
                 
                 const img = document.createElement('img');
                 img.src = e.target.result;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
                 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.innerHTML = '&times;';
-                removeBtn.style.position = 'absolute';
-                removeBtn.style.top = '4px';
-                removeBtn.style.right = '4px';
-                removeBtn.style.background = 'rgba(0,0,0,0.6)';
-                removeBtn.style.color = '#fff';
-                removeBtn.style.border = 'none';
-                removeBtn.style.borderRadius = '50%';
-                removeBtn.style.width = '24px';
-                removeBtn.style.height = '24px';
-                removeBtn.style.display = 'flex';
-                removeBtn.style.alignItems = 'center';
-                removeBtn.style.justifyContent = 'center';
-                removeBtn.style.cursor = 'pointer';
-                removeBtn.style.fontSize = '14px';
-                removeBtn.style.lineHeight = '1';
+                removeBtn.className = 'hms-image-preview-remove';
                 removeBtn.onclick = () => removeImage(index);
                 
                 wrapper.appendChild(img);

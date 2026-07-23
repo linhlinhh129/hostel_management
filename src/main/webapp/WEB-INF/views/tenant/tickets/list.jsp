@@ -46,7 +46,9 @@
                                     </thead>
                                     <tbody id="ticketsTbody">
                                     <c:forEach var="ticket" items="${tickets}" varStatus="st">
-                                        <tr style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both">
+                                        <tr class="tr-clickable"
+                                            data-href="${ctx}/tenant/tickets/${ticket.id}"
+                                            style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both; cursor:pointer">
                                             <td style="font-weight:600;color:var(--hms-ink); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 <c:out value="${ticket.title}"/>
                                             </td>
@@ -60,7 +62,10 @@
                                                 <span class="badge-hms ${ticket.statusBadgeClass}"><c:out value="${ticket.statusLabel}"/></span>
                                             </td>
                                             <td class="d-none d-md-table-cell text-center">
-                                                <a href="${ctx}/tenant/tickets/${ticket.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
+                                                <a href="${ctx}/tenant/tickets/${ticket.id}"
+                                                   class="btn-mintlify-secondary"
+                                                   style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
+                                                   onclick="event.stopPropagation()">Chi tiết</a>
                                             </td>
                                         </tr>
                                     </c:forEach>

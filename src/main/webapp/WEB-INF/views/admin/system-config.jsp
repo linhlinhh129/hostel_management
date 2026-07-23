@@ -15,10 +15,8 @@
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
             <%-- Page header --%>
-            <div class="page-header hero-sky-gradient"
-                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;
-                            flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+            <div class="page-header hero-sky-gradient dash-hero">
+                <div class="dash-hero-inner">
                     <div>
                         <h1>Cấu hình hệ thống</h1>
                         <p>Quản lý thông số kết nối Email SMTP và cổng thanh toán VNPay</p>
@@ -58,14 +56,13 @@
                             <div class="widget-surface">
                                 <div class="widget-surface-header">
                                     <h3>Thông số Email SMTP hiện tại</h3>
-                                    <button type="button" class="btn-mintlify-secondary"
-                                            style="font-size:0.8125rem;padding:5px 14px"
+                                    <button type="button" class="btn-edit-sm"
                                             data-bs-toggle="modal" data-bs-target="#emailEditModal">
                                         Chỉnh sửa
                                     </button>
                                 </div>
                                 <div class="widget-surface-body">
-                                    <dl class="row mb-0 config-dl" style="font-size:0.9rem;row-gap:0.5rem">
+                                    <dl class="row mb-0 config-dl config-dl--sm">
                                         <dt class="col-sm-4">SMTP Host</dt>
                                         <dd class="col-sm-8"><c:out value="${emailConfig.host}"/></dd>
 
@@ -76,10 +73,9 @@
                                         <dd class="col-sm-8"><c:out value="${emailConfig.username}"/></dd>
 
                                         <dt class="col-sm-4">Mật khẩu</dt>
-                                        <dd class="col-sm-8" style="font-weight:400;color:var(--hms-stone)">
+                                        <dd class="col-sm-8 config-dl__hidden">
                                             ••••••••
-                                            <span class="badge-hms badge-neutral"
-                                                  style="font-size:0.625rem;margin-left:4px">Đã ẩn</span>
+                                            <span class="badge-hms badge-neutral badge-hms--xs">Đã ẩn</span>
                                         </dd>
                                     </dl>
 
@@ -100,21 +96,21 @@
                                 <div class="widget-surface-header">
                                     <h3>Hướng dẫn</h3>
                                 </div>
-                                <div class="widget-surface-body"
-                                     style="font-size:0.8125rem;color:var(--hms-stone);line-height:1.6">
-                                    <p style="margin-bottom:0.75rem">Cấu hình này dùng để gửi:</p>
-                                    <ul style="padding-left:1.25rem;margin-bottom:0.875rem">
+                                <div class="widget-surface-body config-guide-body">
+                                    <p class="config-guide-intro">Cấu hình này dùng để gửi:</p>
+                                    <ul class="config-guide-list">
                                         <li>Mật khẩu tạm thời khi tạo nhân sự mới</li>
                                         <li>Link khôi phục mật khẩu</li>
                                     </ul>
                                     <div class="config-hint config-hint--warning">
-                                        <strong style="color:var(--hms-ink)">Lưu ý:</strong>
+                                        <strong class="config-hint__title">Lưu ý:</strong>
                                         Nhập <em>App Password</em> (không phải mật khẩu Gmail thường).
                                         Bỏ trống ô mật khẩu nếu không muốn thay đổi.
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -128,21 +124,20 @@
                             <div class="widget-surface">
                                 <div class="widget-surface-header">
                                     <h3>Thông số kết nối VNPay hiện tại</h3>
-                                    <button type="button" class="btn-mintlify-secondary"
-                                            style="font-size:0.8125rem;padding:5px 14px"
+                                    <button type="button" class="btn-edit-sm"
                                             data-bs-toggle="modal" data-bs-target="#vnpayEditModal">
                                         Chỉnh sửa
                                     </button>
                                 </div>
                                 <div class="widget-surface-body">
-                                    <dl class="row mb-0 config-dl" style="font-size:0.9rem;row-gap:0.5rem">
+                                    <dl class="row mb-0 config-dl config-dl--sm">
                                         <dt class="col-sm-4">Pay URL</dt>
-                                        <dd class="col-sm-8" style="font-size:0.8125rem">
+                                        <dd class="col-sm-8 config-dl__url">
                                             <c:out value="${vnpayConfig.payUrl}"/>
                                         </dd>
 
                                         <dt class="col-sm-4">Return URL</dt>
-                                        <dd class="col-sm-8" style="font-size:0.8125rem">
+                                        <dd class="col-sm-8 config-dl__url">
                                             <c:out value="${vnpayConfig.returnUrl}"/>
                                         </dd>
 
@@ -150,14 +145,13 @@
                                         <dd class="col-sm-8"><c:out value="${vnpayConfig.tmnCode}"/></dd>
 
                                         <dt class="col-sm-4">Khóa bí mật</dt>
-                                        <dd class="col-sm-8" style="font-weight:400;color:var(--hms-stone)">
+                                        <dd class="col-sm-8 config-dl__hidden">
                                             ••••••••
-                                            <span class="badge-hms badge-neutral"
-                                                  style="font-size:0.625rem;margin-left:4px">Đã ẩn</span>
+                                            <span class="badge-hms badge-neutral badge-hms--xs">Đã ẩn</span>
                                         </dd>
 
                                         <dt class="col-sm-4">API URL</dt>
-                                        <dd class="col-sm-8" style="font-size:0.8125rem">
+                                        <dd class="col-sm-8 config-dl__url">
                                             <c:out value="${vnpayConfig.apiUrl}"/>
                                         </dd>
                                     </dl>
@@ -179,15 +173,14 @@
                                 <div class="widget-surface-header">
                                     <h3>Hướng dẫn</h3>
                                 </div>
-                                <div class="widget-surface-body"
-                                     style="font-size:0.8125rem;color:var(--hms-stone);line-height:1.6">
-                                    <p style="margin-bottom:0.75rem">Cấu hình này dùng để:</p>
-                                    <ul style="padding-left:1.25rem;margin-bottom:0.875rem">
+                                <div class="widget-surface-body config-guide-body">
+                                    <p class="config-guide-intro">Cấu hình này dùng để:</p>
+                                    <ul class="config-guide-list">
                                         <li>Tạo URL thanh toán QR cho người thuê</li>
                                         <li>Xác thực kết quả giao dịch từ VNPay</li>
                                     </ul>
                                     <div class="config-hint config-hint--danger">
-                                        <strong style="color:var(--hms-ink)">Cảnh báo:</strong>
+                                        <strong class="config-hint__title">Cảnh báo:</strong>
                                         Sai <em>Pay URL</em> hoặc <em>API URL</em> sẽ làm hỏng
                                         toàn bộ luồng thanh toán. Kiểm tra kỹ trước khi lưu.
                                     </div>
@@ -208,21 +201,19 @@
 <div class="modal fade" id="emailEditModal" tabindex="-1"
      aria-labelledby="emailEditModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content"
-             style="border-radius:var(--hms-radius-lg);border:1px solid var(--hms-border)">
+        <div class="modal-content config-modal-content">
             <form action="${ctx}/admin/system-config/email" method="post"
                   id="formEmailEdit" novalidate>
                 <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
                 <div class="modal-header config-modal-header">
-                    <h5 class="modal-title" id="emailEditModalLabel"
-                        style="font-size:1rem;font-weight:700;color:var(--hms-ink)">
+                    <h5 class="modal-title config-modal-title" id="emailEditModalLabel">
                         Chỉnh sửa cấu hình Email SMTP
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
 
-                <div class="modal-body" style="padding:1.5rem">
+                <div class="modal-body config-modal-body">
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label for="emailHost" class="form-label">
@@ -258,9 +249,7 @@
                                        autocomplete="new-password" required>
                                 <button type="button" class="btn btn-outline-secondary btn-toggle-password"
                                         onclick="togglePassword('emailPassword', this)"
-                                        title="Ẩn / Hiện mật khẩu">
-                                    👁
-                                </button>
+                                        title="Ẩn / Hiện mật khẩu">👁</button>
                             </div>
                             <div class="form-text">
                                 Nhập App Password của Gmail — không phải mật khẩu đăng nhập thông thường.
@@ -284,21 +273,19 @@
 <div class="modal fade" id="vnpayEditModal" tabindex="-1"
      aria-labelledby="vnpayEditModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content"
-             style="border-radius:var(--hms-radius-lg);border:1px solid var(--hms-border)">
+        <div class="modal-content config-modal-content">
             <form action="${ctx}/admin/system-config/vnpay" method="post"
                   id="formVNPayEdit" novalidate>
                 <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
                 <div class="modal-header config-modal-header">
-                    <h5 class="modal-title" id="vnpayEditModalLabel"
-                        style="font-size:1rem;font-weight:700;color:var(--hms-ink)">
+                    <h5 class="modal-title config-modal-title" id="vnpayEditModalLabel">
                         Chỉnh sửa cấu hình VNPay
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
 
-                <div class="modal-body" style="padding:1.5rem">
+                <div class="modal-body config-modal-body">
                     <div class="row g-3">
                         <div class="col-12">
                             <label for="vnpayPayUrl" class="form-label">
@@ -332,11 +319,9 @@
                                 <input type="password" class="form-control" id="vnpaySecretKey"
                                        name="secretKey" placeholder="••••••••"
                                        autocomplete="new-password" required>
-                        <button type="button" class="btn btn-outline-secondary btn-toggle-password"
+                                <button type="button" class="btn btn-outline-secondary btn-toggle-password"
                                         onclick="togglePassword('vnpaySecretKey', this)"
-                                        title="Ẩn / Hiện khóa bí mật">
-                                    👁
-                                </button>
+                                        title="Ẩn / Hiện khóa bí mật">👁</button>
                             </div>
                         </div>
                         <div class="col-12">
@@ -368,22 +353,22 @@ function togglePassword(inputId, btn) {
     var input = document.getElementById(inputId);
     if (!input) return;
     var isHidden = input.type === 'password';
-    input.type   = isHidden ? 'text'     : 'password';
-    btn.textContent = isHidden ? '🙈'  : '👁';
-    btn.title       = isHidden ? 'Ẩn'  : 'Hiện';
+    input.type      = isHidden ? 'text'    : 'password';
+    btn.textContent = isHidden ? '🙈'     : '👁';
+    btn.title       = isHidden ? 'Ẩn'     : 'Hiện';
 }
 
 (function () {
     'use strict';
-    /* Active tab đúng theo success param */
-    var url     = new URL(window.location.href);
-    var success = url.searchParams.get('success');
+
+    /* Mở đúng tab theo success param */
+    var success = new URL(window.location.href).searchParams.get('success');
     if (success === 'vnpay_updated') {
         var vnpayTab = document.getElementById('vnpay-tab');
         if (vnpayTab) bootstrap.Tab.getOrCreateInstance(vnpayTab).show();
     }
 
-    /* Disable nút submit khi đang gửi */
+    /* Disable nút submit khi đang gửi + validate */
     function lockOnSubmit(formId, btnId) {
         var form = document.getElementById(formId);
         var btn  = document.getElementById(btnId);
@@ -399,7 +384,10 @@ function togglePassword(inputId, btn) {
             btn.textContent = 'Đang lưu…';
         });
     }
-    lockOnSubmit('formEmailEdit',  'btnSaveEmail');
-    lockOnSubmit('formVNPayEdit',  'btnSaveVNPay');
+    lockOnSubmit('formEmailEdit', 'btnSaveEmail');
+    lockOnSubmit('formVNPayEdit', 'btnSaveVNPay');
 }());
 </script>
+
+</body>
+</html>

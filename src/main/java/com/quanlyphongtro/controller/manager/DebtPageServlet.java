@@ -94,6 +94,9 @@ public class DebtPageServlet extends HttpServlet {
             }
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/manager/debts");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServletException("Lỗi khi tải chi tiết công nợ: " + e.getMessage(), e);
         }
     }
 }

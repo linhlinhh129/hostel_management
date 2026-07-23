@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle"  value="Sửa cơ sở - Admin"/>
 <c:set var="pageRole"   value="ADMIN"/>
@@ -67,7 +68,7 @@
                                    class="form-control ${isActive ? 'field-readonly' : ''}"
                                    id="floorCount" name="floorCount"
                                    value="<c:out value='${facility.floorCount}'/>"
-                                   min="1" max="99"
+                                   min="1" max="10"
                                    ${isActive ? 'readonly' : 'required'}>
                         </div>
 
@@ -78,7 +79,7 @@
                                    class="form-control ${isActive ? 'field-readonly' : ''}"
                                    id="roomsPerFloor" name="roomsPerFloor"
                                    value="<c:out value='${facility.roomsPerFloor}'/>"
-                                   min="1" max="99"
+                                   min="1" max="30"
                                    ${isActive ? 'readonly' : 'required'}>
                         </div>
                     </div>

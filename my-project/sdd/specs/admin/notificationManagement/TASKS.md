@@ -22,17 +22,15 @@
 
 ---
 
-### Task 1.2: Thiết kế schema Notification và Audit Log (3 points)
+### Task 1.2: Thiết kế schema Notification (3 points)
 **Duration:** 1-2 ngày  
 **Description:**
 - Thiết kế bảng Notification (id, title, content, createdBy, createdAt, recipientCount)
-- Thiết kế mở rộng audit log cho hành động tạo và xem
 - Định nghĩa index cho tìm kiếm title và phân trang
 
 **Acceptance Criteria:**
 - ✓ Schema đầy đủ cho tính năng
 - ✓ Index được xác định
-- ✓ Audit log có thể ghi được user và hành động
 
 ---
 
@@ -40,7 +38,7 @@
 **Duration:** 1 ngày  
 **Description:**
 - Định nghĩa luật validate title/content
-- Xác định lỗi `VALIDATION_ERROR`, `NO_RECIPIENT_FOUND`, `NOTIFICATION_NOT_FOUND`, `ACCESS_DENIED`
+- Xác định lỗi `VALIDATION_ERROR`, `NOTIFICATION_NOT_FOUND`
 - Xác định cơ chế kiểm tra quyền Admin
 
 **Acceptance Criteria:**
@@ -50,7 +48,7 @@
 
 ---
 
-## Epic 2: Backend Implementation (16 points)
+## Epic 2: Backend Implementation (14 points)
 
 ### Task 2.1: Triển khai Notification entity và repository (3 points)
 **Duration:** 1-2 ngày  
@@ -71,13 +69,10 @@
 **Description:**
 - Implement function createNotification
 - Validate tiêu đề và nội dung
-- Kiểm tra số lượng cư dân đang hoạt động
-- Lưu thông báo và ghi audit log
+- Lưu thông báo
 
 **Acceptance Criteria:**
 - ✓ Notification tạo thành công với dữ liệu hợp lệ
-- ✓ `NO_RECIPIENT_FOUND` khi không có cư dân hoạt động
-- ✓ Audit log ghi nhận hành động
 
 ---
 
@@ -120,19 +115,6 @@
 - ✓ Endpoints hoạt động
 - ✓ Authorization được kiểm tra
 - ✓ Lỗi trả về đúng định dạng
-
----
-
-### Task 2.6: Audit log cho create và view (2 points)
-**Duration:** 1 ngày  
-**Description:**
-- Mở rộng cơ chế audit log để ghi tạo và xem
-- Đảm bảo lưu userId, action, timestamp
-- Kiểm thử hành vi audit
-
-**Acceptance Criteria:**
-- ✓ Audit log ghi đầy đủ
-- ✓ Review log dễ truy vấn
 
 ---
 
@@ -216,186 +198,3 @@
 - Task 2.5 → Task 3.1-3.3
 - Task 4.1 → Task 4.2
 
-- Create form with fields: title, content, recipientType, recipientIds
-- Implement recipientType selector (ALL, FACILITY, ROOM)
-- Implement multi-select for facility/room IDs
-- Show recipient count
-- Implement client-side validation
-- Character counter for content (max 1000)
-- Show validation errors
-
-**Acceptance Criteria:**
-- ✓ Form displays correctly
-- ✓ Validation working
-- ✓ Recipient type selection works
-- ✓ Character counter showing
-- ✓ API call correct
-- ✓ Success/error handling
-
----
-
-### Task 3.3: Notification Detail Page (3 points)
-**Assignee:** Frontend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Display notification info: ID, title, content, recipient type
-- Display list of recipients
-- Display metadata: created date, created by
-- Add back button
-
-**Acceptance Criteria:**
-- ✓ Detail displays correctly
-- ✓ Recipients list shown
-- ✓ Responsive design
-
----
-
-### Task 3.4: UI/UX Polish (2 points)
-**Assignee:** Frontend Developer  
-**Duration:** 1 day  
-**Description:**
-- Review UI consistency
-- Test responsiveness
-- Optimize performance
-- Add accessibility features
-
-**Acceptance Criteria:**
-- ✓ Consistent styling
-- ✓ Responsive
-- ✓ Fast load times
-- ✓ Accessible
-
----
-
-## Epic 4: Testing & Quality (12 points)
-
-### Task 4.1: Unit Tests (3 points)
-**Assignee:** Backend Developer / QA  
-**Duration:** 1-2 days  
-**Description:**
-- Test recipient resolution logic
-- Test validation logic
-- Test service methods
-- Aim for >= 80% coverage
-
-**Acceptance Criteria:**
-- ✓ Coverage >= 80%
-- ✓ All tests passing
-- ✓ Edge cases covered
-
----
-
-### Task 4.2: Integration Tests (3 points)
-**Assignee:** QA Engineer  
-**Duration:** 1-2 days  
-**Description:**
-- Test API endpoints
-- Test create-to-detail workflows
-- Test search functionality
-- Test error scenarios
-
-**Acceptance Criteria:**
-- ✓ All APIs tested
-- ✓ Workflows working
-- ✓ Error handling verified
-
----
-
-### Task 4.3: E2E & UAT (3 points)
-**Assignee:** QA Engineer  
-**Duration:** 1-2 days  
-**Description:**
-- Write E2E tests for user workflows
-- Manual UAT
-- Performance testing
-- Load testing
-
-**Acceptance Criteria:**
-- ✓ E2E tests passing
-- ✓ UAT completed
-- ✓ Performance acceptable
-
----
-
-### Task 4.4: Security Testing (3 points)
-**Assignee:** QA Engineer  
-**Duration:** 1 day  
-**Description:**
-- Test authorization (Admin only)
-- Test input validation
-- Test XSS prevention
-- Test SQL injection prevention
-
-**Acceptance Criteria:**
-- ✓ All security tests passed
-- ✓ No vulnerabilities
-- ✓ Report documented
-
----
-
-## Epic 5: Documentation & Deployment (4 points)
-
-### Task 5.1: API Documentation (2 points)
-**Assignee:** Tech Lead  
-**Duration:** 1 day  
-**Description:**
-- Generate API documentation
-- Document all endpoints
-- Document error codes
-- Add examples
-
-**Acceptance Criteria:**
-- ✓ Documentation complete
-- ✓ All endpoints documented
-- ✓ Examples clear
-
----
-
-### Task 5.2: Deployment & Go-Live (2 points)
-**Assignee:** DevOps / Tech Lead  
-**Duration:** 1-2 days  
-**Description:**
-- Prepare environment
-- Run migrations
-- Deploy code
-- Setup monitoring
-- Verify go-live
-
-**Acceptance Criteria:**
-- ✓ Deployment successful
-- ✓ No issues in production
-- ✓ Monitoring active
-
----
-
-## Summary by Sprint
-
-| Sprint | Duration | Points | Focus |
-|--------|----------|--------|-------|
-| Sprint 1 | Wk 1 | 14 | DB design, entities, migrations |
-| Sprint 2 | Wk 2-3 | 16 | Create, list, detail APIs |
-| Sprint 3 | Wk 4 | 12 | Frontend implementation |
-| Sprint 4 | Wk 5-8 | 10 | Testing, UAT, deployment |
-
----
-
-## Critical Path
-
-1. Task 1.1 (DB Schema) → Task 1.2 (Entities)
-2. Task 1.2 → Task 2.1 (Recipient Logic)
-3. Task 2.1 → Task 2.2 (Create)
-4. Task 2.2 → Task 2.3 (List)
-5. Task 2.3 → Task 3.1 (Frontend List)
-6. Task 3.1-3.3 → Task 4.3 (E2E Testing)
-
----
-
-## Effort Estimates by Role
-
-| Role | Hours | Duration |
-|------|-------|----------|
-| Backend Developer | 120 | 3 weeks |
-| Frontend Developer | 80 | 2 weeks |
-| QA Engineer | 60 | 1.5 weeks |
-| Database Admin | 20 | 2-3 days |
-| Tech Lead | 40 | 1 week |

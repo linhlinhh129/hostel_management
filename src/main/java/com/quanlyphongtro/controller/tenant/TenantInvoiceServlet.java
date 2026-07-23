@@ -71,10 +71,9 @@ public class TenantInvoiceServlet extends BaseServlet {
                             java.time.LocalDate today = java.time.LocalDate.now();
                             if (dueDate != null && today.isAfter(dueDate)) {
                                 overdueDays = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
-                                penaltyAmount = new com.quanlyphongtro.dao.InvoiceDAO().calculateRealtimeLatePenalty(inv.getId());
-                                if (penaltyAmount != null) {
-                                    totalAmountToPay = totalAmountToPay.add(penaltyAmount);
-                                }
+                                // lateFee đã được cộng vào totalAmount trong mapRow(),
+                                // lấy lại để hiển thị riêng trong JSP
+                                penaltyAmount = inv.getLateFee() != null ? inv.getLateFee() : java.math.BigDecimal.ZERO;
                             }
                         }
 

@@ -74,6 +74,17 @@
                             </select>
                         </div>
 
+                        <%-- Hành động --%>
+                        <div style="flex:1;min-width:150px">
+                            <label class="filter-label">Hành động</label>
+                            <select class="form-select" name="action" style="width:100%">
+                                <option value="">Tất cả</option>
+                                <option value="CREATE" ${filterAction == 'CREATE' ? 'selected' : ''}>Tạo mới</option>
+                                <option value="UPDATE" ${filterAction == 'UPDATE' ? 'selected' : ''}>Cập nhật</option>
+                                <option value="DELETE" ${filterAction == 'DELETE' ? 'selected' : ''}>Xóa</option>
+                            </select>
+                        </div>
+
                         <%-- Thời gian --%>
                         <div style="flex:1.5;min-width:200px">
                             <label class="filter-label">Thời gian</label>

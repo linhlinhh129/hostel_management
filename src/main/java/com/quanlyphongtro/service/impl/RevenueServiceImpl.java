@@ -26,8 +26,8 @@ public class RevenueServiceImpl implements RevenueService {
     }
 
     @Override
-    public int countFacilitiesWithRevenue(String period) {
-        return revenueDAO.countFacilitiesWithRevenue(period);
+    public int countActiveFacilities() {
+        return revenueDAO.countActiveFacilities();
     }
 
     @Override

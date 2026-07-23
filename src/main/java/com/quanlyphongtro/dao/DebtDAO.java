@@ -207,7 +207,24 @@ public class DebtDAO extends BaseDAO {
                     dto.setServiceFee(rs.getBigDecimal("service_fee"));
                     dto.setInternetFee(rs.getBigDecimal("internet_fee"));
                     dto.setOtherFee(rs.getBigDecimal("other_fee"));
-                    
+
+                    // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
+                    java.math.BigDecimal lateFee = java.math.BigDecimal.ZERO;
+                    Date dueDateSql = rs.getDate("due_date");
+                    if (dueDateSql != null && dto.getRoomFee() != null) {
+                        java.time.LocalDate dueLocalDate = dueDateSql.toLocalDate();
+                        java.time.LocalDate today = java.time.LocalDate.now();
+                        if (today.isAfter(dueLocalDate)) {
+                            long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueLocalDate, today);
+                            lateFee = dto.getRoomFee()
+                                        .multiply(new java.math.BigDecimal("0.01"))
+                                        .multiply(new java.math.BigDecimal(daysLate))
+                                        .setScale(0, java.math.RoundingMode.HALF_UP);
+                        }
+                    }
+                    dto.setLateFeePreview(lateFee);
+                    // otherFee giữ nguyên giá trị từ DB, không cộng lateFee vào
+
                     java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
                     if (dto.getRoomFee() != null) subtotal = subtotal.add(dto.getRoomFee());
                     if (dto.getElectricAmount() != null) subtotal = subtotal.add(dto.getElectricAmount());
@@ -215,18 +232,26 @@ public class DebtDAO extends BaseDAO {
                     if (dto.getServiceFee() != null) subtotal = subtotal.add(dto.getServiceFee());
                     if (dto.getInternetFee() != null) subtotal = subtotal.add(dto.getInternetFee());
                     if (dto.getOtherFee() != null) subtotal = subtotal.add(dto.getOtherFee());
+                    subtotal = subtotal.add(lateFee); // cộng phí chậm nộp vào tạm tính riêng
                     dto.setSubtotal(subtotal);
                     
                     java.math.BigDecimal taxRate = rs.getBigDecimal("tax_rate");
                     dto.setTaxRate(taxRate);
                     if (taxRate != null && taxRate.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                        dto.setTaxAmount(subtotal.multiply(taxRate).divide(new java.math.BigDecimal("100")));
+                        dto.setTaxAmount(subtotal.multiply(taxRate).divide(new java.math.BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP));
                     } else {
                         dto.setTaxAmount(java.math.BigDecimal.ZERO);
                     }
                     
-                    dto.setInvoiceTotalAmount(rs.getBigDecimal("total_amount"));
+                    // invoiceTotalAmount = subtotal + taxAmount (đã bao gồm lateFee)
+                    java.math.BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : java.math.BigDecimal.ZERO;
+                    java.math.BigDecimal totalWithLateFee = subtotal.add(taxAmt);
+                    dto.setInvoiceTotalAmount(totalWithLateFee);
                     dto.setPaidAmount(rs.getBigDecimal("paid_amount"));
+                    
+                    // Số còn nợ = tổng (đã gồm lateFee) - đã thanh toán
+                    java.math.BigDecimal paid = dto.getPaidAmount() != null ? dto.getPaidAmount() : java.math.BigDecimal.ZERO;
+                    dto.setDebtAmount(totalWithLateFee.subtract(paid).max(java.math.BigDecimal.ZERO));
                     
                     Date dueDate = rs.getDate("due_date");
                     if (dueDate != null) {
@@ -246,7 +271,7 @@ public class DebtDAO extends BaseDAO {
                     return Optional.of(dto);
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Error finding debt detail", e);
         }
         return Optional.empty();

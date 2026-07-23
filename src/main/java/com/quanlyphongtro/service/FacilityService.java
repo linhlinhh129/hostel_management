@@ -23,28 +23,19 @@ public interface FacilityService {
 
     /**
      * Tạo cơ sở mới ở trạng thái DRAFT.
-     *
-     * @param electricityPrice có thể null/blank → 0
-     * @param waterPrice       có thể null/blank → 0
-     * @param internetFee      có thể null/blank → 0
-     * @param serviceFee       có thể null/blank → 0
      */
     void create(String code, String name, String address,
-                String floorCountStr, String roomsPerFloorStr,
-                String electricityPrice, String waterPrice,
-                String internetFee, String serviceFee)
+                String floorCountStr, String roomsPerFloorStr)
             throws ValidationException;
 
     /**
      * Cập nhật cơ sở.
-     * Khi ACTIVE: chỉ cho sửa name, address, và service prices.
-     * Khi DRAFT: cho sửa tất cả bao gồm code, floorCount, roomsPerFloor.
+     * Khi ACTIVE: chỉ cho sửa name.
+     * Khi DRAFT: cho sửa tất cả bao gồm code, floorCount, roomsPerFloor, address.
      */
     void update(int id,
                 String code, String name, String address,
-                String floorCountStr, String roomsPerFloorStr,
-                String electricityPrice, String waterPrice,
-                String internetFee, String serviceFee)
+                String floorCountStr, String roomsPerFloorStr)
             throws NotFoundException, ValidationException;
 
     // ── Status transitions ────────────────────────────────────────────────
@@ -57,12 +48,6 @@ public interface FacilityService {
      * Chặn nếu còn phòng đang thuê.
      */
     void deactivate(int id) throws NotFoundException, ValidationException;
-
-    // ── Room inline update ────────────────────────────────────────────────
-
-    /** Cập nhật diện tích phòng từ trang detail cơ sở. */
-    void updateRoomArea(int facilityId, int roomId, String areaStr)
-            throws NotFoundException, ValidationException;
 
     // ── Lookup helpers (dùng cho RoleFilter, PersonnelService) ───────────
 

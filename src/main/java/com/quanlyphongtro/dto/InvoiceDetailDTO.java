@@ -30,6 +30,7 @@ public class InvoiceDetailDTO {
     private BigDecimal serviceFee;
     private BigDecimal internetFee;
     private BigDecimal otherFee;
+    private BigDecimal lateFee;        // phí chậm nộp tính tại runtime (không lưu DB)
     
     private BigDecimal subtotal;
     private BigDecimal taxRate;
@@ -125,6 +126,9 @@ public class InvoiceDetailDTO {
 
     public BigDecimal getOtherFee() { return otherFee; }
     public void setOtherFee(BigDecimal otherFee) { this.otherFee = otherFee; }
+
+    public BigDecimal getLateFee() { return lateFee; }
+    public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
 
     public BigDecimal getSubtotal() { return subtotal; }
     public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
