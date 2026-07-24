@@ -16,7 +16,9 @@
 
 - [x] Viết phương thức `insert(CommunityPost post)` - sử dụng PreparedStatement.
 
-- [x] Viết phương thức `getPendingPosts(String cursor, int limit)` - áp dụng Cursor-based và `deleted_at IS NULL`.
+- [x] Thay đổi phương thức `getPendingPosts` thành `getAllPosts(String cursor, int limit)` để lấy tất cả bài viết không phân biệt trạng thái - áp dụng Cursor-based và `deleted_at IS NULL`.
+
+- [x] Thêm phương thức `getPostById(int postId)` để lấy chi tiết bài viết.
 
 - [x] Viết phương thức `approvePost(int postId, int reviewerId)`.
 
@@ -36,7 +38,11 @@
 
 - [x] Tạo `CommunityPostServlet` (kế thừa `BaseServlet`) trong package `com.quanlyphongtro.controller.manager`.
 
-- [x] Xử lý HTTP GET: Trả về trang `list-pending.jsp` hoặc dữ liệu JSON với Rate Limit headers.
+- [x] Đổi toàn bộ các khai báo URL của Servlet từ `/manager/community-posts` sang `/manager/articles`.
+
+- [x] Xử lý HTTP GET `/manager/articles`: Trả về trang `list-pending.jsp` hiển thị danh sách tất cả bài viết, hoặc dữ liệu JSON với Rate Limit headers.
+
+- [x] Xử lý HTTP GET `/manager/articles/detail`: Lấy thông tin bài viết và trả về trang `detail.jsp`.
 
 - [x] Xử lý HTTP POST (Multipart): Xử lý tạo mới bài viết và nhận file upload.
 
@@ -48,7 +54,9 @@
 
 - [x] Task 6.1: Xây dựng `create.jsp` tại `/WEB-INF/views/manager/postManagement/`. Hiển thị form tạo bài viết gồm: tiêu đề, nội dung, chụp ảnh trực tiếp hoặc tải ảnh lên, nút Lưu và Hủy.
 
-- [x] Task 6.2: Xây dựng `list-pending.jsp` tại `/WEB-INF/views/manager/postManagement/`. Hiển thị danh sách bài viết trạng thái `PENDING`, bao gồm tiêu đề, người tạo, ngày tạo và các nút **Duyệt**, **Xóa**, **Xem chi tiết**.
+- [x] Task 6.2: Sửa đổi `list-pending.jsp` tại `/WEB-INF/views/manager/postManagement/` để hiển thị danh sách TẤT CẢ bài viết (có cột Trạng thái), bao gồm tiêu đề, người tạo, ngày tạo và các nút **Duyệt**, **Xóa**, **Xem chi tiết**.
+
+- [x] Task 6.3: Xây dựng `detail.jsp` hiển thị chi tiết bài viết, hỗ trợ Component Modal (Image Viewer) để phóng to hình ảnh khi người dùng click vào ảnh đính kèm.
 
 - [x] Task 5.3: Mở file `sidebar.jsp`, chèn nhóm menu **Cộng đồng** (Đã có sẵn trong file sidebar.jsp từ trước).
 

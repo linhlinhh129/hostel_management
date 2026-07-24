@@ -1,58 +1,54 @@
 # PLAN.md
 
 ## Mục tiêu
-- Xây dựng chức năng quản lý khoản phí và giá dịch vụ.
-- Cho phép Ban quản lý tạo mới khoản phí, cập nhật giá dịch vụ và điều chỉnh giá khoản phí hiện có.
-- Lưu lại lịch sử thay đổi để đảm bảo minh bạch và audit.
+- Xây dựng chức năng quản lý khoản phí và giá dịch vụ (Điện, Nước, Phí dịch vụ) cho từng cơ sở.
+- Cho phép Ban quản lý cập nhật giá mới và ghi chú lại lý do thay đổi.
+- Lưu lại lịch sử cập nhật giá để đảm bảo tính minh bạch và audit theo thời gian.
 
 ## Phạm vi
-- Tạo mới khoản phí tùy chỉnh.
-- Cập nhật giá khoản phí hiện có.
-- Cập nhật giá dịch vụ mặc định (ELECTRICITY, WATER, SERVICE).
-- Validate giá hợp lệ và chống trùng tên khoản phí.
-- Lưu lịch sử thay đổi giá.
+- Hiển thị danh sách các giá dịch vụ hiện hành (`ELECTRICITY`, `WATER`, `SERVICE_FEE`).
+- Cập nhật giá dịch vụ mới cho cơ sở mà Ban quản lý đang phụ trách thông qua giao diện pop-up.
+- Hiển thị lịch sử cập nhật (old_price, new_price, ghi chú, người cập nhật, thời gian).
+- Áp dụng Validation từ phía Server để đảm bảo tính toàn vẹn (giá > 0, kiểu số hợp lệ).
 
 ## Giải pháp kỹ thuật
-### Dữ liệu
-- `ServiceFee`: id, feeName, price, description, createdAt, createdBy, updatedAt, updatedBy.
-- `ServicePrice`: serviceType, price, updatedAt, updatedBy.
-- `ServicePriceHistory` / `ServiceFeeHistory`: id, entityId, oldPrice, newPrice, changedBy, changedAt, comment.
+### 1. Dữ liệu (Database schema)
+- Bảng `facilities`: Lưu trực tiếp giá điện, nước, phí dịch vụ hiện tại (các cột `electricity_price`, `water_price`, `service_fee`).
+- Bảng lịch sử (VD: `service_price_histories` hoặc tương đương):
+  - `facility_id`, `price_type` (ELECTRICITY, WATER, SERVICE_FEE).
+  - `old_price`, `new_price`, `note` (Ghi chú).
+  - `created_by` (Manager ID), `created_at` (Thời gian thay đổi).
 
-### Luồng xử lý
-1. Tạo khoản phí mới: validate `feeName`, `price`, chống trùng tên, tạo record mới.
-2. Cập nhật giá khoản phí: validate `price > 0`, update giá mới, lưu lịch sử thay đổi.
-3. Cập nhật giá dịch vụ mặc định: validate `serviceType`, `price > 0`, update giá, lưu history.
+### 2. Luồng xử lý
+- **Hiển thị danh sách (Index):** `ServicePricePageServlet` lấy giá trị hiện hành từ DB dựa trên `managerId` và forward tới `index.jsp`.
+- **Lịch sử cập nhật (History):** Nhận tham số `priceType`, lấy danh sách lịch sử phân trang từ DB, forward tới `history.jsp`.
+- **Cập nhật giá mới (Update):** Form gửi POST về `/manager/service-prices?action=update`. Server parse số tiền, validate (>= 0), cập nhật bảng `facilities` trong 1 Transaction, đồng thời insert 1 record vào bảng lịch sử. Chuyển hướng lại trang danh sách nếu thành công. Nếu thất bại, forward lại `index.jsp` kèm `errorMessage`.
 
-### API đề xuất
-- `POST /api/v1/service-fees`
-- `PUT /api/v1/service-fees/{feeId}`
-- `PUT /api/v1/service-prices/{serviceType}`
+### 3. Cấu trúc Servlet / JSP
+- **Servlet:** `ServicePricePageServlet.java` (`@WebServlet("/manager/service-prices")`)
+- **GET `/manager/service-prices`**: Load dữ liệu hiện hành -> `index.jsp`
+- **GET `/manager/service-prices?action=history&priceType=...`**: Load lịch sử -> `history.jsp`
+- **POST `/manager/service-prices?action=update`**: Form submit với các params `priceType`, `newPrice`, `note`. 
 
-### Quy tắc nghiệp vụ
-- Giá phải lớn hơn 0. Nếu <= 0, trả về lỗi `INVALID_PRICE`.
-- `feeName` phải là duy nhất. Nếu trùng, trả về `DUPLICATE_SERVICE_FEE`.
-- Nếu thiếu thông tin bắt buộc, trả về `REQUIRED_FIELD_MISSING`.
-- Lưu audit trail khi tạo mới hoặc cập nhật.
+## Quy tắc nghiệp vụ
+- `newPrice` phải hợp lệ (Kiểu số) và >= 0. Nếu không, bắt Exception và forward lại form với lỗi.
+- `priceType` chỉ nằm trong danh sách cho phép (`ELECTRICITY`, `WATER`, `SERVICE_FEE`).
+- Mức giá mới chỉ áp dụng cho các hóa đơn sinh ra **sau** thời điểm cập nhật. Hóa đơn cũ không bị thay đổi.
+- Mọi lần cập nhật phải được log lại.
 
-### Bảo mật
-- Chỉ người dùng role `Management Board` hoặc `Finance Manager` (theo yêu cầu phân quyền cụ thể) được phép thực hiện.
-- Trả về 401 khi chưa đăng nhập.
-- Trả về 403 khi sai role.
+## Bảo mật và Phân quyền
+- **Authentication & Authorization:** Chỉ user có role `MANAGER` mới được truy cập Servlet này. (Sử dụng `getCurrentUser()` và kiểm tra role).
+- Trả về lỗi HTTP 403 nếu cố truy cập khi không có quyền.
+- Trả về HTTP 400 hoặc đẩy Error Message khi tham số không hợp lệ.
 
-### Hiệu năng
-- Mỗi API phản hồi trong < 500ms.
-- Áp dụng rate limit 100 requests/phút/người dùng.
+## Hiệu năng
+- Các truy vấn lấy giá và lịch sử cần có INDEX trên cột `facility_id` và `price_type`.
+- Xử lý phân trang cho trang Lịch sử để tránh tải quá nhiều dữ liệu (`LIMIT/OFFSET`).
 
 ## Rủi ro
-- Dữ liệu giá không chính xác nếu không validate số liệu đầu vào.
-- Tên khoản phí trùng lặp gây nhầm lẫn trên hóa đơn.
-- Lịch sử thay đổi không đầy đủ nếu audit trail không được ghi chính xác.
+- Lỗi đồng bộ dữ liệu nếu cập nhật giá trong lúc hệ thống đang chạy batch sinh hóa đơn tự động.
+- Không có cơ chế Rollback cho các hóa đơn cũ, phải xử lý cẩn thận thông báo UX.
 
 ## Giả định
-- Danh mục `serviceType` mặc định không bị xóa và chỉ có các giá trị ELECTRICITY, WATER, SERVICE.
-- Mức giá mới áp dụng cho các hóa đơn được tạo sau thời điểm cập nhật.
-- Các API điều chỉnh giá này không cần hỗ trợ rollback tự động ngoài ghi history.
-
-## Tài liệu tham khảo
-- `SPEC.md`
-- `CONTEXT.md`
+- Ban quản lý chỉ quản lý duy nhất 1 cơ sở hoặc luồng lấy cơ sở sẽ tự động ánh xạ thông qua `managerId`.
+- Dữ liệu hiển thị UI bao gồm 3 khoản cố định: Giá điện, giá nước, phí dịch vụ.

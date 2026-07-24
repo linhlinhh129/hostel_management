@@ -1,61 +1,51 @@
-# PLAN.md
+# Implementation Plan: Quản lý hóa đơn
 
-## Mục tiêu
-- Xây dựng chức năng quản lý hóa đơn cho Ban quản lý.
-- Hỗ trợ xem danh sách hóa đơn, xem chi tiết, điều chỉnh hóa đơn, xuất hóa đơn PDF và phân quyền người dùng.
-- Áp dụng các quy tắc tính toán tự động và bảo đảm tính toàn vẹn cho hóa đơn đã thanh toán.
+## 1. Technical Context
+- **Feature**: Quản lý hóa đơn (Invoice Management).
+- **Core Strategy**: Tạo, xem, điều chỉnh, và in hóa đơn cho từng phòng trong kỳ. Dữ liệu giá/phí được lấy tự động (snapshot) tại thời điểm tạo.
+- **Architecture**: Mô hình MVC truyền thống với Jakarta EE Servlets và JSP (`InvoiceServlet`, `InvoiceDetailServlet`).
+- **Dependencies**: Bảng `invoices`, `rooms`, `users`, `facilities`, `meter_readings`.
 
-## Phạm vi
-- Danh sách hóa đơn: invoiceId, invoiceCode, roomCode, billingPeriod, totalAmount, dueDate, status.
-- Chi tiết hóa đơn: roomFee, điện, nước, serviceFee, taxRate, taxAmount, totalAmount, dueDate, status.
-- Điều chỉnh dữ liệu hợp lệ trước khi hóa đơn được thanh toán.
-- Xuất hóa đơn PDF.
-- Phân quyền Management Board.
+## 2. Constitution Check
+- [x] **Core Principle I (Layered Architecture)**: Không sử dụng REST API. Mọi thao tác xử lý qua `InvoiceServlet` và `InvoiceDetailServlet`, gọi xuống `InvoiceService`, trả view bằng `JSP`.
+- [x] **Core Principle II (Consistent UI)**: Các trang danh sách, chi tiết, chỉnh sửa, tạo mới tuân thủ giao diện dùng chung. Khi in ấn (`window.print()`), ẩn sidebar/header theo luật CSS.
+- [x] **Core Principle III (RBAC)**: Chỉ role `MANAGER` (hoặc `ADMIN`) mới được phép truy cập. Kiểm tra auth ở filter hoặc đầu mỗi phương thức Servlet.
+- [x] **Core Principle IV (Safe DB Transactions)**: Thao tác tạo hóa đơn phải nằm trong 1 Database Transaction để đảm bảo tính toàn vẹn khi snapshot dữ liệu từ nhiều bảng.
 
-## Giải pháp kỹ thuật
-### Dữ liệu
-- `Invoice`: id, code, roomId, billingPeriod, roomFee, oldElectricReading, newElectricReading, electricAmount, oldWaterReading, newWaterReading, waterAmount, serviceFee, taxRate, taxAmount, totalAmount, dueDate, status, updatedAt, updatedBy.
-- `InvoiceStatus`: UNPAID, PAID, OVERDUE.
+## 3. Data Model
+Sử dụng các bảng hiện có:
+- **Thực thể chính**: `invoices`.
+- **Cấu trúc DTO**:
+  - `InvoiceListItemDTO`: Hiển thị danh sách (id, code, roomCode, billingPeriod, totalAmount, dueDate, status).
+  - `InvoiceDetailDTO`: Chứa dữ liệu chi tiết, các loại phí thành phần, chỉ số công tơ điện nước cũ/mới, thông tin người thuê.
 
-### Luồng xử lý
-1. Lấy danh sách hóa đơn với query `keyword`, `roomCode`, `status`, `page`, `size`.
-2. Trả về chi tiết hóa đơn theo `invoiceId`.
-3. Cho phép điều chỉnh hóa đơn khi `status != PAID`.
-4. Tính toán lại `electricAmount`, `waterAmount`, `taxAmount`, `totalAmount` sau khi cập nhật.
-5. Xuất file PDF hóa đơn và trả về đường dẫn tải về.
+## 4. API / Servlet Contract
+- `/manager/invoices` (`InvoiceServlet`):
+  - `GET`: Xem danh sách hóa đơn (có phân trang, filter).
+  - `GET ?action=create`: Hiển thị Form tạo mới.
+  - `POST ?action=create`: Xử lý submit tạo hóa đơn.
+- `/manager/invoices/{id}` (`InvoiceDetailServlet`):
+  - `GET`: Xem chi tiết.
+  - `GET .../edit`: Mở Form sửa hóa đơn.
+  - `POST .../edit`: Lưu chỉnh sửa.
+  - `POST .../update-status`: Đổi trạng thái.
+  - `POST .../delete`: Xóa.
 
-### API đề xuất
-- `GET /api/v1/invoices`
-- `GET /api/v1/invoices/{invoiceId}`
-- `PUT /api/v1/invoices/{invoiceId}`
-- `GET /api/v1/invoices/{invoiceId}/export`
+## 5. Phases
+### Phase 0: Research & Setup
+- Unknowns: Không có. Yêu cầu rõ ràng: lấy giá snapshot, in hóa đơn bằng `window.print()` trên frontend, không dùng thư viện backend sinh PDF.
 
-### Quy tắc nghiệp vụ
-- Nếu hóa đơn đã thanh toán (`PAID`), không được phép điều chỉnh; trả về 400 `PAID_INVOICE_CANNOT_BE_UPDATED`.
-- `newElectricReading >= oldElectricReading`.
-- `newWaterReading >= oldWaterReading`.
-- `dueDate >= currentDate` khi điều chỉnh.
-- Thuế được tính tự động, không nhập trực tiếp `taxAmount`.
+### Phase 1: Models & DAOs
+- Định nghĩa `InvoiceListItemDTO`, `InvoiceDetailDTO`.
+- Bổ sung `InvoiceDAO` các phương thức CRUD, list phân trang và transaction tạo hóa đơn.
+- Bổ sung các DAO phụ trợ để lấy snapshot (VD: giá từ `facilities`, `meter_readings`).
 
-### Bảo mật
-- Chỉ người dùng role `Management Board` được phép truy cập.
-- Trả về 401 nếu chưa đăng nhập; 403 nếu sai role.
+### Phase 2: Services
+- Tạo `InvoiceService` & `InvoiceServiceImpl`.
+- Xử lý logic tính tiền: tự động tính `totalAmount` từ các thông số, không cho nhập tay.
+- Bắt lỗi khi không tìm thấy bảng giá cơ sở (`FACILITY_PRICE_NOT_FOUND`) hoặc thiếu chỉ số điện nước (`METER_READING_NOT_FOUND`).
 
-### Hiệu năng
-- Danh sách và điều chỉnh: < 1000ms.
-- Chi tiết hóa đơn: < 500ms.
-- Xuất PDF: < 2000ms.
-
-## Rủi ro
-- Cập nhật dữ liệu sai dẫn đến tính toán tổng tiền sai.
-- Việc xuất PDF có thể thất bại do lỗi file/permission.
-- Trạng thái OVERDUE phải được đồng bộ nếu có cronjob bên ngoài.
-
-## Giả định
-- Module lập hóa đơn khác đã cung cấp đơn giá điện, nước, phí dịch vụ nếu cần.
-- Trạng thái thanh toán được cập nhật từ module thanh toán ngoài hệ thống.
-- PDF export lưu file ra đường dẫn ổn định.
-
-## Tài liệu tham khảo
-- `SPEC.md`
-- `CONTEXT.md`
+### Phase 3: Servlets & UI (JSPs)
+- Phát triển `InvoiceServlet`, `InvoiceDetailServlet`.
+- Xây dựng `list.jsp`, `create.jsp`, `detail.jsp`, `edit.jsp`.
+- Thêm script in ấn `window.print()` vào `detail.jsp` (ẩn sidebar/header bằng `@media print`).

@@ -1,62 +1,43 @@
-# PLAN.md
+# Implementation Plan: Quản lý công nợ
 
-## Mục tiêu
-- Xây dựng chức năng quản lý công nợ cho Ban quản lý.
-- Cho phép xem danh sách công nợ, tìm kiếm, lọc theo trạng thái, xem chi tiết, gửi thông báo nội bộ và xem lịch sử thông báo.
-- Đảm bảo toàn vẹn dữ liệu, phân quyền chặt chẽ và phản hồi nhanh theo yêu cầu hiệu năng.
+## 1. Technical Context
+- **Feature**: Quản lý công nợ (Debt Management).
+- **Core Strategy**: Không tạo bảng mới cho công nợ. Công nợ được xác định bằng các bản ghi trong bảng `invoices` có trạng thái `UNPAID` hoặc `OVERDUE`.
+- **Architecture**: Servlet/JSP (MVC). Servlet `DebtPageServlet` gọi `DebtService` để lấy dữ liệu, sau đó chuyển tiếp sang các trang JSP. Tuân thủ tuyệt đối Core Principle I của Constitution.
+- **Dependencies**: Bảng `invoices`, `rooms`, `users`, `facilities`, `payments`.
+- **Unknowns**: None.
 
-## Phạm vi
-- Danh sách công nợ với các trường: Debt ID, Debt Code, Tenant Name, Room Code, Debt Type, Total Amount, Due Date, Status.
-- Chi tiết một khoản công nợ với bổ sung Contract ID, Description, Created Date, Note.
-- Tìm kiếm theo mã công nợ, tên người thuê, mã phòng.
-- Lọc theo trạng thái PENDING / PAID / OVERDUE.
-- Gửi thông báo công nợ nội bộ và lưu lịch sử thông báo cho mỗi khoản công nợ.
-- Xử lý nghiệp vụ công nợ không tồn tại và phân quyền role Management Board.
+## 2. Constitution Check
+- [x] **Core Principle I (Layered Architecture)**: Sử dụng mô hình Servlet -> Service -> DAO. Không dùng REST API trực tiếp.
+- [x] **Core Principle II (Consistent UI)**: Các trang JSP phải kế thừa layout chung của Manager (`hostel-design.css`).
+- [x] **Core Principle III (RBAC)**: Servlet `DebtPageServlet` phải check role `MANAGER` qua `UserSessionDTO`.
+- [x] **Core Principle IV (Safe DB)**: Các truy vấn `SELECT` phải được phân trang (`page`, `size`) và không làm ảnh hưởng đến hiệu năng hệ thống.
 
-## Giải pháp kỹ thuật
-### Dữ liệu
-- `Debt`: id, code, tenantId, roomId, contractId, debtType, description, totalAmount, dueDate, createdDate, status, note.
-- `DebtStatus`: PENDING, PAID, OVERDUE.
-- `DebtNotification`: id, debtId, title, message, createdBy, createdAt, status.
+## 3. Data Model
+Sử dụng các bảng có sẵn, không tạo bảng mới:
+- **Thực thể gốc**: `invoices` (status = `UNPAID`, `OVERDUE`).
+- **DTOs cần tạo**:
+  - `DebtListItemDTO`: Chứa thông tin rút gọn (invoiceId, mã hóa đơn, mã phòng, tên người thuê, kỳ hóa đơn, tổng tiền, ngày đến hạn, số ngày nợ, phí chậm nộp tạm tính, trạng thái).
+  - `DebtDetailDTO`: Chứa thông tin chi tiết hóa đơn (tiền phòng, điện, nước, phí dịch vụ...), thông tin người thuê, và số tiền CÒN NỢ thực tế.
 
-### Luồng xử lý chính
-1. Khi truy vấn danh sách công nợ, hệ thống đọc dữ liệu `Debt` và áp dụng bộ lọc search/filter, phân trang.
-2. Khi xem chi tiết công nợ, hệ thống trả về dữ liệu đầy đủ và status hiện tại.
-3. Khi gửi thông báo, hệ thống xác thực debt tồn tại, role Management Board, validate title/message, tạo bản ghi `DebtNotification` và liên kết với `Debt`.
-4. Khi xem lịch sử thông báo, hệ thống trả về danh sách thông báo liên quan đến debt.
+## 4. API / Servlet Contract
+- `DebtPageServlet` (`/manager/debts`):
+  - `GET /manager/debts`: Truy xuất danh sách công nợ (hỗ trợ phân trang, lọc theo status).
+  - `GET /manager/debts?action=detail&id={id}`: Xem chi tiết một khoản công nợ.
 
-### API đề xuất
-- `GET /api/v1/debts` — danh sách công nợ, query: `keyword`, `status`, `page`, `size`.
-- `GET /api/v1/debts/{debtId}` — detail công nợ.
-- `POST /api/v1/debts/{debtId}/notifications` — gửi thông báo nội bộ.
-- `GET /api/v1/debts/{debtId}/notifications` — lịch sử thông báo.
+## 5. Phases
+### Phase 0: Research & Setup
+- Đã hoàn tất. Không có Unknowns.
 
-### Bảo mật và phân quyền
-- Chỉ người dùng xác thực và có role `Management Board` được phép truy cập.
-- Trả về HTTP 401 nếu chưa đăng nhập.
-- Trả về HTTP 403 nếu không phải Management Board.
-- Kiểm tra phân quyền ở tầng middleware/servlet và trước khi thực hiện mọi thao tác dữ liệu.
+### Phase 1: Models & DAOs
+- Tạo `DebtListItemDTO` và `DebtDetailDTO`.
+- Cập nhật `InvoiceDAO` hoặc tạo `DebtDAO` chuyên dụng chứa câu query phức tạp (join 5 bảng) để lấy danh sách công nợ và tính toán số tiền đã trả (`paid_amount`).
 
-### Validation
-- `debtId` phải tồn tại; nếu không, trả về 404 với `DEBT_001`.
-- `title` không được để trống, không được chỉ chứa khoảng trắng, không vượt quá 100 ký tự.
-- `message` không được để trống, không được chỉ chứa khoảng trắng, không vượt quá 500 ký tự.
-- Trạng thái `Debt` chỉ được chấp nhận PENDING/PAID/OVERDUE khi nhập từ nguồn dữ liệu.
+### Phase 2: Services
+- Tạo `DebtService` (và `DebtServiceImpl`).
+- Implement hàm `getDebts` (xử lý logic phân trang, lọc status, tính số ngày nợ và phí chậm nộp tạm tính).
+- Implement hàm `getDebtDetail` (tính toán chi tiết các khoản nợ).
 
-### Hiệu năng
-- API trả về danh sách và gửi thông báo phải hoàn thành dưới 1s.
-- Sử dụng phân trang và chỉ lấy các trường cần thiết khi truy vấn danh sách.
-
-## Rủi ro
-- Dữ liệu công nợ không đồng bộ với trạng thái thanh toán nếu module thanh toán xử lý độc lập.
-- Việc gửi thông báo trùng lặp nhiều lần có thể gây tốn tài nguyên nếu không kiểm soát frontend.
-- Thiếu dữ liệu người thuê/phòng hợp lệ dẫn đến báo lỗi khi hiển thị danh sách.
-
-## Giả định
-- Hệ thống có cơ chế cập nhật trạng thái OVERDUE tự động dựa trên ngày hiện tại và dueDate.
-- Việc chuyển trạng thái sang PAID được cập nhật từ module thanh toán khác.
-- Tất cả người dùng `Management Board` có quyền ngang nhau để gửi và xem thông báo.
-
-## Tài liệu tham khảo
-- `SPEC.md`
-- `CONTEXT.md`
+### Phase 3: Servlet & UI
+- Tạo `DebtPageServlet` xử lý routing và check phân quyền `MANAGER`.
+- Cập nhật `list.jsp` và `detail.jsp` cho màn hình Quản lý công nợ.
