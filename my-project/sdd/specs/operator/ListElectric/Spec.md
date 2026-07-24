@@ -58,69 +58,16 @@ DA_CAP_NHAT
 
 ---
 
-## Technical Notes
+## 4. Giao tiếp Hệ thống (System Flow)
 
-### API Endpoint
+### Đường dẫn (Endpoint)
+* **Endpoint:** `GET /operator/meter-readings`
+* **Loại dữ liệu (Content-Type):** Trả về HTML (JSP)
 
-```http
-GET /api/v1/meter-readings
-```
-
-### Database Source
-
-```text
-rooms
-meter_readings
-```
-
-### Hiển thị dữ liệu
-
-| Cột | Mô tả |
-|------|--------|
-| roomCode | Mã phòng |
-| previousElectricReading | Số điện kỳ trước |
-| previousWaterReading | Số nước kỳ trước |
-| updatedAt | Thời gian cập nhật gần nhất |
-| status | Trạng thái cập nhật |
-
-### Mapping trạng thái
-
-| Điều kiện | Giá trị hiển thị |
-|------------|------------------|
-| Chưa có dữ liệu kỳ hiện tại | Chưa cập nhật |
-| Đã có dữ liệu kỳ hiện tại | Đã cập nhật |
-
-### Validation
-
-* Không yêu cầu nhập liệu.
-* Chỉ đọc dữ liệu từ cơ sở dữ liệu.
-* Chỉ hiển thị các phòng đang hoạt động.
-
----
-
-## Response Sample
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "roomCode": "P101",
-      "previousElectricReading": 1200,
-      "previousWaterReading": 350,
-      "updatedAt": "2026-06-11T09:30:00Z",
-      "status": "DA_CAP_NHAT"
-    },
-    {
-      "roomCode": "P102",
-      "previousElectricReading": 980,
-      "previousWaterReading": 270,
-      "updatedAt": null,
-      "status": "CHUA_CAP_NHAT"
-    }
-  ]
-}
-```
+### Phản hồi Hệ thống (System Response)
+* **Thành công (OK):** Forward đến trang giao diện `/WEB-INF/views/operator/meter_readings/list.jsp` chứa danh sách trạng thái điện nước của tất cả các phòng do người dùng vận hành.
+* Các dữ liệu render trên JSP bao gồm: `roomCode`, `previousElectricReading`, `previousWaterReading`, `updatedAt`, `status`.
+* Áp dụng Filter cơ sở dữ liệu để phân loại phòng "Chưa cập nhật" và "Đã cập nhật".
 
 ---
 

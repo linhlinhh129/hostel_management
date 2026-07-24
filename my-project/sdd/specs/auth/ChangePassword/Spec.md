@@ -68,8 +68,8 @@ Khác với luồng "Quên mật khẩu" từ màn hình ngoài, tính năng nà
 ### Ràng buộc Kỹ thuật (Technical Constraints)
 
 * **Xác thực phiên (Session):** Controller/Servlet bắt buộc phải kiểm tra `HttpSession` trước khi thực thi logic. Nếu Session không tồn tại hoặc đã hết hạn, điều hướng ngay về trang Đăng nhập.
-* **Bảo mật Cơ sở dữ liệu:** Các thao tác truy vấn (kiểm tra mật khẩu cũ, cập nhật mật khẩu mới) tuân thủ việc sử dụng **Basic SQL Statements**. Các chuỗi đầu vào phải đi qua hàm làm sạch (sanitize) chuyên biệt để ngăn chặn triệt để rủi ro SQL Injection. Không tự ý sử dụng PreparedStatements.
-* **Mã hóa (Hashing):** Mật khẩu mới phải được băm (BCrypt/Argon2) trước khi tạo câu lệnh SQL `UPDATE`. Việc so sánh `oldPassword` cũng phải thực hiện bằng hàm `checkpw` với chuỗi hash lấy từ DB.
+* **Bảo mật Cơ sở dữ liệu:** Các thao tác truy vấn (kiểm tra mật khẩu cũ, cập nhật mật khẩu mới) tuân thủ việc sử dụng **PreparedStatements** để đảm bảo an toàn và ngăn chặn rủi ro SQL Injection.
+* **Mã hóa (Hashing):** Mật khẩu mới phải được băm bằng `BCrypt` trước khi tạo câu lệnh SQL `UPDATE`. Việc so sánh `oldPassword` cũng phải thực hiện bằng hàm `checkpw` với chuỗi hash lấy từ DB.
 
 ### Chính sách Mật khẩu (Business Constraints - Password Policy)
 

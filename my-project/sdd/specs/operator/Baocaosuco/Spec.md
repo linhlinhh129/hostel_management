@@ -89,7 +89,7 @@ Việc báo cáo thủ công qua các ứng dụng tin nhắn (Zalo, Messenger) 
 
 **THE SYSTEM SHALL**:
 
-* Tự động nén ảnh ở phía Frontend trước khi gọi API để tiết kiệm băng thông 3G/4G.
+* Tự động nén ảnh ở phía Frontend trước khi Submit Form để tiết kiệm băng thông 3G/4G.
 * Hiển thị ảnh thu nhỏ (thumbnail) trên giao diện Form.
 * Cho phép user xóa ảnh đã chọn trước khi gửi.
 
@@ -99,7 +99,7 @@ Việc báo cáo thủ công qua các ứng dụng tin nhắn (Zalo, Messenger) 
 
 **THE SYSTEM SHALL**:
 
-* Gọi API để lưu thông tin báo cáo sự cố vào cơ sở dữ liệu.
+* Gửi Request (POST Form) để lưu thông tin báo cáo sự cố vào cơ sở dữ liệu.
 * Tự động lấy `staff_id` của session hiện tại lưu thành người báo cáo (Reporter).
 * Gán trạng thái mặc định của sự cố là `PENDING` (Chờ xử lý).
 * Hiển thị Toast thông báo: "Báo cáo sự cố thành công".

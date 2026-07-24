@@ -62,40 +62,17 @@
 
 ---
 
-## 4. API Contract
+## 4. Giao tiếp Hệ thống (System Flow)
 
-### Endpoint
-```http
-GET /api/v1/operator/dashboard/summary
-```
+### Đường dẫn (Endpoint)
+* **Endpoint:** `GET /operator/dashboard`
+* **Loại dữ liệu (Content-Type):** Trả về HTML (JSP)
 
-### Request Parameters
-*(Không yêu cầu, lấy thông tin user từ Token đăng nhập)*
-
-### Response 200 (OK)
-```json
-{
-  "success": true,
-  "data": {
-    "requests": {
-      "pending_count": 5,
-      "in_progress_count": 2
-    },
-    "meter_readings": {
-      "updated_count": 45,
-      "total_rooms": 50
-    },
-    "incidents_reported": 3,
-    "todays_appointments": [
-      {
-        "request_id": 101,
-        "title": "Sửa ống nước phòng 201",
-        "time": "14:30"
-      }
-    ]
-  }
-}
-```
+### Phản hồi Hệ thống (System Response)
+* Server xử lý lấy thông tin `operatorId` từ Session.
+* Lấy dữ liệu thống kê qua `OperatorDashboardDAO` và `MeterReadingService`.
+* Gắn dữ liệu vào các attribute (`totalRooms`, `pendingTickets`, `upcomingAppointments`,...).
+* **Thành công:** Forward đến giao diện `/WEB-INF/views/operator/dashboard.jsp`.
 
 ---
 
