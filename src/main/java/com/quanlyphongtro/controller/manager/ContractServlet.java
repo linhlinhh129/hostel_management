@@ -23,6 +23,7 @@ import java.util.Map;
         "/manager/contracts",
         "/manager/contracts/create",
         "/manager/contracts/detail",
+        "/manager/contracts/print",
         "/manager/contracts/add-tenant",
         "/manager/contracts/delete",
         "/manager/contracts/extend"
@@ -47,6 +48,8 @@ public class ContractServlet extends BaseServlet {
                 showCreateForm(req, resp, user.getId());
             } else if ("/manager/contracts/detail".equals(path)) {
                 showDetail(req, resp, user.getId());
+            } else if ("/manager/contracts/print".equals(path)) {
+                showPrint(req, resp, user.getId());
             } else if ("/manager/contracts/add-tenant".equals(path)) {
                 showAddTenantForm(req, resp, user.getId());
             } else {
@@ -88,6 +91,22 @@ public class ContractServlet extends BaseServlet {
             }
             req.setAttribute("contract", contract);
             req.getRequestDispatcher("/WEB-INF/views/manager/contracts/detail.jsp").forward(req, resp);
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID hợp đồng không hợp lệ");
+        }
+    }
+
+    private void showPrint(HttpServletRequest req, HttpServletResponse resp, int managerId)
+            throws ServletException, IOException {
+        try {
+            int id = Integer.parseInt(req.getParameter("id"));
+            Contract contract = contractService.getContractDetail(id, managerId);
+            if (contract == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hợp đồng");
+                return;
+            }
+            req.setAttribute("contract", contract);
+            req.getRequestDispatcher("/WEB-INF/views/manager/contracts/print.jsp").forward(req, resp);
         } catch (NumberFormatException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID hợp đồng không hợp lệ");
         }

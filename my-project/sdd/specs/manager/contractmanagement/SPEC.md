@@ -1,7 +1,7 @@
 # Feature: Quản lý hợp đồng
 
 **Status:** Draft\
-**Author:** Bùi Đỉnh\
+**Author:** Nhật\
 **Reviewer:** \[Tên\]\
 **Date:** \[YYYY-MM-DD\]\
 **Priority:** High
