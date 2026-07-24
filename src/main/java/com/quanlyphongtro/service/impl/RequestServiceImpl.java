@@ -1,4 +1,12 @@
 package com.quanlyphongtro.service.impl;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Collections;
+import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 
 import com.quanlyphongtro.dao.RequestDAO;
 import com.quanlyphongtro.dao.AuditLogDAO;
@@ -61,7 +69,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public boolean scheduleAppointment(int requestId, java.time.LocalDateTime appointSchedule) {
+    public boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule) {
         return requestDAO.updateAppointmentSchedule(requestId, appointSchedule);
     }
 
@@ -71,14 +79,14 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<java.util.Map<String, Object>> getManagerTickets(int managerId, String type, String status,
+    public List<Map<String, Object>> getManagerTickets(int managerId, String type, String status,
             String keyword, int page, int pageSize) {
         return requestDAO.getManagerTickets(managerId, type, status, keyword, (page - 1) * pageSize, pageSize);
     }
 
     @Override
-    public java.util.Map<String, Object> getManagerTicketDetail(int ticketId, int managerId) throws Exception {
-        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+    public Map<String, Object> getManagerTicketDetail(int ticketId, int managerId) throws Exception {
+        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
         if (ticket == null) {
             return null;
         }
@@ -86,11 +94,11 @@ public class RequestServiceImpl implements RequestService {
         Integer ownerManagerId = (Integer) ticket.get("managerId");
         Integer senderId = (Integer) ticket.get("senderId");
         if ((ownerManagerId == null || ownerManagerId != managerId) && (senderId == null || senderId != managerId)) {
-            throw new java.nio.file.AccessDeniedException("Bạn không quản lý cơ sở của yêu cầu này.");
+            throw new AccessDeniedException("Bạn không quản lý cơ sở của yêu cầu này.");
         }
 
         // Generate history timeline logic
-        java.util.List<java.util.Map<String, Object>> historyList = new java.util.ArrayList<>();
+        List<Map<String, Object>> historyList = new ArrayList<>();
         String senderName = (String) ticket.get("senderName");
         String senderRole = (String) ticket.get("senderRole");
         String status = (String) ticket.get("status");
@@ -102,7 +110,7 @@ public class RequestServiceImpl implements RequestService {
         String appointSchedule = (String) ticket.get("appointSchedule");
 
         if ("OPERATOR".equals(senderRole)) {
-            java.util.Map<String, Object> h1 = new java.util.HashMap<>();
+            Map<String, Object> h1 = new HashMap<>();
             h1.put("action", "Gửi yêu cầu");
             h1.put("performedAt", createdAt);
             h1.put("performedBy", senderName);
@@ -112,7 +120,7 @@ public class RequestServiceImpl implements RequestService {
             historyList.add(h1);
 
             if (!"NEW".equals(status) && !"PENDING".equals(status)) {
-                java.util.Map<String, Object> h2 = new java.util.HashMap<>();
+                Map<String, Object> h2 = new HashMap<>();
                 h2.put("action", "Tiếp nhận yêu cầu");
                 h2.put("performedAt", updatedAt);
                 h2.put("performedBy", "Ban Quản lý");
@@ -122,7 +130,7 @@ public class RequestServiceImpl implements RequestService {
                 historyList.add(h2);
 
                 if ("DONE".equals(status) || "RESOLVED".equals(status)) {
-                    java.util.Map<String, Object> h4 = new java.util.HashMap<>();
+                    Map<String, Object> h4 = new HashMap<>();
                     h4.put("action", "Hoàn thành yêu cầu");
                     h4.put("performedAt", updatedAt);
                     h4.put("performedBy", assignedOperatorName);
@@ -133,7 +141,7 @@ public class RequestServiceImpl implements RequestService {
                 }
 
                 if ("REJECTED".equals(status)) {
-                    java.util.Map<String, Object> h5 = new java.util.HashMap<>();
+                    Map<String, Object> h5 = new HashMap<>();
                     h5.put("action", "Từ chối yêu cầu");
                     h5.put("performedAt", updatedAt);
                     h5.put("performedBy", "Ban Quản lý");
@@ -144,7 +152,7 @@ public class RequestServiceImpl implements RequestService {
                 }
             }
         } else {
-            java.util.Map<String, Object> h1 = new java.util.HashMap<>();
+            Map<String, Object> h1 = new HashMap<>();
             h1.put("action", "Gửi yêu cầu");
             h1.put("performedAt", createdAt);
             h1.put("performedBy", senderName);
@@ -154,7 +162,7 @@ public class RequestServiceImpl implements RequestService {
             historyList.add(h1);
 
             if ("RECEIVED".equals(status)) {
-                java.util.Map<String, Object> h2 = new java.util.HashMap<>();
+                Map<String, Object> h2 = new HashMap<>();
                 h2.put("action", "Tiếp nhận yêu cầu");
                 h2.put("performedAt", updatedAt);
                 h2.put("performedBy", "Ban Quản lý");
@@ -163,7 +171,7 @@ public class RequestServiceImpl implements RequestService {
                 h2.put("performedAtRaw", ticket.get("updatedAtRaw"));
                 historyList.add(h2);
             } else if ("IN_PROGRESS".equals(status)) {
-                java.util.Map<String, Object> h2 = new java.util.HashMap<>();
+                Map<String, Object> h2 = new HashMap<>();
                 h2.put("action", "Đang xử lý");
                 h2.put("performedAt", updatedAt);
                 h2.put("performedBy", "Ban Quản lý");
@@ -177,7 +185,7 @@ public class RequestServiceImpl implements RequestService {
                 historyList.add(h2);
             } else if ("DONE".equals(status) || "RESOLVED".equals(status)) {
                 if (appointScheduleFormatted != null) {
-                    java.util.Map<String, Object> h2 = new java.util.HashMap<>();
+                    Map<String, Object> h2 = new HashMap<>();
                     h2.put("action", "Đang xử lý");
                     h2.put("performedAt", appointSchedule);
                     h2.put("performedBy", "Ban Quản lý");
@@ -186,7 +194,7 @@ public class RequestServiceImpl implements RequestService {
                     h2.put("performedAtRaw", ticket.get("appointScheduleRaw"));
                     historyList.add(h2);
                 }
-                java.util.Map<String, Object> h3 = new java.util.HashMap<>();
+                Map<String, Object> h3 = new HashMap<>();
                 h3.put("action", "Đã hoàn thành");
                 h3.put("performedAt", updatedAt);
                 h3.put("performedBy", "Ban Quản lý");
@@ -196,7 +204,7 @@ public class RequestServiceImpl implements RequestService {
                 h3.put("performedAtRaw", ticket.get("updatedAtRaw"));
                 historyList.add(h3);
             } else if ("REJECTED".equals(status)) {
-                java.util.Map<String, Object> h2 = new java.util.HashMap<>();
+                Map<String, Object> h2 = new HashMap<>();
                 h2.put("action", "Từ chối yêu cầu");
                 h2.put("performedAt", updatedAt);
                 h2.put("performedBy", "Ban Quản lý");
@@ -207,7 +215,7 @@ public class RequestServiceImpl implements RequestService {
                 h2.put("performedAtRaw", ticket.get("updatedAtRaw"));
                 historyList.add(h2);
             } else if ("CANCELLED".equals(status)) {
-                java.util.Map<String, Object> h2 = new java.util.HashMap<>();
+                Map<String, Object> h2 = new HashMap<>();
                 h2.put("action", "Đã hủy yêu cầu");
                 h2.put("performedAt", updatedAt);
                 h2.put("performedBy", senderName);
@@ -219,10 +227,10 @@ public class RequestServiceImpl implements RequestService {
         }
 
         // Load reschedule audit logs and merge into timeline
-        java.util.List<java.util.Map<String, Object>> reschedules = requestDAO.getRescheduleHistory(ticketId);
+        List<Map<String, Object>> reschedules = requestDAO.getRescheduleHistory(ticketId);
         int rescheduleSeq = 100;
-        for (java.util.Map<String, Object> r : reschedules) {
-            java.util.Map<String, Object> hn = new java.util.HashMap<>();
+        for (Map<String, Object> r : reschedules) {
+            Map<String, Object> hn = new HashMap<>();
             hn.put("action", "Thay đổi lịch hẹn");
             hn.put("performedAt", r.get("createdAt"));
             hn.put("performedAtRaw", r.get("createdAtRaw"));
@@ -235,22 +243,22 @@ public class RequestServiceImpl implements RequestService {
 
         // Sort historyList chronologically using raw timestamps and stable sequence
         // numbers
-        java.util.Collections.sort(historyList, (a, b) -> {
+        Collections.sort(historyList, (a, b) -> {
             Object rawA = a.get("performedAtRaw");
             Object rawB = b.get("performedAtRaw");
 
-            java.sql.Timestamp tsA = null;
-            java.sql.Timestamp tsB = null;
+            Timestamp tsA = null;
+            Timestamp tsB = null;
 
-            if (rawA instanceof java.sql.Timestamp)
-                tsA = (java.sql.Timestamp) rawA;
-            else if (rawA instanceof java.time.LocalDateTime)
-                tsA = java.sql.Timestamp.valueOf((java.time.LocalDateTime) rawA);
+            if (rawA instanceof Timestamp)
+                tsA = (Timestamp) rawA;
+            else if (rawA instanceof LocalDateTime)
+                tsA = Timestamp.valueOf((LocalDateTime) rawA);
 
-            if (rawB instanceof java.sql.Timestamp)
-                tsB = (java.sql.Timestamp) rawB;
-            else if (rawB instanceof java.time.LocalDateTime)
-                tsB = java.sql.Timestamp.valueOf((java.time.LocalDateTime) rawB);
+            if (rawB instanceof Timestamp)
+                tsB = (Timestamp) rawB;
+            else if (rawB instanceof LocalDateTime)
+                tsB = Timestamp.valueOf((LocalDateTime) rawB);
 
             if (tsA != null && tsB != null) {
                 int cmp = tsA.compareTo(tsB);
@@ -272,7 +280,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     private String getTicketStatus(int ticketId) {
-        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
         if (ticket == null) {
             return null;
         }
@@ -306,12 +314,12 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public boolean scheduleTicket(int ticketId, java.time.LocalDateTime scheduleTime) {
+    public boolean scheduleTicket(int ticketId, LocalDateTime scheduleTime) {
         String status = getTicketStatus(ticketId);
         if (status == null || isClosedStatus(status)) {
             return false;
         }
-        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
         if (ticket != null && "OPERATOR".equals(ticket.get("senderRole"))) {
             return false; // Manager cannot schedule Operator tickets
         }
@@ -324,7 +332,7 @@ public class RequestServiceImpl implements RequestService {
         if (status == null || isClosedStatus(status)) {
             return false;
         }
-        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
         if (ticket != null && "OPERATOR".equals(ticket.get("senderRole"))) {
             return false; // Manager cannot complete Operator tickets
         }
@@ -332,9 +340,9 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public boolean rescheduleTicket(int ticketId, java.time.LocalDateTime newTime, String reason, int managerId,
+    public boolean rescheduleTicket(int ticketId, LocalDateTime newTime, String reason, int managerId,
             String ipAddress) throws Exception {
-        java.util.Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
         if (ticket == null) {
             return false;
         }
@@ -346,7 +354,7 @@ public class RequestServiceImpl implements RequestService {
         Integer ownerManagerId = (Integer) ticket.get("managerId");
         Integer senderId = (Integer) ticket.get("senderId");
         if ((ownerManagerId == null || ownerManagerId != managerId) && (senderId == null || senderId != managerId)) {
-            throw new java.nio.file.AccessDeniedException("Bạn không quản lý cơ sở của yêu cầu này.");
+            throw new AccessDeniedException("Bạn không quản lý cơ sở của yêu cầu này.");
         }
 
         String status = (String) ticket.get("status");
@@ -359,7 +367,7 @@ public class RequestServiceImpl implements RequestService {
             oldTimeStr = "Chưa có";
         }
 
-        String newTimeStr = newTime.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        String newTimeStr = newTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
 
         try {
             boolean success = requestDAO.rescheduleTicket(ticketId, newTime);

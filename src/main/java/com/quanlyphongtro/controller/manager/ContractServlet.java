@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.manager;
+import com.quanlyphongtro.util.ValidationUtil;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -196,11 +197,11 @@ public class ContractServlet extends BaseServlet {
                     }
                 }
 
-                if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(contract.getTenantPhone())) {
+                if (!ValidationUtil.isValidVnPhone(contract.getTenantPhone())) {
                     throw new IllegalArgumentException(
                             "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
                 }
-                if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(contract.getTenantIdentityNumber())) {
+                if (!ValidationUtil.isValidVnIdentity(contract.getTenantIdentityNumber())) {
                     throw new IllegalArgumentException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
                 }
 

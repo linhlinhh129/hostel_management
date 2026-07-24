@@ -1,4 +1,11 @@
 package com.quanlyphongtro.controller.operator;
+import com.quanlyphongtro.dao.FacilityDAO;
+import java.util.List;
+import com.quanlyphongtro.model.Facility;
+import java.util.ArrayList;
+import java.util.Map;
+import com.quanlyphongtro.model.Room;
+import java.util.HashMap;
 
 import com.quanlyphongtro.dao.RequestDAO;
 import com.quanlyphongtro.model.Request;
@@ -42,17 +49,17 @@ public class IncidentReportServlet extends HttpServlet {
         }
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
 
-        com.quanlyphongtro.dao.FacilityDAO facilityDAO = new com.quanlyphongtro.dao.FacilityDAO();
-        java.util.List<com.quanlyphongtro.model.Facility> allFacilities = facilityDAO.findActiveList();
-        java.util.List<com.quanlyphongtro.model.Facility> myFacilities = new java.util.ArrayList<>();
-        for (com.quanlyphongtro.model.Facility f : allFacilities) {
+        FacilityDAO facilityDAO = new FacilityDAO();
+        List<Facility> allFacilities = facilityDAO.findActiveList();
+        List<Facility> myFacilities = new ArrayList<>();
+        for (Facility f : allFacilities) {
             if (f.getOperatorId() != null && f.getOperatorId().equals(currentUser.getId())) {
                 myFacilities.add(f);
             }
         }
         
-        java.util.Map<Integer, java.util.List<com.quanlyphongtro.model.Room>> facilityRoomsMap = new java.util.HashMap<>();
-        for (com.quanlyphongtro.model.Facility f : myFacilities) {
+        Map<Integer, List<Room>> facilityRoomsMap = new HashMap<>();
+        for (Facility f : myFacilities) {
             facilityRoomsMap.put(f.getId(), facilityDAO.findRoomsByFacilityId(f.getId()));
         }
 

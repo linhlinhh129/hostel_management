@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dto;
+import java.sql.Timestamp;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -45,7 +46,7 @@ public class CommentDTO {
 
     public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
-        return java.sql.Timestamp.valueOf(createdAt);
+        return Timestamp.valueOf(createdAt);
     }
 
     public Integer getCommentId() {

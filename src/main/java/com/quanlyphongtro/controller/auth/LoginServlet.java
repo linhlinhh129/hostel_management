@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.auth;
+import com.quanlyphongtro.exception.ForbiddenException;
 
 import com.quanlyphongtro.constant.ErrorMessageConstant;
 import com.quanlyphongtro.controller.BaseServlet;
@@ -77,7 +78,7 @@ public class LoginServlet extends BaseServlet {
                 req.setAttribute("username", username);
                 req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
             }
-        } catch (com.quanlyphongtro.exception.ForbiddenException e) {
+        } catch (ForbiddenException e) {
             req.setAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
             req.setAttribute("username", username);
             req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);

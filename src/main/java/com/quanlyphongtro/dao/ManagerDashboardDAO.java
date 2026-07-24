@@ -1,4 +1,6 @@
 package com.quanlyphongtro.dao;
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 
 import com.quanlyphongtro.util.DatabaseUtil;
 
@@ -33,8 +35,8 @@ public class ManagerDashboardDAO extends BaseDAO {
         int unpaidInvoices = 0;
         int overdueInvoices = 0;
         int pendingPayments = 0;
-        java.math.BigDecimal monthlyRevenue = java.math.BigDecimal.ZERO;
-        java.math.BigDecimal totalOutstanding = java.math.BigDecimal.ZERO;
+        BigDecimal monthlyRevenue = BigDecimal.ZERO;
+        BigDecimal totalOutstanding = BigDecimal.ZERO;
 
         int ticketCountNew = 0;
         int ticketCountInProgress = 0;
@@ -202,7 +204,7 @@ public class ManagerDashboardDAO extends BaseDAO {
                 ps.setInt(1, managerId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        java.math.BigDecimal val = rs.getBigDecimal(1);
+                        BigDecimal val = rs.getBigDecimal(1);
                         if (val != null) monthlyRevenue = val;
                     }
                 }
@@ -211,7 +213,7 @@ public class ManagerDashboardDAO extends BaseDAO {
                 ps.setInt(1, managerId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        java.math.BigDecimal val = rs.getBigDecimal(1);
+                        BigDecimal val = rs.getBigDecimal(1);
                         if (val != null) totalOutstanding = val;
                     }
                 }
@@ -251,7 +253,7 @@ public class ManagerDashboardDAO extends BaseDAO {
                         ticket.put("roomCode", rCode != null ? rCode : "Sự cố trọ");
 
                         Timestamp cAt = rs.getTimestamp("created_at");
-                        ticket.put("createdDateLabel", cAt != null ? cAt.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                        ticket.put("createdDateLabel", cAt != null ? cAt.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
 
                         String status = rs.getString("status");
                         String statusLabel = status;

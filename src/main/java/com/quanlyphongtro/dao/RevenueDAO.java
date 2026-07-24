@@ -1,4 +1,7 @@
 package com.quanlyphongtro.dao;
+import java.util.Map;
+import java.util.HashMap;
+import java.sql.Date;
 
 import com.quanlyphongtro.dto.FacilityRevenueStatDTO;
 import com.quanlyphongtro.dto.SystemRevenueDTO;
@@ -191,10 +194,10 @@ public class RevenueDAO extends BaseDAO {
             "WHERE deleted_at IS NULL AND created_at >= ? " +
             "GROUP BY YEAR(created_at), MONTH(created_at)";
 
-        java.util.Map<String, FacilityRevenueStatDTO> map = new java.util.HashMap<>();
+        Map<String, FacilityRevenueStatDTO> map = new HashMap<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, java.sql.Date.valueOf(startDate));
+            ps.setDate(1, Date.valueOf(startDate));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String period = String.format("%02d/%d", rs.getInt("m"), rs.getInt("y"));

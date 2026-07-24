@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.tenant;
+import com.quanlyphongtro.dao.PostReactionDAO;
 
 import com.google.gson.Gson;
 import com.quanlyphongtro.controller.BaseServlet;
@@ -46,7 +47,7 @@ public class TenantLikeServlet extends BaseServlet {
             boolean isLiked = postService.toggleLike(postId, currentUser.getId());
             
             // Lấy lại count để trả về
-            int likeCount = new com.quanlyphongtro.dao.PostReactionDAO().getLikeCount(postId);
+            int likeCount = new PostReactionDAO().getLikeCount(postId);
 
             Map<String, Object> data = new HashMap<>();
             data.put("liked", isLiked);

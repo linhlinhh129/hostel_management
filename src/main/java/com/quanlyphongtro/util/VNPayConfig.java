@@ -1,4 +1,5 @@
 package com.quanlyphongtro.util;
+import com.quanlyphongtro.dao.SystemConfigDAO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import javax.crypto.Mac;
@@ -7,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 public class VNPayConfig {
-    private static final com.quanlyphongtro.dao.SystemConfigDAO configDAO = new com.quanlyphongtro.dao.SystemConfigDAO();
+    private static final SystemConfigDAO configDAO = new SystemConfigDAO();
 
     public static String getVnp_PayUrl() { return configDAO.getConfigValue("vnpay.payUrl"); }
     public static String getVnp_ReturnUrl() { return configDAO.getConfigValue("vnpay.returnUrl"); }

@@ -65,14 +65,14 @@
     "semantic_hash": "dc558440555325798bf302626693e861"
   },
   "src/main/java/com/quanlyphongtro/controller/admin/AdminAuditLogServlet.java": {
-    "mtime": 1783964087.2390563,
-    "ast_hash": "be4c5e0486b24c4e92c8bd1ba81f99cd",
-    "semantic_hash": "be4c5e0486b24c4e92c8bd1ba81f99cd"
+    "mtime": 1784861122.1115818,
+    "ast_hash": "a0a9995f6c9941bf3c782864acc8c3a0",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/controller/admin/AdminDashboardServlet.java": {
-    "mtime": 1783964087.2390563,
-    "ast_hash": "c21995689fb70ae7d1da53c0207e39d3",
-    "semantic_hash": "c21995689fb70ae7d1da53c0207e39d3"
+    "mtime": 1784861122.1115818,
+    "ast_hash": "f9e21855d2f06d62376d055140fd3809",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/controller/admin/AdminFacilityServlet.java": {
     "mtime": 1784813276.7109053,
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/controller/manager/InvoiceServlet.java": {
-    "mtime": 1784813276.712494,
-    "ast_hash": "a24e963edd932d66689697f4f77e38b8",
+    "mtime": 1784861122.1115818,
+    "ast_hash": "a0003c121bcd30b49772174681efcf2f",
     "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/controller/manager/ManagerDashboardServlet.java": {
@@ -304,11 +304,6 @@
     "ast_hash": "f8c54f1d44b130bcbcc7da816d69e4e7",
     "semantic_hash": ""
   },
-  "src/main/java/com/quanlyphongtro/dao/DashboardDAO.java": {
-    "mtime": 1784810546.573411,
-    "ast_hash": "eae674613b311ec3e6ae19d620995c76",
-    "semantic_hash": ""
-  },
   "src/main/java/com/quanlyphongtro/dao/DebtDAO.java": {
     "mtime": 1784813276.717512,
     "ast_hash": "776fcec374bf41978dc3e935a201027e",
@@ -325,13 +320,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java": {
-    "mtime": 1784813276.717512,
-    "ast_hash": "b324623a81eb607609589fc3c360b5db",
+    "mtime": 1784861122.1115818,
+    "ast_hash": "21f153a4069638b23143f71183fb1a13",
     "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/dao/MeterReadingDAO.java": {
-    "mtime": 1784810546.5765946,
-    "ast_hash": "bbb2413bffa57a7830512fb3eabf50e3",
+    "mtime": 1784861122.1115818,
+    "ast_hash": "d65d54bfb5b930d7a0165246d6dc750d",
     "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/dao/NotificationDAO.java": {
@@ -570,9 +565,9 @@
     "semantic_hash": "24c01d8f1a43c8a8165efd1273d97305"
   },
   "src/main/java/com/quanlyphongtro/service/InvoiceService.java": {
-    "mtime": 1782397408.604357,
-    "ast_hash": "324d5099160c644d1386081c5dd1ad95",
-    "semantic_hash": "324d5099160c644d1386081c5dd1ad95"
+    "mtime": 1784861122.1168408,
+    "ast_hash": "a66cbd46b1feef76ef58770b33326152",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/service/MeterReadingService.java": {
     "mtime": 1782398044.2902856,
@@ -625,8 +620,8 @@
     "semantic_hash": "606010f74f3fad1a7d10580bdd8490ae"
   },
   "src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java": {
-    "mtime": 1784813276.7218318,
-    "ast_hash": "69846b7fce009c898f896a06657b8b4a",
+    "mtime": 1784861122.1188712,
+    "ast_hash": "c4fa33485a1b61a2ba41922672ebca7a",
     "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/service/impl/NotificationServiceImpl.java": {
@@ -740,9 +735,9 @@
     "semantic_hash": "5935fe605319133639c53dbbf365ea19"
   },
   "src/main/java/com/quanlyphongtro/controller/admin/AdminSystemConfigServlet.java": {
-    "mtime": 1784224007.6832945,
-    "ast_hash": "21910e4f5ebdb1a50d67452fad61e0c8",
-    "semantic_hash": "21910e4f5ebdb1a50d67452fad61e0c8"
+    "mtime": 1784861122.1115818,
+    "ast_hash": "aac3cbbb740842f0d9cb1d61a42a2164",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/controller/manager/CommunityPostServlet.java": {
     "mtime": 1783964087.2431495,
@@ -825,9 +820,9 @@
     "semantic_hash": "b6927d69d117e1929d8a24e4409c0fb7"
   },
   "src/main/java/com/quanlyphongtro/dao/SystemConfigDAO.java": {
-    "mtime": 1783589536.2174284,
-    "ast_hash": "934d08dbb4c53415a184e1117b7f8e4a",
-    "semantic_hash": "934d08dbb4c53415a184e1117b7f8e4a"
+    "mtime": 1784861122.1115818,
+    "ast_hash": "52a4a9e563487cc22246c9dfd273750c",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/dto/CommentDTO.java": {
     "mtime": 1783964087.2513664,
@@ -845,9 +840,9 @@
     "semantic_hash": "ba79fee9114f9d2c3d57941d8f9c32ac"
   },
   "src/main/java/com/quanlyphongtro/dto/EmailConfigDTO.java": {
-    "mtime": 1783589536.2174284,
-    "ast_hash": "e514ab63be8ebb9e81869a549709cc14",
-    "semantic_hash": "e514ab63be8ebb9e81869a549709cc14"
+    "mtime": 1784861122.1168408,
+    "ast_hash": "80978a260b1b1ede11c8290ed51a3425",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/dto/NewsFeedDTO.java": {
     "mtime": 1783964087.2523813,
@@ -930,19 +925,19 @@
     "semantic_hash": "d666a63ae3e2df05126ce47954b87c39"
   },
   "src/main/java/com/quanlyphongtro/service/SystemConfigService.java": {
-    "mtime": 1783589536.2236433,
-    "ast_hash": "065638daf955e9947d2b43308d5d3054",
-    "semantic_hash": "065638daf955e9947d2b43308d5d3054"
+    "mtime": 1784861122.1168408,
+    "ast_hash": "06b67371289aea178cb282b22fe4b620",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/service/impl/AdminDashboardServiceImpl.java": {
-    "mtime": 1783964087.2564375,
-    "ast_hash": "8d97df3ce6aa1531b75da4e1590345ed",
-    "semantic_hash": "8d97df3ce6aa1531b75da4e1590345ed"
+    "mtime": 1784861122.118358,
+    "ast_hash": "198c69529104f25570bae18937a37b3d",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/service/impl/AuditLogServiceImpl.java": {
-    "mtime": 1783964087.2564375,
-    "ast_hash": "ac92aa716b6d2b6ed023c4f187245d26",
-    "semantic_hash": "ac92aa716b6d2b6ed023c4f187245d26"
+    "mtime": 1784861122.1188712,
+    "ast_hash": "1931019c4b26d985ea44b1e9b6224a44",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/service/impl/CommunityPostServiceImpl.java": {
     "mtime": 1784606732.1782148,
@@ -950,9 +945,9 @@
     "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/service/impl/DashboardServiceImpl.java": {
-    "mtime": 1783589536.2248626,
-    "ast_hash": "389d894c94bdb826cd087082e804be3b",
-    "semantic_hash": "389d894c94bdb826cd087082e804be3b"
+    "mtime": 1784861122.1188712,
+    "ast_hash": "136192ac170c01b8b7cd947e0c62fe70",
+    "semantic_hash": ""
   },
   "src/main/java/com/quanlyphongtro/service/impl/FacilityServiceImpl.java": {
     "mtime": 1784813276.7218318,
@@ -980,9 +975,9 @@
     "semantic_hash": "987f584955916c0d5c8820f479c477c1"
   },
   "src/main/java/com/quanlyphongtro/service/impl/SystemConfigServiceImpl.java": {
-    "mtime": 1783589536.2248626,
-    "ast_hash": "d7032e136eeb97ba791689992f5defc5",
-    "semantic_hash": "d7032e136eeb97ba791689992f5defc5"
+    "mtime": 1784861122.1188712,
+    "ast_hash": "9e30147c0498c343e84027909be6ece6",
+    "semantic_hash": ""
   },
   "src/main/webapp/sw.js": {
     "mtime": 1784224007.7000322,
@@ -990,9 +985,9 @@
     "semantic_hash": "f7f7426b185224e40e96082f9c5623cc"
   },
   ".github/workflows/hostel-app-dev-AutoDeployTrigger-11c48c62-a62b-41a3-8b72-0a089c11bbe1.yml": {
-    "mtime": 1784047488.3115807,
-    "ast_hash": "194fb1f70edcb171b7569d07fd52b42a",
-    "semantic_hash": "194fb1f70edcb171b7569d07fd52b42a"
+    "mtime": 1784861122.066753,
+    "ast_hash": "4a293e599f2e3085ac328a4eee4df7d1",
+    "semantic_hash": ""
   },
   "src/main/resources/email-templates/welcome.html": {
     "mtime": 1784224007.687768,
@@ -1007,6 +1002,11 @@
   "src/main/java/com/quanlyphongtro/dto/PersonnelFormDTO.java": {
     "mtime": 1784810546.5809045,
     "ast_hash": "ad26e21cc2993098f42a6bbf987e2a09",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/quanlyphongtro/dao/ManagerDashboardDAO.java": {
+    "mtime": 1784861122.1115818,
+    "ast_hash": "2826b8d1d81fca24589093dbb36aaac7",
     "semantic_hash": ""
   }
 }

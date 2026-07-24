@@ -1,4 +1,6 @@
 package com.quanlyphongtro.service;
+import com.quanlyphongtro.model.Room;
+import java.time.LocalDate;
 
 import com.quanlyphongtro.model.Contract;
 
@@ -16,7 +18,7 @@ public interface ContractService {
 
     Contract getContractDetailForTenant(int contractId, int tenantId);
 
-    List<com.quanlyphongtro.model.Room> getAvailableRooms(int managerId);
+    List<Room> getAvailableRooms(int managerId);
 
     Map<String, Object> getContractForAddTenant(int contractId, int managerId) throws Exception;
 
@@ -28,5 +30,5 @@ public interface ContractService {
 
     boolean softDeleteContract(int contractId);
 
-    void extendContract(int contractId, java.time.LocalDate newEndDate, int managerId) throws Exception;
+    void extendContract(int contractId, LocalDate newEndDate, int managerId) throws Exception;
 }

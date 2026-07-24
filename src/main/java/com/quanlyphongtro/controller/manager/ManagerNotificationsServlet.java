@@ -1,4 +1,6 @@
 package com.quanlyphongtro.controller.manager;
+import com.quanlyphongtro.dao.NotificationDAO;
+import java.nio.file.AccessDeniedException;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -156,7 +158,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     pRecipientType = "ROOM";
                     
                     // Call service to resolve facility for room
-                    com.quanlyphongtro.dao.NotificationDAO ndao = new com.quanlyphongtro.dao.NotificationDAO();
+                    NotificationDAO ndao = new NotificationDAO();
                     pFacilityId = ndao.getRoomFacilityId(pRecipientId);
                 } catch (Exception e) {
                     logger.error("Failed to resolve facility for room", e);
@@ -248,7 +250,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                 handleCreateForm(req, resp);
                 return;
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             req.setAttribute("errorMessage", e.getMessage());
             req.setAttribute("dto", buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
             handleCreateForm(req, resp);
@@ -294,7 +296,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         Map<String, Object> notification = null;
         try {
             notification = notificationService.getNotificationDetail(notificationId, currentUser.getId());
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (Exception e) {
@@ -338,7 +340,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                 setFlashMessage(req, "danger", "Không thể báo cáo hóa đơn.");
                 resp.sendRedirect(req.getContextPath() + "/manager/notifications");
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalStateException e) {
             setFlashMessage(req, "danger", e.getMessage());
@@ -385,7 +387,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
             req.getRequestDispatcher("/WEB-INF/views/manager/notifications/send_operator.jsp").forward(req, resp);
 
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -426,7 +428,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             }
             resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
 
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -471,7 +473,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
             req.getRequestDispatcher("/WEB-INF/views/manager/notifications/send_debt_reminder.jsp").forward(req, resp);
 
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
@@ -510,7 +512,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             }
             resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=payment-reminder");
 
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (IllegalArgumentException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());

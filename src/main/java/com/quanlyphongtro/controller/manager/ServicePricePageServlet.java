@@ -1,4 +1,6 @@
 package com.quanlyphongtro.controller.manager;
+import com.quanlyphongtro.dto.UserSessionDTO;
+import java.math.BigDecimal;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.service.ServicePriceService;
@@ -22,7 +24,7 @@ public class ServicePricePageServlet extends BaseServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        com.quanlyphongtro.dto.UserSessionDTO currentUser = getCurrentUser(req);
+        UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null || !"MANAGER".equals(currentUser.getRole())) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
             return;
@@ -48,7 +50,7 @@ public class ServicePricePageServlet extends BaseServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        com.quanlyphongtro.dto.UserSessionDTO currentUser = getCurrentUser(req);
+        UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null || !"MANAGER".equals(currentUser.getRole())) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
             return;
@@ -61,7 +63,7 @@ public class ServicePricePageServlet extends BaseServlet {
                 String newPriceStr = req.getParameter("newPrice");
                 String note = req.getParameter("note");
 
-                java.math.BigDecimal newPrice = new java.math.BigDecimal(newPriceStr);
+                BigDecimal newPrice = new BigDecimal(newPriceStr);
                 boolean success = servicePriceService.updatePrice(currentUser.getId(), priceType, newPrice, note);
                 
                 if (success) {

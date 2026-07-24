@@ -1,4 +1,7 @@
 package com.quanlyphongtro.controller.tenant;
+import com.quanlyphongtro.dao.PaymentDAO;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -43,7 +46,7 @@ public class TenantInvoiceServlet extends BaseServlet {
                 List<Invoice> invoices = invoiceService.getInvoicesByRoomId(roomId);
                 BigDecimal unpaidTotal = invoiceService.getUnpaidTotal(roomId);
                 
-                com.quanlyphongtro.dao.PaymentDAO paymentDAO = new com.quanlyphongtro.dao.PaymentDAO();
+                PaymentDAO paymentDAO = new PaymentDAO();
                 for (Invoice inv : invoices) {
                     inv.setHasPendingPayment(paymentDAO.hasPendingPayment(inv.getId()));
                 }
@@ -59,21 +62,21 @@ public class TenantInvoiceServlet extends BaseServlet {
                     Optional<Invoice> invOpt = invoiceService.getInvoiceById(id, roomId);
                     if (invOpt.isPresent()) {
                         Invoice inv = invOpt.get();
-                        inv.setHasPendingPayment(new com.quanlyphongtro.dao.PaymentDAO().hasPendingPayment(inv.getId()));
+                        inv.setHasPendingPayment(new PaymentDAO().hasPendingPayment(inv.getId()));
                         req.setAttribute("invoice", inv);
 
                         long overdueDays = 0;
-                        java.math.BigDecimal penaltyAmount = java.math.BigDecimal.ZERO;
-                        java.math.BigDecimal totalAmountToPay = inv.getTotalAmount();
+                        BigDecimal penaltyAmount = BigDecimal.ZERO;
+                        BigDecimal totalAmountToPay = inv.getTotalAmount();
 
                         if ("UNPAID".equals(inv.getStatus()) || "OVERDUE".equals(inv.getStatus())) {
-                            java.time.LocalDate dueDate = inv.getDueDate();
-                            java.time.LocalDate today = java.time.LocalDate.now();
+                            LocalDate dueDate = inv.getDueDate();
+                            LocalDate today = LocalDate.now();
                             if (dueDate != null && today.isAfter(dueDate)) {
-                                overdueDays = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
+                                overdueDays = ChronoUnit.DAYS.between(dueDate, today);
                                 // lateFee đã được cộng vào totalAmount trong mapRow(),
                                 // lấy lại để hiển thị riêng trong JSP
-                                penaltyAmount = inv.getLateFee() != null ? inv.getLateFee() : java.math.BigDecimal.ZERO;
+                                penaltyAmount = inv.getLateFee() != null ? inv.getLateFee() : BigDecimal.ZERO;
                             }
                         }
 

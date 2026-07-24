@@ -1,4 +1,6 @@
 package com.quanlyphongtro.dao;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import com.quanlyphongtro.dto.PaymentListItemDTO;
 import com.quanlyphongtro.dto.PaymentDetailDTO;
@@ -125,14 +127,14 @@ public class PaymentDAO extends BaseDAO {
                      dto.setPaymentId(rs.getInt("payment_id"));
                      dto.setTransactionCode(rs.getString("code"));
                      dto.setAmount(rs.getBigDecimal("payment_amount"));
-                     java.sql.Timestamp created = rs.getTimestamp("created_at");
+                     Timestamp created = rs.getTimestamp("created_at");
                       if (created != null) {
-                          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                          SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                           dto.setPaymentDate(sdf.format(created));
                       } else {
-                          java.sql.Date d = rs.getDate("payment_date");
+                          Date d = rs.getDate("payment_date");
                           if (d != null) {
-                              java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                              SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                               dto.setPaymentDate(sdf.format(d));
                           }
                       }
@@ -245,9 +247,9 @@ public class PaymentDAO extends BaseDAO {
                      dto.setPaymentId(rs.getInt("payment_id"));
                      dto.setTransactionCode(rs.getString("code"));
                      dto.setAmount(rs.getBigDecimal("payment_amount"));
-                     java.sql.Date d = rs.getDate("payment_date");
+                     Date d = rs.getDate("payment_date");
                       if (d != null) {
-                          java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                          SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                           dto.setPaymentDate(sdf.format(d));
                       }
                      dto.setPaymentMethod(rs.getString("payment_method"));
@@ -259,15 +261,15 @@ public class PaymentDAO extends BaseDAO {
                      dto.setFacilityName(rs.getString("facility_name"));
                      dto.setFacilityAddress(rs.getString("facility_address"));
                      
-                     java.sql.Timestamp created = rs.getTimestamp("created_at");
+                     Timestamp created = rs.getTimestamp("created_at");
                      if (created != null) {
-                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                          dto.setCreatedAt(sdf.format(created));
                      }
                      
                      dto.setInvoiceCode(rs.getString("invoice_code"));
-                     java.sql.Date dueD = rs.getDate("due_date");
-                      if (dueD != null) dto.setDueDate(new java.text.SimpleDateFormat("dd/MM/yyyy").format(dueD));
+                     Date dueD = rs.getDate("due_date");
+                      if (dueD != null) dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(dueD));
                      dto.setInvoiceTotal(rs.getBigDecimal("invoice_total"));
                      dto.setInvoiceNote(rs.getString("invoice_note"));
                      

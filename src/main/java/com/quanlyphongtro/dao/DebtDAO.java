@@ -1,4 +1,9 @@
 package com.quanlyphongtro.dao;
+import java.text.SimpleDateFormat;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.math.RoundingMode;
 
 import com.quanlyphongtro.dto.DebtListItemDTO;
 import com.quanlyphongtro.dto.DebtDetailDTO;
@@ -74,7 +79,7 @@ public class DebtDAO extends BaseDAO {
                     Date dueDate = rs.getDate("due_date");
                     if (dueDate != null) {
                         dto.setDueDate(dueDate.toLocalDate());
-                        dto.setBillingPeriod(new java.text.SimpleDateFormat("yyyyMM").format(dueDate));
+                        dto.setBillingPeriod(new SimpleDateFormat("yyyyMM").format(dueDate));
                     }
                     
                     dto.setStatus(rs.getString("status"));
@@ -177,30 +182,30 @@ public class DebtDAO extends BaseDAO {
                     int newElec = rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0;
                     int oldElec = rs.getObject("old_electric") != null ? rs.getInt("old_electric") : 0;
                     int elecUsage = Math.max(0, newElec - oldElec);
-                    java.math.BigDecimal elecPrice = rs.getBigDecimal("electricity_price");
+                    BigDecimal elecPrice = rs.getBigDecimal("electricity_price");
                     
                     dto.setNewElectricReading(newElec);
                     dto.setOldElectricReading(oldElec);
                     dto.setElectricUsage(elecUsage);
                     dto.setElectricUnitPrice(elecPrice);
-                    java.math.BigDecimal elecAmount = java.math.BigDecimal.ZERO;
+                    BigDecimal elecAmount = BigDecimal.ZERO;
                     if (elecPrice != null) {
-                        elecAmount = elecPrice.multiply(new java.math.BigDecimal(elecUsage));
+                        elecAmount = elecPrice.multiply(new BigDecimal(elecUsage));
                     }
                     dto.setElectricAmount(elecAmount);
                     
                     int newWater = rs.getObject("new_water") != null ? rs.getInt("new_water") : 0;
                     int oldWater = rs.getObject("old_water") != null ? rs.getInt("old_water") : 0;
                     int waterUsage = Math.max(0, newWater - oldWater);
-                    java.math.BigDecimal waterPrice = rs.getBigDecimal("water_price");
+                    BigDecimal waterPrice = rs.getBigDecimal("water_price");
                     
                     dto.setNewWaterReading(newWater);
                     dto.setOldWaterReading(oldWater);
                     dto.setWaterUsage(waterUsage);
                     dto.setWaterUnitPrice(waterPrice);
-                    java.math.BigDecimal waterAmount = java.math.BigDecimal.ZERO;
+                    BigDecimal waterAmount = BigDecimal.ZERO;
                     if (waterPrice != null) {
-                        waterAmount = waterPrice.multiply(new java.math.BigDecimal(waterUsage));
+                        waterAmount = waterPrice.multiply(new BigDecimal(waterUsage));
                     }
                     dto.setWaterAmount(waterAmount);
                     
@@ -209,23 +214,23 @@ public class DebtDAO extends BaseDAO {
                     dto.setOtherFee(rs.getBigDecimal("other_fee"));
 
                     // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
-                    java.math.BigDecimal lateFee = java.math.BigDecimal.ZERO;
+                    BigDecimal lateFee = BigDecimal.ZERO;
                     Date dueDateSql = rs.getDate("due_date");
                     if (dueDateSql != null && dto.getRoomFee() != null) {
-                        java.time.LocalDate dueLocalDate = dueDateSql.toLocalDate();
-                        java.time.LocalDate today = java.time.LocalDate.now();
+                        LocalDate dueLocalDate = dueDateSql.toLocalDate();
+                        LocalDate today = LocalDate.now();
                         if (today.isAfter(dueLocalDate)) {
-                            long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueLocalDate, today);
+                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
                             lateFee = dto.getRoomFee()
-                                        .multiply(new java.math.BigDecimal("0.01"))
-                                        .multiply(new java.math.BigDecimal(daysLate))
-                                        .setScale(0, java.math.RoundingMode.HALF_UP);
+                                        .multiply(new BigDecimal("0.01"))
+                                        .multiply(new BigDecimal(daysLate))
+                                        .setScale(0, RoundingMode.HALF_UP);
                         }
                     }
                     dto.setLateFeePreview(lateFee);
                     // otherFee giữ nguyên giá trị từ DB, không cộng lateFee vào
 
-                    java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
+                    BigDecimal subtotal = BigDecimal.ZERO;
                     if (dto.getRoomFee() != null) subtotal = subtotal.add(dto.getRoomFee());
                     if (dto.getElectricAmount() != null) subtotal = subtotal.add(dto.getElectricAmount());
                     if (dto.getWaterAmount() != null) subtotal = subtotal.add(dto.getWaterAmount());
@@ -235,28 +240,28 @@ public class DebtDAO extends BaseDAO {
                     subtotal = subtotal.add(lateFee); // cộng phí chậm nộp vào tạm tính riêng
                     dto.setSubtotal(subtotal);
                     
-                    java.math.BigDecimal taxRate = rs.getBigDecimal("tax_rate");
+                    BigDecimal taxRate = rs.getBigDecimal("tax_rate");
                     dto.setTaxRate(taxRate);
-                    if (taxRate != null && taxRate.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                        dto.setTaxAmount(subtotal.multiply(taxRate).divide(new java.math.BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP));
+                    if (taxRate != null && taxRate.compareTo(BigDecimal.ZERO) > 0) {
+                        dto.setTaxAmount(subtotal.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP));
                     } else {
-                        dto.setTaxAmount(java.math.BigDecimal.ZERO);
+                        dto.setTaxAmount(BigDecimal.ZERO);
                     }
                     
                     // invoiceTotalAmount = subtotal + taxAmount (đã bao gồm lateFee)
-                    java.math.BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : java.math.BigDecimal.ZERO;
-                    java.math.BigDecimal totalWithLateFee = subtotal.add(taxAmt);
+                    BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : BigDecimal.ZERO;
+                    BigDecimal totalWithLateFee = subtotal.add(taxAmt);
                     dto.setInvoiceTotalAmount(totalWithLateFee);
                     dto.setPaidAmount(rs.getBigDecimal("paid_amount"));
                     
                     // Số còn nợ = tổng (đã gồm lateFee) - đã thanh toán
-                    java.math.BigDecimal paid = dto.getPaidAmount() != null ? dto.getPaidAmount() : java.math.BigDecimal.ZERO;
-                    dto.setDebtAmount(totalWithLateFee.subtract(paid).max(java.math.BigDecimal.ZERO));
+                    BigDecimal paid = dto.getPaidAmount() != null ? dto.getPaidAmount() : BigDecimal.ZERO;
+                    dto.setDebtAmount(totalWithLateFee.subtract(paid).max(BigDecimal.ZERO));
                     
                     Date dueDate = rs.getDate("due_date");
                     if (dueDate != null) {
                         dto.setDueDate(dueDate.toLocalDate());
-                        dto.setBillingPeriod(new java.text.SimpleDateFormat("yyyyMM").format(dueDate));
+                        dto.setBillingPeriod(new SimpleDateFormat("yyyyMM").format(dueDate));
                     }
                     
                     dto.setStatus(rs.getString("status"));

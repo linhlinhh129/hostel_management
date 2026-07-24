@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service.impl;
+import java.math.RoundingMode;
 
 import com.quanlyphongtro.dao.InvoiceDAO;
 import com.quanlyphongtro.dao.MeterReadingDAO;
@@ -191,7 +192,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal snapSvc = snap != null ? snap.serviceFee : BigDecimal.ZERO;
 
         BigDecimal newSubtotal = snapRoom.add(electricAmount).add(waterAmount).add(snapInt).add(snapSvc).add(otherFee);
-        BigDecimal newTaxAmount = newSubtotal.multiply(taxRate).divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
+        BigDecimal newTaxAmount = newSubtotal.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
         BigDecimal newTotal = newSubtotal.add(newTaxAmount);
 
         Invoice invoiceToUpdate = new Invoice();

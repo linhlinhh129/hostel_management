@@ -1,4 +1,7 @@
 package com.quanlyphongtro.dao;
+import java.sql.Types;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.quanlyphongtro.model.Request;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -86,7 +89,7 @@ public class RequestDAO extends BaseDAO {
             if (staffId != null) {
                 ps.setInt(2, staffId);
             } else {
-                ps.setNull(2, java.sql.Types.INTEGER);
+                ps.setNull(2, Types.INTEGER);
             }
             ps.setString(3, rejectReason);
             ps.setInt(4, requestId);
@@ -214,11 +217,11 @@ public class RequestDAO extends BaseDAO {
         return false;
     }
 
-    public boolean updateAppointmentSchedule(int requestId, java.time.LocalDateTime appointSchedule) {
+    public boolean updateAppointmentSchedule(int requestId, LocalDateTime appointSchedule) {
         String sql = "UPDATE requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'ASSIGNED'";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, java.sql.Timestamp.valueOf(appointSchedule));
+            ps.setTimestamp(1, Timestamp.valueOf(appointSchedule));
             ps.setInt(2, requestId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -240,7 +243,7 @@ public class RequestDAO extends BaseDAO {
             if (req.getAssignedStaffId() != null) {
                 ps.setInt(7, req.getAssignedStaffId());
             } else {
-                ps.setNull(7, java.sql.Types.INTEGER);
+                ps.setNull(7, Types.INTEGER);
             }
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -376,7 +379,7 @@ public class RequestDAO extends BaseDAO {
             if (r.getAssignedStaffId() != null) {
                 ps.setInt(7, r.getAssignedStaffId());
             } else {
-                ps.setNull(7, java.sql.Types.INTEGER);
+                ps.setNull(7, Types.INTEGER);
             }
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -534,7 +537,7 @@ public class RequestDAO extends BaseDAO {
                     ticket.put("facilityName", rs.getString("facility_name"));
                     Timestamp cAt = rs.getTimestamp("created_at");
                     ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime()
-                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     ticket.put("status", rs.getString("status"));
                     tickets.add(ticket);
                 }
@@ -582,9 +585,9 @@ public class RequestDAO extends BaseDAO {
                     ticket.put("createdAtRaw", cAt);
                     ticket.put("updatedAtRaw", uAt);
                     ticket.put("createdAt", cAt != null ? cAt.toLocalDateTime()
-                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     ticket.put("updatedAt", uAt != null ? uAt.toLocalDateTime()
-                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     ticket.put("assignedOperatorName", rs.getString("assigned_operator_name"));
                     ticket.put("rejectionReason", rs.getString("rejection_reason"));
                     ticket.put("attachmentUrls1", rs.getString("attachment_urls1"));
@@ -593,9 +596,9 @@ public class RequestDAO extends BaseDAO {
                     if (appointAt != null) {
                         ticket.put("appointScheduleRaw", appointAt);
                         ticket.put("appointSchedule", appointAt.toLocalDateTime()
-                                .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
                         ticket.put("appointScheduleFormatted", appointAt.toLocalDateTime()
-                                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")));
+                                .format(DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy")));
                     }
                 }
             }
@@ -680,14 +683,14 @@ public class RequestDAO extends BaseDAO {
         }
     }
 
-    public boolean scheduleTicket(int ticketId, java.time.LocalDateTime scheduleTime) {
+    public boolean scheduleTicket(int ticketId, LocalDateTime scheduleTime) {
         String sql = "UPDATE dbo.requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             if (scheduleTime != null) {
-                ps.setTimestamp(1, java.sql.Timestamp.valueOf(scheduleTime));
+                ps.setTimestamp(1, Timestamp.valueOf(scheduleTime));
             } else {
-                ps.setNull(1, java.sql.Types.TIMESTAMP);
+                ps.setNull(1, Types.TIMESTAMP);
             }
             ps.setInt(2, ticketId);
             return ps.executeUpdate() > 0;
@@ -705,7 +708,7 @@ public class RequestDAO extends BaseDAO {
             if (attachmentUrls2 != null) {
                 ps.setString(2, attachmentUrls2);
             } else {
-                ps.setNull(2, java.sql.Types.VARCHAR);
+                ps.setNull(2, Types.VARCHAR);
             }
             ps.setInt(3, ticketId);
             return ps.executeUpdate() > 0;
@@ -715,11 +718,11 @@ public class RequestDAO extends BaseDAO {
         }
     }
 
-    public boolean rescheduleTicket(int ticketId, java.time.LocalDateTime newTime) {
+    public boolean rescheduleTicket(int ticketId, LocalDateTime newTime) {
         String sql = "UPDATE dbo.requests SET appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, java.sql.Timestamp.valueOf(newTime));
+            ps.setTimestamp(1, Timestamp.valueOf(newTime));
             ps.setInt(2, ticketId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -747,7 +750,7 @@ public class RequestDAO extends BaseDAO {
                     Timestamp cAt = rs.getTimestamp("created_at");
                     map.put("createdAtRaw", cAt);
                     map.put("createdAt", cAt != null ? cAt.toLocalDateTime()
-                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
+                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     map.put("performerName", rs.getString("performer_name"));
                     list.add(map);
                 }

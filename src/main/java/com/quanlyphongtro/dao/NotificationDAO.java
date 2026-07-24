@@ -1,4 +1,11 @@
 package com.quanlyphongtro.dao;
+import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.sql.Types;
+import java.time.temporal.ChronoUnit;
 
 import com.quanlyphongtro.model.Notification;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -154,7 +161,7 @@ public class NotificationDAO extends BaseDAO {
         return Optional.empty();
     }
 
-    public int countUnreadForTenant(int roomId, int facilityId, java.time.LocalDateTime lastReadTime) {
+    public int countUnreadForTenant(int roomId, int facilityId, LocalDateTime lastReadTime) {
         if (lastReadTime == null) return countForTenant(roomId, facilityId);
 
         String sql = "SELECT COUNT(*) FROM dbo.notifications " +
@@ -165,8 +172,8 @@ public class NotificationDAO extends BaseDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, facilityId);
             ps.setInt(2, roomId);
-            ps.setTimestamp(3, java.sql.Timestamp.valueOf(lastReadTime));
-            ps.setTimestamp(4, java.sql.Timestamp.valueOf(lastReadTime));
+            ps.setTimestamp(3, Timestamp.valueOf(lastReadTime));
+            ps.setTimestamp(4, Timestamp.valueOf(lastReadTime));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);
             }
@@ -459,7 +466,7 @@ public class NotificationDAO extends BaseDAO {
                     Timestamp cAt = rs.getTimestamp("created_at");
                     String dateLabel = "";
                     if (cAt != null) {
-                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
                         dateLabel = sdf.format(cAt);
                     }
                     notif.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
@@ -545,9 +552,9 @@ public class NotificationDAO extends BaseDAO {
                     item.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
                     item.put("operatorName", rs.getString("operator_name"));
                     
-                    java.sql.Date rDate = rs.getDate("reading_date");
+                    Date rDate = rs.getDate("reading_date");
                     if (rDate != null) {
-                        java.time.LocalDate localDate = rDate.toLocalDate();
+                        LocalDate localDate = rDate.toLocalDate();
                         item.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
                     } else {
                         item.put("billingPeriod", "—");
@@ -643,8 +650,8 @@ public class NotificationDAO extends BaseDAO {
             ps.setString(2, title.trim());
             ps.setString(3, content.trim());
             ps.setString(4, recipientType);
-            if (facilityId != null) ps.setInt(5, facilityId); else ps.setNull(5, java.sql.Types.INTEGER);
-            if (roomId != null) ps.setInt(6, roomId); else ps.setNull(6, java.sql.Types.INTEGER);
+            if (facilityId != null) ps.setInt(5, facilityId); else ps.setNull(5, Types.INTEGER);
+            if (roomId != null) ps.setInt(6, roomId); else ps.setNull(6, Types.INTEGER);
             ps.setInt(7, createdBy);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -775,9 +782,9 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
                     invoice.put("operatorName", rs.getString("operator_name"));
 
-                    java.sql.Date rDate = rs.getDate("reading_date");
+                    Date rDate = rs.getDate("reading_date");
                     if (rDate != null) {
-                        java.time.LocalDate localDate = rDate.toLocalDate();
+                        LocalDate localDate = rDate.toLocalDate();
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
                     } else {
                         invoice.put("billingPeriod", "—");
@@ -883,13 +890,13 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("tenantName", rs.getString("tenant_name") != null ? rs.getString("tenant_name") : "Chưa có");
                     invoice.put("tenantPhone", rs.getString("tenant_phone") != null ? rs.getString("tenant_phone") : "—");
 
-                    java.sql.Date dDate = rs.getDate("due_date");
+                    Date dDate = rs.getDate("due_date");
                     if (dDate != null) {
-                        java.time.LocalDate localDate = dDate.toLocalDate();
+                        LocalDate localDate = dDate.toLocalDate();
                         invoice.put("dueDateLabel", String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear()));
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
 
-                        long days = java.time.temporal.ChronoUnit.DAYS.between(localDate, java.time.LocalDate.now());
+                        long days = ChronoUnit.DAYS.between(localDate, LocalDate.now());
                         long overdueDays = days > 0 ? days : 0;
                         invoice.put("overdueDays", overdueDays);
 

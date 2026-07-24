@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.api;
+import com.quanlyphongtro.util.PasswordValidator;
 
 import com.quanlyphongtro.dao.UserDAO;
 import com.quanlyphongtro.util.PasswordUtil;
@@ -65,9 +66,9 @@ public class ResetPasswordApiServlet extends HttpServlet {
             return;
         }
 
-        if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
+        if (!PasswordValidator.isValid(newPassword)) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"error\":{\"code\":\"INVALID_PASSWORD\",\"message\":\"" + com.quanlyphongtro.util.PasswordValidator.POLICY_MESSAGE + "\"}}");
+            out.print("{\"success\":false,\"error\":{\"code\":\"INVALID_PASSWORD\",\"message\":\"" + PasswordValidator.POLICY_MESSAGE + "\"}}");
             out.flush();
             return;
         }

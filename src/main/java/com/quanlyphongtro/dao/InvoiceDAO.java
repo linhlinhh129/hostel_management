@@ -1,4 +1,9 @@
 package com.quanlyphongtro.dao;
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import com.quanlyphongtro.dto.InvoiceListItemDTO;
 import com.quanlyphongtro.dto.InvoiceDetailDTO;
 import com.quanlyphongtro.model.Invoice;
@@ -91,10 +96,10 @@ public class InvoiceDAO extends BaseDAO {
                     snap.internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
                     snap.serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
                     
-                    java.sql.Date existingDue = rs.getDate("due_date");
+                    Date existingDue = rs.getDate("due_date");
                     if (existingDue != null) snap.dueDate = existingDue.toLocalDate();
                     
-                    java.sql.Date rdDate = rs.getDate("reading_date");
+                    Date rdDate = rs.getDate("reading_date");
                     if (rdDate != null) snap.readingDate = rdDate.toLocalDate();
                     
                     return snap;
@@ -180,11 +185,11 @@ public class InvoiceDAO extends BaseDAO {
         BigDecimal lateFee = BigDecimal.ZERO;
         LocalDate dueDate = i.getDueDate();
         if (dueDate != null && i.getRoomFee() != null && LocalDate.now().isAfter(dueDate)) {
-            long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, LocalDate.now());
+            long daysLate = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
             lateFee = i.getRoomFee()
                         .multiply(new BigDecimal("0.01"))
                         .multiply(new BigDecimal(daysLate))
-                        .setScale(0, java.math.RoundingMode.HALF_UP);
+                        .setScale(0, RoundingMode.HALF_UP);
         }
         i.setLateFee(lateFee);
         if (i.getTotalAmount() != null) {
@@ -289,16 +294,16 @@ public class InvoiceDAO extends BaseDAO {
                     if (baseAmount == null) continue;
                     total = total.add(baseAmount);
                     // Cộng thêm lateFee nếu quá hạn
-                    java.sql.Date dueDateSql = rs.getDate("due_date");
+                    Date dueDateSql = rs.getDate("due_date");
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     if (dueDateSql != null && roomFee != null) {
                         LocalDate dueDate = dueDateSql.toLocalDate();
                         if (today.isAfter(dueDate)) {
-                            long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
+                            long daysLate = ChronoUnit.DAYS.between(dueDate, today);
                             BigDecimal lateFee = roomFee
                                 .multiply(new BigDecimal("0.01"))
                                 .multiply(new BigDecimal(daysLate))
-                                .setScale(0, java.math.RoundingMode.HALF_UP);
+                                .setScale(0, RoundingMode.HALF_UP);
                             total = total.add(lateFee);
                         }
                     }
@@ -378,9 +383,9 @@ public class InvoiceDAO extends BaseDAO {
                     LocalDate dueDate = rs.getDate("due_date").toLocalDate();
                     LocalDate today = LocalDate.now();
                     if (dueDate != null && roomFee != null && today.isAfter(dueDate)) {
-                        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
+                        long daysLate = ChronoUnit.DAYS.between(dueDate, today);
                         BigDecimal penaltyRate = new BigDecimal("0.01").multiply(new BigDecimal(daysLate));
-                        return roomFee.multiply(penaltyRate).setScale(0, java.math.RoundingMode.HALF_UP);
+                        return roomFee.multiply(penaltyRate).setScale(0, RoundingMode.HALF_UP);
                     }
                 }
             }
@@ -451,8 +456,8 @@ public class InvoiceDAO extends BaseDAO {
                      dto.setInvoiceId(rs.getInt("invoice_id"));
                      dto.setInvoiceCode(rs.getString("code"));
                      dto.setTotalAmount(rs.getBigDecimal("total_amount"));
-                     java.sql.Date d = rs.getDate("due_date");
-                     if (d != null) dto.setDueDate(new java.text.SimpleDateFormat("dd/MM/yyyy").format(d));
+                     Date d = rs.getDate("due_date");
+                     if (d != null) dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
                      dto.setStatus(rs.getString("status"));
                      dto.setRoomCode(rs.getString("room_code"));
                      dto.setTenantName(rs.getString("tenant_name"));
@@ -557,10 +562,10 @@ public class InvoiceDAO extends BaseDAO {
                       dto.setInvoiceCode(rs.getString("code"));
                       dto.setStatus(rs.getString("status"));
                       
-                      java.sql.Date d = rs.getDate("due_date");
-                      if (d != null) dto.setDueDate(new java.text.SimpleDateFormat("dd/MM/yyyy").format(d));
+                      Date d = rs.getDate("due_date");
+                      if (d != null) dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
                       
-                      java.sql.Timestamp created = rs.getTimestamp("created_at");
+                      Timestamp created = rs.getTimestamp("created_at");
                       if (created != null) dto.setCreatedAt(created.toString());
                       
                       dto.setRoomCode(rs.getString("room_code"));
@@ -592,15 +597,15 @@ public class InvoiceDAO extends BaseDAO {
                       dto.setWaterUnitPrice(rs.getBigDecimal("water_price"));
                       
                       if (dto.getElectricUnitPrice() != null) {
-                          dto.setElectricAmount(dto.getElectricUnitPrice().multiply(new java.math.BigDecimal(dto.getElectricUsage())));
+                          dto.setElectricAmount(dto.getElectricUnitPrice().multiply(new BigDecimal(dto.getElectricUsage())));
                       } else {
-                          dto.setElectricAmount(java.math.BigDecimal.ZERO);
+                          dto.setElectricAmount(BigDecimal.ZERO);
                       }
                       
                       if (dto.getWaterUnitPrice() != null) {
-                          dto.setWaterAmount(dto.getWaterUnitPrice().multiply(new java.math.BigDecimal(dto.getWaterUsage())));
+                          dto.setWaterAmount(dto.getWaterUnitPrice().multiply(new BigDecimal(dto.getWaterUsage())));
                       } else {
-                          dto.setWaterAmount(java.math.BigDecimal.ZERO);
+                          dto.setWaterAmount(BigDecimal.ZERO);
                       }
                       
                       dto.setInternetFee(rs.getBigDecimal("internet_fee"));
@@ -608,23 +613,23 @@ public class InvoiceDAO extends BaseDAO {
                       dto.setOtherFee(rs.getBigDecimal("other_fee"));
 
                       // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
-                      java.math.BigDecimal lateFee = java.math.BigDecimal.ZERO;
-                      java.sql.Date dueDateSql = rs.getDate("due_date");
+                      BigDecimal lateFee = BigDecimal.ZERO;
+                      Date dueDateSql = rs.getDate("due_date");
                       if (dueDateSql != null && dto.getRoomFee() != null) {
                           LocalDate dueLocalDate = dueDateSql.toLocalDate();
                           LocalDate today = LocalDate.now();
                           if (today.isAfter(dueLocalDate)) {
-                              long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueLocalDate, today);
+                              long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
                               lateFee = dto.getRoomFee()
-                                          .multiply(new java.math.BigDecimal("0.01"))
-                                          .multiply(new java.math.BigDecimal(daysLate))
-                                          .setScale(0, java.math.RoundingMode.HALF_UP);
+                                          .multiply(new BigDecimal("0.01"))
+                                          .multiply(new BigDecimal(daysLate))
+                                          .setScale(0, RoundingMode.HALF_UP);
                           }
                       }
                       dto.setLateFee(lateFee);
                       // otherFee giữ nguyên giá trị từ DB, không cộng lateFee vào
 
-                      java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
+                      BigDecimal subtotal = BigDecimal.ZERO;
                       if (dto.getRoomFee() != null) subtotal = subtotal.add(dto.getRoomFee());
                       if (dto.getElectricAmount() != null) subtotal = subtotal.add(dto.getElectricAmount());
                       if (dto.getWaterAmount() != null) subtotal = subtotal.add(dto.getWaterAmount());
@@ -636,13 +641,13 @@ public class InvoiceDAO extends BaseDAO {
                       
                       dto.setTaxRate(rs.getBigDecimal("tax"));
                       if (dto.getTaxRate() != null) {
-                          dto.setTaxAmount(subtotal.multiply(dto.getTaxRate()).divide(new java.math.BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP));
+                          dto.setTaxAmount(subtotal.multiply(dto.getTaxRate()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP));
                       } else {
-                          dto.setTaxAmount(java.math.BigDecimal.ZERO);
+                          dto.setTaxAmount(BigDecimal.ZERO);
                       }
 
                       // Tổng tiền = subtotal (đã gồm lateFee) + thuế
-                      java.math.BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : java.math.BigDecimal.ZERO;
+                      BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : BigDecimal.ZERO;
                       dto.setTotalAmount(subtotal.add(taxAmt));
                       dto.setNote(rs.getString("note"));
                       
@@ -663,7 +668,7 @@ public class InvoiceDAO extends BaseDAO {
                       
                       Timestamp updated = rs.getTimestamp("updated_at");
                       if (updated != null) dto.setUpdatedAt(
-                          updated.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                          updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
                       dto.setUpdatedByName(""); 
                       
                       return dto;
@@ -684,7 +689,7 @@ public class InvoiceDAO extends BaseDAO {
             ps.setString(1, invoice.getCode());
             ps.setInt(2, invoice.getRoomId());
             ps.setInt(3, invoice.getMeterId());
-            ps.setDate(4, java.sql.Date.valueOf(invoice.getDueDate()));
+            ps.setDate(4, Date.valueOf(invoice.getDueDate()));
             ps.setString(5, invoice.getStatus());
             ps.setBigDecimal(6, invoice.getTax());
             ps.setBigDecimal(7, invoice.getOtherFee());
@@ -740,7 +745,7 @@ public class InvoiceDAO extends BaseDAO {
                      "WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, java.sql.Date.valueOf(invoice.getDueDate()));
+            ps.setDate(1, Date.valueOf(invoice.getDueDate()));
             ps.setBigDecimal(2, invoice.getTax());
             ps.setBigDecimal(3, invoice.getOtherFee());
             ps.setBigDecimal(4, invoice.getTotalAmount());

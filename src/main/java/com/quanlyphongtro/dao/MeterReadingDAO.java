@@ -1,4 +1,7 @@
 package com.quanlyphongtro.dao;
+import java.sql.Types;
+import java.time.LocalDate;
+import java.sql.Date;
 
 import com.quanlyphongtro.dto.MeterStatusDTO;
 import com.quanlyphongtro.model.MeterReading;
@@ -134,7 +137,7 @@ public class MeterReadingDAO extends BaseDAO {
             if (createdBy > 0) {
                 ps.setInt(4, createdBy);
             } else {
-                ps.setNull(4, java.sql.Types.INTEGER);
+                ps.setNull(4, Types.INTEGER);
             }
             ps.setString(5, electricImg);
             ps.setString(6, waterImg);
@@ -164,13 +167,13 @@ public class MeterReadingDAO extends BaseDAO {
         return null;
     }
 
-    public MeterReading getPreviousReadingByDate(int roomId, java.time.LocalDate readingDate) {
+    public MeterReading getPreviousReadingByDate(int roomId, LocalDate readingDate) {
         String sql = "SELECT TOP 1 * FROM meter_readings " +
                      "WHERE room_id = ? AND reading_date < ? AND deleted_at IS NULL ORDER BY reading_date DESC";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
-            ps.setDate(2, java.sql.Date.valueOf(readingDate));
+            ps.setDate(2, Date.valueOf(readingDate));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapRow(rs);
@@ -267,11 +270,11 @@ public class MeterReadingDAO extends BaseDAO {
         int year  = Integer.parseInt(billingPeriod.substring(0, 4));
         int month = Integer.parseInt(billingPeriod.substring(4, 6));
 
-        java.time.LocalDate periodStart = java.time.LocalDate.of(year, month, 1);
-        java.time.LocalDate periodEnd   = periodStart.withDayOfMonth(periodStart.lengthOfMonth());
+        LocalDate periodStart = LocalDate.of(year, month, 1);
+        LocalDate periodEnd   = periodStart.withDayOfMonth(periodStart.lengthOfMonth());
 
-        java.time.LocalDate prevEnd   = periodStart.minusDays(1);
-        java.time.LocalDate prevStart = prevEnd.withDayOfMonth(1);
+        LocalDate prevEnd   = periodStart.minusDays(1);
+        LocalDate prevStart = prevEnd.withDayOfMonth(1);
 
         MeterReading current = findLatestInRange(roomId, periodStart, periodEnd);
         MeterReading prev    = findLatestInRange(roomId, prevStart, prevEnd);
@@ -282,7 +285,7 @@ public class MeterReadingDAO extends BaseDAO {
         return result;
     }
 
-    public MeterReading findLatestInRange(int roomId, java.time.LocalDate from, java.time.LocalDate to) {
+    public MeterReading findLatestInRange(int roomId, LocalDate from, LocalDate to) {
         String sql = "SELECT TOP 1 * " +
                      "FROM dbo.meter_readings " +
                      "WHERE room_id = ? AND reading_date >= ? AND reading_date <= ? AND deleted_at IS NULL " +
@@ -290,8 +293,8 @@ public class MeterReadingDAO extends BaseDAO {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
-            ps.setDate(2, java.sql.Date.valueOf(from));
-            ps.setDate(3, java.sql.Date.valueOf(to));
+            ps.setDate(2, Date.valueOf(from));
+            ps.setDate(3, Date.valueOf(to));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapRow(rs);

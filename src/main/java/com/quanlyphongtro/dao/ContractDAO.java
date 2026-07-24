@@ -1,4 +1,9 @@
 package com.quanlyphongtro.dao;
+import com.quanlyphongtro.model.Room;
+import com.quanlyphongtro.model.Facility;
+import com.quanlyphongtro.model.User;
+import java.sql.Types;
+import java.sql.Date;
 
 import com.quanlyphongtro.model.Contract;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -71,17 +76,17 @@ public class ContractDAO extends BaseDAO {
         return contracts;
     }
 
-    public List<com.quanlyphongtro.model.Room> getAvailableRooms(int managerId) {
+    public List<Room> getAvailableRooms(int managerId) {
         String sql = "SELECT r.* FROM dbo.rooms r " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                 "WHERE f.manager_id = ? AND r.tenant_id IS NULL AND r.deleted_at IS NULL";
-        List<com.quanlyphongtro.model.Room> rooms = new ArrayList<>();
+        List<Room> rooms = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, managerId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
+                    Room room = new Room();
                     room.setId(rs.getInt("room_id"));
                     room.setCode(rs.getString("code"));
                     rooms.add(room);
@@ -112,19 +117,19 @@ public class ContractDAO extends BaseDAO {
                 if (rs.next()) {
                     Contract contract = mapRow(rs);
 
-                    com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
+                    Room room = new Room();
                     room.setCode(rs.getString("r_code"));
                     room.setRoomFee(rs.getBigDecimal("r_fee"));
                     contract.setRoom(room);
 
-                    com.quanlyphongtro.model.Facility facility = new com.quanlyphongtro.model.Facility();
+                    Facility facility = new Facility();
                     facility.setAddress(rs.getString("f_address"));
                     facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
                     facility.setInternetFee(rs.getBigDecimal("f_net"));
                     facility.setServiceFee(rs.getBigDecimal("f_svc"));
                     contract.setFacility(facility);
 
-                    com.quanlyphongtro.model.User managerObj = new com.quanlyphongtro.model.User();
+                    User managerObj = new User();
                     managerObj.setFullName(rs.getString("m_name"));
                     managerObj.setDob(toLocalDate(rs, "m_dob"));
                     managerObj.setIdentityNumber(rs.getString("m_id_num"));
@@ -159,7 +164,7 @@ public class ContractDAO extends BaseDAO {
     public int create(Contract contract) {
         // Tự động sửa lỗi Database NOT NULL cho tenant_id để cứu sinh viên
         try (Connection conn = DatabaseUtil.getConnection();
-                java.sql.Statement stmt = conn.createStatement()) {
+                Statement stmt = conn.createStatement()) {
             stmt.execute("ALTER TABLE dbo.contracts ALTER COLUMN tenant_id INT NULL;");
         } catch (Exception ignored) {
             // Lỗi do không có quyền hoặc đã alter rồi thì bỏ qua
@@ -177,44 +182,44 @@ public class ContractDAO extends BaseDAO {
             if (contract.getTenantId() != null) {
                 ps.setInt(3, contract.getTenantId());
             } else {
-                ps.setNull(3, java.sql.Types.INTEGER);
+                ps.setNull(3, Types.INTEGER);
             }
             ps.setString(4, contract.getTenantFullName());
             if (contract.getTenantDob() != null) {
-                ps.setDate(5, java.sql.Date.valueOf(contract.getTenantDob()));
+                ps.setDate(5, Date.valueOf(contract.getTenantDob()));
             } else {
-                ps.setNull(5, java.sql.Types.DATE);
+                ps.setNull(5, Types.DATE);
             }
             ps.setString(6, contract.getTenantPermanentAddress());
             ps.setString(7, contract.getTenantIdentityNumber());
             if (contract.getTenantIdentityIssueDate() != null) {
-                ps.setDate(8, java.sql.Date.valueOf(contract.getTenantIdentityIssueDate()));
+                ps.setDate(8, Date.valueOf(contract.getTenantIdentityIssueDate()));
             } else {
-                ps.setNull(8, java.sql.Types.DATE);
+                ps.setNull(8, Types.DATE);
             }
             ps.setString(9, contract.getTenantIdentityIssuePlace());
             ps.setString(10, contract.getTenantPhone());
             ps.setString(11, contract.getAmountInWords());
             if (contract.getSignedDate() != null) {
-                ps.setDate(12, java.sql.Date.valueOf(contract.getSignedDate()));
+                ps.setDate(12, Date.valueOf(contract.getSignedDate()));
             } else {
-                ps.setNull(12, java.sql.Types.DATE);
+                ps.setNull(12, Types.DATE);
             }
             if (contract.getStartDate() != null) {
-                ps.setDate(13, java.sql.Date.valueOf(contract.getStartDate()));
+                ps.setDate(13, Date.valueOf(contract.getStartDate()));
             } else {
-                ps.setNull(13, java.sql.Types.DATE);
+                ps.setNull(13, Types.DATE);
             }
             if (contract.getEndDate() != null) {
-                ps.setDate(14, java.sql.Date.valueOf(contract.getEndDate()));
+                ps.setDate(14, Date.valueOf(contract.getEndDate()));
             } else {
-                ps.setNull(14, java.sql.Types.DATE);
+                ps.setNull(14, Types.DATE);
             }
             ps.setString(15, contract.getStatus());
             if (contract.getCreatedBy() != null) {
                 ps.setInt(16, contract.getCreatedBy());
             } else {
-                ps.setNull(16, java.sql.Types.INTEGER);
+                ps.setNull(16, Types.INTEGER);
             }
 
             int affectedRows = ps.executeUpdate();
@@ -269,13 +274,13 @@ public class ContractDAO extends BaseDAO {
                 if (rs.next()) {
                     Contract contract = mapRow(rs);
 
-                    com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
+                    Room room = new Room();
                     room.setCode(rs.getString("r_code"));
                     room.setRoomFee(rs.getBigDecimal("r_fee"));
                     room.setDepositAmount(rs.getBigDecimal("r_deposit"));
                     contract.setRoom(room);
 
-                    com.quanlyphongtro.model.Facility facility = new com.quanlyphongtro.model.Facility();
+                    Facility facility = new Facility();
                     facility.setAddress(rs.getString("f_address"));
                     facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
                     facility.setWaterPrice(rs.getBigDecimal("f_water"));
@@ -283,7 +288,7 @@ public class ContractDAO extends BaseDAO {
                     facility.setServiceFee(rs.getBigDecimal("f_svc"));
                     contract.setFacility(facility);
 
-                    com.quanlyphongtro.model.User managerObj = new com.quanlyphongtro.model.User();
+                    User managerObj = new User();
                     managerObj.setFullName(rs.getString("m_name"));
                     managerObj.setDob(toLocalDate(rs, "m_dob"));
                     managerObj.setIdentityNumber(rs.getString("m_id_num"));
@@ -319,9 +324,9 @@ public class ContractDAO extends BaseDAO {
                     prefilledContract.put("tenantIdentityNumber", rs.getString("tenant_identity_number"));
                     prefilledContract.put("tenantPermanentAddress", rs.getString("tenant_permanent_address"));
                     prefilledContract.put("tenantId", getInteger(rs, "tenant_id"));
-                    java.sql.Date dob = rs.getDate("tenant_dob");
+                    Date dob = rs.getDate("tenant_dob");
                     prefilledContract.put("tenantDob", dob != null ? dob.toString() : "");
-                    java.sql.Date sDate = rs.getDate("start_date");
+                    Date sDate = rs.getDate("start_date");
                     prefilledContract.put("startDate", sDate != null ? sDate.toString() : "");
                 }
             }
@@ -413,7 +418,7 @@ public class ContractDAO extends BaseDAO {
                     ps.setString(2, fullName.trim());
                     ps.setString(3, phone.trim());
                     ps.setString(4, identityNumber.trim());
-                    ps.setDate(5, dob != null ? java.sql.Date.valueOf(dob) : null);
+                    ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
                     ps.setString(6, gender);
                     ps.setString(7, permanentAddress);
                     ps.setInt(8, userId);
@@ -427,7 +432,7 @@ public class ContractDAO extends BaseDAO {
                     ps.setString(4, email.trim());
                     ps.setString(5, phone.trim());
                     ps.setString(6, identityNumber.trim());
-                    ps.setDate(7, dob != null ? java.sql.Date.valueOf(dob) : null);
+                    ps.setDate(7, dob != null ? Date.valueOf(dob) : null);
                     ps.setString(8, gender);
                     ps.setString(9, permanentAddress);
                     ps.executeUpdate();
@@ -442,8 +447,8 @@ public class ContractDAO extends BaseDAO {
             // Update room
             try (PreparedStatement ps = conn.prepareStatement(updRoomSql)) {
                 ps.setInt(1, finalUserId);
-                ps.setDate(2, java.sql.Date.valueOf(startDate));
-                ps.setDate(3, java.sql.Date.valueOf(startDate.plusYears(1))); // Default 1 year contract
+                ps.setDate(2, Date.valueOf(startDate));
+                ps.setDate(3, Date.valueOf(startDate.plusYears(1))); // Default 1 year contract
                 ps.setInt(4, roomId);
                 ps.executeUpdate();
             }
@@ -521,18 +526,18 @@ public class ContractDAO extends BaseDAO {
             
             // 1. Update contract
             try (PreparedStatement ps = conn.prepareStatement(updContract)) {
-                ps.setDate(1, java.sql.Date.valueOf(newEndDate));
+                ps.setDate(1, Date.valueOf(newEndDate));
                 ps.setInt(2, contractId);
                 ps.executeUpdate();
             }
             
             // 2. Update room
             try (PreparedStatement ps = conn.prepareStatement(updRoom)) {
-                ps.setDate(1, java.sql.Date.valueOf(newEndDate));
+                ps.setDate(1, Date.valueOf(newEndDate));
                 if (tenantId != null) {
                     ps.setInt(2, tenantId);
                 } else {
-                    ps.setNull(2, java.sql.Types.INTEGER);
+                    ps.setNull(2, Types.INTEGER);
                 }
                 ps.setInt(3, roomId);
                 ps.executeUpdate();

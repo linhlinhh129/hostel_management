@@ -1,4 +1,11 @@
 package com.quanlyphongtro.controller.operator;
+import com.quanlyphongtro.service.impl.RequestServiceImpl;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.File;
+import jakarta.servlet.http.Part;
+import java.util.UUID;
 
 import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.model.Request;
@@ -23,7 +30,7 @@ public class DetailRequestServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        this.requestService = new com.quanlyphongtro.service.impl.RequestServiceImpl();
+        this.requestService = new RequestServiceImpl();
     }
 
     @Override
@@ -92,7 +99,7 @@ public class DetailRequestServlet extends HttpServlet {
                 }
                 // Parse date and schedule properly
                 try {
-                    java.time.LocalDateTime appointSchedule = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+                    LocalDateTime appointSchedule = LocalDateTime.parse(appointmentDateStr.trim());
                     success = requestService.scheduleAppointment(requestId, appointSchedule);
                 } catch (Exception e) {
                     request.setAttribute("error", "Định dạng ngày hẹn không hợp lệ.");
@@ -110,15 +117,15 @@ public class DetailRequestServlet extends HttpServlet {
                     return;
                 }
                 
-                java.util.List<String> fileNames = new java.util.ArrayList<>();
-                String uploadPath = getServletContext().getRealPath("") + java.io.File.separator + "uploads" + java.io.File.separator + "requests";
-                java.io.File uploadDir = new java.io.File(uploadPath);
+                List<String> fileNames = new ArrayList<>();
+                String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads" + File.separator + "requests";
+                File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) uploadDir.mkdirs();
 
-                for (jakarta.servlet.http.Part part : request.getParts()) {
+                for (Part part : request.getParts()) {
                     if ("after_images".equals(part.getName()) && part.getSize() > 0) {
-                        String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(part);
-                        part.write(uploadPath + java.io.File.separator + fileName);
+                        String fileName = UUID.randomUUID().toString() + "_" + getFileName(part);
+                        part.write(uploadPath + File.separator + fileName);
                         fileNames.add("/uploads/requests/" + fileName);
                     }
                 }
@@ -157,7 +164,7 @@ public class DetailRequestServlet extends HttpServlet {
         }
     }
 
-    private String getFileName(jakarta.servlet.http.Part part) {
+    private String getFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
         String[] tokens = contentDisp.split(";");
         for (String token : tokens) {

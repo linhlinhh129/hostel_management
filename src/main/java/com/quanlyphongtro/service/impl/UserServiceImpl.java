@@ -1,4 +1,9 @@
 package com.quanlyphongtro.service.impl;
+import com.quanlyphongtro.exception.ForbiddenException;
+import com.quanlyphongtro.dao.FacilityDAO;
+import com.quanlyphongtro.model.Facility;
+import com.quanlyphongtro.dao.RoomDAO;
+import java.util.List;
 
 import com.quanlyphongtro.constant.RoleConstant;
 import com.quanlyphongtro.constant.StatusConstant;
@@ -64,7 +69,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (user.isLocked()) {
-            throw new com.quanlyphongtro.exception.ForbiddenException("LOCKED");
+            throw new ForbiddenException("LOCKED");
         }
 
         if (!user.isActive()) {
@@ -117,9 +122,9 @@ public class UserServiceImpl implements UserService {
         if ("MANAGER".equals(role) || "OPERATOR".equals(role)) {
             // Lấy facilityCode từ facilities.manager_id hoặc operator_id
             try {
-                com.quanlyphongtro.dao.FacilityDAO facilityDAO =
-                        new com.quanlyphongtro.dao.FacilityDAO();
-                Optional<com.quanlyphongtro.model.Facility> facilityOpt = "OPERATOR".equals(role) 
+                FacilityDAO facilityDAO =
+                        new FacilityDAO();
+                Optional<Facility> facilityOpt = "OPERATOR".equals(role) 
                         ? facilityDAO.findByOperatorId(user.getId()) 
                         : facilityDAO.findByManagerId(user.getId());
                 
@@ -134,8 +139,8 @@ public class UserServiceImpl implements UserService {
         } else if ("TENANT".equals(role)) {
             // Lấy roomCode từ rooms.tenant_id
             try {
-                com.quanlyphongtro.dao.RoomDAO roomDAO =
-                        new com.quanlyphongtro.dao.RoomDAO();
+                RoomDAO roomDAO =
+                        new RoomDAO();
                 roomDAO.findByTenantId(user.getId())
                         .ifPresent(r -> dto.setRoomCode(r.getCode()));
             } catch (Exception ex) {
@@ -147,12 +152,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public java.util.List<User> getStaffUsers() {
+    public List<User> getStaffUsers() {
         return userDAO.getStaffUsers();
     }
 
     @Override
-    public java.util.List<User> getStaffUsersByTenantId(int tenantId) {
+    public List<User> getStaffUsersByTenantId(int tenantId) {
         return userDAO.getStaffUsersByTenantId(tenantId);
     }
 }

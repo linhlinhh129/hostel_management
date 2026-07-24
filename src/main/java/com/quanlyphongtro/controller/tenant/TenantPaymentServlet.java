@@ -1,4 +1,6 @@
 package com.quanlyphongtro.controller.tenant;
+import com.quanlyphongtro.service.TenantService;
+import com.quanlyphongtro.service.impl.TenantServiceImpl;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -134,7 +136,7 @@ public class TenantPaymentServlet extends BaseServlet {
     }
 
     private int getRoomIdByTenant(int tenantId) {
-        com.quanlyphongtro.service.TenantService tenantService = new com.quanlyphongtro.service.impl.TenantServiceImpl();
+        TenantService tenantService = new TenantServiceImpl();
         Optional<Room> roomOpt = tenantService.getTenantRoom(tenantId);
         return roomOpt.map(Room::getId).orElse(-1);
     }
