@@ -27,6 +27,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    //hàm này gọi xuống dao, nếu mà không tìm thấy, nó sẽ fallback gọi thêm findByEmail(username) để hỗ trợ đăng nhập
     public Optional<UserSessionDTO> login(String username, String password) {
         if (username == null || password == null || username.isBlank() || password.length() < 7) {
             logger.warn("LOGIN FAIL [{}]: input validation failed — username blank or password length < 7 (len={})",
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserService {
             return Optional.empty();
         }
 
+        //chỗ này là findbyUserName để hỗ trợ đăng nhập
         Optional<User> userOpt = userDAO.findByUsername(normalizedUsername);
         if (userOpt.isEmpty()) {
             // Fallback: thử tìm theo email (tenant và nhân sự mới dùng email làm username)

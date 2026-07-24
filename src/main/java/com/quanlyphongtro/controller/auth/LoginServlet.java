@@ -37,6 +37,7 @@ public class LoginServlet extends BaseServlet {
     }
 
     @Override
+    //lấy username và password từ request 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
@@ -49,6 +50,7 @@ public class LoginServlet extends BaseServlet {
             return;
         }
 
+        //nếu user này đang bị khóa tạm thời do nhập sai quá nhiều lần trước đó
         if (LoginAttemptTracker.isLocked(username.trim())) {
             req.setAttribute("errorMessage", ErrorMessageConstant.ACCOUNT_LOCKED);
             req.setAttribute("username", username);
