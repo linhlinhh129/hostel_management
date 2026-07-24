@@ -72,48 +72,25 @@
             <version>2.10.1</version>
         </dependency>
 
-<<<<<<< HEAD
-        <!-- Unit Testing: JUnit 5 -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.11.4</version>
-            <scope>test</scope>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-=======
         <!-- ==================== TEST DEPENDENCIES ==================== -->
 
-        <!-- JUnit 5: test runner (junit-team/junit-framework trên GitHub) -->
+        <!-- JUnit 5: test runner -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
->>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
             <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
 
-<<<<<<< HEAD
-        <!-- Unit Testing: Mockito -->
-=======
         <!-- Mockito: mocking framework -->
->>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>5.14.2</version>
             <scope>test</scope>
-<<<<<<< HEAD
-            <type>jar</type>
-        </dependency>
-=======
         </dependency>
 
         <!-- Mockito JUnit 5 extension -->
->>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
@@ -121,12 +98,11 @@
             <scope>test</scope>
         </dependency>
 
-<<<<<<< HEAD
-        <!-- Unit Testing: AssertJ -->
+        <!-- AssertJ: fluent assertions -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.25.3</version>
+            <version>3.26.3</version>
             <scope>test</scope>
         </dependency>
 
@@ -155,13 +131,6 @@
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>4.19.1</version>
-=======
-        <!-- AssertJ: fluent assertions (dễ đọc hơn JUnit assert) -->
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.26.3</version>
->>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -228,11 +197,6 @@
                     <path>/hostel-management</path>
                     <uriEncoding>UTF-8</uriEncoding>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
             </plugin>
         </plugins>
     </build>
