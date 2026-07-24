@@ -79,7 +79,7 @@
 ### 2.10 Toàn vẹn dữ liệu
 
 * `BR-PM-41` Không được xóa cứng nhân sự khỏi cơ sở dữ liệu.
-* `BR-PM-42` Mọi thao tác tạo, cập nhật, khóa/mở khóa và gán cơ sở phải được ghi Audit Log.
+* `BR-PM-42` Mọi thao tác tạo, cập nhật, khóa/mở khóa và gán cơ sở được ghi nhận qua system log file của máy chủ ứng dụng.
 * `BR-PM-43` Tạo nhân sự, tạo tài khoản và gửi email phải nằm trong cùng một transaction nghiệp vụ.
 * `BR-PM-44` Nếu gửi email thất bại thì không được hoàn tất việc tạo nhân sự.
 

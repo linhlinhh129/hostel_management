@@ -85,23 +85,23 @@
                       <td>-</td>
                       <td>-</td>
                       <td style="text-align:right">-</td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.roomFee}" pattern="#,##0"/> đ</td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.roomFee != null ? invoice.roomFee : 0}" pattern="#,##0"/> đ</td>
                     </tr>
                     <tr>
                       <td><strong>Tiền điện</strong></td>
                       <td><c:out value="${invoice.oldElectricReading}"/></td>
                       <td><c:out value="${invoice.newElectricReading}"/></td>
                       <td><c:out value="${invoice.electricUsage}"/></td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.electricUnitPrice}" pattern="#,##0"/></td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.electricAmount}" pattern="#,##0"/> đ</td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.electricUnitPrice != null ? invoice.electricUnitPrice : 0}" pattern="#,##0"/></td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.electricAmount != null ? invoice.electricAmount : 0}" pattern="#,##0"/> đ</td>
                     </tr>
                     <tr>
                       <td><strong>Tiền nước</strong></td>
                       <td><c:out value="${invoice.oldWaterReading}"/></td>
                       <td><c:out value="${invoice.newWaterReading}"/></td>
                       <td><c:out value="${invoice.waterUsage}"/></td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.waterUnitPrice}" pattern="#,##0"/></td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.waterAmount}" pattern="#,##0"/> đ</td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.waterUnitPrice != null ? invoice.waterUnitPrice : 0}" pattern="#,##0"/></td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.waterAmount != null ? invoice.waterAmount : 0}" pattern="#,##0"/> đ</td>
                     </tr>
                     <tr>
                       <td><strong>Phí dịch vụ</strong></td>
@@ -109,7 +109,7 @@
                       <td>-</td>
                       <td>-</td>
                       <td style="text-align:right">-</td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.serviceFee}" pattern="#,##0"/> đ</td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.serviceFee != null ? invoice.serviceFee : 0}" pattern="#,##0"/> đ</td>
                     </tr>
                     <tr>
                       <td><strong>Tiền Internet</strong></td>
@@ -117,7 +117,7 @@
                       <td>-</td>
                       <td>-</td>
                       <td style="text-align:right">-</td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.internetFee}" pattern="#,##0"/> đ</td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.internetFee != null ? invoice.internetFee : 0}" pattern="#,##0"/> đ</td>
                     </tr>
                     <tr>
                       <td><strong>Phí khác</strong></td>
@@ -125,21 +125,31 @@
                       <td>-</td>
                       <td>-</td>
                       <td style="text-align:right">-</td>
-                      <td style="text-align:right"><fmt:formatNumber value="${invoice.otherFee}" pattern="#,##0"/> đ</td>
+                      <td style="text-align:right"><fmt:formatNumber value="${invoice.otherFee != null ? invoice.otherFee : 0}" pattern="#,##0"/> đ</td>
                     </tr>
+                    <c:if test="${invoice.lateFee != null and invoice.lateFee > 0}">
+                    <tr style="background:#fff8e1">
+                      <td><strong>Phí chậm nộp</strong></td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td style="text-align:right;color:#e65100;font-size:0.8rem">(1%/ngày)</td>
+                      <td style="text-align:right;color:#e65100;font-weight:700"><fmt:formatNumber value="${invoice.lateFee}" pattern="#,##0"/> đ</td>
+                    </tr>
+                    </c:if>
                   </tbody>
                   <tfoot>
                     <tr>
                       <td colspan="5" style="text-align:right"><strong>Tạm tính:</strong></td>
-                      <td style="text-align:right"><strong><fmt:formatNumber value="${invoice.subtotal}" pattern="#,##0"/> đ</strong></td>
+                      <td style="text-align:right"><strong><fmt:formatNumber value="${invoice.subtotal != null ? invoice.subtotal : 0}" pattern="#,##0"/> đ</strong></td>
                     </tr>
                     <tr>
-                      <td colspan="5" style="text-align:right"><strong>Thuế (<c:out value="${invoice.taxRate}"/>%):</strong></td>
-                      <td style="text-align:right"><strong><fmt:formatNumber value="${invoice.taxAmount}" pattern="#,##0"/> đ</strong></td>
+                      <td colspan="5" style="text-align:right"><strong>Thuế (<c:out value="${invoice.taxRate != null ? invoice.taxRate : 0}"/>%):</strong></td>
+                      <td style="text-align:right"><strong><fmt:formatNumber value="${invoice.taxAmount != null ? invoice.taxAmount : 0}" pattern="#,##0"/> đ</strong></td>
                     </tr>
                     <tr style="background:var(--hms-primary-soft); color:var(--hms-primary-dark);">
                       <td colspan="5" style="text-align:right; font-size:1.1rem"><strong>Tổng tiền phải nộp:</strong></td>
-                      <td style="text-align:right; font-size:1.1rem"><strong><fmt:formatNumber value="${invoice.totalAmount}" pattern="#,##0"/> đ</strong></td>
+                      <td style="text-align:right; font-size:1.1rem"><strong><fmt:formatNumber value="${invoice.totalAmount != null ? invoice.totalAmount : 0}" pattern="#,##0"/> đ</strong></td>
                     </tr>
                   </tfoot>
                 </table>

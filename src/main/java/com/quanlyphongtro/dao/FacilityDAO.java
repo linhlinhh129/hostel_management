@@ -11,30 +11,6 @@ import java.util.Optional;
 
 public class FacilityDAO extends BaseDAO {
 
-    /**
-     * Kiểm tra xem cột operator_id đã tồn tại trong DB chưa.
-     * Dùng để fallback khi migration chưa được chạy.
-     */
-    private static volatile boolean operatorColumnChecked = false;
-    private static volatile boolean operatorColumnExists  = false;
-
-    private boolean hasOperatorColumn() {
-        if (operatorColumnChecked) return operatorColumnExists;
-        String sql = "SELECT COUNT(*) FROM sys.columns " +
-                     "WHERE object_id = OBJECT_ID(N'dbo.facilities') AND name = N'operator_id'";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            operatorColumnExists  = rs.next() && rs.getInt(1) > 0;
-            operatorColumnChecked = true;
-        } catch (Exception e) {
-            operatorColumnExists  = false;
-            operatorColumnChecked = true;
-            logger.warn("FacilityDAO: could not check operator_id column existence", e);
-        }
-        return operatorColumnExists;
-    }
-
     private Facility mapRow(ResultSet rs) throws SQLException {
         Facility f = new Facility();
         f.setId(rs.getInt("facility_id"));
@@ -45,10 +21,7 @@ public class FacilityDAO extends BaseDAO {
         f.setRoomsPerFloor(getIntOrZero(rs, "rooms_per_floor"));
         f.setStatus(rs.getString("status"));
         f.setManagerId(getInteger(rs, "manager_id"));
-        // operator_id chỉ đọc nếu cột tồn tại
-        if (hasOperatorColumn()) {
-            try { f.setOperatorId(getInteger(rs, "operator_id")); } catch (SQLException ignored) {}
-        }
+        f.setOperatorId(getInteger(rs, "operator_id"));
         f.setElectricityPrice(rs.getBigDecimal("electricity_price"));
         f.setWaterPrice(rs.getBigDecimal("water_price"));
         f.setInternetFee(rs.getBigDecimal("internet_fee"));
@@ -61,23 +34,14 @@ public class FacilityDAO extends BaseDAO {
         return f;
     }
 
-    /** Xây dựng BASE_SELECT tùy theo cột operator_id có tồn tại hay không. */
     private String buildBaseSelect() {
-        if (hasOperatorColumn()) {
-            return "SELECT f.*, " +
-                   "       mgr.full_name AS manager_name, " +
-                   "       opr.full_name AS operator_name " +
-                   "FROM dbo.facilities f " +
-                   "LEFT JOIN dbo.users mgr ON mgr.user_id = f.manager_id " +
-                   "LEFT JOIN dbo.users opr ON opr.user_id = f.operator_id " +
-                   "WHERE f.deleted_at IS NULL";
-        } else {
-            // Fallback: chưa chạy migration — không JOIN operator
-            return "SELECT f.*, mgr.full_name AS manager_name " +
-                   "FROM dbo.facilities f " +
-                   "LEFT JOIN dbo.users mgr ON mgr.user_id = f.manager_id " +
-                   "WHERE f.deleted_at IS NULL";
-        }
+        return "SELECT f.*, " +
+               "       mgr.full_name AS manager_name, " +
+               "       opr.full_name AS operator_name " +
+               "FROM dbo.facilities f " +
+               "LEFT JOIN dbo.users mgr ON mgr.user_id = f.manager_id " +
+               "LEFT JOIN dbo.users opr ON opr.user_id = f.operator_id " +
+               "WHERE f.deleted_at IS NULL";
     }
 
     public List<Facility> findAll(String keyword, String status, int page, int pageSize) {
@@ -189,12 +153,8 @@ public class FacilityDAO extends BaseDAO {
 
     /**
      * Lấy cơ sở mà một operator (user_id) đang vận hành.
-     * Dựa theo cột operator_id.
      */
     public Optional<Facility> findByOperatorId(int operatorId) {
-        if (!hasOperatorColumn()) {
-            return Optional.empty();
-        }
         String sql = buildBaseSelect() + " AND f.operator_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -222,110 +182,57 @@ public class FacilityDAO extends BaseDAO {
     }
 
     public int insert(Facility f) {
-        if (hasOperatorColumn()) {
-            String sql = "INSERT INTO dbo.facilities " +
-                "(code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, " +
-                " electricity_price, water_price, internet_fee, service_fee, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
-            try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, f.getCode());
-                ps.setString(2, f.getName());
-                ps.setString(3, f.getAddress());
-                ps.setInt(4, f.getFloorCount() == null ? 0 : f.getFloorCount());
-                ps.setInt(5, f.getRoomsPerFloor() == null ? 0 : f.getRoomsPerFloor());
-                ps.setString(6, f.getStatus() != null ? f.getStatus() : "DRAFT");
-                if (f.getManagerId() != null) ps.setInt(7, f.getManagerId()); else ps.setNull(7, Types.INTEGER);
-                if (f.getOperatorId() != null) ps.setInt(8, f.getOperatorId()); else ps.setNull(8, Types.INTEGER);
-                ps.setBigDecimal(9,  f.getElectricityPrice());
-                ps.setBigDecimal(10, f.getWaterPrice());
-                ps.setBigDecimal(11, f.getInternetFee());
-                ps.setBigDecimal(12, f.getServiceFee());
-                ps.executeUpdate();
-                try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) return keys.getInt(1);
-                }
-            } catch (Exception e) { logger.error("FacilityDAO.insert failed", e); }
-        } else {
-            // Fallback: chưa có cột operator_id
-            String sql = "INSERT INTO dbo.facilities " +
-                "(code, name, address, floor_count, rooms_per_floor, status, manager_id, " +
-                " electricity_price, water_price, internet_fee, service_fee, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
-            try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, f.getCode());
-                ps.setString(2, f.getName());
-                ps.setString(3, f.getAddress());
-                ps.setInt(4, f.getFloorCount() == null ? 0 : f.getFloorCount());
-                ps.setInt(5, f.getRoomsPerFloor() == null ? 0 : f.getRoomsPerFloor());
-                ps.setString(6, f.getStatus() != null ? f.getStatus() : "DRAFT");
-                if (f.getManagerId() != null) ps.setInt(7, f.getManagerId()); else ps.setNull(7, Types.INTEGER);
-                ps.setBigDecimal(8,  f.getElectricityPrice());
-                ps.setBigDecimal(9,  f.getWaterPrice());
-                ps.setBigDecimal(10, f.getInternetFee());
-                ps.setBigDecimal(11, f.getServiceFee());
-                ps.executeUpdate();
-                try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) return keys.getInt(1);
-                }
-            } catch (Exception e) { logger.error("FacilityDAO.insert (fallback) failed", e); }
-        }
+        String sql = "INSERT INTO dbo.facilities " +
+            "(code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, " +
+            " electricity_price, water_price, internet_fee, service_fee, created_at, updated_at) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, f.getCode());
+            ps.setString(2, f.getName());
+            ps.setString(3, f.getAddress());
+            ps.setInt(4, f.getFloorCount() == null ? 0 : f.getFloorCount());
+            ps.setInt(5, f.getRoomsPerFloor() == null ? 0 : f.getRoomsPerFloor());
+            ps.setString(6, f.getStatus() != null ? f.getStatus() : "DRAFT");
+            if (f.getManagerId() != null) ps.setInt(7, f.getManagerId()); else ps.setNull(7, Types.INTEGER);
+            if (f.getOperatorId() != null) ps.setInt(8, f.getOperatorId()); else ps.setNull(8, Types.INTEGER);
+            ps.setBigDecimal(9,  f.getElectricityPrice());
+            ps.setBigDecimal(10, f.getWaterPrice());
+            ps.setBigDecimal(11, f.getInternetFee());
+            ps.setBigDecimal(12, f.getServiceFee());
+            ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) return keys.getInt(1);
+            }
+        } catch (Exception e) { logger.error("FacilityDAO.insert failed", e); }
         return -1;
     }
 
     public boolean update(Facility f) {
-        int result = 0;
-        if (hasOperatorColumn()) {
-            String sql = "UPDATE dbo.facilities SET " +
-                "code = ?, name = ?, address = ?, floor_count = ?, rooms_per_floor = ?, " +
-                "status = ?, manager_id = ?, operator_id = ?, " +
-                "electricity_price = ?, water_price = ?, internet_fee = ?, " +
-                "service_fee = ?, updated_at = GETDATE() " +
-                "WHERE facility_id = ? AND deleted_at IS NULL";
-            try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, f.getCode());
-                ps.setString(2, f.getName());
-                ps.setString(3, f.getAddress());
-                ps.setInt(4, f.getFloorCount() == null ? 0 : f.getFloorCount());
-                ps.setInt(5, f.getRoomsPerFloor() == null ? 0 : f.getRoomsPerFloor());
-                ps.setString(6, f.getStatus());
-                if (f.getManagerId() != null) ps.setInt(7, f.getManagerId()); else ps.setNull(7, Types.INTEGER);
-                if (f.getOperatorId() != null) ps.setInt(8, f.getOperatorId()); else ps.setNull(8, Types.INTEGER);
-                ps.setBigDecimal(9,  f.getElectricityPrice());
-                ps.setBigDecimal(10, f.getWaterPrice());
-                ps.setBigDecimal(11, f.getInternetFee());
-                ps.setBigDecimal(12, f.getServiceFee());
-                ps.setInt(13, f.getId());
-                result = ps.executeUpdate();
-            } catch (Exception e) { logger.error("FacilityDAO.update failed for id={}", f.getId(), e); }
-        } else {
-            // Fallback: chưa có cột operator_id
-            String sql = "UPDATE dbo.facilities SET " +
-                "code = ?, name = ?, address = ?, floor_count = ?, rooms_per_floor = ?, " +
-                "status = ?, manager_id = ?, " +
-                "electricity_price = ?, water_price = ?, internet_fee = ?, " +
-                "service_fee = ?, updated_at = GETDATE() " +
-                "WHERE facility_id = ? AND deleted_at IS NULL";
-            try (Connection conn = DatabaseUtil.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, f.getCode());
-                ps.setString(2, f.getName());
-                ps.setString(3, f.getAddress());
-                ps.setInt(4, f.getFloorCount() == null ? 0 : f.getFloorCount());
-                ps.setInt(5, f.getRoomsPerFloor() == null ? 0 : f.getRoomsPerFloor());
-                ps.setString(6, f.getStatus());
-                if (f.getManagerId() != null) ps.setInt(7, f.getManagerId()); else ps.setNull(7, Types.INTEGER);
-                ps.setBigDecimal(8,  f.getElectricityPrice());
-                ps.setBigDecimal(9,  f.getWaterPrice());
-                ps.setBigDecimal(10,  f.getInternetFee());
-                ps.setBigDecimal(11, f.getServiceFee());
-                ps.setInt(12, f.getId());
-                result = ps.executeUpdate();
-            } catch (Exception e) { logger.error("FacilityDAO.update (fallback) failed for id={}", f.getId(), e); }
-        }
-        return result > 0;
+        String sql = "UPDATE dbo.facilities SET " +
+            "code = ?, name = ?, address = ?, floor_count = ?, rooms_per_floor = ?, " +
+            "status = ?, manager_id = ?, operator_id = ?, " +
+            "electricity_price = ?, water_price = ?, internet_fee = ?, " +
+            "service_fee = ?, updated_at = GETDATE() " +
+            "WHERE facility_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, f.getCode());
+            ps.setString(2, f.getName());
+            ps.setString(3, f.getAddress());
+            ps.setInt(4, f.getFloorCount() == null ? 0 : f.getFloorCount());
+            ps.setInt(5, f.getRoomsPerFloor() == null ? 0 : f.getRoomsPerFloor());
+            ps.setString(6, f.getStatus());
+            if (f.getManagerId() != null) ps.setInt(7, f.getManagerId()); else ps.setNull(7, Types.INTEGER);
+            if (f.getOperatorId() != null) ps.setInt(8, f.getOperatorId()); else ps.setNull(8, Types.INTEGER);
+            ps.setBigDecimal(9,  f.getElectricityPrice());
+            ps.setBigDecimal(10, f.getWaterPrice());
+            ps.setBigDecimal(11, f.getInternetFee());
+            ps.setBigDecimal(12, f.getServiceFee());
+            ps.setInt(13, f.getId());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) { logger.error("FacilityDAO.update failed for id={}", f.getId(), e); }
+        return false;
     }
 
     public void updateStatus(int id, String status) {

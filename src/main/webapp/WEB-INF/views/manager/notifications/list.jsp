@@ -16,11 +16,18 @@
     background: var(--hms-surface);
     color: var(--hms-text-muted);
     border: 1px solid var(--hms-border);
+    text-decoration: none;
   }
-  .ntf-pill-link.ntf-pill-active {
-    background: var(--hms-accent-deep);
-    color: #fff;
-    border-color: var(--hms-accent-deep);
+  .ntf-pill-link.ntf-pill-active,
+  .ntf-pill-link.active.ntf-pill-active {
+    background: var(--hms-accent-deep) !important;
+    color: #fff !important;
+    border-color: var(--hms-accent-deep) !important;
+  }
+  .ntf-pill-link:hover:not(.ntf-pill-active) {
+    background: var(--hms-surface-hover, #f4f4f5);
+    color: var(--hms-ink);
+    border-color: var(--hms-border-strong, #d1d5db);
   }
 </style>
 <body>
@@ -82,7 +89,7 @@
                          value="<c:out value='${keyword}'/>">
                 </div>
                 <div class="col-12 col-md-4 d-flex justify-content-md-end gap-2">
-                  <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
+                  <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn-mintlify-secondary text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
                   <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
                 </div>
               </div>
@@ -103,9 +110,10 @@
                         <th class="d-none d-md-table-cell">Thao tác</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="incorrectTableBody">
                       <c:forEach var="item" items="${incorrectInvoices}">
-                        <tr>
+                        <tr data-href="${ctx}/manager/notifications/send-operator?invoiceId=${item.id}"
+                            style="cursor:pointer;">
                           <td class="d-none d-md-table-cell"><c:out value="${item.facilityName}"/> (<c:out value="${item.facilityCode}"/>)</td>
                           <td>
                             <a href="${ctx}/manager/rooms/${item.roomId}">
@@ -152,8 +160,12 @@
                     </tbody>
                   </table>
                 </div>
-                <div class="table-footer px-3 py-2 text-muted" style="font-size:0.875rem">
-                  Tổng cộng: <strong>${incorrectInvoices.size()}</strong> hóa đơn lỗi chỉ số.
+                <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2" id="incorrectPagination">
+                  <span class="text-muted" style="font-size:0.875rem">
+                    Tổng <strong id="incorrectTotal">${incorrectInvoices.size()}</strong> hóa đơn lỗi chỉ số
+                    · Trang <span id="incorrectPageLabel">1</span> / <span id="incorrectTotalPagesLabel">1</span>
+                  </span>
+                  <div class="d-flex gap-1" id="incorrectPageBtns"></div>
                 </div>
               </c:when>
               <c:otherwise>
@@ -507,5 +519,8 @@
   </div>
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+<script>
+  clientPaginate('incorrectTableBody','incorrectTotal','incorrectPageLabel','incorrectTotalPagesLabel','incorrectPageBtns');
+</script>
 </body>
 </html>

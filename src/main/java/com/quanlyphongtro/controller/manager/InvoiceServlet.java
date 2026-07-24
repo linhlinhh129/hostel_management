@@ -1,6 +1,7 @@
 package com.quanlyphongtro.controller.manager;
 
 import com.quanlyphongtro.controller.BaseServlet;
+import com.quanlyphongtro.dao.InvoiceDAO;
 import com.quanlyphongtro.dto.InvoiceListItemDTO;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.service.InvoiceService;
@@ -11,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 @WebServlet("/manager/invoices")
@@ -51,7 +53,8 @@ public class InvoiceServlet extends BaseServlet {
 
             req.setAttribute("invoices", invoices);
             req.setAttribute("currentPage", page);
-            req.setAttribute("totalPages", totalPages);
+            req.setAttribute("totalPages", Math.max(1, totalPages));
+            req.setAttribute("totalRecords", total);
             req.setAttribute("keyword", keyword);
             req.setAttribute("status", status);
             req.setAttribute("billingPeriod", billingPeriod);
@@ -64,6 +67,13 @@ public class InvoiceServlet extends BaseServlet {
     }
 
     private void showCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        UserSessionDTO user = getCurrentUser(req);
+        String roomCode = req.getParameter("roomCode");
+        if (roomCode != null && !roomCode.trim().isEmpty() && user != null) {
+            BigDecimal previousDebt = invoiceService.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
+            req.setAttribute("previousDebt", previousDebt);
+            req.setAttribute("prefilledRoomCode", roomCode.trim());
+        }
         req.getRequestDispatcher("/WEB-INF/views/manager/invoices/create.jsp").forward(req, resp);
     }
 

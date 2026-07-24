@@ -13,10 +13,6 @@ public class FacilityFormDTO {
     private String address;
     private String floorCount;
     private String roomsPerFloor;
-    private String electricityPrice;
-    private String waterPrice;
-    private String internetFee;
-    private String serviceFee;
 
     public FacilityFormDTO() {}
 
@@ -28,10 +24,6 @@ public class FacilityFormDTO {
         dto.address          = trim(req.getParameter("address"));
         dto.floorCount       = trim(req.getParameter("floorCount"));
         dto.roomsPerFloor    = trim(req.getParameter("roomsPerFloor"));
-        dto.electricityPrice = trim(req.getParameter("electricityPrice"));
-        dto.waterPrice       = trim(req.getParameter("waterPrice"));
-        dto.internetFee      = trim(req.getParameter("internetFee"));
-        dto.serviceFee       = trim(req.getParameter("serviceFee"));
         return dto;
     }
 
@@ -46,8 +38,4 @@ public class FacilityFormDTO {
     public String getAddress()          { return address; }
     public String getFloorCount()       { return floorCount; }
     public String getRoomsPerFloor()    { return roomsPerFloor; }
-    public String getElectricityPrice() { return electricityPrice; }
-    public String getWaterPrice()       { return waterPrice; }
-    public String getInternetFee()      { return internetFee; }
-    public String getServiceFee()       { return serviceFee; }
 }

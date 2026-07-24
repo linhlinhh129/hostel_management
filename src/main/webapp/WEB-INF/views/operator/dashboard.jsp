@@ -1,234 +1,258 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<c:set var="ctx" value="${pageContext.request.contextPath}"/>
+<c:set var="ctx"       value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Dashboard Vận hành"/>
-<c:set var="pageRole" value="OPERATOR"/>
+<c:set var="pageRole"  value="OPERATOR"/>
 <c:set var="activeMenu" value="dashboard"/>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <jsp:include page="/WEB-INF/views/layout/head.jsp">
-        <jsp:param name="title" value="${pageTitle}" />
-    </jsp:include>
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body id="page-top">
-    <div class="app-shell">
-        <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
-        <div class="sidebar-overlay"></div>
-        <div class="main-wrapper">
-            <jsp:include page="/WEB-INF/views/layout/topbar.jsp" />
-            <main class="page-content">
-                    <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
+<jsp:include page="/WEB-INF/views/layout/head.jsp"/>
+<body>
+<div class="app-shell">
+    <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
+    <div class="sidebar-overlay"></div>
+    <div class="main-wrapper">
+        <jsp:include page="/WEB-INF/views/layout/topbar.jsp"/>
+        <main class="page-content">
+            <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-                    <!-- Hero Header -->
-                    <div class="page-header hero-sky-gradient" style="border-radius: var(--hms-radius-lg, 12px); margin-bottom: 1.75rem;">
-                        <h1>Dashboard Vận hành</h1>
-                    </div>
+            <%-- ── Hero ─────────────────────────────────────────── --%>
+            <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
+                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="position:relative;z-index:1">
+                    <h1>Xin chào, <c:out value="${sessionScope.currentUser.fullName}"/></h1>
+                    <p>Dashboard Vận hành · Theo dõi tiến độ điện nước và xử lý yêu cầu</p>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1">
+                    <a href="${ctx}/operator/meter-readings/update" class="btn-accent">Cập nhật Điện Nước</a>
+                </div>
+            </div>
 
-                    <!-- Thao tác nhanh (Quick Actions) -->
-                    <div class="d-flex flex-wrap gap-3 mb-4">
-                        <a href="${ctx}/operator/incidents/create" class="btn-mintlify-primary text-decoration-none">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                                <line x1="12" y1="9" x2="12" y2="13"></line>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                            Báo cáo sự cố mới
-                        </a>
-                        <a href="${ctx}/operator/meter-readings/update" class="btn-mintlify-secondary text-decoration-none" style="background-color: var(--color-surface); border: 1px solid var(--color-hairline);">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                            Cập nhật Điện Nước
-                        </a>
-                    </div>
+            <%-- ── Quick Actions ─────────────────────────────────── --%>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1.5rem;align-items:center">
+                <a href="${ctx}/operator/requests" class="quick-action-btn primary" style="white-space:nowrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Yêu cầu sửa chữa
+                </a>
+                <a href="${ctx}/operator/meter-readings" class="quick-action-btn" style="white-space:nowrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Chỉ số điện nước
+                </a>
+            </div>
 
-                    <!-- KPI Cards Row -->
-                    <div class="kpi-grid mb-4">
-                        <div class="kpi-surface-card">
-                            <span class="kpi-label">Phòng phụ trách</span>
-                            <span class="kpi-value"><fmt:formatNumber value="${totalRooms}" groupingUsed="true"/></span>
-                        </div>
-                        <div class="kpi-surface-card">
-                            <span class="kpi-label">Đã chốt điện nước</span>
-                            <span class="kpi-value"><fmt:formatNumber value="${updatedMeterRooms}" groupingUsed="true"/></span>
-                        </div>
-                        <div class="kpi-surface-card kpi-card-featured" style="border: 1px solid var(--hms-success); box-shadow: 0 4px 12px rgba(0, 212, 164, 0.1);">
-                            <span class="kpi-label text-success">Chưa cập nhật</span>
-                            <span class="kpi-value text-success"><fmt:formatNumber value="${pendingMeterRooms}" groupingUsed="true"/></span>
-                        </div>
-                        <div class="kpi-surface-card">
-                            <span class="kpi-label">Yêu cầu đang xử lý</span>
-                            <span class="kpi-value"><fmt:formatNumber value="${ticketCountInProgress}" groupingUsed="true"/></span>
-                        </div>
-                    </div>
+            <%-- ── KPI Cards ──────────────────────────────────────── --%>
+            <div class="kpi-grid" style="margin-bottom:1.5rem">
+                <div class="kpi-surface-card">
+                    <span class="kpi-label">Phòng phụ trách</span>
+                    <span class="kpi-value"><fmt:formatNumber value="${totalRooms}" groupingUsed="true"/></span>
+                    <span class="kpi-trend">Tổng số phòng</span>
+                </div>
+                <div class="kpi-surface-card highlight-success">
+                    <span class="kpi-label">Đã chốt điện nước</span>
+                    <span class="kpi-value"><fmt:formatNumber value="${updatedMeterRooms}" groupingUsed="true"/></span>
+                    <span class="kpi-trend up">Kỳ ${billingPeriodLabel}</span>
+                </div>
+                <div class="kpi-surface-card ${pendingMeterRooms > 0 ? 'highlight-danger' : ''}">
+                    <span class="kpi-label">Chưa cập nhật</span>
+                    <span class="kpi-value"><fmt:formatNumber value="${pendingMeterRooms}" groupingUsed="true"/></span>
+                    <span class="kpi-trend">Còn lại</span>
+                </div>
+                <div class="kpi-surface-card ${ticketCountInProgress > 0 ? 'highlight-warning' : ''}">
+                    <span class="kpi-label">Yêu cầu đang xử lý</span>
+                    <span class="kpi-value"><fmt:formatNumber value="${ticketCountInProgress}" groupingUsed="true"/></span>
+                    <span class="kpi-trend">Đang xử lý</span>
+                </div>
+            </div>
 
-                    <!-- Widgets Row -->
-                    <div class="row g-4">
-                        <!-- Cột Trái: Tiến độ điện nước + Bảng -->
-                        <div class="col-lg-8">
-                            <div class="widget-surface h-100">
-                                <div class="widget-surface-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <h3 class="mb-0">Tiến độ chốt Điện Nước tháng ${billingPeriodLabel}</h3>
-                                    <a href="${ctx}/operator/meter-readings" class="btn-mintlify-secondary text-decoration-none" style="font-size: 13px;">Xem toàn bộ</a>
+            <%-- ── Main row ───────────────────────────────────────── --%>
+            <div class="row g-3">
+
+                <%-- Cột trái: Tiến độ điện nước --%>
+                <div class="col-lg-8">
+                    <div class="widget-surface mb-3">
+                        <div class="widget-surface-header">
+                            <h3>Tiến độ chốt Điện Nước tháng ${billingPeriodLabel}</h3>
+                            <a href="${ctx}/operator/meter-readings"
+                               style="font-size:0.8125rem;color:var(--hms-accent-deep);font-weight:600;text-decoration:none">
+                                Xem toàn bộ →
+                            </a>
+                        </div>
+                        <div class="widget-surface-body">
+                            <%-- Progress bar --%>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between" style="font-size:0.875rem;font-weight:500;margin-bottom:6px">
+                                    <span>Hoàn thành <strong>${meterUpdateProgress}%</strong></span>
+                                    <span style="color:var(--hms-stone)">${updatedMeterRooms} / ${totalRooms} phòng</span>
                                 </div>
-                                <div class="widget-surface-body">
-                                    <div class="mb-4">
-                                        <div class="d-flex justify-content-between text-sm" style="font-size: 14px; font-weight: 500;">
-                                            <span>Hoàn thành ${meterUpdateProgress}%</span>
-                                            <span class="text-muted">${updatedMeterRooms} / ${totalRooms} phòng</span>
-                                        </div>
-                                        <div class="progress mt-2 mb-3" style="height: 8px;">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: ${meterUpdateProgress}%;"></div>
-                                        </div>
-                                    </div>
-
-                                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; margin-top: 1rem;">Phòng chưa cập nhật (Top 5)</h4>
-                                    <c:choose>
-                                        <c:when test="${not empty pendingMeterRoomList}">
-                                            <div class="table-responsive">
-                                                <table class="table-mintlify">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Mã phòng</th>
-                                                            <th>Số điện kỳ trước</th>
-                                                            <th>Số nước kỳ trước</th>
-                                                            <th class="text-end">Hành động</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <c:forEach var="room" items="${pendingMeterRoomList}">
-                                                            <tr>
-                                                                <td class="fw-bold text-ink">${room.roomCode}</td>
-                                                                <td>
-                                                                    <c:choose>
-                                                                        <c:when test="${not empty room.previousElectricReading}">${room.previousElectricReading}</c:when>
-                                                                        <c:otherwise>-</c:otherwise>
-                                                                    </c:choose>
-                                                                </td>
-                                                                <td>
-                                                                    <c:choose>
-                                                                        <c:when test="${not empty room.previousWaterReading}">${room.previousWaterReading}</c:when>
-                                                                        <c:otherwise>-</c:otherwise>
-                                                                    </c:choose>
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    <span class="badge-hms badge-neutral">CHƯA CẬP NHẬT</span>
-                                                                </td>
-                                                            </tr>
-                                                        </c:forEach>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="empty-state border rounded" style="border-color: var(--color-hairline-soft) !important;">
-                                            🎉 Tuyệt vời! Tất cả các phòng đã được chốt số điện nước.
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
+                                <div style="height:8px;background:var(--hms-border-soft);border-radius:999px;overflow:hidden">
+                                    <div style="width:${meterUpdateProgress}%;height:100%;
+                                                background:linear-gradient(90deg,var(--hms-accent),#38bdf8);
+                                                border-radius:999px;transition:width 0.8s ease"></div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Cột Phải: Thống kê yêu cầu -->
-                        <div class="col-lg-4">
-                            <div class="widget-surface h-100">
-                                <div class="widget-surface-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <h3 class="mb-0">Yêu cầu & Sự cố</h3>
-                                    <a href="${ctx}/operator/requests" class="text-decoration-none" style="color: var(--color-brand-tag); font-size: 13px; font-weight: 500;">Chi tiết &rarr;</a>
-                                </div>
-                                <div class="widget-surface-body">
-
-                                <div class="d-flex flex-column gap-3">
-                                    <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background-color: var(--color-surface); border: 1px solid var(--color-hairline-soft);">
-                                        <span style="font-size: 14px; font-weight: 500; color: var(--color-ink);">Sự cố báo cáo (Pending)</span>
-                                        <span class="mintlify-badge-status-pending" style="font-size: 14px;">${ticketCountNew}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background-color: var(--color-surface); border: 1px solid var(--color-hairline-soft);">
-                                        <span style="font-size: 14px; font-weight: 500; color: var(--color-ink);">Đang xử lý</span>
-                                        <span class="mintlify-badge-status-inprogress" style="font-size: 14px;">${ticketCountInProgress}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background-color: var(--color-surface); border: 1px solid var(--color-hairline-soft);">
-                                        <span style="font-size: 14px; font-weight: 500; color: var(--color-ink);">Hoàn thành</span>
-                                        <span class="mintlify-badge-status-resolved" style="background-color: var(--color-surface-soft); color: var(--color-brand-annotate); padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 14px;">${ticketCountDone}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-4 p-4 rounded text-center" style="background-color: var(--color-canvas); border: 1px dashed var(--color-hairline);">
-                                    <p style="font-size: 13px; color: var(--color-steel); margin-bottom: 16px;">Theo dõi và tiếp nhận yêu cầu nhanh chóng để cải thiện trải nghiệm khách thuê.</p>
-                                    <a href="${ctx}/operator/requests" class="btn-mintlify-primary" style="width: 100%; display: block; text-align: center; text-decoration: none;">Đi tới Danh sách</a>
-                                </div>
-                                </div>
+                            <%-- Bảng phòng chưa cập nhật --%>
+                            <div style="font-size:0.875rem;font-weight:600;color:var(--hms-ink);margin-bottom:10px">
+                                Phòng chưa cập nhật (Top 5)
                             </div>
+                            <c:choose>
+                                <c:when test="${not empty pendingMeterRoomList}">
+                                    <div class="table-responsive">
+                                        <table class="table-mintlify">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mã phòng</th>
+                                                    <th>Điện kỳ trước</th>
+                                                    <th>Nước kỳ trước</th>
+                                                    <th class="text-end">Trạng thái</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <c:forEach var="room" items="${pendingMeterRoomList}">
+                                                    <tr>
+                                                        <td style="font-weight:600;color:var(--hms-ink)">${room.roomCode}</td>
+                                                        <td style="color:var(--hms-stone)">
+                                                            <c:choose>
+                                                                <c:when test="${not empty room.previousElectricReading}">${room.previousElectricReading}</c:when>
+                                                                <c:otherwise>—</c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td style="color:var(--hms-stone)">
+                                                            <c:choose>
+                                                                <c:when test="${not empty room.previousWaterReading}">${room.previousWaterReading}</c:when>
+                                                                <c:otherwise>—</c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <span class="badge-hms badge-warning">CHƯA CẬP NHẬT</span>
+                                                        </td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="p-4">
+                                        <jsp:include page="/WEB-INF/views/layout/fragments/empty-state.jsp">
+                                            <jsp:param name="message" value="Tất cả các phòng đã được chốt điện nước!"/>
+                                        </jsp:include>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
 
-                    <!-- Row: Lịch hẹn sắp tới -->
-                    <div class="row g-4 mt-2 mb-5">
-                        <div class="col-12">
-                            <div class="widget-surface h-100">
-                                <div class="widget-surface-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <h3 class="mb-0">Lịch hẹn sắp tới</h3>
-                                    <span class="badge-hms badge-warning">${upcomingAppointments.size()} lịch hẹn</span>
-                                </div>
-                                <div class="widget-surface-body">
-                                    <c:choose>
-                                        <c:when test="${not empty upcomingAppointments}">
-                                            <div class="table-responsive">
-                                                <table class="table-mintlify">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Phòng</th>
-                                                            <th>Nội dung yêu cầu</th>
-                                                            <th>Ngày giờ hẹn</th>
-                                                            <th class="text-end">Hành động</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <c:forEach var="req" items="${upcomingAppointments}">
-                                                            <tr>
-                                                                <td class="fw-bold text-ink">${req.roomCode}</td>
-                                                                <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${req.title}">${req.title}</td>
-                                                                <td class="text-accent fw-bold">
-                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; margin-top: -2px;">
-                                                                        <circle cx="12" cy="12" r="10"></circle>
-                                                                        <polyline points="12 6 12 12 16 14"></polyline>
-                                                                    </svg>
-                                                                    ${req.dashboardAppointmentTime}
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    <a href="${ctx}/operator/requests/detail?id=${req.requestId}" class="btn-mintlify-secondary text-decoration-none" style="padding: 4px 12px; font-size: 12px;">Xử lý</a>
-                                                                </td>
-                                                            </tr>
-                                                        </c:forEach>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="empty-state border rounded" style="border-color: var(--color-hairline-soft) !important;">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-steel)" stroke-width="1.5" class="mb-2">
-                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                                            </svg><br>
-                                            Hiện tại bạn không có lịch hẹn sửa chữa nào.
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                                </div>
-                            </div>
+                    <%-- Lịch hẹn sắp tới --%>
+                    <div class="widget-surface">
+                        <div class="widget-surface-header">
+                            <h3>Lịch hẹn sắp tới</h3>
+                            <span class="badge-hms badge-warning">${upcomingAppointments.size()} lịch hẹn</span>
+                        </div>
+                        <div class="widget-surface-body p-0">
+                            <c:choose>
+                                <c:when test="${not empty upcomingAppointments}">
+                                    <div class="table-responsive">
+                                        <table class="table-mintlify" style="font-size:0.8125rem">
+                                            <thead>
+                                                <tr>
+                                                    <th>Phòng</th>
+                                                    <th>Nội dung yêu cầu</th>
+                                                    <th>Ngày giờ hẹn</th>
+                                                    <th class="text-end">Hành động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <c:forEach var="req" items="${upcomingAppointments}">
+                                                    <tr>
+                                                        <td style="font-weight:600;color:var(--hms-ink)">${req.roomCode}</td>
+                                                        <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                                            ${req.title}
+                                                        </td>
+                                                        <td style="color:var(--hms-accent-deep);font-weight:600">
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:-2px">
+                                                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                                            </svg>
+                                                            ${req.dashboardAppointmentTime}
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <a href="${ctx}/operator/requests/detail?id=${req.requestId}"
+                                                               class="btn-mintlify-secondary text-decoration-none"
+                                                               style="padding:4px 12px;font-size:0.75rem">Xử lý</a>
+                                                        </td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="p-4">
+                                        <jsp:include page="/WEB-INF/views/layout/fragments/empty-state.jsp">
+                                            <jsp:param name="message" value="Hiện tại không có lịch hẹn sửa chữa nào."/>
+                                        </jsp:include>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
+                </div>
 
-            </main>
-            <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
-        </div>
+                <%-- Cột phải: Thống kê yêu cầu --%>
+                <div class="col-lg-4">
+                    <div class="widget-surface h-100">
+                        <div class="widget-surface-header">
+                            <h3>Yêu cầu &amp; Sự cố</h3>
+                            <a href="${ctx}/operator/requests"
+                               style="font-size:0.8125rem;color:var(--hms-accent-deep);font-weight:600;text-decoration:none">
+                                Chi tiết →
+                            </a>
+                        </div>
+                        <div class="widget-surface-body" style="padding:0">
+                            <table style="width:100%;font-size:0.875rem;border-collapse:collapse">
+                                <tr style="border-bottom:1px solid var(--hms-border-soft)">
+                                    <td style="padding:12px 16px;color:var(--hms-stone)">Chờ xử lý</td>
+                                    <td style="padding:12px 16px;text-align:right">
+                                        <span class="badge-hms badge-info">${ticketCountNew}</span>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom:1px solid var(--hms-border-soft)">
+                                    <td style="padding:12px 16px;color:var(--hms-stone)">Đang xử lý</td>
+                                    <td style="padding:12px 16px;text-align:right">
+                                        <span class="badge-hms badge-warning">${ticketCountInProgress}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px 16px;color:var(--hms-stone)">Hoàn thành</td>
+                                    <td style="padding:12px 16px;text-align:right">
+                                        <span class="badge-hms badge-success">${ticketCountDone}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div style="padding:1.25rem;border-top:1px solid var(--hms-border-soft)">
+                            <p style="font-size:0.8125rem;color:var(--hms-stone);margin-bottom:12px">
+                                Theo dõi và tiếp nhận yêu cầu nhanh chóng để cải thiện trải nghiệm khách thuê.
+                            </p>
+                            <a href="${ctx}/operator/requests"
+                               class="btn-mintlify-primary text-decoration-none"
+                               style="display:block;text-align:center">
+                                Đi tới Danh sách
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div><%-- /row --%>
+
+        </main>
+        <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
     </div>
+</div>
 </body>
 </html>

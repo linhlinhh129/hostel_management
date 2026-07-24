@@ -457,7 +457,9 @@ public class ManagerNotificationsServlet extends BaseServlet {
             String defaultContent = "Kính gửi thành viên phòng " + invoice.get("roomCode") + ",\n\n" +
                     "Hóa đơn tháng " + invoice.get("billingPeriod") + " của phòng bạn đã quá hạn thanh toán.\n" +
                     "Chi tiết khoản nợ:\n" +
-                    "- Số tiền cần đóng: " + String.format("%,.0f", invoice.get("totalAmount")) + " đ\n" +
+                    "- Tiền hóa đơn gốc: " + String.format("%,.0f", invoice.get("baseAmount")) + " đ\n" +
+                    "- Phí chậm nộp (" + invoice.get("overdueDays") + " ngày): " + String.format("%,.0f", invoice.get("lateFee")) + " đ\n" +
+                    "- Tổng cần đóng: " + String.format("%,.0f", invoice.get("totalAmount")) + " đ\n" +
                     "- Hạn thanh toán: " + invoice.get("dueDateLabel") + "\n" +
                     "- Số ngày quá hạn: " + invoice.get("overdueDays") + " ngày\n\n" +
                     "Vui lòng thanh toán sớm nhất có thể để tránh phát sinh thêm phí phạt quá hạn hoặc các gián đoạn dịch vụ.\n" +

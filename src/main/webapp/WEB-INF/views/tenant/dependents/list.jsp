@@ -35,7 +35,7 @@
                                         <th class="d-none d-md-table-cell text-center">Hành động</th>
                                     </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="dependentsTbody">
                                     <c:forEach var="dep" items="${dependents}">
                                         <tr>
                                             <td style="font-weight:600;color:var(--hms-ink)">
@@ -55,6 +55,13 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
+                              <span class="text-muted" style="font-size:0.875rem">
+                                Tổng <strong id="dependentsTotal"></strong> thành viên
+                                · Trang <span id="dependentsPage">1</span> / <span id="dependentsTotalPages">1</span>
+                              </span>
+                              <div class="d-flex gap-1" id="dependentsBtns"></div>
+                            </div>
                         </div>
                     </div>
                 </c:when>
@@ -73,3 +80,4 @@
         </main>
     </div></div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+<script>clientPaginate('dependentsTbody','dependentsTotal','dependentsPage','dependentsTotalPages','dependentsBtns');</script>

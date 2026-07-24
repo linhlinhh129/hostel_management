@@ -1,6 +1,5 @@
 package com.quanlyphongtro.dao;
 
-import com.quanlyphongtro.constant.StatusConstant;
 import com.quanlyphongtro.model.User;
 import com.quanlyphongtro.util.DatabaseUtil;
 

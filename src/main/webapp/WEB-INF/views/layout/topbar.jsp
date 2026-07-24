@@ -39,7 +39,17 @@
     </nav>
     <div class="topbar-actions">
         <div class="user-menu">
-            <div class="user-avatar"><c:out value="${initials}"/></div>
+            <c:choose>
+                <c:when test="${not empty sessionScope.currentUser.avatarUrl}">
+                    <img src="${ctx}${sessionScope.currentUser.avatarUrl}"
+                         class="user-avatar"
+                         style="object-fit:cover;border-radius:50%;width:32px;height:32px;padding:0;"
+                         alt="<c:out value='${displayName}'/>">
+                </c:when>
+                <c:otherwise>
+                    <div class="user-avatar"><c:out value="${initials}"/></div>
+                </c:otherwise>
+            </c:choose>
             <div class="user-info">
                 <span><c:out value="${displayName}"/></span>
                 <small><c:out value="${roleLabel}"/></small>

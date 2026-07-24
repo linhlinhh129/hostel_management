@@ -257,8 +257,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         int meterId = (int) verify.get("meterId");
 
-        // Sinh code request
-        String reqCode = "REQ-UTL-" + System.currentTimeMillis() % 100000;
+        // Sinh code request theo format REQ-UTL-{SEQ}
+        com.quanlyphongtro.dao.RequestDAO requestDAO = new com.quanlyphongtro.dao.RequestDAO();
+        String reqCode = requestDAO.generateCode("UTL");
         return notificationDAO.sendOperatorRequestTransaction(reqCode, managerId, title, content, operatorId, meterId);
     }
 

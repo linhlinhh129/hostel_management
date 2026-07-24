@@ -54,9 +54,11 @@
                                         <th class="d-none d-md-table-cell text-center">Hành động</th>
                                     </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="invoicesTbody">
                                     <c:forEach var="inv" items="${invoices}" varStatus="st">
-                                        <tr style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both">
+                                        <tr class="tr-clickable"
+                                            data-href="${ctx}/tenant/invoices/${inv.id}"
+                                            style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both; cursor:pointer">
                                             <td style="font-weight:600;color:var(--hms-ink)">
                                                 <c:out value="${inv.billingPeriod}"/>
                                             </td>
@@ -84,12 +86,22 @@
                                                 </c:choose>
                                             </td>
                                             <td class="d-none d-md-table-cell text-center">
-                                                <a href="${ctx}/tenant/invoices/${inv.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
+                                                <a href="${ctx}/tenant/invoices/${inv.id}"
+                                                   class="btn-mintlify-secondary"
+                                                   style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
+                                                   onclick="event.stopPropagation()">Chi tiết</a>
                                             </td>
                                         </tr>
                                     </c:forEach>
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
+                              <span class="text-muted" style="font-size:0.875rem">
+                                Tổng <strong id="invoicesTotal"></strong> hóa đơn
+                                · Trang <span id="invoicesPage">1</span> / <span id="invoicesTotalPages">1</span>
+                              </span>
+                              <div class="d-flex gap-1" id="invoicesBtns"></div>
                             </div>
                         </div>
                     </div>
@@ -103,3 +115,4 @@
         </main>
     </div></div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+<script>clientPaginate('invoicesTbody','invoicesTotal','invoicesPage','invoicesTotalPages','invoicesBtns');</script>

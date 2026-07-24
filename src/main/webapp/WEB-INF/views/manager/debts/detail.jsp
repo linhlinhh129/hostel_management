@@ -70,23 +70,23 @@
                                         <td>-</td>
                                         <td>-</td>
                                         <td style="text-align:right">-</td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.roomFee}" pattern="#,##0"/> đ</td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.roomFee != null ? debt.roomFee : 0}" pattern="#,##0"/> đ</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Tiền điện</strong></td>
                                         <td><c:out value="${debt.oldElectricReading}"/></td>
                                         <td><c:out value="${debt.newElectricReading}"/></td>
                                         <td><c:out value="${debt.electricUsage}"/></td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.electricUnitPrice}" pattern="#,##0"/></td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.electricAmount}" pattern="#,##0"/> đ</td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.electricUnitPrice != null ? debt.electricUnitPrice : 0}" pattern="#,##0"/></td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.electricAmount != null ? debt.electricAmount : 0}" pattern="#,##0"/> đ</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Tiền nước</strong></td>
                                         <td><c:out value="${debt.oldWaterReading}"/></td>
                                         <td><c:out value="${debt.newWaterReading}"/></td>
                                         <td><c:out value="${debt.waterUsage}"/></td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.waterUnitPrice}" pattern="#,##0"/></td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.waterAmount}" pattern="#,##0"/> đ</td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.waterUnitPrice != null ? debt.waterUnitPrice : 0}" pattern="#,##0"/></td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.waterAmount != null ? debt.waterAmount : 0}" pattern="#,##0"/> đ</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Phí dịch vụ</strong></td>
@@ -94,7 +94,7 @@
                                         <td>-</td>
                                         <td>-</td>
                                         <td style="text-align:right">-</td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.serviceFee}" pattern="#,##0"/> đ</td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.serviceFee != null ? debt.serviceFee : 0}" pattern="#,##0"/> đ</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Tiền Internet</strong></td>
@@ -102,7 +102,7 @@
                                         <td>-</td>
                                         <td>-</td>
                                         <td style="text-align:right">-</td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.internetFee}" pattern="#,##0"/> đ</td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.internetFee != null ? debt.internetFee : 0}" pattern="#,##0"/> đ</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Phí khác</strong></td>
@@ -110,21 +110,31 @@
                                         <td>-</td>
                                         <td>-</td>
                                         <td style="text-align:right">-</td>
-                                        <td style="text-align:right"><fmt:formatNumber value="${debt.otherFee}" pattern="#,##0"/> đ</td>
+                                        <td style="text-align:right"><fmt:formatNumber value="${debt.otherFee != null ? debt.otherFee : 0}" pattern="#,##0"/> đ</td>
                                     </tr>
+                                    <c:if test="${debt.lateFeePreview != null and debt.lateFeePreview > 0}">
+                                    <tr style="background:#fff8e1">
+                                        <td><strong>Phí chậm nộp</strong></td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="text-align:right;color:#e65100;font-size:0.8rem">(1%/ngày)</td>
+                                        <td style="text-align:right;color:#e65100;font-weight:700"><fmt:formatNumber value="${debt.lateFeePreview}" pattern="#,##0"/> đ</td>
+                                    </tr>
+                                    </c:if>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <td colspan="5" style="text-align:right"><strong>Tạm tính:</strong></td>
-                                        <td style="text-align:right"><strong><fmt:formatNumber value="${debt.subtotal}" pattern="#,##0"/> đ</strong></td>
+                                        <td style="text-align:right"><strong><fmt:formatNumber value="${debt.subtotal != null ? debt.subtotal : 0}" pattern="#,##0"/> đ</strong></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="5" style="text-align:right"><strong>Thuế (<c:out value="${debt.taxRate}"/>%):</strong></td>
-                                        <td style="text-align:right"><strong><fmt:formatNumber value="${debt.taxAmount}" pattern="#,##0"/> đ</strong></td>
+                                        <td colspan="5" style="text-align:right"><strong>Thuế (<c:out value="${debt.taxRate != null ? debt.taxRate : 0}"/>%):</strong></td>
+                                        <td style="text-align:right"><strong><fmt:formatNumber value="${debt.taxAmount != null ? debt.taxAmount : 0}" pattern="#,##0"/> đ</strong></td>
                                     </tr>
                                     <tr style="background:var(--hms-primary-soft); color:var(--hms-primary-dark);">
                                         <td colspan="5" style="text-align:right; font-size:1.1rem"><strong>Tổng tiền phải nộp:</strong></td>
-                                        <td style="text-align:right; font-size:1.1rem"><strong><fmt:formatNumber value="${debt.invoiceTotalAmount}" pattern="#,##0"/> đ</strong></td>
+                                        <td style="text-align:right; font-size:1.1rem"><strong><fmt:formatNumber value="${debt.invoiceTotalAmount != null ? debt.invoiceTotalAmount : 0}" pattern="#,##0"/> đ</strong></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -169,7 +179,7 @@
                             <li class="mb-3">
                                 <span class="text-muted d-block" style="font-size:0.875rem">Hạn thanh toán</span>
                                 <span class="fw-bold">
-                                    <fmt:parseDate value="${debt.dueDate}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
+                                    <fmt:parseDate value="${debt.dueDateStr}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
                                     <fmt:formatDate value="${parsedDueDate}" pattern="dd/MM/yyyy" />
                                 </span>
                             </li>
@@ -179,24 +189,24 @@
                         
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Tổng phải thu:</span>
-                            <span class="fw-bold"><fmt:formatNumber value="${debt.invoiceTotalAmount}" pattern="#,##0"/> đ</span>
+                            <span class="fw-bold"><fmt:formatNumber value="${debt.invoiceTotalAmount != null ? debt.invoiceTotalAmount : 0}" pattern="#,##0"/> đ</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2" style="color: var(--hms-success-dark, #166534)">
                             <span>Đã thanh toán:</span>
-                            <span class="fw-bold"><fmt:formatNumber value="${debt.paidAmount}" pattern="#,##0"/> đ</span>
+                            <span class="fw-bold"><fmt:formatNumber value="${debt.paidAmount != null ? debt.paidAmount : 0}" pattern="#,##0"/> đ</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3" style="color: var(--hms-danger-color, #ef4444); font-size: 1.1rem;">
                             <span class="fw-bold">CÒN NỢ:</span>
-                            <span class="fw-bold"><fmt:formatNumber value="${debt.debtAmount}" pattern="#,##0"/> đ</span>
+                            <span class="fw-bold"><fmt:formatNumber value="${debt.debtAmount != null ? debt.debtAmount : 0}" pattern="#,##0"/> đ</span>
                         </div>
 
                         <hr class="my-3">
 
                         <div class="alert alert-warning mb-0">
-                            <p class="mb-1"><strong>Số ngày quá hạn:</strong> <c:out value="${debt.overdueDays}"/> ngày</p>
-                            <p class="mb-1"><strong>Phí chậm nộp tạm tính:</strong> <fmt:formatNumber value="${debt.lateFeePreview}" pattern="#,##0"/> đ</p>
+                            <p class="mb-1"><strong>Số ngày quá hạn:</strong> <c:out value="${debt.overdueDays != null ? debt.overdueDays : 0}"/> ngày</p>
+                            <p class="mb-1"><strong>Phí chậm nộp:</strong> <fmt:formatNumber value="${debt.lateFeePreview != null ? debt.lateFeePreview : 0}" pattern="#,##0"/> đ</p>
                             <hr class="my-2" style="border-color: rgba(0,0,0,0.1)">
-                            <small><em>Lưu ý: Phí chậm nộp chỉ là số tiền tham khảo, chưa được cộng vào hóa đơn gốc.</em></small>
+                            <small><em>Phí chậm nộp đã được cộng vào tổng tiền phải nộp.</em></small>
                         </div>
                     </div>
                 </div>

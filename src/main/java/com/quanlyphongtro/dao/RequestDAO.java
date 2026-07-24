@@ -361,7 +361,7 @@ public class RequestDAO extends BaseDAO {
     }
 
     public boolean insert(Request r) {
-        String code = "REQ" + System.currentTimeMillis();
+        String code = generateCode(r.getCategory());
         String sql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, attachment_urls1, assigned_staff_id) "
                 +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -383,6 +383,36 @@ public class RequestDAO extends BaseDAO {
             logger.error("insert failed for Request", e);
             return false;
         }
+    }
+
+    /**
+     * Tạo mã yêu cầu theo format REQ-{TYPE}-{SEQ} (đồng bộ với NTF-{TYPE}-{SEQ}).
+     * Ví dụ: REQ-REPAIR-001, REQ-OTHER-012
+     */
+    public String generateCode(String category) {
+        // Rút gọn category thành tag tối đa 6 ký tự
+        String tag = (category != null && !category.trim().isEmpty())
+                ? category.trim().toUpperCase().replaceAll("[^A-Z0-9]", "")
+                : "GEN";
+        if (tag.length() > 6) tag = tag.substring(0, 6);
+        String prefix = "REQ-" + tag + "-";
+        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 2, 5) AS INT)), 0) " +
+                     "FROM dbo.requests " +
+                     "WHERE code LIKE ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, prefix);
+            ps.setString(2, prefix + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int next = rs.getInt(1) + 1;
+                    return String.format("REQ-%s-%03d", tag, next);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("RequestDAO.generateCode failed for category={}", category, e);
+        }
+        return String.format("REQ-%s-001", tag);
     }
 
     public int countPendingBySenderId(int senderId) {
@@ -428,7 +458,7 @@ public class RequestDAO extends BaseDAO {
         String countSql = "SELECT COUNT(*) FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL"
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND f.operator_id = u.user_id)) AND f.deleted_at IS NULL"
                 + whereClause.toString();
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -477,7 +507,7 @@ public class RequestDAO extends BaseDAO {
                 + "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL"
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND f.operator_id = u.user_id)) AND f.deleted_at IS NULL"
                 + whereClause.toString() +
                 " ORDER BY req.request_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
@@ -522,7 +552,7 @@ public class RequestDAO extends BaseDAO {
                 + "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
                 "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND req.code LIKE 'REQ-' + f.code + '%')) AND f.deleted_at IS NULL "
+                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND f.operator_id = u.user_id)) AND f.deleted_at IS NULL "
                 + "LEFT JOIN dbo.users o ON req.assigned_staff_id = o.user_id " +
                 "WHERE req.request_id = ? AND req.deleted_at IS NULL";
 
