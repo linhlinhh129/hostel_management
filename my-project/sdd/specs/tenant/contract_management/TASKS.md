@@ -11,14 +11,15 @@ Dựa trên yêu cầu trong `SPEC.md` và `CONTEXT.md`, dưới đây là danh 
 - [ ] Tạo `TenantContractServlet` để xử lý các yêu cầu liên quan đến hợp đồng của khách thuê.
 - [ ] Cấu hình routing cho Servlet (ví dụ: `/tenant/contracts/*`).
 - [ ] Xử lý `doGet`:
-  - Kiểm tra xem người dùng đã đăng nhập và có role `TENANT` hay chưa (nếu chưa có Filter xử lý chung).
+  - Sử dụng hàm checkRole("TENANT") có sẵn trong BaseServlet để kiểm tra quyền truy cập.
   - Lấy `tenantId` từ Session.
   - Nếu URL là `/tenant/contracts` (hoặc không truyền ID): Gọi `getContractsByTenantId`, set attribute và forward sang trang danh sách hợp đồng.
   - Nếu URL có truyền ID hợp đồng (ví dụ `/tenant/contracts?id=...` hoặc path variable): Gọi `getContractByIdAndTenantId`.
-    - Nếu hợp đồng không tồn tại hoặc không thuộc `tenantId`, trả về lỗi `403` hoặc `404` (redirect/forward tới trang báo lỗi).
+    - Nếu hợp đồng không tồn tại hoặc không thuộc `tenantId`, gán request attribute `errorCode` là `CONTRACT_NOT_FOUND` hoặc `CONTRACT_ACCESS_DENIED` rồi forward tới trang báo lỗi.
     - Nếu thành công, set attribute và forward sang trang chi tiết hợp đồng.
 
 ## 3. View (JSP/UI)
+- [ ] Bắt buộc tuân thủ hệ thống thiết kế chung (`hostel-design.css`, Mintlify tables, badge chuẩn). KHÔNG viết CSS ad-hoc.
 - [ ] Tạo file `tenant/contracts/list.jsp` (hoặc tương tự):
   - Hiển thị danh sách các hợp đồng dưới dạng bảng hoặc card.
   - Hiển thị các trường: Mã hợp đồng, Mã phòng, Ngày bắt đầu, Ngày hết hạn, Tiền thuê, Tiền cọc, Trạng thái.

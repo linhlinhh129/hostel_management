@@ -34,7 +34,7 @@ Servlet này sẽ xử lý các GET request từ Tenant.
        - Forward tới `tenant/contracts/list.jsp`.
      - **Nếu có `id` (Chi tiết hợp đồng)**:
        - Gọi `ContractDAO.getContractByIdAndTenantId(id, tenantId)`.
-       - Nếu kết quả là `null`: Gửi mã lỗi 403/404 hoặc forward tới trang báo lỗi `error.jsp`.
+       - Nếu kết quả là `null`: Gán `request.setAttribute("errorCode", "CONTRACT_NOT_FOUND")` hoặc `"CONTRACT_ACCESS_DENIED"` và forward tới trang báo lỗi `error.jsp`.
        - Nếu có kết quả: Gắn `request.setAttribute("contract", contract)` và forward tới `tenant/contracts/detail.jsp`.
 
 ### Bước 3: Phát triển Giao diện (View)

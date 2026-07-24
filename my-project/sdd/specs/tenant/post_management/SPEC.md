@@ -146,137 +146,57 @@ THE SYSTEM SHALL:
 
 ---
 
-# 4. API Contract
+# 4. Routing & Navigation
+
+## 4.1 Danh sách bài viết của tôi
+
+### Route
+`GET /tenant/posts`
+
+### View Data
+- Forward sang view: `/WEB-INF/views/tenant/posts/list.jsp`
+- Dữ liệu truyền xuống view (Request Attributes):
+  - `posts`: Danh sách bài viết (List<Post>)
+  - `activeMenu`: "posts"
 
 ---
 
-## 4.1 Tạo bài viết
+## 4.2 Tạo bài viết
 
-**Endpoint**
+### Route (Hiển thị Form)
+`GET /tenant/posts/create`
+- Forward sang view: `/WEB-INF/views/tenant/posts/create.jsp`
 
-POST /api/v1/posts
-
-**Request**
-
-```json
-{
-  "title": "Thông báo mất xe",
-  "content": "Xe máy bị mất tại tầng hầm B1.",
-  "images": [
-    "image1.jpg",
-    "image2.jpg"
-  ]
-}
-```
-
-**Response 201**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 101,
-    "status": "Pending"
-  }
-}
-```
-
-**Response 400**
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "POST_INVALID_DATA",
-    "message": "Dữ liệu không hợp lệ."
-  }
-}
-```
-
-**Response 401**
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED"
-  }
-}
-```
-
----
-
-## 4.2 Lấy danh sách bài viết của Tenant
-
-**Endpoint**
-
-GET /api/v1/posts/my
-
-**Response 200**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 101,
-      "title": "Thông báo",
-      "status": "Pending",
-      "createdAt": "2026-07-09T09:00:00"
-    }
-  ]
-}
-```
+### Route (Xử lý Form)
+`POST /tenant/posts/create`
+- Tham số truyền lên (Form Data): `title`, `content`, `images`
+- Xử lý thành công: Redirect về `/tenant/posts` kèm Flash Message thành công.
+- Xử lý thất bại: Lưu lỗi vào `request` và forward lại `create.jsp`.
 
 ---
 
 ## 4.3 Xem chi tiết bài viết
 
-**Endpoint**
+### Route
+`GET /tenant/posts/{id}` (hoặc `GET /tenant/posts?id={id}`)
 
-GET /api/v1/posts/{id}
-
-**Response 200**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 101,
-    "title": "Thông báo",
-    "content": "...",
-    "images": [],
-    "status": "Pending"
-  }
-}
-```
+### View Data
+- Forward sang view: `/WEB-INF/views/tenant/posts/detail.jsp`
+- Dữ liệu truyền xuống view (Request Attributes):
+  - `post`: Chi tiết bài viết (Post)
+  - `activeMenu`: "posts"
 
 ---
 
 ## 4.4 Xóa bài viết
 
-**Endpoint**
+### Route
+`POST /tenant/posts/delete` (hoặc `POST /tenant/posts?action=delete&id={id}`)
+- Tham số truyền lên (Form Data): `id`
+- Logic: Chỉ cho phép xóa khi `status == Pending`.
+- Xử lý thành công: Redirect về `/tenant/posts` kèm Flash Message thành công.
+- Xử lý thất bại (Lỗi hoặc cấm): Set `errorCode` và forward tới `error.jsp`.
 
-DELETE /api/v1/posts/{id}
-
-**Response 200**
-
-```json
-{
-  "success": true
-}
-```
-
-**Response 403**
-
-```json{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền xóa bài viết này."
-  }
-}
-```
 ---
 
 # 5. Technical Constraints

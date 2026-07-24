@@ -208,17 +208,23 @@ Mục tiêu của tính năng là:
 
 # 6. Technical Notes
 
-## API
+## Routing & Navigation
 
 ### Lấy danh sách
 
-GET /api/v1/tenant/notifications?page=1&pageSize=10
+- **Route:** `GET /tenant/notifications`
+- **View Data:**
+  - Forward sang view: `/WEB-INF/views/tenant/notifications/list.jsp`
+  - Dữ liệu truyền xuống view: `notifications` (List<Notification>), `activeMenu` = "notifications"
 
 ---
 
 ### Lấy chi tiết
 
-GET /api/v1/tenant/notifications/{notificationId}
+- **Route:** `GET /tenant/notifications/{notificationId}` (hoặc `GET /tenant/notifications?id={notificationId}`)
+- **View Data:**
+  - Forward sang view: `/WEB-INF/views/tenant/notifications/detail.jsp`
+  - Dữ liệu truyền xuống view: `notification` (Notification), `activeMenu` = "notifications"
 
 ---
 
@@ -239,45 +245,6 @@ Không thay đổi schema.
 - notificationId phải tồn tại.
 
 - Chỉ được xem thông báo được gửi cho Tenant hoặc thông báo Public.
-
----
-
-# 7. Response Data
-
-## Notification List
-
-```json
-{
-    "page":1,
-    "pageSize":10,
-    "totalItems":42,
-    "items":[
-        {
-            "notificationId":1,
-            "title":"Thông báo bảo trì hệ thống nước",
-            "createdAt":"2026-06-10T08:00:00"
-        },
-        {
-            "notificationId":2,
-            "title":"Thông báo thu tiền phòng tháng 06",
-            "createdAt":"2026-06-09T14:30:00"
-        }
-    ]
-}
-```
-
----
-
-## Notification Detail
-
-```json
-{
-    "notificationId":1,
-    "title":"Thông báo bảo trì hệ thống nước",
-    "content":"Hệ thống nước sẽ được bảo trì từ 08:00 đến 12:00 ngày 15/06/2026.",
-    "createdAt":"2026-06-10T08:00:00"
-}
-```
 
 ---
 

@@ -449,59 +449,68 @@ DB update lỗi
 
 → Rollback toàn bộ Transaction
 
-\---
+---
 
-\# 7. Technical Notes
+# 7. Technical Notes
 
-\## APIs
+## Routing & Navigation
 
-\### Invoice List
+### Danh sách hóa đơn (Invoice List)
+- **Route:** `GET /tenant/invoices`
+- **View Data:**
+  - Forward sang view: `/WEB-INF/views/tenant/invoices/list.jsp`
+  - Dữ liệu truyền xuống view: `invoices` (List<Invoice>), `activeMenu` = "invoices"
 
-GET /api/v1/tenant/invoices
+---
 
-\---
+### Chi tiết hóa đơn (Invoice Detail)
+- **Route:** `GET /tenant/invoices/{invoiceId}` (hoặc `GET /tenant/invoices?id={invoiceId}`)
+- **View Data:**
+  - Forward sang view: `/WEB-INF/views/tenant/invoices/detail.jsp`
+  - Dữ liệu truyền xuống view: `invoice` (Invoice), `activeMenu` = "invoices"
 
-\### Invoice Detail
+---
 
-GET /api/v1/tenant/invoices/{invoiceId}
+### Lịch sử thanh toán (Payment History)
+- **Route:** `GET /tenant/payments/history`
+- **View Data:**
+  - Forward sang view: `/WEB-INF/views/tenant/payments/history.jsp`
+  - Dữ liệu truyền xuống view: `payments` (List<Payment>), `activeMenu` = "invoices"
 
-\---
+---
 
-\### Payment History
+### Tạo URL VNPAY (Thanh toán)
+- **Route:** `POST /tenant/invoices/pay`
+- Tham số truyền lên: `invoiceId`
+- Logic: Tính toán và tạo URL thanh toán VNPAY, sau đó `redirect` sang cổng VNPAY.
 
-GET /api/v1/tenant/payments/history
+---
 
-\---
+### VNPAY Return URL
+- **Route:** `GET /tenant/invoices/vnpay-return`
+- Logic: Nhận kết quả trả về từ VNPAY, hiển thị thông báo thành công hoặc thất bại.
+- **View Data:** Forward sang `/WEB-INF/views/tenant/invoices/payment-result.jsp`.
 
-\### Create Payment URL
+---
 
-POST /api/v1/tenant/invoices/{invoiceId}/payment/vnpay
+### VNPAY IPN (Webhook gọi ngầm từ VNPAY)
+- **Route:** `GET /api/vnpay/ipn` (Hoặc POST)
+- Logic: Nhận IPN từ VNPAY để cập nhật database một cách tin cậy (Return JSON).
 
-\---
+---
 
-\### VNPAY Return URL
+# 8. Validation
 
-GET /api/v1/payment/vnpay/return
+- User đã đăng nhập
 
-\---
+- Role = Tenant
 
-\### VNPAY IPN
+- invoiceId tồn tại
 
-POST /api/v1/payment/vnpay/ipn
+- invoice thuộc Tenant
 
-\---
+- invoice.status = UNPAID
 
-\# 8. Validation
-
-\- User đã đăng nhập
-
-\- Role = Tenant
-
-\- invoiceId tồn tại
-
-\- invoice thuộc Tenant
-
-\- invoice.status = UNPAID
 
 \- Amount &gt; 0
 

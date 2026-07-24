@@ -172,17 +172,25 @@ API đạt **99.9% uptime**.
 
 # 6. Technical Notes
 
-## API
+## Routing & Navigation
 
 ### Danh sách người phụ thuộc
-
-GET /api/v1/tenant/dependents
+- **Route:** `GET /tenant/dependents`
+- **View Data:**
+  - Forward sang view: `/WEB-INF/views/tenant/dependents/list.jsp`
+  - Dữ liệu truyền xuống view (Request Attributes):
+    - `dependents`: Danh sách người phụ thuộc (List<Dependent>)
+    - `activeMenu`: "dependents"
 
 ---
 
 ### Chi tiết người phụ thuộc
-
-GET /api/v1/tenant/dependents/{dependentId}
+- **Route:** `GET /tenant/dependents/{dependentId}` (hoặc `GET /tenant/dependents?id={dependentId}`)
+- **View Data:**
+  - Forward sang view: `/WEB-INF/views/tenant/dependents/detail.jsp`
+  - Dữ liệu truyền xuống view (Request Attributes):
+    - `dependent`: Chi tiết người phụ thuộc (Dependent)
+    - `activeMenu`: "dependents"
 
 ---
 

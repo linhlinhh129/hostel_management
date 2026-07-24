@@ -24,7 +24,8 @@ public final class DatabaseUtil {
             Context envContext = (Context) initContext.lookup("java:comp/env");
             dataSource = (DataSource) envContext.lookup("jdbc/HostelManagement");
         } catch (NamingException e) {
-            throw new ExceptionInInitializerError("Cannot initialize DataSource: " + e.getMessage());
+            logger.error("Cannot initialize DataSource: ", e);
+            throw new ExceptionInInitializerError("DataSource initialization failed");
         }
     }
 

@@ -183,111 +183,45 @@ THE SYSTEM SHALL chỉ cho phép truy cập các yêu cầu do chính người t
 
 ---
 
-# 4. API Contract
+# 4. Routing & Navigation
 
 ## Lấy danh sách yêu cầu
 
-Endpoint:
+### Route
+`GET /tenant/requests`
 
-GET /api/v1/tenant/requests
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "requestId": "REQ001",
-      "category": "Bảo trì",
-      "title": "Máy lạnh không hoạt động",
-      "status": "PENDING",
-      "createdAt": "2026-06-10T08:00:00"
-    }
-  ]
-}
-```
+### View Data
+- Forward sang view: `/WEB-INF/views/tenant/requests/list.jsp`
+- Dữ liệu truyền xuống view (Request Attributes):
+  - `requests`: Danh sách đối tượng yêu cầu (List<Request>)
+  - `activeMenu`: "requests"
 
 ---
 
 ## Tạo yêu cầu
 
-Endpoint:
+### Route (Hiển thị Form)
+`GET /tenant/requests/create`
+- Forward sang view: `/WEB-INF/views/tenant/requests/create.jsp`
 
-POST /api/v1/tenant/requests
-
-Request
-
-```json
-{
-  "categoryId": 1,
-  "title": "Máy lạnh không hoạt động",
-  "content": "Máy lạnh không thể khởi động",
-  "attachmentUrl": "image.jpg"
-}
-```
-
-Response 201
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": "REQ001",
-    "status": "PENDING"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "REQ_001",
-    "message": "Title is required"
-  }
-}
-```
-
-Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Authentication required"
-  }
-}
-```
+### Route (Xử lý Form)
+`POST /tenant/requests/create`
+- Tham số truyền lên (Form Data): `categoryId`, `title`, `content`, `attachment`
+- Xử lý thành công: Redirect về `/tenant/requests` kèm Flash Message thành công.
+- Xử lý thất bại (Lỗi Validation): Gắn lỗi vào `request` và forward lại `create.jsp`.
 
 ---
 
 ## Xem chi tiết yêu cầu
 
-Endpoint:
+### Route
+`GET /tenant/requests/{id}` (hoặc `GET /tenant/requests?id={requestId}`)
 
-GET /api/v1/tenant/requests/{requestId}
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": "REQ001",
-    "category": "Bảo trì",
-    "title": "Máy lạnh không hoạt động",
-    "content": "Máy lạnh không thể khởi động",
-    "attachmentUrl": "image.jpg",
-    "roomCode": "A101",
-    "status": "PENDING",
-    "createdAt": "2026-06-10T08:00:00"
-  }
-}
-```
+### View Data
+- Forward sang view: `/WEB-INF/views/tenant/requests/detail.jsp`
+- Dữ liệu truyền xuống view (Request Attributes):
+  - `request`: Đối tượng yêu cầu (Request)
+  - `activeMenu`: "requests"
 
 ---
 

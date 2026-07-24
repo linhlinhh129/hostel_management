@@ -124,43 +124,39 @@ CONTRACT_NOT_FOUND
 
 ---
 
-# 4. API Contract
+# 4. Routing & Navigation
 
 ## 4.1 Danh sách hợp đồng của tôi
 
-### Endpoint
+### Route
 
 ```http
-GET /api/v1/tenant/contracts
+GET /tenant/contracts
 ```
 
-### Response
+### View Data
 
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "contractId": 1,
-      "code": "HD-0001",
-      "roomCode": "A101",
-      "startDate": "2026-01-01",
-      "endDate": "2026-12-31",
-      "status": "ACTIVE"
-    }
-  ]
-}
-```
+- Controller sẽ forward sang view: `/WEB-INF/views/tenant/contracts/list.jsp`
+- Dữ liệu truyền xuống view (Request Attributes):
+  - `contracts`: Danh sách đối tượng hợp đồng (List<Contract>)
+  - `activeMenu`: "contracts"
 
 ---
 
 ## 4.2 Chi tiết hợp đồng
 
-### Endpoint
+### Route
 
 ```http
-GET /api/v1/tenant/contracts/{contractId}
+GET /tenant/contracts?id={contractId}
 ```
+
+### View Data
+
+- Controller sẽ forward sang view: `/WEB-INF/views/tenant/contracts/detail.jsp`
+- Dữ liệu truyền xuống view (Request Attributes):
+  - `contract`: Đối tượng hợp đồng (Contract)
+  - `activeMenu`: "contracts"
 
 ---
 

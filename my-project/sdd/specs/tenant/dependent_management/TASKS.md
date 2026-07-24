@@ -25,19 +25,19 @@
 
 ---
 
-### Task 1.2: Define API Contract & Response Schema (3 points)
+### Task 1.2: Define Route & View Data (3 points)
 **Priority:** HIGH  
 **Duration:** 1 day  
 **Description:**
-- Define list endpoint contract and response payload
-- Define detail endpoint contract and response payload
-- Define error responses for 401, 403, 404, 500
+- Define list route and request attributes
+- Define detail route and request attributes
+- Define error attributes for 401, 403, 404, 500
 - Document empty state behavior
 
 **Acceptance Criteria:**
-- ✅ API contracts documented
-- ✅ Response examples match SPEC
-- ✅ Error handling schema defined
+- ✅ Routes documented
+- ✅ View data matches SPEC
+- ✅ Error handling attribute defined
 
 ---
 
@@ -114,54 +114,54 @@
 
 ---
 
-## Epic 3: API Endpoints (8 points)
+## Epic 3: Controllers (Servlets) (8 points)
 
-### Task 3.1: Implement List Endpoint (3 points)
+### Task 3.1: Implement List Route (3 points)
 **Priority:** HIGH  
 **Duration:** 1.5 days  
 **Dependencies:** Task 2.1  
 **Description:**
-- Build `GET /api/v1/tenant/dependents`
+- Build `GET /tenant/dependents`
 - Enforce authentication and tenant context
 - Accept pagination parameters
-- Return structured JSON response
+- Set attributes and forward to JSP
 
 **Acceptance Criteria:**
-- ✅ Endpoint returns tenant-scoped list
+- ✅ Route returns tenant-scoped list
 - ✅ 401 for missing auth
 - ✅ 500 handled gracefully
-- ✅ Matches API contract
+- ✅ Matches Route & View Data contract
 
 ---
 
-### Task 3.2: Implement Detail Endpoint (3 points)
+### Task 3.2: Implement Detail Route (3 points)
 **Priority:** HIGH  
 **Duration:** 1.5 days  
 **Dependencies:** Task 2.2  
 **Description:**
-- Build `GET /api/v1/tenant/dependents/{dependentId}`
+- Build `GET /tenant/dependents/{dependentId}`
 - Validate path parameter and tenant ownership
-- Return detailed dependent data
-- Return 403/404 as defined
+- Set attributes and forward to JSP
+- Return errorCode for 403/404 as defined
 
 **Acceptance Criteria:**
-- ✅ Detail endpoint works for valid request
-- ✅ 403 and 404 responses implemented
+- ✅ Detail route works for valid request
+- ✅ 403 and 404 responses implemented with error attributes
 - ✅ Response conforming to SPEC example
 
 ---
 
-### Task 3.3: API Error Handling & Logging (2 points)
+### Task 3.3: Error Handling & Logging (2 points)
 **Priority:** HIGH  
 **Duration:** 1 day  
 **Dependencies:** Task 3.1, 3.2  
 **Description:**
-- Implement standard error response format
+- Implement standard error attributes handling
 - Log access denial and missing resource events
 - Provide retry-friendly messaging for front-end
 
 **Acceptance Criteria:**
-- ✅ Error response format consistent
+- ✅ Error attributes format consistent
 - ✅ Authentication and authorization errors logged
 - ✅ Frontend-friendly messages available
 
