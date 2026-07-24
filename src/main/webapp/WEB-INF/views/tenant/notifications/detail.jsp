@@ -13,36 +13,51 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
             
-            <div class="page-header hero-sky-gradient">
-                <div class="d-flex justify-content-between align-items-center flex-wrap">
-                    <div>
-                        <h1>Nội dung thông báo</h1>
-                        <p>Thông báo từ Ban quản lý</p>
-                    </div>
-                    <div>
-                        <a href="${ctx}/tenant/notifications" class="btn-mintlify-secondary text-decoration-none">
-                            ← Danh sách thông báo
-                        </a>
-                    </div>
+            <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div>
+                    <h1><c:out value="${notification.title}"/></h1>
+                    <p>Mã: <strong><c:out value="${notification.code}"/></strong></p>
                 </div>
+                <a href="${ctx}/tenant/notifications" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
             </div>
 
-            <div class="widget-surface" style="max-width: 900px; margin: 0 auto;">
-                <div class="widget-surface-body" style="padding: 2.5rem;">
-                    <div style="border-bottom: 1px solid var(--hms-border-soft); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
-                        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--hms-ink); margin-bottom: 0.75rem; line-height: 1.3;">
-                            <c:out value="${notification.title}"/>
-                        </h2>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--hms-stone); font-size: 0.875rem;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                            </svg>
-                            <c:out value="${notification.createdDateLabel}"/>
+            <div class="row g-3">
+                <%-- Cột chính: Nội dung --%>
+                <div class="col-lg-8">
+                    <div class="widget-surface">
+                        <div class="widget-surface-header"><h3>Nội dung thông báo</h3></div>
+                        <div class="widget-surface-body">
+                            <div style="white-space:pre-line;font-size:0.9375rem;line-height:1.7;color:var(--hms-ink)">
+                                <c:out value="${notification.content}"/>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="article-content" style="font-size: 1.0625rem; line-height: 1.8; color: var(--hms-slate); white-space: pre-wrap;">
-                        <c:out value="${notification.content}"/>
+                </div>
+
+                <%-- Cột phụ: Thông tin --%>
+                <div class="col-lg-4">
+                    <div class="widget-surface">
+                        <div class="widget-surface-header"><h3>Thông tin</h3></div>
+                        <div class="widget-surface-body p-0">
+                            <table style="width:100%;font-size:0.875rem;border-collapse:collapse">
+                                <tr style="border-bottom:1px solid var(--hms-border)">
+                                    <td style="padding:10px 16px;color:var(--hms-text-muted);white-space:nowrap">Mã</td>
+                                    <td style="padding:10px 16px;font-weight:500"><c:out value="${notification.code}"/></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid var(--hms-border)">
+                                    <td style="padding:10px 16px;color:var(--hms-text-muted)">Người gửi</td>
+                                    <td style="padding:10px 16px">Ban quản lý</td>
+                                </tr>
+                                <tr style="border-bottom:1px solid var(--hms-border)">
+                                    <td style="padding:10px 16px;color:var(--hms-text-muted)">Ngày tạo</td>
+                                    <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.createdAtLabel}"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px 16px;color:var(--hms-text-muted)">Gửi lúc</td>
+                                    <td style="padding:10px 16px;font-size:0.8125rem"><c:out value="${notification.sentAtLabel}"/></td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

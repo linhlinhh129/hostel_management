@@ -456,30 +456,7 @@ public class PersonnelDAO extends BaseDAO {
         return 0;
     }
 
-    /**
-     * Xóa mềm nhân sự: set deleted_at = GETDATE().
-     * Đồng thời gỡ gán cơ sở (manager_id / operator_id).
-     * Chỉ cho phép xóa khi status = 'INACTIVE'.
-     * Trả về số dòng bị ảnh hưởng (1 = thành công, 0 = không tìm thấy / đã xóa / không đủ điều kiện).
-     */
-    public int softDelete(int userId) {
-        String sql = "UPDATE dbo.users SET deleted_at = GETDATE(), updated_at = GETDATE() " +
-                     "WHERE user_id = ? AND deleted_at IS NULL AND status = 'INACTIVE'";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            int affected = ps.executeUpdate();
-            if (affected > 0) {
-                // Gỡ gán cơ sở sau khi xóa mềm
-                unassignFacility(userId);
-                unassignOperatorFacility(userId);
-            }
-            return affected;
-        } catch (Exception e) {
-            logger.error("PersonnelDAO.softDelete failed for userId={}", userId, e);
-        }
-        return 0;
-    }
+
 
     public int countAll() {
         String sql = "SELECT COUNT(*) FROM dbo.users WHERE role IN ('MANAGER','OPERATOR') " +

@@ -109,7 +109,7 @@ public class IncidentReportServlet extends HttpServlet {
                     if (attachmentUrls.length() > 0) {
                         attachmentUrls.append(",");
                     }
-                    attachmentUrls.append(request.getContextPath()).append("/uploads/").append(uniqueFileName);
+                    attachmentUrls.append("/uploads/").append(uniqueFileName);
                 }
             }
 
@@ -122,15 +122,24 @@ public class IncidentReportServlet extends HttpServlet {
             
             String formattedTitle = String.format("[%s] %s tại %s (%s)", priority, incidentName, locationStr, facility);
 
-            // Generate a random code for the request
-            String code = "INC-" + System.currentTimeMillis();
+            // Trích xuất mã cơ sở (facility code) từ chuỗi "Tên cơ sở (Mã cơ sở)"
+            String facilityCode = "";
+            if (facility != null && facility.contains("(") && facility.endsWith(")")) {
+                facilityCode = facility.substring(facility.lastIndexOf("(") + 1, facility.length() - 1).trim();
+            }
+
+            // Tạo mã yêu cầu bắt đầu bằng "REQ-" kèm mã cơ sở để tương thích với các câu SQL JOIN ở DAO/Dashboard
+            String code = "REQ-" + (facilityCode.isEmpty() ? "" : facilityCode + "-") + System.currentTimeMillis();
 
             Request req = new Request();
             req.setCode(code);
             req.setSenderId(currentUser.getId());
             req.setCategory(category);
             req.setTitle(formattedTitle);
-            req.setContent(content);
+            
+            // Định dạng nội dung chi tiết kèm theo vị trí để tương thích với phần EditIncidentServlet
+            String formattedContent = String.format("Vị trí: %s\nNội dung chi tiết: %s", locationStr, content);
+            req.setContent(formattedContent);
             req.setAttachmentUrls1(attachmentUrls.toString());
 
             boolean success = requestDAO.insertIncidentReport(req);

@@ -1,0 +1,62 @@
+1. Nhóm lệnh Xây dựng & Cập nhật Bản đồ (Build & Sync)
+Nhóm này có vai trò "đọc mã nguồn" và chuyển đổi thành cơ sở dữ liệu dạng đồ thị.
+
+graphify .
+
+Vai trò: Quét toàn bộ thư mục hiện tại để xây dựng bản đồ từ con số 0.
+
+Cách áp dụng: Dùng khi bạn mới clone một project về máy hoặc khi bắt đầu đưa một hệ thống mới vào IDE.
+
+graphify . --update
+
+Vai trò: Quét nhanh và chỉ cập nhật những file vừa bị thay đổi kể từ lần quét cuối.
+
+Cách áp dụng: Cực kỳ hữu ích trong lúc code. Ví dụ, sau khi bạn vừa sửa lại logic điều khiển cảm biến khí gas hoặc tối ưu lại một hàm C#, bạn chạy lệnh này để AI lập tức cập nhật logic mới mà không mất thời gian quét lại toàn bộ.
+
+graphify . --force
+
+Vai trò: Ép buộc quét lại toàn bộ project, xóa bỏ các dữ liệu rác hoặc các file đã bị xóa.
+
+Cách áp dụng: Dùng sau khi bạn tái cấu trúc (refactor) một lượng lớn code, xóa hàng loạt file cũ để đảm bảo bản đồ không bị nhiễu.
+
+2. Nhóm lệnh Truy vấn & Phân tích (Query) - Quan trọng nhất
+Nhóm này thay thế hoàn toàn công cụ tìm kiếm (Ctrl+Shift+F) truyền thống. Thay vì tìm kiếm theo từ khóa text, nó tìm kiếm theo ngữ cảnh logic.
+
+graphify query "nội dung cần hỏi"
+
+Vai trò: Cho phép bạn hỏi hệ thống bằng ngôn ngữ tự nhiên.
+
+Cách áp dụng: Dùng để tìm kiếm các nghiệp vụ phức tạp. Ví dụ: "Module nào đang thực thi các câu lệnh SQL cơ bản để lấy dữ liệu người dùng?" hoặc "Tiến trình xử lý video tự động được khởi tạo ở đâu?"
+
+graphify path "Thành_phần_A" "Thành_phần_B"
+
+Vai trò: Vạch ra con đường ngắn nhất (các hàm, class gọi nhau) kết nối giữa 2 điểm trong hệ thống.
+
+Cách áp dụng: Dùng khi bạn muốn biết dữ liệu đi từ A sang B như thế nào. Ví dụ: graphify path "UI_Button_Click" "Database_Connection". Nó sẽ cho bạn thấy chính xác user click vào nút thì gọi đến Controller nào, qua Service nào, và xuống hàm Insert nào.
+
+graphify explain "Tên_Class_hoặc_Hàm"
+
+Vai trò: Phân tích mổ xẻ một thành phần cụ thể (Nó là gì? Nó phụ thuộc vào ai? Ai phụ thuộc vào nó?).
+
+Cách áp dụng: Rất tiện khi đọc code người khác hoặc code cũ mình tự viết. Gõ lệnh này để hiểu ngay chức năng của một module trước khi quyết định sửa nó.
+
+3. Nhóm lệnh Hỗ trợ Làm việc nhóm & Báo cáo
+Nhóm này dành cho việc tích hợp hệ thống và xuất tài liệu.
+
+graphify export callflow-html
+
+Vai trò: Xuất ra một trang HTML chứa sơ đồ luồng kiến trúc (Mermaid diagrams).
+
+Cách áp dụng: Công cụ tuyệt vời để làm báo cáo đồ án hoặc tài liệu chuyển giao. Chạy một lệnh là có ngay sơ đồ kiến trúc chuyên nghiệp để trình bày mà không cần vẽ tay.
+
+graphify add <url_youtube> hoặc graphify add <url_tài_liệu>
+
+Vai trò: Tải, dịch (nếu là video) và nhúng trực tiếp tài liệu từ bên ngoài vào bản đồ code của bạn.
+
+Cách áp dụng: Đang bí ý tưởng và tìm được một video hướng dẫn thuật toán hay trên YouTube? Dùng lệnh này để nhét thẳng video đó vào project. Lần sau con AI sẽ lấy kiến thức từ video đó để hướng dẫn bạn code.
+
+graphify prs
+
+Vai trò: Phân tích rủi ro khi có người gộp code mới (Pull Request) vào hệ thống.
+
+Cách áp dụng: Khi làm việc nhóm, trước khi duyệt code của bạn bè, lệnh này sẽ cảnh báo nếu nhánh code mới có nguy cơ gây lỗi hàng loạt đến các module khác.

@@ -19,10 +19,11 @@
         <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
              style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
           <div>
-            <a href="${ctx}/manager/invoices" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
             <h1>Chi tiết Hóa Đơn: <c:out value="${invoice.invoiceCode}" /></h1>
           </div>
-          <div class="d-flex gap-2">
+          <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
+            <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
             <c:if test="${invoice.status ne 'PAID'}">
               <a href="${ctx}/manager/notifications?action=report-incorrect&invoiceId=${invoice.invoiceId}" class="btn-mintlify-danger text-decoration-none" style="background-color: var(--hms-danger); color: white; padding: 8px 16px; border-radius: 6px;">Báo cáo sai số</a>
               <a href="${ctx}/manager/invoices/${invoice.invoiceId}/edit" class="btn-mintlify-secondary text-decoration-none">Sửa Hóa Đơn</a>
@@ -33,6 +34,7 @@
             </c:if>
             <button onclick="window.print()" class="btn-mintlify-primary">Xuất PDF / In</button>
           </div>
+          </div><%-- end flex-column wrapper --%>
         </div>
 
         <style>
@@ -147,6 +149,42 @@
                 <strong>Ghi chú:</strong> <br/>
                 <c:out value="${invoice.note}" default="Không có ghi chú" />
               </div>
+
+              <c:if test="${not empty invoice.electricImg or not empty invoice.waterImg}">
+                <div class="mt-4 pt-4 border-top">
+                  <h5 class="fw-bold mb-3" style="font-size: 1.1rem; color: var(--hms-text-primary);">Ảnh chỉ số điện nước</h5>
+                  <div class="row g-3">
+                    <c:if test="${not empty invoice.electricImg}">
+                      <div class="col-md-6">
+                        <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                          <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                            Ảnh công tơ điện
+                          </div>
+                          <div class="p-2 text-center">
+                            <a href="${invoice.electricImg}" target="_blank" title="Click để phóng to ảnh">
+                              <img src="${invoice.electricImg}" alt="Ảnh chỉ số điện" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';">
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </c:if>
+                    <c:if test="${not empty invoice.waterImg}">
+                      <div class="col-md-6">
+                        <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                          <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                            Ảnh công tơ nước
+                          </div>
+                          <div class="p-2 text-center">
+                            <a href="${invoice.waterImg}" target="_blank" title="Click để phóng to ảnh">
+                              <img src="${invoice.waterImg}" alt="Ảnh chỉ số nước" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';">
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </c:if>
+                  </div>
+                </div>
+              </c:if>
             </div>
           </div>
           

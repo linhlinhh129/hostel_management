@@ -1,274 +1,205 @@
-# TASKS.md — Phân chia Chi tiết Đầu Việc - Admin Dashboard
+# TASKS: Phân chia Chi tiết Đầu Việc - Admin Dashboard
 
-**Total Story Points:** ~38 points
-**Sprint Duration:** 2 tuần × 2 sprints = 4 tuần
-**Velocity:** ~19 points/sprint
+**Total Story Points:** ~18 points  
+**Sprint Duration:** 1 sprint = 1 tuần  
+**Status:** Completed
 
 ---
 
-## Epic 1: Backend Infrastructure (10 points)
+## Epic 1: Backend (8 points)
 
-### Task 1.1: Dashboard Query Design (3 points)
-**Assignee:** Backend Developer
-**Duration:** 2 ngày
+### Task 1.1: Implement AdminDashboardServlet (5 points)
+**Assignee:** Backend Developer  
+**Duration:** 2 ngày  
 **Mô tả:**
-- Thiết kế và tối ưu các aggregation query:
-  - KPI: doanh thu tháng, tổng cơ sở, tổng nhân sự ACTIVE, tổng thông báo, audit log hôm nay
-  - Facility stats: COUNT theo status (ACTIVE, DRAFT, INACTIVE)
-  - Employee stats: COUNT theo role (MANAGER, OPERATOR)
-  - Recent activities: TOP 10 audit logs ORDER BY createdAt DESC
-  - Revenue by facility: SUM(amount) WHERE status = PAID AND tháng hiện tại GROUP BY facilityId
-- Đánh giá EXPLAIN PLAN cho từng query
-- Xác định index cần thiết
+- Implement `doGet()` thu thập dữ liệu từ 5 DAO
+- Mỗi DAO call nằm trong try/catch riêng — partial failure không ảnh hưởng các phần khác
+- Set đầy đủ attributes: `monthlyRevenue`, `totalFacilities`, `activeFacilities`, `totalPersonnel`, `managerCount`, `operatorCount`, `totalNotifications`, `todayAuditLogs`, `facilityRevenueStats`, `recentActivities`, `currentPeriodLabel`
+- Format thời gian hoạt động gần đây: `dd/MM/yyyy HH:mm:ss`
+- Forward sang `/WEB-INF/views/admin/dashboard.jsp`
 
 **Acceptance Criteria:**
-- ✓ Tất cả query chạy đúng kết quả
-- ✓ Mỗi query hoàn thành trong < 200ms
-- ✓ Index được tạo đầy đủ
+- ✓ Servlet thu thập đủ data từ 5 nguồn
+- ✓ Partial failure: nếu 1 DAO lỗi, các DAO khác vẫn chạy bình thường
+- ✓ Không có SQL trong Servlet — tất cả đi qua DAO
+- ✓ Không có `System.out.println()` — dùng SLF4J logger
+
+**Dependencies:** Các DAO methods phải tồn tại
 
 ---
 
-### Task 1.2: DashboardService Implementation (4 points)
-**Assignee:** Backend Developer
-**Duration:** 2–3 ngày
+### Task 1.2: Implement/Verify DAO Methods (3 points)
+**Assignee:** Backend Developer  
+**Duration:** 1 ngày  
 **Mô tả:**
-- Implement `DashboardService.getDashboardData()`
-- Gọi song song các service: FacilityService, EmployeeService, RevenueService, AuditLogService, NotificationService
-- Implement partial failure handling: nếu một service lỗi, trả về `null` cho phần đó, không throw exception
-- Map kết quả sang `DashboardResponse` DTO
+- `FacilityDAO.count(keyword, status)` — đếm cơ sở theo filter
+- `PersonnelDAO.countAll()` — đếm tổng nhân sự
+- `PersonnelDAO.countByRole(role)` — đếm theo MANAGER/OPERATOR
+- `NotificationDAO.count(keyword)` — đếm tổng thông báo
+- `AuditLogDAO.countToday()` — đếm log hôm nay
+- `AuditLogDAO.findRecent(limit)` — lấy N bản ghi mới nhất
+- `RevenueDAO.getMonthlyRevenueTotal(period)` — tổng doanh thu tháng
+- `RevenueDAO.getFacilityRevenues(period)` — doanh thu từng cơ sở kèm unpaidCount, overdueCount
 
 **Acceptance Criteria:**
-- ✓ Service tổng hợp đủ 5 phần dữ liệu
-- ✓ Các call chạy song song (không tuần tự)
-- ✓ Partial failure không ảnh hưởng các phần còn lại
-- ✓ DTO mapping đúng schema
+- ✓ Tất cả methods tồn tại và hoạt động đúng
+- ✓ Dùng PreparedStatement + try-with-resources
+- ✓ Return default value (0 hoặc empty list) khi không có dữ liệu
 
-**Unit Tests:**
-- Test tổng hợp đủ 5 phần
-- Test partial failure (mock một service throw exception)
-- Test empty data (tất cả module chưa có dữ liệu)
+**Dependencies:** Database schema phải có đủ tables
 
 ---
 
-### Task 1.3: Caching Layer (3 points)
-**Assignee:** Backend Developer
-**Duration:** 1–2 ngày
+## Epic 2: Frontend (7 points)
+
+### Task 2.1: KPI Cards (1 point)
+**Assignee:** Frontend Developer  
+**Duration:** 0.5 ngày  
 **Mô tả:**
-- Implement cache với TTL = 60 giây cho `getDashboardData()`
-- Cache dùng chung cho tất cả Admin (không per-user)
-- Cache key: `dashboard:admin`
-- Implement cache eviction khi TTL hết
+- 4 KPI Cards: Doanh thu tháng, Tổng cơ sở, Thông báo, Nhật ký hôm nay
+- Doanh thu format: `#,##0đ`
+- Card rỗng hiển thị `0` không để trống
 
 **Acceptance Criteria:**
-- ✓ Response được cache 60 giây
-- ✓ Cache hit không query lại database
-- ✓ Cache miss query đầy đủ các nguồn
+- ✓ 4 cards hiển thị đúng giá trị
+- ✓ Format tiền đúng
+- ✓ Không có giá trị `null` hay trống
 
 ---
 
-## Epic 2: Dashboard API (8 points)
-
-### Task 2.1: Dashboard Controller (3 points)
-**Assignee:** Backend Developer
-**Duration:** 1–2 ngày
+### Task 2.2: Hero Section + Quick Actions (1 point)
+**Assignee:** Frontend Developer  
+**Duration:** 0.5 ngày  
 **Mô tả:**
-- Implement `GET /api/v1/dashboard`
-- Authorization: chỉ ADMIN được truy cập
-- Gọi `DashboardService.getDashboardData()`
-- Map sang response format chuẩn `{"success": true, "data": {...}}`
-- Xử lý lỗi: 401 UNAUTHORIZED, 403 FORBIDDEN
+- Hero: lời chào + label tháng hiện tại + button "Báo cáo doanh thu"
+- Quick Actions: Thêm cơ sở (`/admin/facilities/create`), Thêm nhân sự (`/admin/personnel/create`), Tạo thông báo (`/admin/notifications/create`)
 
 **Acceptance Criteria:**
-- ✓ Endpoint trả về đúng schema
-- ✓ Authorization enforced
-- ✓ Response format chuẩn
-- ✓ Response time < 1s (P95)
+- ✓ Tên Admin hiển thị đúng từ session
+- ✓ Label tháng đúng tháng hiện tại
+- ✓ Quick Action links điều hướng đúng trang
 
 ---
 
-### Task 2.2: Response DTO & Validation (2 points)
-**Assignee:** Backend Developer
-**Duration:** 1 ngày
+### Task 2.3: Widget Doanh thu theo Cơ sở (2 points)
+**Assignee:** Frontend Developer  
+**Duration:** 1 ngày  
 **Mô tả:**
-- Tạo `DashboardResponse` DTO với đầy đủ fields
-- Tạo nested DTOs: `KpiDTO`, `FacilityStatsDTO`, `EmployeeStatsDTO`, `RecentActivityDTO`, `FacilityRevenueDTO`
-- Đảm bảo giá trị numeric không bao giờ là `null` — default về `0`
+- Bảng 4 cột: Cơ sở (code + name), Doanh thu đã thu, Chưa thanh toán, Quá hạn
+- Doanh thu format: `#,##0 đ`
+- Badge warning cho unpaidCount
+- Badge danger cho overdueCount > 0, badge neutral nếu = 0
+- Link cơ sở điều hướng tới `/admin/facilities/{id}`
+- Empty state: "Chưa có dữ liệu doanh thu kỳ này"
+- Link "Xem báo cáo đầy đủ →" tới `/admin/revenue`
 
 **Acceptance Criteria:**
-- ✓ DTOs đúng với schema trong SPEC
-- ✓ Numeric fields default = 0 khi không có dữ liệu
-- ✓ Serialization đúng format JSON
+- ✓ Bảng hiển thị đúng dữ liệu
+- ✓ Badge màu đúng theo logic
+- ✓ Empty state hiển thị khi không có dữ liệu
+- ✓ Link điều hướng hoạt động
 
 ---
 
-### Task 2.3: Integration Tests (3 points)
-**Assignee:** Backend Developer / QA
-**Duration:** 1–2 ngày
+### Task 2.4: Widget Thống kê Nhân sự (1 point)
+**Assignee:** Frontend Developer  
+**Duration:** 0.5 ngày  
 **Mô tả:**
-- Test `GET /api/v1/dashboard` với dữ liệu đầy đủ
-- Test với dữ liệu rỗng (hệ thống mới)
-- Test partial failure (mock service lỗi)
-- Test authorization (401, 403)
-- Test response time < 1s
+- 3 cột: Tổng nhân sự, Ban Quản lý, Vận hành
+- Link "Quản lý →" tới `/admin/personnel`
 
 **Acceptance Criteria:**
-- ✓ Tất cả test case pass
-- ✓ Partial failure test pass
-- ✓ Performance test pass
+- ✓ 3 số liệu hiển thị đúng
+- ✓ Link điều hướng hoạt động
 
 ---
 
-## Epic 3: Frontend Development (14 points)
-
-### Task 3.1: Dashboard Layout & KPI Cards (4 points)
-**Assignee:** Frontend Developer
-**Duration:** 2–3 ngày
+### Task 2.5: Widget Hoạt động Gần đây (2 points)
+**Assignee:** Frontend Developer  
+**Duration:** 1 ngày  
 **Mô tả:**
-- Tạo trang Dashboard với layout grid
-- Implement 5 KPI Cards:
-  - Tổng doanh thu tháng
-  - Tổng số cơ sở
-  - Tổng nhân sự ACTIVE
-  - Tổng thông báo
-  - Audit Log hôm nay
-- Mỗi card có icon, label, giá trị số, link điều hướng
-- Empty state: hiển thị 0 thay vì trống
-
-**Acceptance Criteria:**
-- ✓ 5 KPI Cards hiển thị đúng
-- ✓ Click card → điều hướng đúng module
-- ✓ Giá trị 0 hiển thị đúng (không trống)
-- ✓ Responsive design
-
----
-
-### Task 3.2: Widget Thống kê Cơ sở & Nhân sự (3 points)
-**Assignee:** Frontend Developer
-**Duration:** 1–2 ngày
-**Mô tả:**
-- Implement widget thống kê cơ sở (total, active, draft, inactive)
-- Implement widget thống kê nhân sự (total, manager, operator)
-- Hiển thị dạng summary card với breakdown
-
-**Acceptance Criteria:**
-- ✓ Số liệu hiển thị đúng
-- ✓ Breakdown rõ ràng
-- ✓ Responsive design
-
----
-
-### Task 3.3: Widget Hoạt động Gần đây (3 points)
-**Assignee:** Frontend Developer
-**Duration:** 1–2 ngày
-**Mô tả:**
-- Implement bảng hiển thị 10 hoạt động gần nhất
-- Columns: Thời gian, Người thực hiện, Hành động
-- Format thời gian: `dd/MM/yyyy HH:mm`
+- List tối đa 5 bản ghi
+- Mỗi item: avatar (chữ cái đầu tên), tên người thực hiện, mô tả hành động, thời gian
 - Empty state: "Chưa có hoạt động nào"
-- Link "Xem tất cả" → điều hướng tới module Audit Log
+- Link "Xem chi tiết →" tới `/admin/audit-logs`
 
 **Acceptance Criteria:**
-- ✓ Bảng hiển thị đúng tối đa 10 bản ghi
-- ✓ Format thời gian đúng
+- ✓ Hiển thị tối đa 5 bản ghi
+- ✓ Format thời gian: `dd/MM/yyyy HH:mm:ss`
 - ✓ Empty state hiển thị đúng
 - ✓ Link điều hướng hoạt động
 
 ---
 
-### Task 3.4: Widget Doanh thu theo Cơ sở (4 points)
-**Assignee:** Frontend Developer
-**Duration:** 2 ngày
+## Epic 3: Testing & Verify (3 points)
+
+### Task 3.1: Test Happy Path (1 point)
+**Assignee:** QA / Developer  
+**Duration:** 0.5 ngày  
 **Mô tả:**
-- Implement bảng doanh thu tháng hiện tại theo cơ sở
-- Columns: Tên cơ sở, Doanh thu tháng (format tiền VNĐ)
-- Hiển thị label tháng hiện tại (vd: "Doanh thu tháng 6/2026")
-- Empty state: "Chưa có dữ liệu doanh thu"
-- Link "Xem chi tiết" → điều hướng tới module Báo cáo doanh thu
+- Đăng nhập với tài khoản ADMIN
+- Kiểm tra tất cả KPI Cards hiển thị đúng số liệu
+- Kiểm tra tất cả widgets có dữ liệu
+- Kiểm tra Quick Actions điều hướng đúng
 
 **Acceptance Criteria:**
-- ✓ Bảng hiển thị đúng dữ liệu
-- ✓ Format tiền đúng (vd: 20.000.000 đ)
-- ✓ Label tháng đúng tháng hiện tại
-- ✓ Empty state và link điều hướng hoạt động
+- ✓ Tất cả số liệu đúng với database
+- ✓ Không có lỗi console/log
 
 ---
 
-## Epic 4: Testing & Deployment (6 points)
-
-### Task 4.1: E2E Testing (2 points)
-**Assignee:** QA Engineer
-**Duration:** 1–2 ngày
+### Task 3.2: Test Empty State (1 point)
+**Assignee:** QA / Developer  
+**Duration:** 0.5 ngày  
 **Mô tả:**
-- Test toàn bộ Dashboard end-to-end với dữ liệu thực
-- Test partial failure scenario
-- Test empty state (hệ thống mới không có dữ liệu)
-- Test authorization (login vs không login, ADMIN vs MANAGER)
+- Test với hệ thống chưa có dữ liệu doanh thu
+- Test với chưa có audit log
+- Kiểm tra KPI Cards hiển thị `0`
 
 **Acceptance Criteria:**
-- ✓ Tất cả scenario pass
-- ✓ Không có lỗi giao diện
+- ✓ KPI Cards hiển thị `0` (không null, không lỗi)
+- ✓ Empty state message hiển thị đúng cho từng widget
 
 ---
 
-### Task 4.2: Performance Testing (2 points)
-**Assignee:** QA Engineer / Backend Developer
-**Duration:** 1 ngày
+### Task 3.3: Test Partial Failure & Phân quyền (1 point)
+**Assignee:** QA / Developer  
+**Duration:** 0.5 ngày  
 **Mô tả:**
-- Test response time với dataset thực tế
-- Test với nhiều Admin truy cập đồng thời (10 concurrent users)
-- Verify cache hoạt động đúng (cache hit vs miss)
+- Test truy cập Dashboard với tài khoản MANAGER → phải bị FORBIDDEN
+- Test truy cập Dashboard chưa đăng nhập → phải redirect login
+- Kiểm tra log khi một DAO throw exception
 
 **Acceptance Criteria:**
-- ✓ P95 response time < 1 giây
-- ✓ Cache hit giảm load database rõ rệt
+- ✓ MANAGER/OPERATOR không truy cập được Dashboard
+- ✓ Chưa đăng nhập redirect về /login
+- ✓ Khi một DAO lỗi, Dashboard vẫn hiển thị các phần còn lại
 
 ---
 
-### Task 4.3: Deployment (2 points)
-**Assignee:** DevOps / Tech Lead
-**Duration:** 1–2 ngày
-**Mô tả:**
-- Deploy backend API
-- Deploy frontend
-- Verify cache configuration trên môi trường production
-- Go-live verification
+## Summary
 
-**Acceptance Criteria:**
-- ✓ Deployment thành công
-- ✓ Dashboard hoạt động đúng trên production
+| Epic | Points | Status |
+|---|---|---|
+| Epic 1: Backend | 8 | ✅ Done |
+| Epic 2: Frontend | 7 | ✅ Done |
+| Epic 3: Testing | 3 | ✅ Done |
+| **Total** | **18** | ✅ **Completed** |
 
----
+## Task Dependency Graph
 
-## Summary by Sprint
-
-| Sprint | Duration | Points | Focus |
-|--------|----------|--------|-------|
-| Sprint 1 | Tuần 1–2 | 21 | Backend: queries, service, cache, API |
-| Sprint 2 | Tuần 3–4 | 17 | Frontend, testing, deployment |
-
----
-
-## Critical Dependencies
-
-- Task 1.1 → 1.2 → 1.3 → 2.1
-- Task 2.1 → 3.1, 3.2, 3.3, 3.4
-- Tất cả Epic 3 tasks có thể chạy song song sau khi Task 2.1 xong
-- Task 4.1, 4.2 phụ thuộc vào Epic 3 hoàn thành
-
-### Phụ thuộc bên ngoài
-- FacilityService (Epic 1 — facilityManagement) phải available
-- EmployeeService (Epic 1 — personnelManagement) phải available
-- RevenueService (viewRevenue) phải available
-- AuditLogService (auditLogs) phải available
-- NotificationService (notificationManagement) phải available
-
----
-
-## Resource Allocation
-
-| Vai trò | Giờ ước tính | Thời gian |
-|---------|-------------|-----------|
-| Backend Developer | 60 | 2 tuần |
-| Frontend Developer | 80 | 2 tuần |
-| QA Engineer | 30 | 1 tuần |
-| Tech Lead | 15 | 0.5 tuần |
+```
+Task 1.2 (DAO Methods)
+  ↓
+Task 1.1 (Servlet)
+  ↓
+Task 2.1 (KPI Cards)
+Task 2.2 (Hero + Quick Actions)
+Task 2.3 (Widget Doanh thu)
+Task 2.4 (Widget Nhân sự)
+Task 2.5 (Widget Hoạt động)
+  ↓
+Task 3.1 (Test Happy Path)
+Task 3.2 (Test Empty State)
+Task 3.3 (Test Partial Failure)
+```

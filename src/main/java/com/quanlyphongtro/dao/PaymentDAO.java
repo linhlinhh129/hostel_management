@@ -58,7 +58,7 @@ public class PaymentDAO extends BaseDAO {
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+            "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
             "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -156,7 +156,7 @@ public class PaymentDAO extends BaseDAO {
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+            "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
             "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -231,7 +231,7 @@ public class PaymentDAO extends BaseDAO {
                      "FROM payments p " +
                      "INNER JOIN rooms r ON p.room_id = r.room_id " +
                      "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+                     "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
                      "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
                      "WHERE p.payment_id = ? AND p.deleted_at IS NULL AND f.manager_id = ?";
         
@@ -267,7 +267,7 @@ public class PaymentDAO extends BaseDAO {
                      
                      dto.setInvoiceCode(rs.getString("invoice_code"));
                      java.sql.Date dueD = rs.getDate("due_date");
-                     if (dueD != null) dto.setDueDate(dueD.toString());
+                      if (dueD != null) dto.setDueDate(new java.text.SimpleDateFormat("dd/MM/yyyy").format(dueD));
                      dto.setInvoiceTotal(rs.getBigDecimal("invoice_total"));
                      dto.setInvoiceNote(rs.getString("invoice_note"));
                      
@@ -282,7 +282,7 @@ public class PaymentDAO extends BaseDAO {
     
     public void approvePayment(int paymentId, int approvedBy) throws SQLException {
         String updatePaymentSql = "UPDATE payments SET status = 'SUCCESS', updated_at = GETDATE() " +
-                                  "WHERE payment_id = ? AND status = 'PENDING' AND " +
+                                  "WHERE payment_id = ? AND status IN ('PENDING', 'REJECTED') AND " +
                                   "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(updatePaymentSql)) {

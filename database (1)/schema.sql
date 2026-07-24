@@ -234,6 +234,7 @@ BEGIN
         attachment_urls2    NVARCHAR(MAX)       NULL, -- Comma-separated list of image/file URLs
         assigned_staff_id   INT                 NULL,
         rejection_reason    NVARCHAR(500)       NULL,
+		appoint_schedule	DATETIME2			NULL, 
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         deleted_at          DATETIME2           NULL,
@@ -363,6 +364,331 @@ BEGIN
 			FOREIGN KEY (created_by) REFERENCES dbo.users(user_id)
 	);
 END
+GO
+-- ============================================================
+-- 12. COMMUNITY POSTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.community_posts', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.community_posts (
+
+        post_id             INT IDENTITY(1,1) PRIMARY KEY,
+
+        title               NVARCHAR(250)      NOT NULL,
+        content             NVARCHAR(MAX)      NOT NULL,
+        image_url           NVARCHAR(500)      NULL,
+
+        author_id           INT                NOT NULL,
+
+        status              NVARCHAR(20)       NOT NULL DEFAULT 'PENDING',
+        -- PENDING, APPROVED, REJECTED
+
+        reviewed_by         INT                NULL,
+
+        created_at          DATETIME2          NOT NULL DEFAULT GETDATE(),
+        updated_at          DATETIME2          NOT NULL DEFAULT GETDATE(),
+        deleted_at          DATETIME2          NULL,
+
+        CONSTRAINT FK_community_posts_author
+            FOREIGN KEY(author_id)
+            REFERENCES dbo.users(user_id),
+
+        CONSTRAINT FK_community_posts_reviewer
+            FOREIGN KEY(reviewed_by)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- 13. POST REACTIONS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.post_reactions', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.post_reactions (
+
+        post_id         INT             NOT NULL,
+        user_id         INT             NOT NULL,
+
+        created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
+
+        CONSTRAINT PK_post_reactions
+            PRIMARY KEY(post_id,user_id),
+
+        CONSTRAINT FK_post_reactions_post
+            FOREIGN KEY(post_id)
+            REFERENCES dbo.community_posts(post_id),
+
+        CONSTRAINT FK_post_reactions_user
+            FOREIGN KEY(user_id)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- 14. POST COMMENTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.post_comments', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.post_comments (
+
+        comment_id          INT IDENTITY(1,1) PRIMARY KEY,
+
+        post_id             INT                 NOT NULL,
+
+        user_id             INT                 NOT NULL,
+
+        content             NVARCHAR(1000)      NOT NULL,
+
+        created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
+
+        updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
+
+        deleted_at          DATETIME2           NULL,
+
+        CONSTRAINT FK_post_comments_post
+            FOREIGN KEY(post_id)
+            REFERENCES dbo.community_posts(post_id),
+
+        CONSTRAINT FK_post_comments_user
+            FOREIGN KEY(user_id)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- COMMUNITY INDEXES
+-- ============================================================
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_community_posts_status'
+)
+CREATE NONCLUSTERED INDEX IX_community_posts_status
+ON dbo.community_posts(status)
+WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_community_posts_author'
+)
+CREATE NONCLUSTERED INDEX IX_community_posts_author
+ON dbo.community_posts(author_id);
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_post_comments_post'
+)
+CREATE NONCLUSTERED INDEX IX_post_comments_post
+ON dbo.post_comments(post_id);
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name='IX_post_reactions_post'
+)
+CREATE NONCLUSTERED INDEX IX_post_reactions_post
+ON dbo.post_reactions(post_id);
+GO
+-- ============================================================
+-- 12. SYSTEM CONFIG TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.system_config', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.system_config (
+        config_key      NVARCHAR(100)   NOT NULL,
+        config_value    NVARCHAR(500)   NOT NULL,
+        updated_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
+        updated_by      INT             NULL,
+
+        CONSTRAINT PK_system_config
+            PRIMARY KEY (config_key),
+        CONSTRAINT FK_system_config_users
+            FOREIGN KEY (updated_by) REFERENCES dbo.users(user_id)
+    );
+END
+GO
+
+-- ============================================================
+-- INDEXES
+-- ============================================================
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_users_username' AND object_id = OBJECT_ID(N'dbo.users'))
+    CREATE NONCLUSTERED INDEX IX_users_username ON dbo.users(username) WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_users_role' AND object_id = OBJECT_ID(N'dbo.users'))
+    CREATE NONCLUSTERED INDEX IX_users_role ON dbo.users(role) WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_audit_logs_entity' AND object_id = OBJECT_ID(N'dbo.audit_logs'))
+    CREATE NONCLUSTERED INDEX IX_audit_logs_entity ON dbo.audit_logs(entity_type, entity_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_facilities_manager' AND object_id = OBJECT_ID(N'dbo.facilities'))
+    CREATE UNIQUE INDEX UX_facilities_manager ON dbo.facilities(manager_id) WHERE manager_id IS NOT NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_facilities_operator'AND object_id = OBJECT_ID(N'dbo.facilities'))
+    CREATE UNIQUE INDEX UX_facilities_operator ON dbo.facilities(operator_id) WHERE operator_id IS NOT NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_rooms_tenant' AND object_id = OBJECT_ID(N'dbo.rooms'))
+    CREATE UNIQUE INDEX UX_rooms_tenant ON dbo.rooms(tenant_id) WHERE tenant_id IS NOT NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_rooms_facility' AND object_id = OBJECT_ID(N'dbo.rooms'))
+    CREATE NONCLUSTERED INDEX IX_rooms_facility ON dbo.rooms(facility_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_rooms_status' AND object_id = OBJECT_ID(N'dbo.rooms'))
+    CREATE NONCLUSTERED INDEX IX_rooms_status ON dbo.rooms(status) WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_dependents_tenant' AND object_id = OBJECT_ID(N'dbo.dependents'))
+    CREATE NONCLUSTERED INDEX IX_dependents_tenant ON dbo.dependents(tenant_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_requests_sender' AND object_id = OBJECT_ID(N'dbo.requests'))
+    CREATE NONCLUSTERED INDEX IX_requests_sender ON dbo.requests(sender_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_requests_staff' AND object_id = OBJECT_ID(N'dbo.requests'))
+    CREATE NONCLUSTERED INDEX IX_requests_staff ON dbo.requests(assigned_staff_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_requests_status' AND object_id = OBJECT_ID(N'dbo.requests'))
+    CREATE NONCLUSTERED INDEX IX_requests_status ON dbo.requests(status) WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_invoices_room' AND object_id = OBJECT_ID(N'dbo.invoices'))
+    CREATE NONCLUSTERED INDEX IX_invoices_room ON dbo.invoices(room_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_invoices_status' AND object_id = OBJECT_ID(N'dbo.invoices'))
+    CREATE NONCLUSTERED INDEX IX_invoices_status ON dbo.invoices(status) WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_payments_invoice' AND object_id = OBJECT_ID(N'dbo.payments'))
+    CREATE NONCLUSTERED INDEX IX_payments_invoice ON dbo.payments(invoice_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_payments_room' AND object_id = OBJECT_ID(N'dbo.payments'))
+    CREATE NONCLUSTERED INDEX IX_payments_room ON dbo.payments(room_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_notifications_status' AND object_id = OBJECT_ID(N'dbo.notifications'))
+    CREATE NONCLUSTERED INDEX IX_notifications_status ON dbo.notifications(status) WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_meter_room_date' AND object_id = OBJECT_ID(N'dbo.meter_readings'))
+    CREATE UNIQUE INDEX UX_meter_room_date ON dbo.meter_readings(room_id, reading_date);
+GO
+
+
+------------------------------------------------------------BAN TIN-------------------------------------------------------------------------------------------------------------------
+-- ============================================================
+-- 13. COMMUNITY POSTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.community_posts', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.community_posts (
+
+        post_id             INT IDENTITY(1,1) PRIMARY KEY,
+        title               NVARCHAR(250)      NOT NULL,
+        content             NVARCHAR(MAX)      NOT NULL,
+        image_url           NVARCHAR(500)      NULL,
+        author_id           INT                NOT NULL,
+        status              NVARCHAR(20)       NOT NULL DEFAULT 'PENDING',  -- PENDING, APPROVED
+
+        reviewed_by         INT                NULL,
+        created_at          DATETIME2          NOT NULL DEFAULT GETDATE(),
+        updated_at          DATETIME2          NOT NULL DEFAULT GETDATE(),
+        deleted_at          DATETIME2          NULL,
+
+        CONSTRAINT FK_community_posts_author
+            FOREIGN KEY(author_id)
+            REFERENCES dbo.users(user_id),
+
+        CONSTRAINT FK_community_posts_reviewer
+            FOREIGN KEY(reviewed_by)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- 14. POST REACTIONS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.post_reactions', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.post_reactions (
+        post_id         INT             NOT NULL,
+        user_id         INT             NOT NULL,
+        created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
+
+        CONSTRAINT PK_post_reactions
+            PRIMARY KEY(post_id,user_id),
+
+        CONSTRAINT FK_post_reactions_post
+            FOREIGN KEY(post_id)
+            REFERENCES dbo.community_posts(post_id),
+
+        CONSTRAINT FK_post_reactions_user
+            FOREIGN KEY(user_id)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- 15. POST COMMENTS TABLE
+-- ============================================================
+IF OBJECT_ID(N'dbo.post_comments', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.post_comments (
+        comment_id          INT IDENTITY(1,1) PRIMARY KEY,
+        post_id             INT                 NOT NULL,
+        user_id             INT                 NOT NULL,
+        content             NVARCHAR(1000)      NOT NULL,
+        created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
+        updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
+        deleted_at          DATETIME2           NULL,
+
+        CONSTRAINT FK_post_comments_post
+            FOREIGN KEY(post_id)
+            REFERENCES dbo.community_posts(post_id),
+
+        CONSTRAINT FK_post_comments_user
+            FOREIGN KEY(user_id)
+            REFERENCES dbo.users(user_id)
+    );
+END
+GO
+-- ============================================================
+-- COMMUNITY INDEXES
+-- ============================================================
+
+IF NOT EXISTS ( SELECT 1 FROM sys.indexes WHERE name='IX_community_posts_status')
+	CREATE NONCLUSTERED INDEX IX_community_posts_status ON dbo.community_posts(status) WHERE deleted_at IS NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='IX_community_posts_author')
+	CREATE NONCLUSTERED INDEX IX_community_posts_author ON dbo.community_posts(author_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='IX_post_comments_post')
+	CREATE NONCLUSTERED INDEX IX_post_comments_post ON dbo.post_comments(post_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='IX_post_reactions_post')
+	CREATE NONCLUSTERED INDEX IX_post_reactions_post ON dbo.post_reactions(post_id);
 GO
 
 -- ============================================================

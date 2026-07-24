@@ -63,7 +63,7 @@
                                             </button>
                                         </form>
                                     </c:if>
-                                    <a href="${ctx}/admin/facilities" class="quick-action-btn">← Danh sách</a>
+                                    <a href="${ctx}/admin/facilities" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
                                 </div>
                             </div>
 

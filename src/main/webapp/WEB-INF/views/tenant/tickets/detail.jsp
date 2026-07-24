@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle" value="Chi tiết yêu cầu - Cổng cư dân"/>
 <c:set var="pageRole" value="TENANT"/>
@@ -39,11 +40,58 @@
                             <c:if test="${not empty ticket.attachmentUrls1}">
                                 <div class="mt-4 pt-3" style="border-top: 1px solid var(--hms-border-soft);">
                                     <h4 style="font-size: 0.875rem; color: var(--hms-stone); margin-bottom: 0.75rem;">Đính kèm:</h4>
-                                    <img src="${ctx}${ticket.attachmentUrls1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
+                                    <c:set var="img1" value="${ticket.attachmentUrls1.trim()}" />
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(img1, 'http')}">
+                                            <c:set var="finalImg1" value="${img1}" />
+                                        </c:when>
+                                        <c:when test="${fn:startsWith(img1, ctx)}">
+                                            <c:set var="finalImg1" value="${img1}" />
+                                        </c:when>
+                                        <c:when test="${fn:startsWith(img1, '/')}">
+                                            <c:set var="finalImg1" value="${ctx}${img1}" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="finalImg1" value="${ctx}/${img1}" />
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <img src="${finalImg1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
                                 </div>
                             </c:if>
                         </div>
                     </div>
+                    
+                    <c:if test="${ticket.status == 'DONE' && not empty ticket.attachmentUrls2}">
+                        <div class="widget-surface mb-3">
+                            <div class="widget-surface-header">
+                                <h3>Kết quả xử lý bằng hình ảnh</h3>
+                            </div>
+                            <div class="widget-surface-body">
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    <c:forTokens items="${ticket.attachmentUrls2}" delims="," var="imgUrl">
+                                        <c:if test="${not empty imgUrl.trim()}">
+                                            <c:set var="trimmedUrl" value="${imgUrl.trim()}" />
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(trimmedUrl, 'http')}">
+                                                    <c:set var="finalImg2" value="${trimmedUrl}" />
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(trimmedUrl, ctx)}">
+                                                    <c:set var="finalImg2" value="${trimmedUrl}" />
+                                                </c:when>
+                                                <c:when test="${fn:startsWith(trimmedUrl, '/')}">
+                                                    <c:set var="finalImg2" value="${ctx}${trimmedUrl}" />
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <c:set var="finalImg2" value="${ctx}/${trimmedUrl}" />
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <img src="${finalImg2}" alt="Kết quả xử lý" style="max-width: 200px; height: auto; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
+                                        </c:if>
+                                    </c:forTokens>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
                 </div>
                 
                 <div class="col-lg-4">
@@ -62,6 +110,24 @@
                                         <tr>
                                             <td style="padding: 12px 1.25rem; color: var(--hms-stone);">Người phụ trách</td>
                                             <td style="padding: 12px 1.25rem; text-align: right; font-weight: 600;"><c:out value="${ticket.assignedTo}"/></td>
+                                        </tr>
+                                    </c:if>
+                                    <c:if test="${ticket.status == 'REJECTED' && not empty ticket.rejectionReason}">
+                                        <tr>
+                                            <td style="padding: 12px 1.25rem; color: var(--hms-danger);">Lý do từ chối</td>
+                                            <td style="padding: 12px 1.25rem; text-align: right; color: var(--hms-danger); font-weight: 500;"><c:out value="${ticket.rejectionReason}"/></td>
+                                        </tr>
+                                    </c:if>
+                                    <c:if test="${ticket.status == 'IN_PROGRESS' && not empty ticket.appointSchedule}">
+                                        <tr>
+                                            <td style="padding: 12px 1.25rem; color: var(--hms-info);">Lịch hẹn xử lý</td>
+                                            <td style="padding: 12px 1.25rem; text-align: right; color: var(--hms-info); font-weight: 600;"><c:out value="${ticket.formattedAppointmentDate}"/></td>
+                                        </tr>
+                                    </c:if>
+                                    <c:if test="${ticket.status == 'DONE' && not empty ticket.rejectionReason}">
+                                        <tr>
+                                            <td style="padding: 12px 1.25rem; color: var(--hms-success);">Ghi chú hoàn thành</td>
+                                            <td style="padding: 12px 1.25rem; text-align: right; color: var(--hms-success); font-weight: 500;"><c:out value="${ticket.rejectionReason}"/></td>
                                         </tr>
                                     </c:if>
                                 </tbody>

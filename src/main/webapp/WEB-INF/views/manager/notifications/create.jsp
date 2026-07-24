@@ -23,6 +23,7 @@
       <div class="data-surface" style="max-width:680px">
         <form method="post" action="${ctx}/manager/notifications/create" class="p-4">
           <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+          <input type="hidden" name="isDebtReminder" value="${(param.isDebtReminder == 'true' or dto.isDebtReminder == true) ? 'true' : 'false'}"/>
 
 
 

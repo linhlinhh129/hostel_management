@@ -1,5 +1,6 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle"  value="Người phụ thuộc - Manager"/>
 <c:set var="pageRole"   value="MANAGER"/>
@@ -82,7 +83,8 @@
                                             </a>
                                         </td>
                                         <td style="color:var(--hms-stone);font-size:0.8125rem">
-                                            <c:out value="${dep.dob}"/>
+                                            <fmt:parseDate value="${dep.dob}" pattern="yyyy-MM-dd" var="parsedDepDob" type="date" />
+                                            <fmt:formatDate value="${parsedDepDob}" pattern="dd/MM/yyyy" />
                                         </td>
                                         <td>
                                             <c:choose>

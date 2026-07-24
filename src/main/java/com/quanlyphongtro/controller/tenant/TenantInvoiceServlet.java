@@ -61,6 +61,26 @@ public class TenantInvoiceServlet extends BaseServlet {
                         Invoice inv = invOpt.get();
                         inv.setHasPendingPayment(new com.quanlyphongtro.dao.PaymentDAO().hasPendingPayment(inv.getId()));
                         req.setAttribute("invoice", inv);
+
+                        long overdueDays = 0;
+                        java.math.BigDecimal penaltyAmount = java.math.BigDecimal.ZERO;
+                        java.math.BigDecimal totalAmountToPay = inv.getTotalAmount();
+
+                        if ("UNPAID".equals(inv.getStatus()) || "OVERDUE".equals(inv.getStatus())) {
+                            java.time.LocalDate dueDate = inv.getDueDate();
+                            java.time.LocalDate today = java.time.LocalDate.now();
+                            if (dueDate != null && today.isAfter(dueDate)) {
+                                overdueDays = java.time.temporal.ChronoUnit.DAYS.between(dueDate, today);
+                                penaltyAmount = new com.quanlyphongtro.dao.InvoiceDAO().calculateRealtimeLatePenalty(inv.getId());
+                                if (penaltyAmount != null) {
+                                    totalAmountToPay = totalAmountToPay.add(penaltyAmount);
+                                }
+                            }
+                        }
+
+                        req.setAttribute("overdueDays", overdueDays);
+                        req.setAttribute("penaltyAmount", penaltyAmount);
+                        req.setAttribute("totalAmountToPay", totalAmountToPay);
                         req.getRequestDispatcher("/WEB-INF/views/tenant/invoices/detail.jsp").forward(req, resp);
                     } else {
                         resp.sendError(HttpServletResponse.SC_NOT_FOUND);

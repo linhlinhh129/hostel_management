@@ -23,8 +23,8 @@ import java.util.UUID;
 @WebServlet("/profile")
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
-    maxFileSize = 1024 * 1024 * 5,       // 5 MB
-    maxRequestSize = 1024 * 1024 * 10    // 10 MB
+    maxFileSize       = 1024 * 1024 * 5, // 5 MB
+    maxRequestSize    = 1024 * 1024 * 10 // 10 MB
 )
 public class ProfileServlet extends BaseServlet {
 
@@ -35,8 +35,11 @@ public class ProfileServlet extends BaseServlet {
         userDAO = new UserDAO();
     }
 
+    // ── GET ──────────────────────────────────────────────────────────────
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -44,15 +47,16 @@ public class ProfileServlet extends BaseServlet {
         }
 
         Optional<User> userOpt = userDAO.findById(currentUser.getId());
-        if (userOpt.isPresent()) {
-            request.setAttribute("userProfile", userOpt.get());
-        }
+        userOpt.ifPresent(u -> request.setAttribute("userProfile", u));
 
         request.getRequestDispatcher("/WEB-INF/views/common/profile.jsp").forward(request, response);
     }
 
+    // ── POST ─────────────────────────────────────────────────────────────
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -68,26 +72,31 @@ public class ProfileServlet extends BaseServlet {
                 response.sendRedirect(request.getContextPath() + "/login");
                 return;
             }
-
             User user = userOpt.get();
 
+            // ── update_profile ───────────────────────────────────────────
             if ("update_profile".equals(action)) {
-                String fullName = request.getParameter("fullName");
-                String phone = request.getParameter("phone");
-                String identityNumber = request.getParameter("identityNumber");
-                String dobStr = request.getParameter("dob");
-                String gender = request.getParameter("gender");
+
+                String fullName        = request.getParameter("fullName");
+                String phone           = request.getParameter("phone");
+                String identityNumber  = request.getParameter("identityNumber");
+                String dobStr          = request.getParameter("dob");
+                String gender          = request.getParameter("gender");
                 String permanentAddress = request.getParameter("permanentAddress");
 
                 if (phone != null && !phone.trim().isEmpty()) {
                     if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
-                        response.sendRedirect(request.getContextPath() + "/profile?error=invalid_phone");
+                        setFlashMessage(request, "error",
+                            "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+                        response.sendRedirect(request.getContextPath() + "/profile");
                         return;
                     }
                 }
                 if (identityNumber != null && !identityNumber.trim().isEmpty()) {
                     if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
-                        response.sendRedirect(request.getContextPath() + "/profile?error=invalid_identity");
+                        setFlashMessage(request, "error",
+                            "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+                        response.sendRedirect(request.getContextPath() + "/profile");
                         return;
                     }
                 }
@@ -101,82 +110,89 @@ public class ProfileServlet extends BaseServlet {
                 user.setGender(gender);
                 user.setPermanentAddress(permanentAddress);
 
-                // Handle Avatar Upload
+                // Avatar upload
                 Part filePart = request.getPart("avatar");
                 if (filePart != null && filePart.getSize() > 0) {
-                    String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads" + File.separator + "avatars";
+                    String uploadPath = getServletContext().getRealPath("")
+                            + File.separator + "uploads" + File.separator + "avatars";
                     File uploadDir = new File(uploadPath);
                     if (!uploadDir.exists()) uploadDir.mkdirs();
 
-                    String fileName = UUID.randomUUID().toString() + "_" + extractFileName(filePart);
+                    String fileName = UUID.randomUUID() + "_" + extractFileName(filePart);
                     filePart.write(uploadPath + File.separator + fileName);
                     user.setAvatarUrl("/uploads/avatars/" + fileName);
                 }
 
                 userDAO.updateProfile(user);
 
-                // Update Session DTO
+                // Sync session
                 currentUser.setFullName(user.getFullName());
                 currentUser.setAvatarUrl(user.getAvatarUrl());
                 currentUser.setInitials(UserSessionDTO.extractInitials(user.getFullName()));
                 HttpSession session = request.getSession(false);
-                if (session != null) {
-                    session.setAttribute("currentUser", currentUser);
-                }
+                if (session != null) session.setAttribute("currentUser", currentUser);
 
-                response.sendRedirect(request.getContextPath() + "/profile?success=profile");
-                
+                setFlashMessage(request, "success", "Cập nhật thông tin hồ sơ thành công!");
+                response.sendRedirect(request.getContextPath() + "/profile");
+
+            // ── change_password ──────────────────────────────────────────
             } else if ("change_password".equals(action)) {
+
                 String currentPassword = request.getParameter("currentPassword");
                 String newPassword     = request.getParameter("newPassword");
                 String confirmPassword = request.getParameter("confirmPassword");
 
-                // ── Validate độ mạnh mật khẩu ───────────────────────────
                 if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
-                    response.sendRedirect(request.getContextPath() + "/profile?error=invalid_policy");
+                    setFlashMessage(request, "error",
+                        "Mật khẩu mới không đạt chuẩn bảo mật (cần ít nhất 8 ký tự, có chữ hoa, chữ số và ký tự đặc biệt).");
+                    response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
-
                 if (!newPassword.equals(confirmPassword)) {
-                    response.sendRedirect(request.getContextPath() + "/profile?error=password_mismatch");
+                    setFlashMessage(request, "error", "Xác nhận mật khẩu mới không khớp!");
+                    response.sendRedirect(request.getContextPath() + "/profile");
+                    return;
+                }
+                if (newPassword.equals(currentPassword)) {
+                    setFlashMessage(request, "error", "Mật khẩu mới không được trùng với mật khẩu cũ.");
+                    response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
-                    response.sendRedirect(request.getContextPath() + "/profile?error=invalid_password");
+                    setFlashMessage(request, "error", "Mật khẩu hiện tại không chính xác!");
+                    response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
 
-                String hashedNewPassword = PasswordUtil.hash(newPassword);
-                userDAO.updatePassword(user.getId(), hashedNewPassword);
+                userDAO.updatePassword(user.getId(), PasswordUtil.hash(newPassword));
 
                 if (currentUser.isFirstLogin()) {
                     currentUser.setFirstLogin(false);
                     HttpSession session = request.getSession(false);
-                    if (session != null) {
-                        session.setAttribute("currentUser", currentUser);
-                    }
+                    if (session != null) session.setAttribute("currentUser", currentUser);
                 }
 
-                response.sendRedirect(request.getContextPath() + "/profile?success=password");
+                setFlashMessage(request, "success", "Đổi mật khẩu thành công!");
+                response.sendRedirect(request.getContextPath() + "/profile");
+
             } else {
                 response.sendRedirect(request.getContextPath() + "/profile");
             }
+
         } catch (Throwable t) {
-            t.printStackTrace();
-            response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().write("<h3>Đã xảy ra lỗi hệ thống (500):</h3><pre>");
-            t.printStackTrace(response.getWriter());
-            response.getWriter().write("</pre>");
+            logger.error("ProfileServlet error", t);
+            setFlashMessage(request, "error", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại.");
+            response.sendRedirect(request.getContextPath() + "/profile");
         }
     }
 
+    // ── helpers ──────────────────────────────────────────────────────────
     private String extractFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
-        String[] items = contentDisp.split(";");
-        for (String s : items) {
+        for (String s : contentDisp.split(";")) {
             if (s.trim().startsWith("filename")) {
-                String fileName = s.substring(s.indexOf("=") + 2, s.length() - 1);
-                return fileName.replaceAll("[\\\\/:*?\"<>|]", "_"); // Sanitize file name
+                String fileName = s.substring(s.indexOf('=') + 2, s.length() - 1);
+                return fileName.replaceAll("[\\\\/:*?\"<>|]", "_");
             }
         }
         return "";

@@ -13,7 +13,6 @@ import javax.sql.DataSource;
 
 public final class DatabaseUtil {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseUtil.class);
-    private static final String JNDI_NAME = "java:comp/env/jdbc/HostelManagement";
 
     private DatabaseUtil() {}
 

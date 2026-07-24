@@ -2,7 +2,6 @@ package com.quanlyphongtro.controller.manager;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.PaymentDetailDTO;
-import com.quanlyphongtro.model.User;
 import com.quanlyphongtro.service.PaymentService;
 import com.quanlyphongtro.service.impl.PaymentServiceImpl;
 import jakarta.servlet.ServletException;

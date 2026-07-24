@@ -1,136 +1,72 @@
-# PLAN: Kế hoạch Thực thi Quản lý Thông báo cho Ban quản lý
+# PLAN: Kế hoạch Thực thi Quản lý Thông báo cho Ban quản lý (Manager)
 
-**Status:** Planning  
-**Date:** 2026-06-11  
+**Status:** Completed  
+**Date:** 2026-07-13  
 **Priority:** High  
-**Estimated Duration:** 8-10 weeks
+**Estimated Duration:** Completed
 
 ---
 
 ## 1. Tổng quan Giải pháp
 
-Feature cho phép Manager tạo thông báo chỉ cho cơ sở được phân công (không được gửi toàn hệ thống). Thông báo có thể gửi theo cơ sở hoặc phòng cụ thể.
+Tính năng Quản lý Thông báo cho Ban quản lý cho phép Manager gửi thông báo chung (theo cơ sở/phòng), nhắc nợ quá hạn tiền phòng (gửi đến phòng có hóa đơn nợ), và báo lỗi chỉ số điện nước gửi Operator.
 
 **Kiến trúc:**
-- Backend API: Create, list, detail notification (with facility scope)
-- Facility access control: Validate manager assignment
-- Frontend UI: Create form, list, detail, search
-- Audit Log: Log notification creation & access
-- Recipient resolution: Query tenants in facility/room
+- Backend API: Servlet Controller (`ManagerNotificationsServlet.java`) tiếp nhận các yêu cầu GET/POST gửi từ giao diện.
+- Service & DAO: `NotificationServiceImpl.java` và `NotificationDAO.java` xử lý nghiệp vụ, giao dịch cập nhật trạng thái chỉ số điện nước và thêm yêu cầu sửa chỉ số cho Operator.
+- Database: Tác động vào các bảng `dbo.notifications`, `dbo.requests`, `dbo.meter_readings` và `dbo.invoices`.
+- Audit Log: Ghi nhận lịch sử hoạt động vào bảng `dbo.audit_logs`.
 
 ---
 
 ## 2. Giai đoạn Thực thi
 
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Tuần 1-2)
+### Giai đoạn 1: Thiết kế & Chuẩn bị (Hoàn thành)
+- Thiết kế luồng phân loại thông báo theo tabs (`general`, `payment-reminder`, `incorrect-utility`).
+- Thiết kế cấu trúc lưu trữ thông báo nhắc nợ (sử dụng mã tiền tố `NTF-DEBT-`).
+- Thiết kế luồng báo lỗi chỉ số điện nước và bàn giao công việc cho Operator thông qua bảng `requests` với danh mục `UTILITY`.
 
-**Mục tiêu:** Design permission model, API contract
+### Giai đoạn 2: Backend Development (Hoàn thành)
+- Implement `countManagerNotifications` và `getManagerNotifications` hỗ trợ phân trang, tìm kiếm và lọc theo tabs.
+- Implement nghiệp vụ gửi nhắc nợ `sendDebtReminder()` và tạo mã tự động.
+- Implement nghiệp vụ báo cáo chỉ số điện nước sai lệch bằng cơ chế Transaction: đổi trạng thái chỉ số điện nước thành `REPORTED` và chèn bản ghi yêu cầu hỗ trợ `'PENDING'` gán cho Operator.
+- Enforce check phân quyền cơ sở (`verifyFacilityManager` / `verifyRoomManagerAndGetFacilityId`).
 
-**Công việc:**
-- Design facility access control
-- Define API contract with scope checks
-- Design recipient resolution by facility/room
-- Plan validation rules
+### Giai đoạn 3: Frontend Development (Hoàn thành)
+- Xây dựng giao diện danh sách thông báo chia theo tabs và danh sách hóa đơn bị báo sai chỉ số.
+- Thiết kế form gửi thông báo chung, form gửi nhắc nợ tiền phòng quá hạn và form gửi yêu cầu sửa chỉ số cho Operator.
 
----
-
-### Giai đoạn 2: Backend Development (Tuần 3-5)
-
-**Mục tiêu:** Implement backend with access control
-
-**Công việc:**
-- Implement facility access validation service
-- Implement create notification with scope enforcement
-- Implement list notifications (facility-scoped)
-- Implement get detail with access control
-- Implement recipient resolution
-- Implement audit logging
-
-**Key Features:**
-- Prevent ALL (global) notifications
-- Prevent access to facilities not assigned
-- Validate recipient scope
-- Log all operations
+### Giai đoạn 4: Testing & Deployment (Hoàn thành)
 
 ---
 
-### Giai đoạn 3: Frontend Development (Tuần 6-7)
+## 3. Key Technical Aspects
 
-**Mục tiêu:** Implement UI with scope enforcement
+### Overdue Debt Reminders
+- Generated using a specialized helper method `sendDebtReminder` in DAO.
+- Generates notification code starting with `NTF-DEBT-` to easily classify them in the database.
+- Targeted at a specific room (`target_type = 'ROOM'`).
 
-**Công việc:**
-- Notification list (facility-scoped)
-- Create form (facility/room selectors)
-- Detail view
-- Search & pagination
+### Utility Incorrect Report Transaction
+- Executed as a database transaction (`sendOperatorRequestTransaction`).
+- Inserts a request record under `UTILITY` category, status `PENDING`, assigned to the selected Operator.
+- Updates the status of the related meter reading to `REPORTED` to lock it from billing actions.
 
----
-
-### Giai đoạn 4: Testing & Deployment (Tuần 8-10)
-
-**Mục tiêu:** Testing, UAT, deployment
-
----
-
-## 3. Key Technical Challenges
-
-### Facility Access Control
-- Must enforce at API layer
-- Check manager's assigned facilities
-- Prevent access to other facilities
-
-### Recipient Type Restrictions
-- ALL: Not allowed for manager
-- FACILITY: Only allowed if in assigned list
-- ROOM: Only allowed if room's facility is assigned
-
-### Permission Validation
-- Every API call must check facility access
-- Return 403 for unauthorized access
-- Clear error messages
+### Scope and Authorization
+- Manager is restricted to facilities where `manager_id` matches their own user ID.
+- Attempts to target foreign rooms/facilities are verified and rejected by the service layer.
 
 ---
 
-## 4. Dependencies
+## 4. Success Criteria
 
-### External Dependencies
-- Employee facility assignment (EmployeeFacility table)
-- Tenant list (for recipient resolution)
-- Room data (for room-scoped notifications)
-
-### Blocking
-- Need Employee facility assignment to be complete
+- ✓ Manager can send announcements, debt reminders, and operator requests.
+- ✓ Tabs filtration and pagination working.
+- ✓ Scope restrictions strictly enforced.
+- ✓ Database transactions commit/rollback safely on error.
+- ✓ Actions logged in audit logs.
 
 ---
 
-## 5. Risk Management
-
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Permission bypass | High | Implement checks at service & API layer |
-| Recipient resolution errors | Medium | Comprehensive testing with various scenarios |
-| Performance issues | Medium | Optimize queries with proper joins |
-
----
-
-## 6. Success Criteria
-
-- ✓ Facility access enforced
-- ✓ ALL notifications prevented
-- ✓ Recipient resolution accurate
-- ✓ Create/list/detail working
-- ✓ Search & pagination working
-- ✓ Response time < 500ms
-- ✓ >= 80% code coverage
-- ✓ UAT passed
-
----
-
-## 7. Timeline
-
-- **Week 1-2:** Design & preparation
-- **Week 3-5:** Backend development
-- **Week 6-7:** Frontend development
-- **Week 8-10:** Testing & deployment
-
-**Total:** 10 weeks
+## 5. Timeline
+- Completed.

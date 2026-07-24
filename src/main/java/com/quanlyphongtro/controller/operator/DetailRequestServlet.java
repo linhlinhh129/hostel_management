@@ -90,8 +90,15 @@ public class DetailRequestServlet extends HttpServlet {
                     doGet(request, response);
                     return;
                 }
-                // Save it as plain string in rejection_reason
-                success = requestService.scheduleAppointmentText(requestId, appointmentDateStr);
+                // Parse date and schedule properly
+                try {
+                    java.time.LocalDateTime appointSchedule = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+                    success = requestService.scheduleAppointment(requestId, appointSchedule);
+                } catch (Exception e) {
+                    request.setAttribute("error", "Định dạng ngày hẹn không hợp lệ.");
+                    doGet(request, response);
+                    return;
+                }
             } else if ("complete".equals(action)) {
                 String notes = request.getParameter("notes");
                 String noImageCheckbox = request.getParameter("no_image_checkbox");
@@ -112,7 +119,7 @@ public class DetailRequestServlet extends HttpServlet {
                     if ("after_images".equals(part.getName()) && part.getSize() > 0) {
                         String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(part);
                         part.write(uploadPath + java.io.File.separator + fileName);
-                        fileNames.add(request.getContextPath() + "/uploads/requests/" + fileName);
+                        fileNames.add("/uploads/requests/" + fileName);
                     }
                 }
                 
@@ -130,10 +137,10 @@ public class DetailRequestServlet extends HttpServlet {
                 try {
                     String auditAction = action.toUpperCase();
                     String auditNew = null;
-                    if ("accept".equals(action))   { auditAction = "UPDATE"; auditNew = "IN_PROGRESS"; }
-                    else if ("reject".equals(action))   { auditAction = "UPDATE"; auditNew = "REJECTED"; }
-                    else if ("complete".equals(action)) { auditAction = "UPDATE"; auditNew = "COMPLETED"; }
-                    else if ("schedule".equals(action)) { auditAction = "UPDATE"; auditNew = "SCHEDULED"; }
+                    if ("accept".equals(action))   { auditAction = "UPDATE"; auditNew = "ASSIGNED"; session.setAttribute("successMessage", "Đã tiếp nhận yêu cầu thành công!"); }
+                    else if ("reject".equals(action))   { auditAction = "UPDATE"; auditNew = "REJECTED"; session.setAttribute("successMessage", "Đã từ chối yêu cầu!"); }
+                    else if ("complete".equals(action)) { auditAction = "UPDATE"; auditNew = "DONE"; session.setAttribute("successMessage", "Đã báo cáo hoàn thành yêu cầu!"); }
+                    else if ("schedule".equals(action)) { auditAction = "UPDATE"; auditNew = "IN_PROGRESS"; session.setAttribute("successMessage", "Đã lên lịch hẹn thành công!"); }
                     AuditLogHelper.log(auditLogDAO, request, "requests", requestId,
                         auditAction, "PENDING", auditNew, operatorId);
                 } catch (Exception ex) { /* ignore audit failure */ }

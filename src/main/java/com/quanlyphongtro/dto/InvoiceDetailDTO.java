@@ -45,6 +45,9 @@ public class InvoiceDetailDTO {
     private String updatedAt;
     private String updatedByName;
     
+    private String electricImg;
+    private String waterImg;
+
     // UI helpers
     private String statusBadgeClass;
     private String statusLabel;
@@ -176,4 +179,33 @@ public class InvoiceDetailDTO {
 
     public String getStatusBadgeClass() { return statusBadgeClass; }
     public String getStatusLabel() { return statusLabel; }
+
+    public java.util.Date getCreatedAtAsDate() {
+        try {
+            if (createdAt == null || createdAt.trim().isEmpty()) return null;
+            return java.sql.Timestamp.valueOf(createdAt);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public java.util.Date getUpdatedAtAsDate() {
+        try {
+            if (updatedAt == null || updatedAt.trim().isEmpty()) return null;
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            return sdf.parse(updatedAt);
+        } catch (Exception e) {
+            try {
+                return java.sql.Timestamp.valueOf(updatedAt);
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+
+    public String getElectricImg() { return electricImg; }
+    public void setElectricImg(String electricImg) { this.electricImg = electricImg; }
+
+    public String getWaterImg() { return waterImg; }
+    public void setWaterImg(String waterImg) { this.waterImg = waterImg; }
 }

@@ -48,9 +48,6 @@ THE SYSTEM SHALL trả về lỗi VALIDATION_ERROR.
 WHEN Admin chọn đối tượng nhận khác "ALL" 
 THE SYSTEM SHALL trả về lỗi VALIDATION_ERROR.
 
-WHEN hệ thống không có user đang hoạt động 
-THE SYSTEM SHALL trả về lỗi NO_RECIPIENT_FOUND.
-
 WHEN tiêu đề vượt quá 255 ký tự
 THE SYSTEM SHALL trả về lỗi TITLE_TOO_LONG.
 
@@ -131,7 +128,7 @@ Response 201
   "success": true,
   "data": {
     "id": 1,
-    "code": "NOTI000001",
+    "code": "NTF-ALL-001",
     "title": "Thông báo bảo trì thang máy"
   }
 }
@@ -165,16 +162,6 @@ Response 400
   "error": {
     "code": "CONTENT_TOO_LONG",
     "message": "Nội dung không được vượt quá 1000 ký tự"
-  }
-}
-```
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "NO_RECIPIENT_FOUND",
-    "message": "Không có người nhận hợp lệ"
   }
 }
 ```
@@ -228,10 +215,10 @@ Response 200
     "items": [
       {
         "id": 1,
-        "code": "NOTI000001",
+        "code": "NTF-ALL-001",
         "title": "Thông báo bảo trì thang máy",
         "recipientType": "ALL",
-        "createdAt": "2026-01-01T08:00:00",
+        "createdAt": "28/06/2026 09:00:00",
         "createdBy": "Admin"
       }
     ],
@@ -273,10 +260,10 @@ Response 200
   "success": true,
   "data": {
     "id": 1,
-    "code": "NOTI000001",
+    "code": "NTF-ALL-001",
     "title": "Thông báo bảo trì thang máy",
     "content": "Nội dung thông báo",
-    "createdAt": "2026-01-01T08:00:00",
+    "createdAt": "28/06/2026 09:00:00",
     "createdBy": "Admin",
     "recipientType": "ALL"
   }

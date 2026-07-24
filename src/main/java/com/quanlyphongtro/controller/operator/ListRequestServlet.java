@@ -61,6 +61,7 @@ public class ListRequestServlet extends BaseServlet {
         req.setAttribute("totalRecords", totalRecords);
         req.setAttribute("paramStatus", status != null ? status : "");
         req.setAttribute("paramCategory", category != null ? category : "");
+        req.setAttribute("availableCategories", requestDAO.getDistinctCategories());
 
         req.getRequestDispatcher("/WEB-INF/views/operator/requests/list.jsp").forward(req, resp);
     }

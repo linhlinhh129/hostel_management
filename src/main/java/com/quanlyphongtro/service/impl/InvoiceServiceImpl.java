@@ -69,6 +69,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         } catch (Exception e) {
             throw new IllegalArgumentException("Hạn thanh toán không hợp lệ.");
         }
+        if (dueDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày hiện tại.");
+        }
 
         BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
         if (taxRate.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
@@ -83,7 +86,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal internetFee = BigDecimal.ZERO;
         BigDecimal serviceFee = BigDecimal.ZERO;
 
-        String checkRoomSql = "SELECT r.room_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee " +
+        String checkRoomSql = "SELECT r.room_id, r.status, r.tenant_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee " +
                               "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                               "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -92,6 +95,14 @@ public class InvoiceServiceImpl implements InvoiceService {
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    String status = rs.getString("status");
+                    rs.getInt("tenant_id");
+                    boolean hasTenant = !rs.wasNull();
+
+                    if (!"OCCUPIED".equals(status) || !hasTenant) {
+                        throw new IllegalArgumentException("Không thể tạo hóa đơn cho phòng trống hoặc phòng chưa có người thuê.");
+                    }
+
                     roomId = rs.getInt("room_id");
                     roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
                     electricityPrice = rs.getBigDecimal("electricity_price") != null ? rs.getBigDecimal("electricity_price") : BigDecimal.ZERO;
@@ -124,6 +135,9 @@ public class InvoiceServiceImpl implements InvoiceService {
                     newElectric = rs.getInt("electric");
                     newWater = rs.getInt("water");
                     readingDate = rs.getDate("reading_date").toLocalDate();
+                    if (dueDate.isBefore(readingDate)) {
+                        throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày chốt số điện nước của kỳ hạn này (" + readingDate + ").");
+                    }
                 } else {
                     throw new IllegalArgumentException("Không tìm thấy chỉ số điện nước của phòng trong kỳ hạn " + billingPeriod);
                 }
@@ -217,7 +231,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
         if (otherFee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
 
-        String snapshotSql = "SELECT room_fee, electricity_price, water_price, internet_fee, service_fee FROM invoices WHERE invoice_id = ?";
+        String snapshotSql = "SELECT i.room_fee, i.electricity_price, i.water_price, i.internet_fee, i.service_fee, i.due_date, mr.reading_date " +
+                             "FROM invoices i LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id WHERE i.invoice_id = ?";
         BigDecimal snapRoom = BigDecimal.ZERO, snapElec = BigDecimal.ZERO, snapWater = BigDecimal.ZERO, snapInt = BigDecimal.ZERO, snapSvc = BigDecimal.ZERO;
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(snapshotSql)) {
@@ -229,6 +244,23 @@ public class InvoiceServiceImpl implements InvoiceService {
                      snapWater = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price") : BigDecimal.ZERO;
                      snapInt = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
                      snapSvc = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
+
+                     java.sql.Date existingDue = rs.getDate("due_date");
+                     java.sql.Date rdDate = rs.getDate("reading_date");
+                     LocalDate readingDate = rdDate != null ? rdDate.toLocalDate() : null;
+
+                     if (readingDate != null && dueDate.isBefore(readingDate)) {
+                         throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày chốt số điện nước (" + readingDate + ").");
+                     }
+
+                     if (existingDue != null) {
+                         LocalDate existingDueLocalDate = existingDue.toLocalDate();
+                         if (!dueDate.equals(existingDueLocalDate) && dueDate.isBefore(LocalDate.now())) {
+                             throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày hiện tại.");
+                         }
+                     } else if (dueDate.isBefore(LocalDate.now())) {
+                         throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày hiện tại.");
+                     }
                  }
              }
         }

@@ -14,6 +14,7 @@
           <div class="main-wrapper">
             <jsp:include page="/WEB-INF/views/layout/topbar.jsp" />
             <main class="page-content">
+              <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
               <div
                 class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
@@ -33,21 +34,27 @@
               </div>
 
               <div class="data-surface p-3 mb-4" style="border: 1px solid var(--hms-border);">
-                <form action="${ctx}/manager/contracts" method="get" id="filterForm">
-                  <div class="row g-3 align-items-end">
-                    <div class="col-12 col-md-6">
-                      <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Tìm kiếm</label>
+                <form action="${ctx}/manager/contracts" method="get" id="filterForm"
+                      style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                  <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                    <div style="flex:2; min-width:200px;">
+                      <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
                       <div class="position-relative">
-                        <svg class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" name="searchName" class="form-control ps-5" placeholder="Tìm kiếm theo tên người đại diện..." value="${searchName}">
+                        <svg class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" width="16"
+                          height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="11" cy="11" r="8"></circle>
+                          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" name="searchName" class="form-control ps-5"
+                          placeholder="Tìm kiếm theo tên người đại diện..." value="${searchName}" style="width:100%">
                       </div>
                     </div>
-                    <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
-                      <c:if test="${not empty searchName}">
-                        <a href="${ctx}/manager/contracts" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa lọc</a>
-                      </c:if>
-                      <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Tìm kiếm</button>
-                    </div>
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
+                    <a href="${ctx}/manager/contracts"
+                       style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
+                    <button type="submit"
+                            style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm kiếm</button>
                   </div>
                 </form>
               </div>
@@ -73,7 +80,7 @@
                             <tr data-href="${ctx}/manager/contracts/detail?id=${c.contractId}">
                               <td>
                                 <a href="${ctx}/manager/contracts/detail?id=${c.contractId}"
-                                  style="font-weight:600;font-family:monospace">
+                                  style="font-weight:600">
                                   <c:out value="${c.code}" />
                                 </a>
                               </td>
@@ -88,17 +95,30 @@
                                   <c:out value="${c.tenantIdentityNumber}" />
                                 </small>
                               </td>
-                              <td class="d-none d-md-table-cell">
-                                <c:out value="${c.signedDate}" />
+                               <td class="d-none d-md-table-cell">
+                                <fmt:parseDate value="${c.signedDate}" pattern="yyyy-MM-dd" var="parsedSignedDate" type="date" />
+                                <fmt:formatDate value="${parsedSignedDate}" pattern="dd/MM/yyyy" />
                               </td>
                               <td class="d-none d-md-table-cell">
-                                <c:out value="${c.startDate}" /> -
-                                <c:out value="${c.endDate}" />
+                                <fmt:parseDate value="${c.startDate}" pattern="yyyy-MM-dd" var="parsedStartDate" type="date" />
+                                <fmt:formatDate value="${parsedStartDate}" pattern="dd/MM/yyyy" /> -
+                                <fmt:parseDate value="${c.endDate}" pattern="yyyy-MM-dd" var="parsedEndDate" type="date" />
+                                <fmt:formatDate value="${parsedEndDate}" pattern="dd/MM/yyyy" />
                               </td>
                               <td>
-                                <span class="badge-hms ${c.status == 'ACTIVE' ? 'success' : 'secondary'}">
-                                  <c:out value="${c.status}" />
-                                </span>
+                                <c:choose>
+                                  <c:when test="${c.status == 'ACTIVE'}">
+                                    <span class="badge-hms badge-success">Còn hiệu lực</span>
+                                  </c:when>
+                                  <c:when test="${c.status == 'INACTIVE'}">
+                                    <span class="badge-hms badge-neutral">Hết hiệu lực</span>
+                                  </c:when>
+                                  <c:otherwise>
+                                    <span class="badge-hms badge-neutral">
+                                      <c:out value="${c.status}" />
+                                    </span>
+                                  </c:otherwise>
+                                </c:choose>
                               </td>
                               <td class="d-none d-md-table-cell">
                                 <div class="d-inline-flex gap-1 align-items-center">
@@ -106,10 +126,12 @@
                                     class="btn-mintlify-secondary text-decoration-none"
                                     style="padding:4px 12px;font-size:0.8125rem">Xem</a>
                                   <c:if test="${c.status == 'INACTIVE'}">
-                                    <form method="post" action="${ctx}/manager/contracts/delete?id=${c.contractId}" style="display:inline; margin:0;"
-                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?');">
-                                      <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                                      <button type="submit" class="btn btn-sm btn-outline-danger" style="padding:4px 10px; font-size:0.8125rem;">Xóa</button>
+                                    <form method="post" action="${ctx}/manager/contracts/delete?id=${c.contractId}"
+                                      style="display:inline; margin:0;"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?');">
+                                      <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                      <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        style="padding:4px 10px; font-size:0.8125rem;">Xóa</button>
                                     </form>
                                   </c:if>
                                 </div>

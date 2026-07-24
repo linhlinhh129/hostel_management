@@ -48,4 +48,34 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </c:if>
 </body>
+<%-- PWA: Service Worker Registration --%>
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        // Tự động detect context path: /hostel-management (local) hoặc / (Azure ROOT.war)
+        var ctx = window.location.pathname.startsWith('/hostel-management') ? '/hostel-management' : '';
+        var swPath = ctx + '/sw.js';
+        var swScope = ctx + '/';
+
+        navigator.serviceWorker.register(swPath, { scope: swScope })
+            .then(function (reg) {
+                console.log('[PWA] Service Worker registered. Scope:', reg.scope);
+
+                reg.addEventListener('updatefound', function () {
+                    var newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', function () {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('[PWA] Phien ban moi san sang. Hay tai lai trang de cap nhat.');
+                        }
+                    });
+                });
+            })
+            .catch(function (err) {
+                console.warn('[PWA] Service Worker registration failed:', err);
+            });
+    });
+}
+</script>
+
+
 </html>

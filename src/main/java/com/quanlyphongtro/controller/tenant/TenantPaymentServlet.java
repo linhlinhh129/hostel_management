@@ -86,7 +86,7 @@ public class TenantPaymentServlet extends BaseServlet {
             Map<String, String> params = new HashMap<>();
             params.put("vnp_Version", "2.1.0");
             params.put("vnp_Command", "pay");
-            params.put("vnp_TmnCode", VNPayConfig.vnp_TmnCode);
+            params.put("vnp_TmnCode", VNPayConfig.getVnp_TmnCode());
             params.put("vnp_Amount", String.valueOf(finalAmountVND));
             params.put("vnp_CurrCode", "VND");
 
@@ -128,10 +128,10 @@ public class TenantPaymentServlet extends BaseServlet {
                 }
             }
 
-            String secureHash = VNPayConfig.hmacSHA512(VNPayConfig.secretKey, hashData.toString());
+            String secureHash = VNPayConfig.hmacSHA512(VNPayConfig.getSecretKey(), hashData.toString());
             query.append("&vnp_SecureHash=").append(secureHash);
 
-            response.sendRedirect(VNPayConfig.vnp_PayUrl + "?" + query);
+            response.sendRedirect(VNPayConfig.getVnp_PayUrl() + "?" + query);
 
         } catch (Exception e) {
             handleException(request, response, e);

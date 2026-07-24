@@ -129,20 +129,23 @@
 
           <div class="data-surface">
             <%-- Bộ lọc trạng thái --%>
-            <form method="get" action="${ctx}/manager/facilities/${facilityId}/rooms" id="filterForm" class="mb-4 p-3 rounded" style="background-color: var(--hms-bg-surface); border: 1px solid var(--hms-border);">
-              <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-4">
-                  <label class="form-label" style="font-size:0.875rem;font-weight:500;color:var(--hms-text-primary);margin-bottom:0.25rem;">Trạng thái</label>
-                  <select class="form-select" name="status">
+            <form method="get" action="${ctx}/manager/facilities/${facilityId}/rooms" id="filterForm"
+                  style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+              <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
+                <div style="flex:1; min-width:150px;">
+                  <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
+                  <select class="form-select" name="status" style="width:100%">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="AVAILABLE"   ${filterStatus == 'AVAILABLE'   ? 'selected' : ''}>Trống</option>
-                    <option value="OCCUPIED"    ${filterStatus == 'OCCUPIED'    ? 'selected' : ''}>Đang thuê</option>
+                    <option value="AVAILABLE" ${filterStatus == 'AVAILABLE' ? 'selected' : ''}>Trống</option>
+                    <option value="OCCUPIED"  ${filterStatus == 'OCCUPIED'  ? 'selected' : ''}>Đang thuê</option>
                   </select>
                 </div>
-                <div class="col-12 col-md-8 d-flex justify-content-md-end gap-2">
-                  <a href="${ctx}/manager/facilities/${facilityId}/rooms" class="btn btn-light border text-decoration-none" style="font-size:0.875rem;font-weight:500;padding:6px 16px;">Xóa bộ lọc</a>
-                  <button type="submit" class="btn-mintlify-secondary" style="padding:6px 20px;">Lọc</button>
-                </div>
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
+                <a href="${ctx}/manager/facilities/${facilityId}/rooms"
+                   style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
+                <button type="submit"
+                        style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Lọc</button>
               </div>
             </form>
 
@@ -158,7 +161,6 @@
                         <th class="d-none d-md-table-cell">Diện tích</th>
                         <th>Trạng thái</th>
                         <th>Chủ thuê</th>
-                        <th class="d-none d-md-table-cell">Số người ở</th>
                         <th class="d-none d-md-table-cell">Thao tác</th>
                       </tr>
                     </thead>
@@ -210,17 +212,7 @@
                               </c:otherwise>
                             </c:choose>
                           </td>
-                          <td class="d-none d-md-table-cell">
-                            <%-- Số người ở: 1 (chủ thuê) + people_count nếu có --%>
-                            <c:choose>
-                              <c:when test="${not empty room.tenantId}">
-                                <span class="badge-hms badge-neutral">≥1</span>
-                              </c:when>
-                              <c:otherwise>
-                                <span class="text-muted" style="font-size:0.8125rem">0</span>
-                              </c:otherwise>
-                            </c:choose>
-                          </td>
+
                           <td class="d-none d-md-table-cell">
                             <a href="${ctx}/manager/rooms/${room.id}"
                                class="btn-mintlify-secondary text-decoration-none"

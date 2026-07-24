@@ -1,10 +1,11 @@
 package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
-import com.quanlyphongtro.dao.RevenueDAO;
 import com.quanlyphongtro.dto.FacilityRevenueStatDTO;
 import com.quanlyphongtro.dto.PageDTO;
 import com.quanlyphongtro.dto.SystemRevenueDTO;
+import com.quanlyphongtro.service.RevenueService;
+import com.quanlyphongtro.service.impl.RevenueServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,15 +14,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 @WebServlet(name = "AdminRevenueServlet",
         urlPatterns = {"/admin/revenue", "/admin/revenue/*"})
 public class AdminRevenueServlet extends BaseServlet {
 
-    private final RevenueDAO revenueDAO = new RevenueDAO();
+    private final RevenueService revenueService = new RevenueServiceImpl();
 
     private static final int PAGE_SIZE = 10;
     private static final String BASE_PATH = "/admin/revenue";
@@ -53,17 +52,15 @@ public class AdminRevenueServlet extends BaseServlet {
     private void showIndex(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String selectedPeriod = resolvePeriod(req.getParameter("period"));
-        int selectedMonths    = parseIntOrDefault(req.getParameter("months"), 6);
 
-        SystemRevenueDTO systemRevenue = revenueDAO.getSystemRevenue(selectedPeriod);
-        List<FacilityRevenueStatDTO> facilityRevenues = revenueDAO.getFacilityRevenues(selectedPeriod);
-        List<FacilityRevenueStatDTO> revenueTrend = revenueDAO.getRevenueTrend(selectedMonths);
+        SystemRevenueDTO systemRevenue = revenueService.getSystemRevenue(selectedPeriod);
+        List<FacilityRevenueStatDTO> facilityRevenues = revenueService.getFacilityRevenues(selectedPeriod);
+        List<FacilityRevenueStatDTO> periodRevenues = revenueService.getRevenueTrend(6);
 
         req.setAttribute("systemRevenue",    systemRevenue);
         req.setAttribute("facilityRevenues", facilityRevenues);
-        req.setAttribute("revenueTrend",     revenueTrend);
+        req.setAttribute("periodRevenues",   periodRevenues);
         req.setAttribute("selectedPeriod",   selectedPeriod);
-        req.setAttribute("selectedMonths",   selectedMonths);
         req.getRequestDispatcher(VIEW_BASE + "index.jsp").forward(req, resp);
     }
 
@@ -72,9 +69,9 @@ public class AdminRevenueServlet extends BaseServlet {
         String selectedPeriod = resolvePeriod(req.getParameter("period"));
         int page = parseIntOrDefault(req.getParameter("page"), 1);
 
-        int total = revenueDAO.countFacilitiesWithRevenue(selectedPeriod);
+        int total = revenueService.countFacilitiesWithRevenue(selectedPeriod);
         List<FacilityRevenueStatDTO> items =
-            revenueDAO.getFacilityRevenuesPaged(selectedPeriod, page, PAGE_SIZE);
+            revenueService.getFacilityRevenuesPaged(selectedPeriod, page, PAGE_SIZE);
 
         req.setAttribute("page", new PageDTO<>(items, page, PAGE_SIZE, total));
         req.setAttribute("facilityRevenues", items);
@@ -85,10 +82,9 @@ public class AdminRevenueServlet extends BaseServlet {
     private void showByPeriod(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         int selectedMonths = parseIntOrDefault(req.getParameter("months"), 12);
-        List<FacilityRevenueStatDTO> revenueTrend = revenueDAO.getRevenueTrend(selectedMonths);
+        List<FacilityRevenueStatDTO> revenueTrend = revenueService.getRevenueTrend(selectedMonths);
 
         req.setAttribute("periodRevenues",  revenueTrend);
-        req.setAttribute("revenueTrend",    revenueTrend);
         req.setAttribute("selectedMonths",  selectedMonths);
         req.getRequestDispatcher(VIEW_BASE + "by-period.jsp").forward(req, resp);
     }

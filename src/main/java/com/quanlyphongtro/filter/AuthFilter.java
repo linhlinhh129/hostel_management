@@ -17,7 +17,8 @@ public class AuthFilter implements Filter {
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
             "/login", "/logout", "/forgot-password", "/reset-password",
             "/api/v1/auth",
-            "/assets", "/WEB-INF/views/auth", "/WEB-INF/views/error"
+            "/assets", "/WEB-INF/views/auth", "/WEB-INF/views/error",
+            "/manifest.json", "/sw.js"
     );
 
     @Override

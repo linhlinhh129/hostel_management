@@ -25,13 +25,13 @@
     padding: 20mm 25mm; /* Tăng lề trái phải lên 25mm */
     background: white;
     box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    font-family: 'Times New Roman', serif;
+    font-family: var(--hms-font);
     font-size: 12pt;
     line-height: 1.5;
     color: #000;
   }
   .a4-container h1, .a4-container h2, .a4-container h3, .a4-container h4, .a4-container h5, .a4-container h6 {
-    font-family: 'Times New Roman', serif;
+    font-family: var(--hms-font);
     font-weight: bold;
     text-align: center;
     color: #000;
@@ -91,11 +91,12 @@
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
            style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
-          <a href="${ctx}/manager/contracts" class="text-decoration-none text-muted mb-2 d-inline-block">← Quay lại danh sách</a>
           <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
           <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
         </div>
-        <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+        <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
+          <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+          <div class="d-flex gap-2 align-items-center flex-wrap">
           <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
             <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -118,6 +119,17 @@
               </button>
             </form>
           </c:if>
+          <c:if test="${contract.status == 'ACTIVE' || contract.status == 'INACTIVE'}">
+            <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500; height: 38px; border-radius: var(--hms-radius-full, 9999px); border-color: var(--hms-primary-color, #10b981); color: var(--hms-primary-color, #10b981);" data-bs-toggle="modal" data-bs-target="#extendContractModal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Gia hạn hợp đồng
+            </button>
+          </c:if>
           <button onclick="window.print()" class="btn-mintlify-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
               <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>
@@ -125,6 +137,7 @@
             In Hợp Đồng / Lưu PDF
           </button>
         </div>
+        </div><%-- end flex-column wrapper --%>
       </div>
 
       <div class="document-viewer-wrapper mt-4">
@@ -143,7 +156,10 @@
           <div class="mt-3 mb-3">
             <p class="text-bold">1. Đại diện bên cho thuê phòng trọ (Bên A)</p>
             <p>Ông/Bà: <strong><c:out value="${contract.manager.fullName}"/></strong></p>
-            <p>Sinh ngày: <strong><c:out value="${contract.manager.dob}"/></strong></p>
+            <p>Sinh ngày: <strong>
+              <fmt:parseDate value="${contract.manager.dob}" pattern="yyyy-MM-dd" var="parsedManagerDob" type="date" />
+              <fmt:formatDate value="${parsedManagerDob}" pattern="dd/MM/yyyy" />
+            </strong></p>
             <p>CMND/CCCD số: <strong><c:out value="${contract.manager.identityNumber}"/></strong>, cấp tại: <strong>Cục Cảnh sát quản lý hành chính về trật tự xã hội</strong></p>
             <p>Số điện thoại: <strong><c:out value="${contract.manager.phone}"/></strong></p>
           </div>
@@ -151,9 +167,15 @@
           <div class="mb-3">
             <p class="text-bold">2. Bên thuê phòng trọ (Bên B)</p>
             <p>Ông/Bà: <strong><c:out value="${contract.tenantFullName}"/></strong></p>
-            <p>Sinh ngày: <strong><c:out value="${contract.tenantDob}"/></strong></p>
+            <p>Sinh ngày: <strong>
+              <fmt:parseDate value="${contract.tenantDob}" pattern="yyyy-MM-dd" var="parsedTenantDob" type="date" />
+              <fmt:formatDate value="${parsedTenantDob}" pattern="dd/MM/yyyy" />
+            </strong></p>
             <p>Nơi đăng ký hộ khẩu thường trú: <strong><c:out value="${contract.tenantPermanentAddress}"/></strong></p>
-            <p>Số CMND/CCCD: <strong><c:out value="${contract.tenantIdentityNumber}"/></strong>, cấp ngày <strong><c:out value="${contract.tenantIdentityIssueDate}"/></strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
+            <p>Số CMND/CCCD: <strong><c:out value="${contract.tenantIdentityNumber}"/></strong>, cấp ngày <strong>
+              <fmt:parseDate value="${contract.tenantIdentityIssueDate}" pattern="yyyy-MM-dd" var="parsedIssueDate" type="date" />
+              <fmt:formatDate value="${parsedIssueDate}" pattern="dd/MM/yyyy" />
+            </strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
             <p>Số điện thoại: <strong><c:out value="${contract.tenantPhone}"/></strong></p>
           </div>
 
@@ -176,15 +198,20 @@
           <p class="text-bold mt-4" style="text-decoration: underline">Điều 2: Giá thuê và hình thức thanh toán</p>
           <p>Giá thuê: <strong><fmt:formatNumber value="${contract.room.roomFee}" pattern="#,##0"/> đ/tháng</strong></p>
           <p>Bằng chữ: <strong><c:out value="${contract.amountInWords}"/></strong></p>
-          <p>Phòng số: <strong><c:out value="${contract.room.code}"/></strong></p>
-          <p>Tầng: <strong><c:out value="${contract.room.code}"/></strong></p>
+          <p>Phòng số: <strong><c:out value="${contract.room.roomLabel}"/></strong></p>
+          <p>Tầng: <strong><c:out value="${contract.room.floorLabel}"/></strong></p>
           <p>Hình thức thanh toán: Tiền mặt hoặc chuyển khoản vào đầu tháng, từ ngày 01 đến ngày 05 hàng tháng.</p>
-          <p>Hợp đồng có giá trị kể từ <strong><c:out value="${contract.startDate}"/></strong> đến <strong><c:out value="${contract.endDate}"/></strong></p>
+          <p>Hợp đồng có giá trị kể từ <strong>
+            <fmt:parseDate value="${contract.startDate}" pattern="yyyy-MM-dd" var="parsedStartDate" type="date" />
+            <fmt:formatDate value="${parsedStartDate}" pattern="dd/MM/yyyy" />
+          </strong> đến <strong>
+            <fmt:parseDate value="${contract.endDate}" pattern="yyyy-MM-dd" var="parsedEndDate" type="date" />
+            <fmt:formatDate value="${parsedEndDate}" pattern="dd/MM/yyyy" />
+          </strong></p>
           <p>Tiền điện: <strong><fmt:formatNumber value="${contract.facility.electricityPrice}" pattern="#,##0"/> đ/số</strong>, tính theo chỉ số công tơ, thanh toán vào cuối các tháng.</p>
           <p>Tiền Internet: <strong><fmt:formatNumber value="${contract.facility.internetFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
           <p>Tiền dịch vụ: <strong><fmt:formatNumber value="${contract.facility.serviceFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
-          <p>Bên B đặt cọc cho bên A số tiền là: <strong>3.000.000 đ</strong></p>
-          <p>Bằng chữ: <strong>Ba triệu đồng chẵn</strong></p>
+          <p>Bên B đặt cọc cho bên A số tiền là: <strong><fmt:formatNumber value="${contract.room.depositAmount}" pattern="#,##0"/> đ</strong></p>
           <ul>
             <li>Tiền cọc sẽ được hoàn trả đầy đủ cho bên thuê khi hợp đồng này kết thúc và bên thuê hoàn trả đầy đủ chi phí thuê, bao gồm tiền phòng, điện, nước, phí dịch vụ và các chi phí khác liên quan.</li>
             <li>Trường hợp bên B hủy hợp đồng trước thời hạn, bên B sẽ không được hoàn trả số tiền đã đặt cọc.</li>
@@ -236,6 +263,40 @@
       </div>
 
     </main>
+  </div>
+</div>
+
+<!-- Extend Contract Modal -->
+<div class="modal fade" id="extendContractModal" tabindex="-1" aria-labelledby="extendContractModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      <form action="${ctx}/manager/contracts/extend" method="post">
+        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+        <input type="hidden" name="contractId" value="${contract.contractId}"/>
+        <div class="modal-header" style="border-bottom: 1px dashed var(--hms-border-soft); padding: 20px;">
+          <h5 class="modal-title" id="extendContractModalLabel" style="font-weight: 700; color: var(--hms-text);">Gia hạn hợp đồng</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <div class="mb-3">
+            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Mã hợp đồng</label>
+            <input type="text" class="form-control" value="${contract.code}" readonly style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Ngày hết hạn hiện tại</label>
+            <input type="text" class="form-control" value="${contract.formattedEndDate}" readonly style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label required" style="font-weight: 600; font-size: 13px; color: var(--hms-text);">Ngày hết hạn mới <span class="text-danger">*</span></label>
+            <input type="date" name="newEndDate" class="form-control" required min="${contract.endDate}" style="border-color: var(--hms-border);" />
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px dashed var(--hms-border-soft); padding: 20px;">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 20px; padding: 6px 20px;">Hủy</button>
+          <button type="submit" class="btn btn-primary" style="background-color: var(--hms-primary-color, #10b981); border: none; border-radius: 20px; padding: 6px 20px;">Xác nhận gia hạn</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 

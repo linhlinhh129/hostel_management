@@ -1,0 +1,15 @@
+<Context>
+    <Resource auth="Container"
+              driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+              maxIdle="5"
+              maxTotal="20"
+              maxWaitMillis="5000"
+              minIdle="1"
+              name="jdbc/HostelManagement"
+              password="${DB_PASSWORD}"
+              testOnBorrow="true"
+              type="javax.sql.DataSource"
+              url="jdbc:sqlserver://${DB_HOST}:${DB_PORT};databaseName=${DB_NAME};encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30"
+              username="${DB_USER}"
+              validationQuery="SELECT 1"/>
+</Context>

@@ -24,3 +24,7 @@
 ## 5. Kiểm thử & Căn chỉnh
 - [x] Test thủ công để đảm bảo độ chính xác của các con số.
 - [x] Kiểm tra tính responsive trên thiết bị di động (các thẻ phải xếp thành cột dọc).
+
+## 6. Cập nhật Hiển thị Lịch hẹn (US3)
+- [x] T001 [US3] Thêm hàm `getDashboardAppointmentTime()` vào `f:\SU26\New folder\hostel_management\src\main\java\com\quanlyphongtro\model\Request.java`
+- [x] T002 [US3] Thay đổi biến `${req.formattedAppointmentDate}` thành `${req.dashboardAppointmentTime}` trong bảng Lịch hẹn sắp tới tại `f:\SU26\New folder\hostel_management\src\main\webapp\WEB-INF\views\operator\dashboard.jsp`

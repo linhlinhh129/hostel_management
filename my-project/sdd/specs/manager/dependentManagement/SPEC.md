@@ -1,136 +1,128 @@
-# Feature: Quản lý Người phụ thuộc
+# **Feature: Quản lý người phụ thuộc**
 
-**Trạng thái:** Draft
-**Người viết:** [Tên]
-**Ngày:** [YYYY-MM-DD]
+Status: Completed
 
-## User Story
+Author: Antigravity
 
-Là Manager, tôi muốn quản lý thông tin người phụ thuộc của người thuê để hệ thống có thể lưu trữ thông tin những người đang ở cùng người thuê chính.
+Reviewer: [Tên]
 
-## Acceptance Criteria (EARS notation)
+Date: 2026-07-14
 
-### AC-01 Thêm người phụ thuộc
+Priority: High
 
-KHI Manager gửi thông tin người phụ thuộc hợp lệ
-HỆ THỐNG PHẢI tạo bản ghi người phụ thuộc mới và liên kết người phụ thuộc với người thuê đã chọn.
+---
 
-### AC-02 Kiểm tra người thuê tồn tại
+## **1. Business Context**
 
-KHI Manager thêm người phụ thuộc cho một người thuê
-HỆ THỐNG PHẢI kiểm tra người thuê được chọn có tồn tại và đang ở trạng thái ACTIVE.
+Tính năng Quản lý Người phụ thuộc giúp lưu giữ thông tin những thành viên cư trú cùng người thuê chính (như người thân, vợ/chồng, con cái). Việc này nhằm giải quyết nỗi đau của Ban quản lý khi không nắm rõ nhân khẩu cư trú thực tế trong phòng trọ, hỗ trợ các cơ quan chức năng khi cần đối soát nhân khẩu, và duy trì dữ liệu cư trú lịch sử sau khi người thuê chính kết thúc hợp đồng thuê.
 
-### AC-03 Kiểm tra dữ liệu bắt buộc
+---
 
-KHI Manager gửi thông tin người phụ thuộc thiếu trường bắt buộc
-HỆ THỐNG PHẢI từ chối yêu cầu và hiển thị lỗi kiểm tra dữ liệu.
+## **2. User Stories**
 
-Các trường bắt buộc bao gồm:
+### **Story 1 (Happy Path)**
 
-* Họ và tên
-* Quan hệ với người thuê chính
-* Ngày sinh
-* Số CCCD/CMND
+As a Manager, I want to thêm thông tin người phụ thuộc vào tài khoản người thuê chính đang hoạt động so that tôi ghi nhận đầy đủ nhân khẩu đang sinh sống tại phòng.
 
-### AC-04 Xem danh sách người phụ thuộc
+### **Story 2 (Happy Path)**
 
-KHI Manager mở trang chi tiết người thuê
-HỆ THỐNG PHẢI hiển thị danh sách người phụ thuộc được liên kết với người thuê đó.
+As a Manager, I want to xem danh sách người phụ thuộc trên hồ sơ chi tiết của người thuê so that tôi nắm được tổng số người đang ở trong phòng.
 
-### AC-05 Cập nhật người phụ thuộc
+### **Story 3 (Happy Path)**
 
-KHI Manager cập nhật thông tin người phụ thuộc với dữ liệu hợp lệ
-HỆ THỐNG PHẢI cập nhật bản ghi người phụ thuộc và trả về phản hồi thành công.
+As a Manager, I want to chỉnh sửa thông tin cá nhân của người phụ thuộc so that dữ liệu lưu trữ luôn chính xác khi có thay đổi.
 
-### AC-06 Xóa mềm người phụ thuộc
+### **Story 4 (Happy Path)**
 
-KHI Manager xóa người phụ thuộc khỏi người thuê
-HỆ THỐNG PHẢI chuyển trạng thái người phụ thuộc thành INACTIVE và giữ lại dữ liệu lịch sử.
+As a Manager, I want to xóa mềm người phụ thuộc khi họ không còn cư trú tại phòng so that danh sách hiển thị chỉ chứa những người đang ở thực tế nhưng vẫn giữ lại lịch sử đối soát.
 
-### AC-07 Người thuê không tồn tại
+---
 
-KHI Manager thêm người phụ thuộc cho một người thuê không tồn tại
-HỆ THỐNG PHẢI từ chối yêu cầu và trả về mã lỗi TENANT_NOT_FOUND.
+## **3. Acceptance Criteria (EARS)**
 
-### AC-08 Người thuê không hoạt động
+### **Thêm người phụ thuộc**
 
-KHI Manager thêm người phụ thuộc cho một người thuê có trạng thái INACTIVE
-HỆ THỐNG PHẢI từ chối yêu cầu và trả về mã lỗi TENANT_NOT_ACTIVE.
+WHEN Manager submits valid dependent info for an ACTIVE tenant THE SYSTEM SHALL insert a new record in `dbo.dependents` AND redirect to the tenant's profile.
 
-## Technical Notes
+WHEN Manager submits dependent info missing `fullName` or `relationship` THE SYSTEM SHALL reject and return validation error.
 
-API endpoint:
+### **Xem thông tin người phụ thuộc**
 
-```http
-POST /api/v1/tenants/{tenantId}/dependents
-```
+WHEN Manager views tenant detail page THE SYSTEM SHALL load and display all ACTIVE dependents of that tenant.
 
-API endpoint:
+WHEN Manager clicks on a dependent THE SYSTEM SHALL display dependent details, edit form, and delete button.
 
-```http
-GET /api/v1/tenants/{tenantId}/dependents
-```
+### **Cập nhật người phụ thuộc**
 
-API endpoint:
+WHEN Manager submits valid updated dependent info THE SYSTEM SHALL update the record in `dbo.dependents` AND redirect to the dependent detail page.
 
-```http
-PUT /api/v1/dependents/{dependentId}
-```
+### **Xóa mềm người phụ thuộc**
 
-API endpoint:
+WHEN Manager submits deletion request for a dependent THE SYSTEM SHALL set `deleted_at = GETDATE()` in `dbo.dependents` AND redirect to the tenant's profile.
 
-```http
-DELETE /api/v1/dependents/{dependentId}
-```
+---
 
-Thay đổi DB: thêm bảng dependents
+## **4. Servlet Contract**
 
-Các trường đề xuất cho bảng dependents:
+### **4.1 Servlet Entry Point**
 
-| Trường         | Mô tả                        |
-| -------------- | ---------------------------- |
-| dependentId    | ID của người phụ thuộc       |
-| tenantId       | ID người thuê chính          |
-| fullName       | Họ và tên người phụ thuộc    |
-| relationship   | Quan hệ với người thuê chính |
-| dateOfBirth    | Ngày sinh                    |
-| identityNumber | Số CCCD/CMND                 |
-| phone          | Số điện thoại, nếu có        |
-| status         | ACTIVE hoặc INACTIVE         |
-| createdBy      | Người tạo                    |
-| createdAt      | Thời gian tạo                |
-| updatedBy      | Người cập nhật               |
-| updatedAt      | Thời gian cập nhật           |
+| Thuộc tính | Giá trị |
+| --- | --- |
+| **Servlet** | `ManagerTenantsServlet` |
+| **URL Pattern** | `POST /manager/tenants/{tenantId}/dependents/add` — thêm người phụ thuộc |
+| **URL Pattern** | `GET /manager/dependents/{id}` — xem chi tiết người phụ thuộc |
+| **URL Pattern** | `POST /manager/dependents/{id}/edit` — lưu chỉnh sửa người phụ thuộc |
+| **URL Pattern** | `POST /manager/dependents/{id}/remove` — xóa mềm người phụ thuộc |
+| **Phân quyền** | Dành cho Manager (Kiểm tra qua `UserSessionDTO` / `currentUser` trong session) |
 
-## Validation
+---
 
-Họ và tên là bắt buộc.
+### **4.2 Request Attributes — Danh sách (list.jsp)**
 
-Quan hệ với người thuê chính là bắt buộc.
+*(Danh sách người phụ thuộc được hiển thị trực tiếp trong trang chi tiết người thuê `/manager/tenants/{id}`)*
 
-Ngày sinh là bắt buộc.
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+| --- | --- | --- | --- |
+| `dependents` | `List<Map<String, Object>>` | `tenantService.getTenantDependents(tenantId)` | Danh sách người phụ thuộc đang hoạt động của người thuê |
 
-Số CCCD/CMND là bắt buộc.
+---
 
-Số CCCD/CMND phải là duy nhất đối với người phụ thuộc đang ACTIVE.
+### **4.3 Request Attributes — Chi tiết (detail.jsp)**
 
-Người thuê chính phải tồn tại.
+| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
+| --- | --- | --- | --- |
+| `dependent` | `Map<String, Object>` | `tenantService.getDependentDetail(dependentId, managerId)` | Thông tin chi tiết người phụ thuộc (gồm các thông tin cá nhân và người thuê chính) |
 
-Người thuê chính phải có trạng thái ACTIVE.
+---
 
-Người phụ thuộc không có tài khoản đăng nhập riêng.
+### **4.4 Xử lý lỗi (Servlet Behavior)**
 
-Người phụ thuộc bắt buộc phải được liên kết với đúng một người thuê chính.
+| Tình huống | Hành vi |
+| --- | --- |
+| Chưa đăng nhập | Redirect về `/login` |
+| Người thuê chính không ở trạng thái ACTIVE | Redirect về trang chi tiết người thuê kèm lỗi `Người thuê chính phải ở trạng thái ACTIVE` |
+| Thiếu họ tên hoặc quan hệ | Gán `error` message vào Session và redirect về lại trang điền form |
+| Số điện thoại hoặc CCCD sai định dạng | Gán `error` message và redirect về lại trang điền form |
+| Người phụ thuộc không tồn tại | Trả về lỗi `404 Not Found` |
+| Thao tác ngoài cơ sở được phân quyền | Trả về lỗi `403 Forbidden` |
 
-Chỉ cho phép xóa mềm, không xóa vật lý dữ liệu.
+---
 
-## Dependency
+## **5. Technical Constraints**
 
-Feature này phụ thuộc vào Feature: Quản lý Người thuê.
+- **Phân quyền và Bảo mật:**
+  - Manager chỉ được quản lý người phụ thuộc thuộc phòng của cơ sở được phân quyền quản lý (`manager_id` trong `dbo.facilities`).
+  - Số CCCD của người phụ thuộc hiển thị trên giao diện phải được che phần giữa bằng phương thức `getMaskedIdentityNumber()` (chỉ hiển thị 3 số đầu và 3 số cuối).
+- **Tính toàn vẹn dữ liệu (Transaction):**
+  - Mọi thao tác Thêm, Cập nhật, Xóa mềm đều phải được ghi log vào hệ thống thông qua `AuditLogHelper.log`.
+- **Hiệu năng (Performance):**
+  - Thời gian phản hồi khi tải chi tiết thông tin người phụ thuộc không vượt quá **200 ms (p95)**.
+  - Thời gian xử lý ghi nhận Thêm/Sửa/Xóa mềm không vượt quá **300 ms (p95)**.
 
-Lý do:
+---
 
-* Người phụ thuộc phải được gán với một người thuê chính.
-* Người phụ thuộc không có tài khoản đăng nhập riêng.
-* Người phụ thuộc không được tạo độc lập nếu không có người thuê chính.
-* Khi người thuê chính kết thúc thuê, danh sách người phụ thuộc liên quan vẫn được giữ lại để tra cứu lịch sử.
+## **6. Out of Scope**
+
+- Gửi tin nhắn thông báo tự động (SMS/Zalo/Email) cho cư dân khi thêm người phụ thuộc.
+- Cho phép gán một người phụ thuộc vào nhiều người thuê chính khác nhau.
+- Tạo tài khoản đăng nhập hệ thống cho người phụ thuộc.

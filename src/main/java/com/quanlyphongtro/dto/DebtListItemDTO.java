@@ -22,6 +22,10 @@ public class DebtListItemDTO {
     private Integer overdueDays;
     private BigDecimal lateFeePreview;
     private String status;
+    private Integer roomId;
+
+    public Integer getRoomId() { return roomId; }
+    public void setRoomId(Integer roomId) { this.roomId = roomId; }
 
     public Integer getInvoiceId() { return invoiceId; }
     public void setInvoiceId(Integer invoiceId) { this.invoiceId = invoiceId; }

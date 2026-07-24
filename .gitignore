@@ -46,3 +46,6 @@ buildNumber.properties
 # OS specific
 __MACOSX/
 .DS_Store
+TEMPLATE.md
+USE_CASE_SPEC.md
+USE_CASE_SPEC copy.md

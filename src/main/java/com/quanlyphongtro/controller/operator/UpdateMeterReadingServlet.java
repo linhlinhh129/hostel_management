@@ -129,11 +129,11 @@ public class UpdateMeterReadingServlet extends HttpServlet {
 
             String electricFileName = UUID.randomUUID().toString() + "_" + getFileName(electricPart);
             electricPart.write(uploadPath + File.separator + electricFileName);
-            String electricImgUrl = request.getContextPath() + "/uploads/meter_readings/" + electricFileName;
+            String electricImgUrl = "/uploads/meter_readings/" + electricFileName;
 
             String waterFileName = UUID.randomUUID().toString() + "_" + getFileName(waterPart);
             waterPart.write(uploadPath + File.separator + waterFileName);
-            String waterImgUrl = request.getContextPath() + "/uploads/meter_readings/" + waterFileName;
+            String waterImgUrl = "/uploads/meter_readings/" + waterFileName;
 
             // Check if current month reading exists
             Integer existingMeterId = meterReadingService.checkCurrentMonthReadingExists(roomId, now.getMonthValue(), now.getYear());

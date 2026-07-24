@@ -28,6 +28,19 @@
                 </div>
             </div>
 
+            <c:if test="${overdueDays > 0}">
+                <div class="alert alert-danger d-flex align-items-center gap-3 mb-4" style="background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--hms-radius-lg); padding: 1rem 1.25rem; color: #991b1b;">
+                    <div style="font-size: 1.75rem; line-height: 1;">⚠</div>
+                    <div>
+                        <h4 style="margin: 0 0 0.25rem 0; font-weight: 700; font-size: 1rem; color: #991b1b;">Hóa đơn quá hạn thanh toán!</h4>
+                        <p style="margin: 0; font-size: 0.875rem; color: #b91c1c; line-height: 1.5;">
+                            Hóa đơn này đã trễ hạn thanh toán <strong>${overdueDays} ngày</strong> (Hạn chót: <strong><c:out value="${invoice.dueDate}"/></strong>). 
+                            Số tiền phạt trễ hạn được áp dụng là <strong>1% giá trị tiền phòng mỗi ngày</strong>, tương đương <strong><fmt:formatNumber value="${penaltyAmount}" pattern="#,##0"/> đ</strong>.
+                        </p>
+                    </div>
+                </div>
+            </c:if>
+
             <div class="row g-3">
                 <div class="col-lg-8">
                     <%-- Chi tiết các khoản --%>
@@ -80,6 +93,19 @@
                                         </td>
                                     </tr>
                                 </c:if>
+                                <c:if test="${overdueDays > 0}">
+                                    <tr>
+                                        <td style="padding:10px 1.25rem;color:var(--hms-danger)">
+                                            Phí phạt trễ hạn
+                                            <span style="color:var(--hms-stone);font-size:0.75rem">
+                                                (Quá hạn ${overdueDays} ngày, 1% tiền phòng/ngày)
+                                            </span>
+                                        </td>
+                                        <td style="padding:10px 1.25rem;text-align:right;font-weight:600;color:var(--hms-danger)">
+                                            + <fmt:formatNumber value="${penaltyAmount}" pattern="#,##0"/> đ
+                                        </td>
+                                    </tr>
+                                </c:if>
                                 </tbody>
                             </table>
                         </div>
@@ -103,9 +129,14 @@
                                 Tổng cộng phải trả
                             </div>
                             <div style="font-size:2.25rem;font-weight:800;letter-spacing:-1px;margin-bottom:0.5rem;
-                                        color:${invoice.status == 'PAID' ? 'var(--hms-success)' : invoice.status == 'OVERDUE' ? 'var(--hms-danger)' : 'var(--hms-ink)'}">
-                                <fmt:formatNumber value="${invoice.totalAmount}" pattern="#,##0"/> đ
+                                        color:${invoice.status == 'PAID' ? 'var(--hms-success)' : (invoice.status == 'OVERDUE' or overdueDays > 0) ? 'var(--hms-danger)' : 'var(--hms-ink)'}">
+                                <fmt:formatNumber value="${totalAmountToPay}" pattern="#,##0"/> đ
                             </div>
+                            <c:if test="${overdueDays > 0}">
+                                <div style="font-size: 0.8125rem; color: var(--hms-stone); margin-top: -0.25rem; margin-bottom: 0.75rem;">
+                                    (Tiền gốc: <fmt:formatNumber value="${invoice.totalAmount}" pattern="#,##0"/> đ + Phạt: <fmt:formatNumber value="${penaltyAmount}" pattern="#,##0"/> đ)
+                                </div>
+                            </c:if>
                             <div class="mb-2">
                                 <c:choose>
                                     <c:when test="${invoice.status == 'PAID'}">
@@ -148,7 +179,7 @@
                                     <form method="post" action="${ctx}/tenant/payment/create">
                                         <input type="hidden" name="csrfToken" value="${csrfToken}"/>
                                         <input type="hidden" name="invoiceId" value="${invoice.id}"/>
-                                        <input type="hidden" name="amount" value="${invoice.totalAmount}"/>
+                                        <input type="hidden" name="amount" value="${totalAmountToPay}"/>
                                         <button type="submit" class="btn btn-mintlify-primary w-100">
                                             Thanh toán qua VNPAY
                                         </button>

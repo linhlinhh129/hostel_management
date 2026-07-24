@@ -78,20 +78,20 @@
             </div>
 
             <!-- ── Quick Actions ────────────────────────────────── -->
-            <div class="d-flex flex-wrap gap-2 mb-4">
-                <a href="${ctx}/admin/facilities/create"     class="quick-action-btn primary">
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:1.5rem; align-items:center;">
+                <a href="${ctx}/admin/facilities/create" class="quick-action-btn primary" style="white-space:nowrap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
                     Thêm cơ sở
                 </a>
-                <a href="${ctx}/admin/personnel/create"      class="quick-action-btn primary">
+                <a href="${ctx}/admin/personnel/create" class="quick-action-btn primary" style="white-space:nowrap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
                     Thêm nhân sự
                 </a>
-                <a href="${ctx}/admin/notifications/create"  class="quick-action-btn">
+                <a href="${ctx}/admin/notifications/create" class="quick-action-btn primary" style="white-space:nowrap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                     </svg>
@@ -125,51 +125,36 @@
                             <c:choose>
                                 <c:when test="${not empty facilityRevenueStats}">
                                     <div class="table-responsive">
-                                        <table class="table-mintlify">
+                                        <table class="table-mintlify" style="font-size:0.8125rem">
                                             <thead>
                                             <tr>
-                                                <th>Cơ sở</th>
-                                                <th>Doanh thu đã thu</th>
-                                                <th>Tỷ lệ thu hồi</th>
-                                                <th>Chưa thanh toán</th>
-                                                <th>Quá hạn</th>
+                                                <th style="min-width:120px">Cơ sở</th>
+                                                <th style="min-width:110px;text-align:right">Đã thu</th>
+                                                <th style="text-align:center">Chưa TT</th>
+                                                <th style="text-align:center">Quá hạn</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             <c:forEach var="stat" items="${facilityRevenueStats}">
                                                 <tr>
-                                                    <td>
+                                                    <td style="max-width:140px">
                                                         <a href="${ctx}/admin/facilities/${stat.facilityId}"
-                                                           style="font-weight:600">
+                                                           style="font-weight:700;font-size:0.8125rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                                                             <c:out value="${stat.facilityCode}"/>
                                                         </a>
-                                                        <div style="font-size:0.75rem;color:var(--hms-stone)">
+                                                        <div style="font-size:0.6875rem;color:var(--hms-stone);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">
                                                             <c:out value="${stat.facilityName}"/>
                                                         </div>
                                                     </td>
-                                                    <td style="font-weight:700">
-                                                        <fmt:formatNumber value="${stat.totalRevenue}"
-                                                                          pattern="#,##0"/> đ
+                                                    <td style="font-weight:700;text-align:right;white-space:nowrap">
+                                                        <fmt:formatNumber value="${stat.totalRevenue}" pattern="#,##0"/>đ
                                                     </td>
-                                                    <td>
-                                                        <div style="display:flex;align-items:center;gap:6px">
-                                                            <div style="width:60px;height:6px;background:var(--hms-border);
-                                                                        border-radius:99px;overflow:hidden">
-                                                                <div style="height:100%;width:${stat.collectionRate}%;
-                                                                            background:${stat.collectionRate >= 80 ? 'var(--hms-success)' : stat.collectionRate >= 50 ? 'var(--hms-warning)' : 'var(--hms-danger)'};
-                                                                            border-radius:99px"></div>
-                                                            </div>
-                                                            <span style="font-size:0.75rem;font-weight:700">
-                                                                <c:out value="${stat.collectionRate}"/>%
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
+                                                    <td style="text-align:center">
                                                         <span class="badge-hms badge-warning">
                                                             <c:out value="${stat.unpaidCount}"/>
                                                         </span>
                                                     </td>
-                                                    <td>
+                                                    <td style="text-align:center">
                                                         <span class="badge-hms ${stat.overdueCount > 0 ? 'badge-danger' : 'badge-neutral'}">
                                                             <c:out value="${stat.overdueCount}"/>
                                                         </span>
@@ -244,8 +229,8 @@
                                         <c:forEach var="act" items="${recentActivities}" varStatus="st">
                                             <li style="padding:0.625rem 1.25rem;
                                                        border-bottom:1px solid var(--hms-border-soft);
-                                                       display:flex;gap:0.625rem;align-items:flex-start;
-                                                       animation:fadeInUp 0.4s ease ${st.index * 0.04}s both">
+                                                       display:flex;gap:0.625rem;align-items:flex-start"
+                                                data-anim-index="${st.index}">
                                                 <div style="width:28px;height:28px;border-radius:var(--hms-radius-sm);
                                                             background:linear-gradient(135deg,var(--hms-accent),var(--hms-accent-soft));
                                                             display:flex;align-items:center;justify-content:center;
@@ -281,46 +266,6 @@
                             </c:choose>
                         </div>
                     </div>
-                    <!-- Tỷ lệ phòng trống / đang thuê -->
-                    <div class="widget-surface mt-3">
-                        <div class="widget-surface-header">
-                            <h3>Tỷ lệ phòng trống / đang thuê</h3>
-                            <a href="${ctx}/admin/facilities"
-                               style="font-size:0.8125rem;color:var(--hms-accent-deep);font-weight:600;text-decoration:none">
-                                Xem cơ sở →
-                            </a>
-                        </div>
-                        <div class="widget-surface-body">
-                            <div class="d-flex justify-content-between align-items-center mb-1"
-                                 style="font-size:0.875rem;font-weight:500">
-                                <span>Đang thuê</span>
-                                <span style="font-weight:700"><c:out value="${occupancyRate}"/>%</span>
-                            </div>
-                            <div style="height:10px;background:var(--hms-border);border-radius:99px;overflow:hidden;margin-bottom:1rem">
-                                <div style="height:100%;
-                                            width:${occupancyRate}%;
-                                            background:linear-gradient(90deg,var(--hms-success),var(--hms-accent));
-                                            border-radius:99px;
-                                            transition:width 0.6s ease"></div>
-                            </div>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <span style="display:inline-flex;align-items:center;gap:6px;
-                                             background:var(--hms-success-bg,#ecfdf5);color:var(--hms-success);
-                                             border:1px solid var(--hms-success);
-                                             border-radius:99px;padding:4px 14px;font-size:0.8125rem;font-weight:600">
-                                    <span style="width:8px;height:8px;border-radius:50%;background:var(--hms-success);display:inline-block"></span>
-                                    <fmt:formatNumber value="${occupiedRooms}"/> thuê
-                                </span>
-                                <span style="display:inline-flex;align-items:center;gap:6px;
-                                             background:var(--hms-surface-2);color:var(--hms-stone);
-                                             border:1px solid var(--hms-border);
-                                             border-radius:99px;padding:4px 14px;font-size:0.8125rem;font-weight:600">
-                                    <span style="width:8px;height:8px;border-radius:50%;background:var(--hms-stone);display:inline-block"></span>
-                                    <fmt:formatNumber value="${availableRooms}"/> trống
-                                </span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
             </div><!-- /row -->
@@ -329,3 +274,9 @@
     </div>
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+<script>
+document.querySelectorAll('[data-anim-index]').forEach(function(el) {
+    var delay = (parseInt(el.getAttribute('data-anim-index'), 10) * 0.04) + 's';
+    el.style.animation = 'fadeInUp 0.4s ease ' + delay + ' both';
+});
+</script>

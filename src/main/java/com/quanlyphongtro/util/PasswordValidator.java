@@ -6,12 +6,12 @@ import java.util.regex.Pattern;
 
 public class PasswordValidator {
 
-    // Ít nhất 8 ký tự, ít nhất 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt
-    private static final String PASSWORD_PATTERN = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}$";
+    // Từ 8 đến 50 ký tự, ít nhất 1 chữ hoa, 1 chữ số, 1 ký tự đặc biệt
+    private static final String PASSWORD_PATTERN = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,50}$";
     private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 
-    public static final String POLICY_MESSAGE = "Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt.";
-    public static final String HTML_PATTERN = "(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,}";
+    public static final String POLICY_MESSAGE = "Mật khẩu phải từ 8 đến 50 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt.";
+    public static final String HTML_PATTERN = "(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=!]).{8,50}";
 
     public static boolean isValid(String password) {
         if (password == null) {

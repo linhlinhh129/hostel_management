@@ -14,7 +14,7 @@ public class DebtDAO extends BaseDAO {
     public List<DebtListItemDTO> findDebts(int managerId, String keyword, String status, int offset, int limit) {
         List<DebtListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT i.invoice_id, i.code AS invoice_code, r.code AS room_code, " +
+            "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, " +
             "u.user_id AS tenant_id, u.full_name AS tenant_name, u.phone AS tenant_phone, " +
             "f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
             "i.total_amount, i.room_fee, i.due_date, i.status, " +
@@ -60,6 +60,7 @@ public class DebtDAO extends BaseDAO {
                     DebtListItemDTO dto = new DebtListItemDTO();
                     dto.setInvoiceId(rs.getInt("invoice_id"));
                     dto.setInvoiceCode(rs.getString("invoice_code"));
+                    dto.setRoomId(rs.getInt("room_id"));
                     dto.setRoomCode(rs.getString("room_code"));
                     dto.setTenantId(rs.getInt("tenant_id"));
                     dto.setTenantName(rs.getString("tenant_name"));

@@ -17,20 +17,22 @@
 
             <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div>
-                    <a href="${ctx}/manager/debts" class="text-decoration-none text-muted mb-2 d-inline-block">&larr; Quay lại danh sách công nợ</a>
                     <h1 class="mb-1">Chi tiết công nợ <c:out value="${debt.invoiceCode}"/></h1>
                     <p class="mb-0 text-muted">Phòng: <c:out value="${debt.roomCode}"/> - Cơ sở: <c:out value="${debt.facilityName}"/></p>
                 </div>
-                <div class="d-flex align-items-center gap-3">
-                    <a href="${ctx}/manager/invoices/${debt.invoiceId}" class="btn-mintlify-primary text-decoration-none">Xem hóa đơn gốc</a>
-                    <c:choose>
-                        <c:when test="${debt.status == 'UNPAID'}">
-                            <span class="badge" style="background-color: var(--hms-warning-color, #f59e0b); font-size: 1rem; padding: 8px 16px;">Chưa thanh toán</span>
-                        </c:when>
-                        <c:when test="${debt.status == 'OVERDUE'}">
-                            <span class="badge" style="background-color: var(--hms-danger-color, #ef4444); font-size: 1rem; padding: 8px 16px;">Quá hạn</span>
-                        </c:when>
-                    </c:choose>
+                <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
+                    <a href="${ctx}/manager/debts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <a href="${ctx}/manager/invoices/${debt.invoiceId}" class="btn-mintlify-primary text-decoration-none">Xem hóa đơn gốc</a>
+                        <c:choose>
+                            <c:when test="${debt.status == 'UNPAID'}">
+                                <span class="badge-hms badge-warning" style="font-size:0.9rem;padding:6px 14px">Chưa thanh toán</span>
+                            </c:when>
+                            <c:when test="${debt.status == 'OVERDUE'}">
+                                <span class="badge-hms badge-danger" style="font-size:0.9rem;padding:6px 14px">Quá hạn</span>
+                            </c:when>
+                        </c:choose>
+                    </div>
                 </div>
             </div>
 
@@ -166,7 +168,10 @@
                             </li>
                             <li class="mb-3">
                                 <span class="text-muted d-block" style="font-size:0.875rem">Hạn thanh toán</span>
-                                <span class="fw-bold"><c:out value="${debt.dueDate}"/></span>
+                                <span class="fw-bold">
+                                    <fmt:parseDate value="${debt.dueDate}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
+                                    <fmt:formatDate value="${parsedDueDate}" pattern="dd/MM/yyyy" />
+                                </span>
                             </li>
                         </ul>
                         

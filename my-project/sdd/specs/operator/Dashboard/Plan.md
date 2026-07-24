@@ -31,7 +31,7 @@ Tạo một class DAO mới để xử lý việc tổng hợp dữ liệu hiệ
 Đường dẫn dự kiến: `/WEB-INF/views/operator/dashboard/dashboard.jsp`
 - **Thẻ thống kê (Metric Cards):** Hiển thị các con số yêu cầu và tiến độ điện nước.
 - **Thao tác nhanh (Quick Actions):** Các nút bấm chuyển hướng trực tiếp tới `/operator/incidents/create` và `/operator/meter-readings/update`.
-- **Lịch hẹn hôm nay:** Một bảng/danh sách ngắn hiển thị các lịch hẹn sửa chữa trong ngày, khi bấm vào sẽ chuyển đến trang chi tiết yêu cầu.
+- **Lịch hẹn hôm nay:** Một bảng/danh sách ngắn hiển thị các lịch hẹn sửa chữa trong ngày, khi bấm vào sẽ chuyển đến trang chi tiết yêu cầu. Bảng này sẽ dùng `appointSchedule` (cột `appoint_schedule` trong DB) để lấy đúng thời gian lịch hẹn, hiển thị dưới dạng HH:mm, thay vì lấy từ `rejection_reason` như trước đây để đảm bảo tính chính xác và hiển thị tốt cả cho các yêu cầu PENDING và IN_PROGRESS. Tích hợp thêm hàm `getDashboardAppointmentTime()` vào model `Request` để định dạng thời gian.
 
 #### [CẬP NHẬT] `sidebar.jsp`
 - Thêm một menu "Dashboard" ở vị trí đầu tiên trong thanh điều hướng (sidebar) của nhân viên vận hành.
