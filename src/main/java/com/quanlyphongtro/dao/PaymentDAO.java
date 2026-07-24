@@ -292,10 +292,16 @@ public class PaymentDAO extends BaseDAO {
             ps.setInt(2, approvedBy);
             int rows = ps.executeUpdate();
             if (rows > 0) {
-                String updateInvoiceSql = "UPDATE invoices SET status = 'PAID', updated_at = GETDATE() WHERE invoice_id = (SELECT invoice_id FROM payments WHERE payment_id = ?)";
-                try (PreparedStatement psInv = conn.prepareStatement(updateInvoiceSql)) {
-                    psInv.setInt(1, paymentId);
-                    psInv.executeUpdate();
+                int invoiceId = 0;
+                String getInvoiceIdSql = "SELECT invoice_id FROM payments WHERE payment_id = ?";
+                try (PreparedStatement psGetInv = conn.prepareStatement(getInvoiceIdSql)) {
+                    psGetInv.setInt(1, paymentId);
+                    try (ResultSet rs = psGetInv.executeQuery()) {
+                        if (rs.next()) invoiceId = rs.getInt("invoice_id");
+                    }
+                }
+                if (invoiceId > 0) {
+                    new InvoiceDAO().markInvoiceAsPaid(conn, invoiceId);
                 }
             }
         }

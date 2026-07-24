@@ -73,16 +73,31 @@ public class DebtDAO extends BaseDAO {
                     dto.setFacilityId(rs.getInt("facility_id"));
                     dto.setFacilityCode(rs.getString("facility_code"));
                     dto.setFacilityName(rs.getString("facility_name"));
-                    dto.setInvoiceTotalAmount(rs.getBigDecimal("total_amount"));
-                    dto.setRoomFee(rs.getBigDecimal("room_fee"));
-                    
+                    BigDecimal baseTotal = rs.getBigDecimal("total_amount");
+                    String invoiceStatus = rs.getString("status");
                     Date dueDate = rs.getDate("due_date");
+                    BigDecimal roomFee = rs.getBigDecimal("room_fee");
+                    
+                    if (!"PAID".equals(invoiceStatus) && dueDate != null && roomFee != null) {
+                        LocalDate dueLocalDate = dueDate.toLocalDate();
+                        LocalDate today = LocalDate.now();
+                        if (today.isAfter(dueLocalDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                            BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                                                        .multiply(new BigDecimal(daysLate))
+                                                        .setScale(0, RoundingMode.HALF_UP);
+                            if (baseTotal != null) baseTotal = baseTotal.add(lateFee);
+                        }
+                    }
+                    dto.setInvoiceTotalAmount(baseTotal);
+                    dto.setRoomFee(roomFee);
+                    
                     if (dueDate != null) {
                         dto.setDueDate(dueDate.toLocalDate());
                         dto.setBillingPeriod(new SimpleDateFormat("yyyyMM").format(dueDate));
                     }
                     
-                    dto.setStatus(rs.getString("status"));
+                    dto.setStatus(invoiceStatus);
                     dto.setPaidAmount(rs.getBigDecimal("paid_amount"));
                     
                     list.add(dto);

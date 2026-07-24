@@ -37,7 +37,7 @@ public class Invoice {
     private Integer newWaterReading;
     private BigDecimal electricAmount;
     private BigDecimal waterAmount;
-    private BigDecimal lateFee;          // phí chậm nộp tính runtime, không lưu DB
+    private BigDecimal lateFee;
     private String billingPeriod; // Example: "Tháng 05/2026"
     // Transient from JOIN
     private String roomCodeCache;

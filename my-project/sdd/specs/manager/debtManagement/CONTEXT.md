@@ -25,7 +25,7 @@
 * **Tính toán on-the-fly (Thời gian thực)**: Các chỉ số như *Số ngày nợ*, *Số tiền còn nợ*, và *Phí chậm nộp tạm tính* phải được tính toán trực tiếp khi chạy truy vấn, tuyệt đối không được lưu cứng vào database để tránh dư thừa và sai lệch dữ liệu[cite: 3].
 * **Thời gian ân hạn chậm nộp**: Quy định bất thành văn là phí chậm nộp chỉ bắt đầu được tạm tính nếu hóa đơn bị nộp muộn quá 03 ngày kể từ ngày đến hạn[cite: 3].
 * **Tỷ lệ phạt chậm nộp**: Được tính bằng $1\%$ giá trị tiền phòng/tháng cho mỗi ngày muộn sau thời gian ân hạn[cite: 3].
-* **Tính chất của Phí chậm nộp tạm tính**: Chỉ mang giá trị hiển thị tham khảo cho Ban quản lý, hệ thống không tự động cộng dồn vào tổng tiền hóa đơn hay tạo payment tự động[cite: 3].
+* **Tính chất của Phí chậm nộp**: Hệ thống sẽ tự động cộng dồn phí chậm nộp vào tổng tiền hóa đơn trên các danh sách. Khi hóa đơn được thanh toán (chuyển sang PAID), phí này sẽ được lưu cố định vào cơ sở dữ liệu[cite: 3].
 
 ## 3. STAKEHOLDERS
 <!-- Ai được lợi? Ai chịu ảnh hưởng? Ai có quyền quyết định? -->

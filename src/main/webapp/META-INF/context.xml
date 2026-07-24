@@ -15,8 +15,8 @@
             username="sqladmin@hostel-sql-dev-atu02378" 
             validationQuery="SELECT 1"/>
 
-  <!-- DATABASE LOCAL (Commented) 
-  <Resource auth="Container" 
+  <!-- DATABASE LOCAL (Commented)  -->
+  <!-- <Resource auth="Container" 
             driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" 
             maxIdle="5" 
             maxTotal="20" 
@@ -28,6 +28,6 @@
             type="javax.sql.DataSource" 
             url="jdbc:sqlserver://localhost:1433;databaseName=HostelManagement;encrypt=true;trustServerCertificate=true;" 
             username="sa" 
-            validationQuery="SELECT 1"/>
-  -->
+            validationQuery="SELECT 1"/> -->
+ 
 </Context>

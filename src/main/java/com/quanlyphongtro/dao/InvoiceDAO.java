@@ -181,20 +181,30 @@ public class InvoiceDAO extends BaseDAO {
         i.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
         i.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
 
-        // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
+        // Lấy phí chậm nộp từ DB nếu đã thanh toán, nếu chưa thì tính runtime
         BigDecimal lateFee = BigDecimal.ZERO;
         LocalDate dueDate = i.getDueDate();
-        if (dueDate != null && i.getRoomFee() != null && LocalDate.now().isAfter(dueDate)) {
-            long daysLate = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
-            lateFee = i.getRoomFee()
-                        .multiply(new BigDecimal("0.01"))
-                        .multiply(new BigDecimal(daysLate))
-                        .setScale(0, RoundingMode.HALF_UP);
+        
+        if ("PAID".equals(i.getStatus())) {
+            if (hasColumn(rs, "late_fee")) {
+                try {
+                    BigDecimal dbLateFee = rs.getBigDecimal("late_fee");
+                    if (dbLateFee != null) lateFee = dbLateFee;
+                } catch (SQLException ignore) {}
+            }
+        } else {
+            if (dueDate != null && i.getRoomFee() != null && LocalDate.now().isAfter(dueDate)) {
+                long daysLate = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
+                lateFee = i.getRoomFee()
+                            .multiply(new BigDecimal("0.01"))
+                            .multiply(new BigDecimal(daysLate))
+                            .setScale(0, RoundingMode.HALF_UP);
+            }
+            if (i.getTotalAmount() != null) {
+                i.setTotalAmount(i.getTotalAmount().add(lateFee));
+            }
         }
         i.setLateFee(lateFee);
-        if (i.getTotalAmount() != null) {
-            i.setTotalAmount(i.getTotalAmount().add(lateFee));
-        }
 
         if (hasColumn(rs, "old_electric")) {
             i.setOldElectricReading(getInteger(rs, "old_electric"));
@@ -343,6 +353,16 @@ public class InvoiceDAO extends BaseDAO {
     
 
     public boolean updateStatus(int invoiceId, String status) {
+        if ("PAID".equals(status)) {
+            try (Connection conn = DatabaseUtil.getConnection()) {
+                markInvoiceAsPaid(conn, invoiceId);
+                return true;
+            } catch (Exception e) {
+                logger.error("updateStatus to PAID failed for invoiceId={}", invoiceId, e);
+                return false;
+            }
+        }
+        
         String sql = "UPDATE dbo.invoices SET status = ?, updated_at = GETDATE() WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -353,6 +373,50 @@ public class InvoiceDAO extends BaseDAO {
             logger.error("updateStatus failed for invoiceId={}", invoiceId, e);
         }
         return false;
+    }
+
+    public void markInvoiceAsPaid(Connection conn, int invoiceId) throws SQLException {
+        String fetchSql = "SELECT room_fee, due_date, total_amount FROM invoices WHERE invoice_id = ? AND status != 'PAID'";
+        BigDecimal roomFee = BigDecimal.ZERO;
+        java.sql.Date dueDate = null;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        boolean found = false;
+        
+        try (PreparedStatement psFetch = conn.prepareStatement(fetchSql)) {
+            psFetch.setInt(1, invoiceId);
+            try (ResultSet rs = psFetch.executeQuery()) {
+                if (rs.next()) {
+                    roomFee = rs.getBigDecimal("room_fee");
+                    dueDate = rs.getDate("due_date");
+                    totalAmount = rs.getBigDecimal("total_amount");
+                    found = true;
+                }
+            }
+        }
+        
+        if (found) {
+            BigDecimal lateFee = BigDecimal.ZERO;
+            if (dueDate != null && roomFee != null) {
+                LocalDate dueLocalDate = dueDate.toLocalDate();
+                LocalDate today = LocalDate.now();
+                if (today.isAfter(dueLocalDate)) {
+                    long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                    lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                                     .multiply(new BigDecimal(daysLate))
+                                     .setScale(0, RoundingMode.HALF_UP);
+                }
+            }
+            if (totalAmount == null) totalAmount = BigDecimal.ZERO;
+            BigDecimal finalTotal = totalAmount.add(lateFee);
+            
+            String updateSql = "UPDATE invoices SET status = 'PAID', late_fee = ?, total_amount = ?, updated_at = GETDATE() WHERE invoice_id = ?";
+            try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                psUpdate.setBigDecimal(1, lateFee);
+                psUpdate.setBigDecimal(2, finalTotal);
+                psUpdate.setInt(3, invoiceId);
+                psUpdate.executeUpdate();
+            }
+        }
     }
 
     public boolean verifyInvoiceOwnership(int invoiceId, int tenantId) {
@@ -398,7 +462,7 @@ public class InvoiceDAO extends BaseDAO {
     public List<InvoiceListItemDTO> findInvoices(int managerId, String keyword, String status, String billingPeriod, int offset, int limit) {
         List<InvoiceListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT i.invoice_id, i.code, i.total_amount, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name " +
+            "SELECT i.invoice_id, i.code, i.total_amount, i.room_fee, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name " +
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
@@ -455,8 +519,24 @@ public class InvoiceDAO extends BaseDAO {
                      InvoiceListItemDTO dto = new InvoiceListItemDTO();
                      dto.setInvoiceId(rs.getInt("invoice_id"));
                      dto.setInvoiceCode(rs.getString("code"));
-                     dto.setTotalAmount(rs.getBigDecimal("total_amount"));
+                     BigDecimal baseTotal = rs.getBigDecimal("total_amount");
+                     String invoiceStatus = rs.getString("status");
                      Date d = rs.getDate("due_date");
+                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
+                     
+                     if (!"PAID".equals(invoiceStatus) && d != null && roomFee != null) {
+                         LocalDate dueLocalDate = d.toLocalDate();
+                         LocalDate today = LocalDate.now();
+                         if (today.isAfter(dueLocalDate)) {
+                             long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                             BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                                                         .multiply(new BigDecimal(daysLate))
+                                                         .setScale(0, RoundingMode.HALF_UP);
+                             if (baseTotal != null) baseTotal = baseTotal.add(lateFee);
+                         }
+                     }
+                     
+                     dto.setTotalAmount(baseTotal);
                      if (d != null) dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
                      dto.setStatus(rs.getString("status"));
                      dto.setRoomCode(rs.getString("room_code"));
@@ -612,18 +692,25 @@ public class InvoiceDAO extends BaseDAO {
                       dto.setServiceFee(rs.getBigDecimal("service_fee"));
                       dto.setOtherFee(rs.getBigDecimal("other_fee"));
 
-                      // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
+                      // Tính phí chậm nộp runtime hoặc lấy từ DB
                       BigDecimal lateFee = BigDecimal.ZERO;
-                      Date dueDateSql = rs.getDate("due_date");
-                      if (dueDateSql != null && dto.getRoomFee() != null) {
-                          LocalDate dueLocalDate = dueDateSql.toLocalDate();
-                          LocalDate today = LocalDate.now();
-                          if (today.isAfter(dueLocalDate)) {
-                              long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
-                              lateFee = dto.getRoomFee()
-                                          .multiply(new BigDecimal("0.01"))
-                                          .multiply(new BigDecimal(daysLate))
-                                          .setScale(0, RoundingMode.HALF_UP);
+                      if ("PAID".equals(dto.getStatus())) {
+                          try {
+                              BigDecimal dbLateFee = rs.getBigDecimal("late_fee");
+                              if (dbLateFee != null) lateFee = dbLateFee;
+                          } catch (SQLException ignore) {}
+                      } else {
+                          Date dueDateSql = rs.getDate("due_date");
+                          if (dueDateSql != null && dto.getRoomFee() != null) {
+                              LocalDate dueLocalDate = dueDateSql.toLocalDate();
+                              LocalDate today = LocalDate.now();
+                              if (today.isAfter(dueLocalDate)) {
+                                  long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                                  lateFee = dto.getRoomFee()
+                                              .multiply(new BigDecimal("0.01"))
+                                              .multiply(new BigDecimal(daysLate))
+                                              .setScale(0, RoundingMode.HALF_UP);
+                              }
                           }
                       }
                       dto.setLateFee(lateFee);

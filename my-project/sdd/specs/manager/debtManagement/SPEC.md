@@ -24,9 +24,7 @@ Trong hệ thống quản lý nhà trọ, công nợ là các hóa đơn chưa �
 - Phí chậm nộp tạm tính để tham khảo.
 - Chi tiết hóa đơn đang nợ.
 
-Nếu hóa đơn nộp muộn quá 03 ngày kể từ ngày đến hạn, hệ thống sẽ hiển thị phí chậm nộp tạm tính. Mỗi ngày muộn sau thời gian 03 ngày sẽ được tính bằng 1% giá trị tiền phòng/tháng.
-
-Phí chậm nộp này chỉ hiển thị để Ban quản lý tham khảo. Hệ thống không lưu khoản phí chậm nộp này vào bất kỳ bảng nào và không tự động cộng vào tổng tiền hóa đơn. Nếu Ban quản lý muốn thu khoản phí này, Ban quản lý sẽ tự nhập vào mục `Khoản phí khác` trong hóa đơn.
+**Phí chậm nộp tạm tính**: Nếu hóa đơn chưa thanh toán và đã quá hạn, hệ thống sẽ tự động tính phí chậm nộp dựa trên số ngày quá hạn (1% tiền phòng mỗi ngày) và cộng dồn vào `Tổng tiền hóa đơn` hiển thị trên danh sách. Khi thanh toán thành công (chuyển sang `PAID`), giá trị `late_fee` này sẽ được chốt và lưu cố định vào cơ sở dữ liệu.
 
 Feature này giúp Ban quản lý theo dõi các khoản chưa thu, kiểm tra hóa đơn quá hạn và chủ động xử lý công nợ với người thuê.
 
@@ -220,7 +218,7 @@ Tiền phòng = 3,000,000
 Phí chậm nộp tạm tính = 2 * (3,000,000 * 0.01) = 60,000 đ
 ```
 
-KHI phí chậm nộp tạm tính được hiển thị, THE SYSTEM SHALL không lưu giá trị này vào bảng `invoices`, `payments` hoặc bất kỳ bảng nào khác. Đồng thời, phí này không được tự động cộng vào tổng tiền hóa đơn hay tạo payment tự động.
+KHI hóa đơn chuyển sang trạng thái `PAID`, THE SYSTEM SHALL tính toán lần cuối phí chậm nộp và lưu giá trị này vào cột `late_fee` của bảng `invoices`, đồng thời cập nhật `total_amount` cố định trong cơ sở dữ liệu.
 
 KHI Ban quản lý muốn thu phí chậm nộp, THE SYSTEM SHALL yêu cầu Ban quản lý tự nhập khoản phí này vào `Khoản phí khác` của hóa đơn.
 
