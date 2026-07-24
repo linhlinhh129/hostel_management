@@ -241,18 +241,18 @@
                         </div>
                         <div class="col-12">
                             <label for="emailPassword" class="form-label">
-                                🔒 Mật khẩu ứng dụng (App Password) <span class="text-danger">*</span>
+                                🔒 Mật khẩu ứng dụng (App Password)
                             </label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="emailPassword"
                                        name="password" placeholder="••••••••"
-                                       autocomplete="new-password" required>
+                                       autocomplete="new-password">
                                 <button type="button" class="btn btn-outline-secondary btn-toggle-password"
                                         onclick="togglePassword('emailPassword', this)"
                                         title="Ẩn / Hiện mật khẩu">👁</button>
                             </div>
                             <div class="form-text">
-                                Nhập App Password của Gmail — không phải mật khẩu đăng nhập thông thường.
+                                Để trống nếu không muốn đổi mật khẩu. Nếu nhập mới, hãy dùng App Password của Gmail — không phải mật khẩu đăng nhập thông thường.
                             </div>
                         </div>
                     </div>
@@ -313,15 +313,18 @@
                         </div>
                         <div class="col-md-6">
                             <label for="vnpaySecretKey" class="form-label">
-                                🔒 Khóa bí mật (Secret Key) <span class="text-danger">*</span>
+                                🔒 Khóa bí mật (Secret Key)
                             </label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="vnpaySecretKey"
                                        name="secretKey" placeholder="••••••••"
-                                       autocomplete="new-password" required>
+                                       autocomplete="new-password">
                                 <button type="button" class="btn btn-outline-secondary btn-toggle-password"
                                         onclick="togglePassword('vnpaySecretKey', this)"
                                         title="Ẩn / Hiện khóa bí mật">👁</button>
+                            </div>
+                            <div class="form-text">
+                                Để trống nếu không muốn đổi Secret Key. Hệ thống sẽ giữ nguyên giá trị cũ.
                             </div>
                         </div>
                         <div class="col-12">

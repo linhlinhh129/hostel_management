@@ -18,7 +18,6 @@ import java.util.List;
 @WebServlet("/manager/invoices")
 public class InvoiceServlet extends BaseServlet {
     private InvoiceService invoiceService = new InvoiceServiceImpl();
-    private InvoiceDAO invoiceDAO = new InvoiceDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -71,7 +70,7 @@ public class InvoiceServlet extends BaseServlet {
         UserSessionDTO user = getCurrentUser(req);
         String roomCode = req.getParameter("roomCode");
         if (roomCode != null && !roomCode.trim().isEmpty() && user != null) {
-            BigDecimal previousDebt = invoiceDAO.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
+            BigDecimal previousDebt = invoiceService.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
             req.setAttribute("previousDebt", previousDebt);
             req.setAttribute("prefilledRoomCode", roomCode.trim());
         }

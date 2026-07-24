@@ -32,6 +32,6 @@
                             rel="stylesheet">
                         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
                             rel="stylesheet">
-                        <link href="${ctx}/assets/css/hostel-design.css?v=40" rel="stylesheet">
+                        <link href="${ctx}/assets/css/hostel-design.css?v=42" rel="stylesheet">
                         <link href="${ctx}/assets/css/mintlify.css?v=8" rel="stylesheet">
         </head>

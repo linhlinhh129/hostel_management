@@ -23,4 +23,5 @@ public interface InvoiceService {
     void updateInvoice(int managerId, int invoiceId, String dueDateStr, String taxRateStr, String otherFeeStr, String note) throws Exception;
     void updateStatus(int managerId, int invoiceId, String status) throws Exception;
     void deleteInvoice(int managerId, int invoiceId) throws Exception;
+    BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId);
 }

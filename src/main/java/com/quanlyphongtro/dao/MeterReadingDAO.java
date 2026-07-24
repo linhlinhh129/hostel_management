@@ -145,6 +145,59 @@ public class MeterReadingDAO extends BaseDAO {
         return false;
     }
 
+    public MeterReading getReadingByMonth(int roomId, int year, int month) {
+        String sql = "SELECT * FROM meter_readings " +
+                     "WHERE room_id = ? AND YEAR(reading_date) = ? AND MONTH(reading_date) = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, year);
+            ps.setInt(3, month);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public MeterReading getPreviousReadingByDate(int roomId, java.time.LocalDate readingDate) {
+        String sql = "SELECT TOP 1 * FROM meter_readings " +
+                     "WHERE room_id = ? AND reading_date < ? AND deleted_at IS NULL ORDER BY reading_date DESC";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setDate(2, java.sql.Date.valueOf(readingDate));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getMeterStatus(int meterId) {
+        String sql = "SELECT status FROM meter_readings WHERE meter_id = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, meterId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("status");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public MeterStatusDTO getPreviousReadingByRoomCode(String roomCode) {
         String sql = "SELECT TOP 1 r.room_id AS roomId, r.code AS roomCode, mr.electric, mr.water " +
                      "FROM rooms r " +

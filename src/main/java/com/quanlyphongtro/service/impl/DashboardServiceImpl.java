@@ -1,12 +1,12 @@
 package com.quanlyphongtro.service.impl;
 
-import com.quanlyphongtro.dao.DashboardDAO;
+import com.quanlyphongtro.dao.ManagerDashboardDAO;
 import com.quanlyphongtro.service.DashboardService;
 
 import java.util.Map;
 
 public class DashboardServiceImpl implements DashboardService {
-    private final DashboardDAO dashboardDAO = new DashboardDAO();
+    private final ManagerDashboardDAO dashboardDAO = new ManagerDashboardDAO();
 
     @Override
     public Map<String, Object> getManagerDashboardStats(int managerId) {
