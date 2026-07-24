@@ -177,6 +177,7 @@ BEGIN
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         deleted_at          DATETIME2           NULL,
+        late_fee            DECIMAL(18,2)       NOT NULL DEFAULT 0, -- Phí nộp chậm
 
         CONSTRAINT FK_invoices_rooms
             FOREIGN KEY (room_id) REFERENCES dbo.rooms(room_id),
