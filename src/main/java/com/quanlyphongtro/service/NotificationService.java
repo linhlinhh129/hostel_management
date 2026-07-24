@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service;
+import com.quanlyphongtro.exception.ValidationException;
 
 import com.quanlyphongtro.dto.PageDTO;
 import com.quanlyphongtro.model.Notification;
@@ -27,10 +28,10 @@ public interface NotificationService {
 
     /**
      * Tạo thông báo mới và gửi ngay (status = SENT).
-     * @throws com.quanlyphongtro.exception.ValidationException nếu dữ liệu không hợp lệ.
+     * @throws ValidationException nếu dữ liệu không hợp lệ.
      */
     void createAdminNotification(String title, String content, Integer createdBy)
-            throws com.quanlyphongtro.exception.ValidationException;
+            throws ValidationException;
 
     // ── Manager scope ─────────────────────────────────────────────────────
 

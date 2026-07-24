@@ -1,0 +1,51 @@
+# HƯỚNG DẪN SỬ DỤNG CÁC LỆNH SPECKIT (.specify)
+
+Hệ thống SpecKit cung cấp một quy trình làm việc chuẩn mực, giúp bạn quản lý từ khâu lấy yêu cầu đến khi code hoàn thiện. Bạn có thể sử dụng các lệnh dưới đây (gõ dưới dạng slash command như `/speckit-...`) để AI hỗ trợ bạn từng bước.
+
+---
+## 1. Khởi tạo & Cấu hình
+- `/speckit-constitution`
+  *Vai trò*: Tạo hoặc cập nhật bộ quy tắc nền tảng (constitution) của dự án.
+  *Cách áp dụng*: Chạy lệnh này khi mới bắt đầu dự án hoặc khi cần thay đổi chuẩn mực code. Giúp AI hiểu rõ kiến trúc, stack công nghệ và các quy tắc chung.
+
+---
+## 2. Đặc tả yêu cầu (Specification)
+- `/speckit-specify`
+  *Vai trò*: Tạo hoặc cập nhật file đặc tả chi tiết (spec.md) từ một đoạn mô tả tính năng.
+  *Cách áp dụng*: Khi bạn có ý tưởng tính năng mới, hãy dùng lệnh này để AI phân tích và viết ra chi tiết các yêu cầu kỹ thuật, nghiệp vụ, flow hoạt động.
+
+- `/speckit-clarify`
+  *Vai trò*: Đọc bản đặc tả và tự động tìm ra các điểm bị thiếu hoặc chưa rõ ràng.
+  *Cách áp dụng*: Dùng sau lệnh `specify`. AI sẽ hỏi bạn một số câu hỏi trọng tâm (ví dụ: "Phân quyền như thế nào?", "Lưu trữ dữ liệu ở đâu?") để bổ sung vào bản thiết kế cho chặt chẽ.
+
+---
+## 3. Lên kế hoạch & Chia nhỏ công việc (Planning & Tasks)
+- `/speckit-plan`
+  *Vai trò*: Dựa trên bản đặc tả, AI sẽ lên một bản kế hoạch triển khai chi tiết (plan.md) bao gồm thiết kế giao diện, luồng dữ liệu, API, cấu trúc database,...
+
+- `/speckit-tasks`
+  *Vai trò*: Dựa trên bản kế hoạch, tự động chia nhỏ thành một danh sách các công việc cụ thể (tasks.md). Các task sẽ được sắp xếp theo thứ tự (ví dụ: tạo database trước -> viết API -> làm giao diện).
+
+- `/speckit-analyze`
+  *Vai trò*: Quét qua 3 file (spec.md, plan.md, tasks.md) để phân tích chéo.
+  *Cách áp dụng*: Giúp kiểm tra xem có task nào bị thiếu so với yêu cầu ban đầu không, hoặc có phần nào thiết kế bị mâu thuẫn không.
+
+---
+## 4. Thực thi & Lập trình (Implementation)
+- `/speckit-implement`
+  *Vai trò*: Bắt đầu giai đoạn lập trình. AI sẽ đọc từng task trong file `tasks.md`, tự động code, kiểm tra và đánh dấu hoàn thành lần lượt cho đến khi xong toàn bộ tính năng.
+  *Cách áp dụng*: Dùng lệnh này khi bạn đã chốt xong kế hoạch và muốn AI bắt tay vào làm việc thật sự.
+
+- `/speckit-converge`
+  *Vai trò*: "Gom" lại dự án. AI sẽ đối chiếu code thực tế trong dự án với bản thiết kế (spec/plan). Nếu phát hiện tính năng nào làm chưa xong hoặc code chưa đúng chuẩn, AI sẽ sinh thêm các task mới vào `tasks.md` để hoàn thiện nốt.
+
+---
+## 5. Quản lý dự án & Tiện ích khác
+- `/speckit-checklist`
+  *Vai trò*: Tự động tạo ra một danh sách kiểm tra (checklist) để bạn test tính năng (ví dụ: test UI, test validation, test lỗi 404...).
+  
+- `/speckit-taskstoissues`
+  *Vai trò*: Kết nối với GitHub. Lệnh này sẽ tự động biến các dòng công việc trong `tasks.md` thành các GitHub Issues để bạn dễ dàng quản lý tiến độ dự án trên web.
+
+- `/speckit-agent-context-update`
+  *Vai trò*: Cập nhật và làm tươi (refresh) lại bộ nhớ ngữ cảnh của AI, giúp AI nắm bắt chuẩn xác nhất trạng thái hiện tại của toàn bộ SpecKit.

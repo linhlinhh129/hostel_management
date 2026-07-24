@@ -80,14 +80,13 @@ public class InvoiceDetailServlet extends BaseServlet {
                 String note = req.getParameter("note");
 
                 invoiceService.updateInvoice(user.getId(), invoiceId, dueDate, taxRate, otherFee, note);
-                // removed successMessage
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + invoiceId);
             } catch (IllegalArgumentException e) {
-                req.getSession().setAttribute("errorMessage", e.getMessage());
+                setFlashMessage(req, "danger", e.getMessage());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1] + "/edit");
             } catch (Exception e) {
                 e.printStackTrace();
-                req.getSession().setAttribute("errorMessage", "Đã xảy ra lỗi: " + e.getMessage());
+                setFlashMessage(req, "danger", "Đã xảy ra lỗi: " + e.getMessage());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1] + "/edit");
             }
         } else if (parts.length == 3 && "update-status".equals(parts[2])) {
@@ -97,11 +96,10 @@ public class InvoiceDetailServlet extends BaseServlet {
                 String status = req.getParameter("status");
                 
                 invoiceService.updateStatus(user.getId(), invoiceId, status);
-                // removed successMessage
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + invoiceId);
             } catch (Exception e) {
                 e.printStackTrace();
-                req.getSession().setAttribute("errorMessage", "Đã xảy ra lỗi: " + e.getMessage());
+                setFlashMessage(req, "danger", "Đã xảy ra lỗi: " + e.getMessage());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1]);
             }
         } else if (parts.length == 3 && "delete".equals(parts[2])) {

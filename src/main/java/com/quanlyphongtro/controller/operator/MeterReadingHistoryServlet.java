@@ -1,4 +1,9 @@
 package com.quanlyphongtro.controller.operator;
+import jakarta.servlet.http.HttpSession;
+import com.quanlyphongtro.dto.UserSessionDTO;
+import com.quanlyphongtro.dao.FacilityDAO;
+import com.quanlyphongtro.model.Facility;
+import java.util.ArrayList;
 
 import com.quanlyphongtro.dto.MeterStatusDTO;
 import com.quanlyphongtro.service.MeterReadingService;
@@ -24,20 +29,20 @@ public class MeterReadingHistoryServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        com.quanlyphongtro.dto.UserSessionDTO currentUser = (com.quanlyphongtro.dto.UserSessionDTO) session.getAttribute("currentUser");
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
 
         String facility = request.getParameter("facility");
         String roomCode = request.getParameter("roomCode");
 
-        com.quanlyphongtro.dao.FacilityDAO facilityDAO = new com.quanlyphongtro.dao.FacilityDAO();
-        java.util.List<com.quanlyphongtro.model.Facility> allFacilities = facilityDAO.findActiveList();
-        java.util.List<com.quanlyphongtro.model.Facility> myFacilities = new java.util.ArrayList<>();
-        for (com.quanlyphongtro.model.Facility f : allFacilities) {
+        FacilityDAO facilityDAO = new FacilityDAO();
+        List<Facility> allFacilities = facilityDAO.findActiveList();
+        List<Facility> myFacilities = new ArrayList<>();
+        for (Facility f : allFacilities) {
             if (f.getOperatorId() != null && f.getOperatorId().equals(currentUser.getId())) {
                 myFacilities.add(f);
             }

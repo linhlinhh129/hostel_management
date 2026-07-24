@@ -88,17 +88,17 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
-           style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-        <div>
-          <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
-          <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
+      <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem;display:block">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
+            <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
+          </div>
+          <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1;flex-shrink:0;align-self:flex-start">← Danh sách</a>
         </div>
-        <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
-          <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
-          <div class="d-flex gap-2 align-items-center flex-wrap">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;position:relative;z-index:1;justify-content:flex-end">
           <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
-            <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500;">
+            <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding:8px 16px;font-weight:500">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -107,37 +107,32 @@
             </a>
           </c:if>
           <c:if test="${contract.status == 'INACTIVE'}">
-            <form action="${ctx}/manager/contracts/delete?id=${contract.contractId}" method="post" style="display:inline; margin:0;"
-                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?');">
+            <form action="${ctx}/manager/contracts/delete?id=${contract.contractId}" method="post" style="display:inline;margin:0"
+                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?')">
               <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-              <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500; height: 38px; border-radius: var(--hms-radius-full, 9999px);">
+              <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" style="padding:8px 16px;font-weight:500;height:38px;border-radius:var(--hms-radius-full,9999px)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                 </svg>
                 Xóa hợp đồng
               </button>
             </form>
           </c:if>
           <c:if test="${contract.status == 'ACTIVE' || contract.status == 'INACTIVE'}">
-            <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-2" style="padding: 8px 16px; font-weight: 500; height: 38px; border-radius: var(--hms-radius-full, 9999px); border-color: var(--hms-primary-color, #10b981); color: var(--hms-primary-color, #10b981);" data-bs-toggle="modal" data-bs-target="#extendContractModal">
+            <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-2" style="padding:8px 16px;font-weight:500;height:38px;border-radius:var(--hms-radius-full,9999px);border-color:var(--hms-primary-color,#10b981);color:var(--hms-primary-color,#10b981)" data-bs-toggle="modal" data-bs-target="#extendContractModal">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
               Gia hạn hợp đồng
             </button>
           </c:if>
           <button onclick="window.print()" class="btn-mintlify-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
-              <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>
+              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
             </svg>
             In Hợp Đồng / Lưu PDF
           </button>
         </div>
-        </div><%-- end flex-column wrapper --%>
       </div>
 
       <div class="document-viewer-wrapper mt-4">

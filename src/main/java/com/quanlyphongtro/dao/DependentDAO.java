@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dao;
+import java.time.LocalDate;
 
 import com.quanlyphongtro.model.Dependent;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -135,7 +136,7 @@ public class DependentDAO extends BaseDAO {
                     dep.put("relationship", rs.getString("relationship"));
                     dep.put("phone", rs.getString("phone"));
                     dep.put("gender", rs.getString("gender"));
-                    java.sql.Date dDob = rs.getDate("dob");
+                    Date dDob = rs.getDate("dob");
                     dep.put("dob", dDob != null ? dDob.toString() : null);
                     dependents.add(dep);
                 }
@@ -179,7 +180,7 @@ public class DependentDAO extends BaseDAO {
                     dependent.put("relationship", rs.getString("relationship"));
                     dependent.put("phone", rs.getString("phone"));
                     dependent.put("gender", rs.getString("gender"));
-                    java.sql.Date dob = rs.getDate("dob");
+                    Date dob = rs.getDate("dob");
                     dependent.put("dob", dob != null ? dob.toString() : null);
                     dependent.put("tenantId", rs.getInt("tenant_id"));
                     dependent.put("tenantName", rs.getString("tenant_name"));
@@ -230,7 +231,7 @@ public class DependentDAO extends BaseDAO {
         return 0;
     }
 
-    public boolean addDependent(int tenantId, String fullName, String relationship, String phone, String gender, java.time.LocalDate dob, String identityNumber) {
+    public boolean addDependent(int tenantId, String fullName, String relationship, String phone, String gender, LocalDate dob, String identityNumber) {
         String sql = "INSERT INTO dbo.dependents (tenant_id, full_name, relationship, phone, gender, dob, identity_number, created_at, updated_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -240,7 +241,7 @@ public class DependentDAO extends BaseDAO {
             ps.setString(3, relationship);
             ps.setString(4, phone);
             ps.setString(5, gender);
-            ps.setDate(6, dob != null ? java.sql.Date.valueOf(dob) : null);
+            ps.setDate(6, dob != null ? Date.valueOf(dob) : null);
             ps.setString(7, identityNumber);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -249,7 +250,7 @@ public class DependentDAO extends BaseDAO {
         }
     }
 
-    public boolean updateDependent(int dependentId, String fullName, String relationship, String phone, String gender, java.time.LocalDate dob, String identityNumber) {
+    public boolean updateDependent(int dependentId, String fullName, String relationship, String phone, String gender, LocalDate dob, String identityNumber) {
         String updateSql = "UPDATE dbo.dependents SET full_name = ?, relationship = ?, phone = ?, gender = ?, dob = ?, identity_number = ?, updated_at = GETDATE() WHERE dependent_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(updateSql)) {
@@ -257,7 +258,7 @@ public class DependentDAO extends BaseDAO {
             ps.setString(2, relationship);
             ps.setString(3, phone);
             ps.setString(4, gender);
-            ps.setDate(5, dob != null ? java.sql.Date.valueOf(dob) : null);
+            ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
             ps.setString(6, identityNumber);
             ps.setInt(7, dependentId);
             return ps.executeUpdate() > 0;

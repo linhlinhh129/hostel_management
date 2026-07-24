@@ -9,13 +9,12 @@
 
 ## 1. Tổng quan Giải pháp
 
-Tính năng Quản lý Thông báo cho phép Admin tạo, lưu và xem các thông báo gửi đến toàn bộ cư dân đang hoạt động trong hệ thống.
+Tính năng Quản lý Thông báo cho phép Admin tạo, lưu và xem các thông báo gửi đến toàn bộ user trong hệ thống.
 
 Phạm vi feature:
 - Admin tạo thông báo mới
 - Hiển thị danh sách thông báo với tìm kiếm và phân trang
 - Xem chi tiết thông báo
-- Ghi nhận Audit Log cho thao tác tạo và xem thông báo
 - Chỉ Admin có quyền truy cập
 
 Ngoại trừ:
@@ -26,7 +25,7 @@ Ngoại trừ:
 
 **Kiến trúc:**
 - Backend API: create/list/detail notification
-- Database: lưu Notification và liên kết audit
+- Database: lưu Notification
 - Frontend UI: form tạo, danh sách, chi tiết
 - Bảo mật: kiểm tra quyền Admin
 
@@ -40,7 +39,7 @@ Ngoại trừ:
 
 **Công việc:**
 - Rà soát SPEC và CONTEXT để xác định yêu cầu chi tiết
-- Thiết kế schema Notification, audit log
+- Thiết kế schema Notification
 - Xác định API contract cho POST /api/v1/notifications, GET /api/v1/notifications, GET /api/v1/notifications/{id}
 - Định nghĩa validation, lỗi business và mã lỗi
 
@@ -57,19 +56,17 @@ Ngoại trừ:
 
 **Công việc:**
 - Tạo entity và repository Notification
-- Triển khai service tạo thông báo, lưu notification và ghi audit
+- Triển khai service tạo thông báo và lưu notification
 - Triển khai service lấy danh sách với search + pagination
 - Triển khai service lấy chi tiết thông báo
 - Áp dụng validation: tiêu đề, nội dung, độ dài, recipient
 - Áp dụng kiểm tra quyền Admin
-- Ghi log cho thao tác tạo và xem
 
 **Key Features:**
 - Create notification
 - List notifications with search and pagination
 - View notification detail
 - Admin-only access
-- Audit logging
 
 ---
 
@@ -93,7 +90,8 @@ Ngoại trừ:
 **Công việc:**
 - Viết unit test cho backend service và API
 - Viết integration test cho controller
-- Kiểm thử chức năng frontend và kịch bản người dùng
+- Kiểm thử chức năng frontend
+- Áp dụng phân quyền truy cập Admin qua cấu hình bảo mật / URL Filter
 - Chạy UAT cho luồng tạo, tìm kiếm, xem chi tiết
 - Hoàn thiện tài liệu feature và release notes
 
@@ -104,21 +102,14 @@ Ngoại trừ:
 ### Validation
 - Title không được để trống
 - Content không được để trống, tối đa 1000 ký tự
-- Nếu không có cư dân đang hoạt động, trả về lỗi `NO_RECIPIENT_FOUND`
-- Chỉ Admin mới được phép truy cập và thao tác
 
 ### Performance
 - Giữ response time < 500ms (P95)
 - Hỗ trợ phân trang `page` + `size`
 - Tìm kiếm theo title với keyword
 
-### Audit Logging
-- Ghi lại hành động tạo thông báo
-- Ghi lại hành động xem chi tiết/danh sách nếu cần
-- Lưu userId, thời điểm, hành động
-
 ### Security
-- Kiểm tra role Admin trước khi cho phép POST và truy cập trang quản lý
+- Quyền truy cập được lọc qua cấu hình bảo mật bên ngoài / URL Filter
 - Tránh tiết lộ dữ liệu cho người không có quyền
 
 ---
@@ -127,11 +118,9 @@ Ngoại trừ:
 
 ### Nội bộ
 - Authentication/Authorization service để xác thực role Admin
-- Thành phần Tenant/Resident để xác định số lượng cư dân đang hoạt động
 - Cơ sở dữ liệu chung của hệ thống
 
 ### Blocking Issues
-- Nếu chưa có sẵn hệ thống audit logging, cần triển khai song song
 - Nếu chưa có API kiểm tra quyền Admin, cần bổ sung trước
 
 ---
@@ -140,7 +129,6 @@ Ngoại trừ:
 
 | Risk | Impact | Mitigation |
 |------|--------|-----------|
-| Dữ liệu cư dân hoạt động không chính xác | High | Xác thực lại nguồn dữ liệu tenant, test với dữ liệu thật |
 | Response time tăng với danh sách lớn | Medium | Sử dụng pagination, index title, giới hạn select |
 | Validation không đủ chặt | Medium | Viết unit test và kiểm thử kịch bản lỗi |
 | Phân quyền không đúng | High | Thực hiện kiểm tra role ở nhiều lớp (service + controller) |
@@ -154,6 +142,5 @@ Ngoại trừ:
 - ✓ Tìm kiếm theo tiêu đề trả về kết quả phù hợp
 - ✓ Chi tiết thông báo hiển thị đầy đủ: mã, tiêu đề, nội dung, ngày tạo, người tạo
 - ✓ Phân trang hoạt động và hiển thị trạng thái khi không có dữ liệu
-- ✓ Audit log ghi nhận thao tác tạo và xem
 - ✓ Chỉ Admin có thể truy cập chức năng
 - ✓ Backend và frontend được kiểm thử đầy đủ

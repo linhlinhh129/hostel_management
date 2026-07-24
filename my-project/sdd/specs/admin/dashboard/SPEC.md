@@ -111,7 +111,7 @@ THE SYSTEM SHALL từ chối truy cập và trả về lỗi FORBIDDEN.
 | **Servlet**     | `AdminDashboardServlet`                     |
 | **URL Pattern** | `GET /admin/dashboard`                      |
 | **Forward đến** | `/WEB-INF/views/admin/dashboard.jsp`        |
-| **Phân quyền**  | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
+| **Phân quyền**  | Role = `ADMIN` (kiểm tra qua `RoleFilter`) |
 
 ---
 

@@ -22,7 +22,7 @@ public class AdminPersonnelServlet extends BaseServlet {
 
     private final PersonnelService personnelService = new PersonnelServiceImpl();
 
-    private static final int    PAGE_SIZE = 20;
+    private static final int    PAGE_SIZE = 10;
     private static final String BASE_PATH = "/admin/personnel";
     private static final String VIEW_BASE = "/WEB-INF/views/admin/personnel/";
 

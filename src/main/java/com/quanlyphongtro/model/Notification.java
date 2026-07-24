@@ -1,4 +1,7 @@
 package com.quanlyphongtro.model;
+import java.util.Date;
+import java.time.ZoneId;
+import java.sql.Timestamp;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -69,23 +72,23 @@ public class Notification {
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
     
-    public java.util.Date getSentAtAsDate() {
+    public Date getSentAtAsDate() {
         if (sentAt == null) return null;
-        return java.util.Date.from(sentAt.atZone(java.time.ZoneId.systemDefault()).toInstant());
+        return Date.from(sentAt.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
     // Backward compatibility for JSP fmt:formatDate
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
-        return java.sql.Timestamp.valueOf(createdAt);
+        return Timestamp.valueOf(createdAt);
     }
 
-    public java.util.Date getUpdatedAtAsDate() {
+    public Date getUpdatedAtAsDate() {
         if (updatedAt == null) return null;
-        return java.sql.Timestamp.valueOf(updatedAt);
+        return Timestamp.valueOf(updatedAt);
     }
 
     public boolean isUnread() { return unread; }

@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
-
+ 
 public class CommunityPostServiceImpl implements CommunityPostService {
     private static final Logger logger = LoggerFactory.getLogger(CommunityPostServiceImpl.class);
     private final CommunityPostDAO communityPostDAO;

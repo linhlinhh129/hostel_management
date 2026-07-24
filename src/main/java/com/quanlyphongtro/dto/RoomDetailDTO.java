@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dto;
+import java.util.Date;
 
 import java.math.BigDecimal;
 
@@ -21,8 +22,8 @@ public class RoomDetailDTO {
     private String floor;
     private String roomNumber;
     private BigDecimal roomFee;
-    private java.util.Date createdAtAsDate;
-    private java.util.Date updatedAtAsDate;
+    private Date createdAtAsDate;
+    private Date updatedAtAsDate;
 
     public RoomDetailDTO() {}
 
@@ -170,19 +171,19 @@ public class RoomDetailDTO {
         this.roomFee = roomFee;
     }
 
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         return createdAtAsDate;
     }
 
-    public void setCreatedAtAsDate(java.util.Date createdAtAsDate) {
+    public void setCreatedAtAsDate(Date createdAtAsDate) {
         this.createdAtAsDate = createdAtAsDate;
     }
 
-    public java.util.Date getUpdatedAtAsDate() {
+    public Date getUpdatedAtAsDate() {
         return updatedAtAsDate;
     }
 
-    public void setUpdatedAtAsDate(java.util.Date updatedAtAsDate) {
+    public void setUpdatedAtAsDate(Date updatedAtAsDate) {
         this.updatedAtAsDate = updatedAtAsDate;
     }
 }

@@ -12,10 +12,10 @@
 Admin Dashboard là màn hình tổng quan read-only, tổng hợp dữ liệu từ 5 module: Cơ sở, Nhân sự, Doanh thu, Thông báo và Audit Log. Hiển thị dưới dạng KPI Cards + Widgets theo mô hình JSP/Servlet thuần, không dùng AJAX hay real-time.
 
 **Kiến trúc:**
-- `AdminDashboardServlet` — thu thập dữ liệu từ các DAO, forward sang JSP
+- `AdminDashboardServlet` — gọi `AdminDashboardService` để lấy dữ liệu, forward sang JSP
+- `AdminDashboardService` / `AdminDashboardServiceImpl` — thu thập dữ liệu từ các DAO và xử lý logic
 - `dashboard.jsp` — render giao diện từ attributes Servlet truyền sang
-- Mỗi DAO được gọi độc lập trong try/catch riêng để đảm bảo partial failure handling
-- Không có Service layer riêng cho Dashboard (query trực tiếp từ DAO)
+- Xử lý partial failure (try/catch riêng từng block) được thực hiện ở tầng Service để đảm bảo an toàn nếu một DAO lỗi
 
 ---
 
@@ -27,12 +27,15 @@ Admin Dashboard là màn hình tổng quan read-only, tổng hợp dữ liệu t
 
 **Công việc:**
 - Implement các DAO method cần thiết nếu chưa có
-- Implement `AdminDashboardServlet.doGet()`
-- Xử lý partial failure (try/catch riêng từng block)
+- Implement `AdminDashboardService` và `AdminDashboardServiceImpl`
+- Xử lý partial failure (try/catch riêng từng block) bên trong `AdminDashboardServiceImpl`
+- Xử lý cache 60 giây trong `AdminDashboardServiceImpl`
+- Implement `AdminDashboardServlet.doGet()` (thêm try-catch tổng quát để catch exception ngoài dự kiến)
 - Set attributes cho JSP
 
 **Deliverables:**
 - `AdminDashboardServlet.java` hoàn chỉnh
+- `AdminDashboardService.java` và `AdminDashboardServiceImpl.java` hoàn chỉnh
 - Các DAO methods: `getMonthlyRevenueTotal`, `getFacilityRevenues`, `findRecent`, `countToday`, `countAll`, `countByRole`
 
 ---

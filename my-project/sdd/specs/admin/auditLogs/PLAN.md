@@ -13,7 +13,7 @@ Feature Xem Nhật ký Hệ thống cho phép Admin truy vết toàn bộ hành 
 
 Phạm vi feature:
 - Xem danh sách Audit Log với lọc và phân trang
-- Lọc theo entityType, action, createdBy, fromDate, toDate
+- Lọc theo entityType, action, actor, fromDate, toDate
 - Danh sách chỉ đọc — không cho phép tạo, sửa, xóa
 - Chỉ Admin có quyền truy cập
 
@@ -24,7 +24,7 @@ Ngoại trừ:
 - Không theo dõi real-time
 
 **Kiến trúc:**
-- Backend API: GET /api/v1/audit-logs với query filter + pagination
+- Backend Servlet: GET /admin/audit-logs với query filter + pagination
 - Database: Bảng `audit_log` đã tồn tại, được ghi từ các module nghiệp vụ khác
 - Frontend UI: Danh sách với bộ lọc, phân trang
 - Bảo mật: Kiểm tra role ADMIN
@@ -41,8 +41,8 @@ Ngoại trừ:
 - Rà soát SPEC và CONTEXT để xác định yêu cầu chi tiết
 - Kiểm tra schema bảng `audit_log` hiện có trong database
 - Xác định các giá trị hợp lệ của `entityType` và `action`
-- Định nghĩa API contract cho `GET /api/v1/audit-logs`
-- Định nghĩa các mã lỗi: `INVALID_FILTER`, `INVALID_DATE_RANGE`, `FORBIDDEN`, `UNAUTHORIZED`
+- Định nghĩa Servlet contract cho `GET /admin/audit-logs`
+- Xác định hành vi xử lý validation và phân quyền (FORBIDDEN, UNAUTHORIZED)
 
 **Deliverables:**
 - API contract rõ ràng
@@ -56,15 +56,15 @@ Ngoại trừ:
 **Mục tiêu:** Triển khai backend API và business logic
 
 **Công việc:**
-- Tạo repository truy vấn `audit_log` với dynamic filter
+- Tạo DAO truy vấn `audit_log` với dynamic filter
 - Triển khai service lấy danh sách với filter + pagination
 - Validate tham số lọc (fromDate/toDate, entityType, action)
-- Kiểm tra quyền ADMIN trước khi xử lý
-- Chuẩn hóa response theo format chuẩn
+- Kiểm tra quyền ADMIN qua RoleFilter
+- Chuẩn hóa dữ liệu truyền sang JSP
 
 **Key Features:**
 - Danh sách audit log có phân trang
-- Lọc theo entityType, action, createdBy, fromDate, toDate
+- Lọc theo entityType, action, actor, fromDate, toDate
 - Xử lý lỗi validation tham số
 
 ---
@@ -98,12 +98,12 @@ Ngoại trừ:
 ## 3. Key Technical Considerations
 
 ### Dynamic Query / Filter
-- Sử dụng Specification hoặc JPQL động để build query theo filter
-- Tránh N+1 query khi load danh sách
+- Sử dụng SQL động qua PreparedStatement để build query theo filter
+- Tránh N+1 query khi load danh sách (sử dụng batch lookup tên entity)
 - Index trên các cột: `entity_type`, `action`, `created_by`, `created_at`
 
 ### Pagination
-- Page 0-based, mặc định size=10
+- Page 1-based, mặc định size=10
 - Sắp xếp mặc định: `createdAt DESC`
 
 ### oldValue / newValue
@@ -111,8 +111,8 @@ Ngoại trừ:
 - Frontend parse và hiển thị dạng diff hoặc pre-formatted JSON
 
 ### Authorization
-- Kiểm tra role ADMIN ở cả controller và service layer
-- Trả về 401 nếu chưa đăng nhập, 403 nếu không đủ quyền
+- Kiểm tra role ADMIN thông qua `RoleFilter` và `AuthFilter`
+- Chưa đăng nhập redirect về `/login`, không đủ quyền trả về 403 Forbidden
 
 ---
 

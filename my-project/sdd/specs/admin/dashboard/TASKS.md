@@ -8,20 +8,24 @@
 
 ## Epic 1: Backend (8 points)
 
-### Task 1.1: Implement AdminDashboardServlet (5 points)
+### Task 1.1: Implement AdminDashboardService & Servlet (5 points)
 **Assignee:** Backend Developer  
 **Duration:** 2 ngày  
 **Mô tả:**
-- Implement `doGet()` thu thập dữ liệu từ 5 DAO
-- Mỗi DAO call nằm trong try/catch riêng — partial failure không ảnh hưởng các phần khác
+- Implement `AdminDashboardService` và `AdminDashboardServiceImpl` để thu thập dữ liệu từ 5 DAO
+- Mỗi DAO call trong Service nằm trong try/catch riêng — partial failure không ảnh hưởng các phần khác
+- Cài đặt cơ chế Cache 60 giây trong `AdminDashboardServiceImpl` để giảm tải DB
+- Implement `AdminDashboardServlet.doGet()` gọi Service
+- Thêm try-catch tổng quát trong Servlet và gọi `handleException` để tránh văng lỗi 500
 - Set đầy đủ attributes: `monthlyRevenue`, `totalFacilities`, `activeFacilities`, `totalPersonnel`, `managerCount`, `operatorCount`, `totalNotifications`, `todayAuditLogs`, `facilityRevenueStats`, `recentActivities`, `currentPeriodLabel`
 - Format thời gian hoạt động gần đây: `dd/MM/yyyy HH:mm:ss`
 - Forward sang `/WEB-INF/views/admin/dashboard.jsp`
 
 **Acceptance Criteria:**
-- ✓ Servlet thu thập đủ data từ 5 nguồn
-- ✓ Partial failure: nếu 1 DAO lỗi, các DAO khác vẫn chạy bình thường
-- ✓ Không có SQL trong Servlet — tất cả đi qua DAO
+- ✓ Service thu thập đủ data từ 5 nguồn và có cache 60s
+- ✓ Partial failure: nếu 1 DAO lỗi, các DAO/phần khác vẫn chạy bình thường
+- ✓ Servlet có xử lý exception tổng quát
+- ✓ Không có SQL trong Servlet — tất cả đi qua Service/DAO
 - ✓ Không có `System.out.println()` — dùng SLF4J logger
 
 **Dependencies:** Các DAO methods phải tồn tại

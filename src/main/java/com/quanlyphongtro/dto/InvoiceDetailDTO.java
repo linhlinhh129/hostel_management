@@ -1,4 +1,7 @@
 package com.quanlyphongtro.dto;
+import java.util.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 import java.math.BigDecimal;
 
@@ -30,6 +33,7 @@ public class InvoiceDetailDTO {
     private BigDecimal serviceFee;
     private BigDecimal internetFee;
     private BigDecimal otherFee;
+    private BigDecimal lateFee;        // phí chậm nộp tính tại runtime (không lưu DB)
     
     private BigDecimal subtotal;
     private BigDecimal taxRate;
@@ -126,6 +130,9 @@ public class InvoiceDetailDTO {
     public BigDecimal getOtherFee() { return otherFee; }
     public void setOtherFee(BigDecimal otherFee) { this.otherFee = otherFee; }
 
+    public BigDecimal getLateFee() { return lateFee; }
+    public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
+
     public BigDecimal getSubtotal() { return subtotal; }
     public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
 
@@ -180,23 +187,23 @@ public class InvoiceDetailDTO {
     public String getStatusBadgeClass() { return statusBadgeClass; }
     public String getStatusLabel() { return statusLabel; }
 
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         try {
             if (createdAt == null || createdAt.trim().isEmpty()) return null;
-            return java.sql.Timestamp.valueOf(createdAt);
+            return Timestamp.valueOf(createdAt);
         } catch (Exception e) {
             return null;
         }
     }
 
-    public java.util.Date getUpdatedAtAsDate() {
+    public Date getUpdatedAtAsDate() {
         try {
             if (updatedAt == null || updatedAt.trim().isEmpty()) return null;
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             return sdf.parse(updatedAt);
         } catch (Exception e) {
             try {
-                return java.sql.Timestamp.valueOf(updatedAt);
+                return Timestamp.valueOf(updatedAt);
             } catch (Exception ex) {
                 return null;
             }

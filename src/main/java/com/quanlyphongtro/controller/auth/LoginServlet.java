@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.auth;
+import com.quanlyphongtro.exception.ForbiddenException;
 
 import com.quanlyphongtro.constant.ErrorMessageConstant;
 import com.quanlyphongtro.controller.BaseServlet;
@@ -37,6 +38,7 @@ public class LoginServlet extends BaseServlet {
     }
 
     @Override
+    //lấy username và password từ request 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
@@ -49,6 +51,7 @@ public class LoginServlet extends BaseServlet {
             return;
         }
 
+        //nếu user này đang bị khóa tạm thời do nhập sai quá nhiều lần trước đó
         if (LoginAttemptTracker.isLocked(username.trim())) {
             req.setAttribute("errorMessage", ErrorMessageConstant.ACCOUNT_LOCKED);
             req.setAttribute("username", username);
@@ -75,7 +78,7 @@ public class LoginServlet extends BaseServlet {
                 req.setAttribute("username", username);
                 req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
             }
-        } catch (com.quanlyphongtro.exception.ForbiddenException e) {
+        } catch (ForbiddenException e) {
             req.setAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
             req.setAttribute("username", username);
             req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);

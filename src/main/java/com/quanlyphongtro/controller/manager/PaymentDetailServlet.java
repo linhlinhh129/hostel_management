@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.manager;
+import com.quanlyphongtro.model.User;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.PaymentDetailDTO;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 @WebServlet("/manager/payments/*")
 public class PaymentDetailServlet extends BaseServlet {
@@ -28,13 +30,13 @@ public class PaymentDetailServlet extends BaseServlet {
             int paymentId = Integer.parseInt(pathInfo.substring(1));
             int userId = 1;
             try {
-                jakarta.servlet.http.HttpSession session = request.getSession(false);
+                HttpSession session = request.getSession(false);
                 if (session != null && session.getAttribute("currentUser") != null) {
                     Object userObj = session.getAttribute("currentUser");
-                    if (userObj instanceof com.quanlyphongtro.model.User) {
-                        userId = ((com.quanlyphongtro.model.User) userObj).getId();
+                    if (userObj instanceof User) {
+                        userId = ((User) userObj).getId();
                     } else {
-                        java.lang.reflect.Method m = userObj.getClass().getMethod("getId");
+                        Method m = userObj.getClass().getMethod("getId");
                         userId = (Integer) m.invoke(userObj);
                     }
                 }
@@ -82,10 +84,10 @@ public class PaymentDetailServlet extends BaseServlet {
             Object userObj = session.getAttribute("currentUser");
             int userId = 1;
             try {
-                if (userObj instanceof com.quanlyphongtro.model.User) {
-                    userId = ((com.quanlyphongtro.model.User) userObj).getId();
+                if (userObj instanceof User) {
+                    userId = ((User) userObj).getId();
                 } else if (userObj != null) {
-                    java.lang.reflect.Method m = userObj.getClass().getMethod("getId");
+                    Method m = userObj.getClass().getMethod("getId");
                     userId = (Integer) m.invoke(userObj);
                 }
             } catch (Exception e) {}

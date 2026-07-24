@@ -1,4 +1,7 @@
 package com.quanlyphongtro.dao;
+import java.math.BigDecimal;
+import java.sql.Types;
+import java.sql.Date;
 
 import com.quanlyphongtro.dto.RoomOccupancyStatDTO;
 import com.quanlyphongtro.model.Facility;
@@ -129,14 +132,14 @@ public class RoomDAO extends BaseDAO {
      * Chỉ cập nhật diện tích (area) của phòng — dùng cho inline edit trên trang chi
      * tiết cơ sở.
      */
-    public boolean updateArea(int roomId, java.math.BigDecimal area) {
+    public boolean updateArea(int roomId, BigDecimal area) {
         String sql = "UPDATE dbo.rooms SET area = ?, updated_at = GETDATE() WHERE room_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             if (area != null) {
                 ps.setBigDecimal(1, area);
             } else {
-                ps.setNull(1, java.sql.Types.DECIMAL);
+                ps.setNull(1, Types.DECIMAL);
             }
             ps.setInt(2, roomId);
             return ps.executeUpdate() > 0;
@@ -157,24 +160,24 @@ public class RoomDAO extends BaseDAO {
             if (room.getArea() != null) {
                 ps.setBigDecimal(3, room.getArea());
             } else {
-                ps.setNull(3, java.sql.Types.DECIMAL);
+                ps.setNull(3, Types.DECIMAL);
             }
             ps.setString(4, room.getStatus());
             if (room.getTenantId() != null) {
                 ps.setInt(5, room.getTenantId());
             } else {
-                ps.setNull(5, java.sql.Types.INTEGER);
+                ps.setNull(5, Types.INTEGER);
             }
-            ps.setBigDecimal(6, room.getDepositAmount() != null ? room.getDepositAmount() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(6, room.getDepositAmount() != null ? room.getDepositAmount() : BigDecimal.ZERO);
             if (room.getContractStartDate() != null) {
-                ps.setDate(7, java.sql.Date.valueOf(room.getContractStartDate()));
+                ps.setDate(7, Date.valueOf(room.getContractStartDate()));
             } else {
-                ps.setNull(7, java.sql.Types.DATE);
+                ps.setNull(7, Types.DATE);
             }
             if (room.getContractEndDate() != null) {
-                ps.setDate(8, java.sql.Date.valueOf(room.getContractEndDate()));
+                ps.setDate(8, Date.valueOf(room.getContractEndDate()));
             } else {
-                ps.setNull(8, java.sql.Types.DATE);
+                ps.setNull(8, Types.DATE);
             }
             ps.setBigDecimal(9, room.getRoomFee());
             ps.setInt(10, room.getId() != null && room.getId() > 0 ? room.getId() : room.getRoomId());
@@ -190,7 +193,7 @@ public class RoomDAO extends BaseDAO {
      * Tìm chi tiết phòng kèm thông tin facility và tenant — dùng cho AdminRoomServlet.
      * Trả về Map<String, Object> để tiện set attribute sang JSP mà không cần thêm DTO mới.
      */
-    public java.util.Optional<java.util.Map<String, Object>> findDetailForAdmin(int roomId) {
+    public Optional<Map<String, Object>> findDetailForAdmin(int roomId) {
         String sql =
             "SELECT r.room_id, r.facility_id, r.code, r.area, r.status, " +
             "       r.room_fee, r.deposit_amount, r.created_at, r.updated_at, " +
@@ -211,9 +214,9 @@ public class RoomDAO extends BaseDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) return java.util.Optional.empty();
+                if (!rs.next()) return Optional.empty();
 
-                java.util.Map<String, Object> room = new java.util.HashMap<>();
+                Map<String, Object> room = new HashMap<>();
                 room.put("id",             rs.getInt("room_id"));
                 room.put("facilityId",     rs.getInt("facility_id"));
                 room.put("facilityCode",   rs.getString("facility_code"));
@@ -228,8 +231,8 @@ public class RoomDAO extends BaseDAO {
                 room.put("roomFee",       rs.getObject("room_fee"));
                 room.put("depositAmount", rs.getObject("deposit_amount"));
 
-                java.sql.Timestamp cAt = rs.getTimestamp("created_at");
-                java.sql.Timestamp uAt = rs.getTimestamp("updated_at");
+                Timestamp cAt = rs.getTimestamp("created_at");
+                Timestamp uAt = rs.getTimestamp("updated_at");
                 room.put("createdAt",     cAt != null ? cAt.toLocalDateTime().toString() : "—");
                 room.put("updatedAt",     uAt != null ? uAt.toLocalDateTime().toString() : "—");
                 room.put("createdAtAsDate", cAt);
@@ -253,24 +256,24 @@ public class RoomDAO extends BaseDAO {
                 room.put("floor",      floor);
                 room.put("roomNumber", roomNum);
 
-                return java.util.Optional.of(room);
+                return Optional.of(room);
             }
         } catch (Exception e) {
             logger.error("RoomDAO.findDetailForAdmin failed for roomId={}", roomId, e);
         }
-        return java.util.Optional.empty();
+        return Optional.empty();
     }
 
     /**
      * Cập nhật diện tích và giá phòng cùng lúc — dùng cho AdminRoomServlet.
      */
-    public boolean updateAreaAndFee(int roomId, java.math.BigDecimal area, java.math.BigDecimal fee) {
+    public boolean updateAreaAndFee(int roomId, BigDecimal area, BigDecimal fee) {
         String sql = "UPDATE dbo.rooms SET area = ?, room_fee = ?, updated_at = GETDATE() " +
                      "WHERE room_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (area != null) ps.setBigDecimal(1, area); else ps.setNull(1, java.sql.Types.DECIMAL);
-            if (fee  != null) ps.setBigDecimal(2, fee);  else ps.setNull(2, java.sql.Types.DECIMAL);
+            if (area != null) ps.setBigDecimal(1, area); else ps.setNull(1, Types.DECIMAL);
+            if (fee  != null) ps.setBigDecimal(2, fee);  else ps.setNull(2, Types.DECIMAL);
             ps.setInt(3, roomId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -498,7 +501,7 @@ public class RoomDAO extends BaseDAO {
                     room.put("floor", floorStr);
                     room.put("roomNumber", numberStr);
 
-                    java.math.BigDecimal roomFee = rs.getBigDecimal("room_fee");
+                    BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     room.put("roomFee", roomFee);
                     return room;
                 }

@@ -1,4 +1,6 @@
 package com.quanlyphongtro.controller.manager;
+import jakarta.servlet.http.HttpSession;
+import com.quanlyphongtro.model.User;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.PaymentListItemDTO;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.lang.reflect.Method;
 
 @WebServlet("/manager/payments")
 public class PaymentServlet extends BaseServlet {
@@ -37,13 +40,13 @@ public class PaymentServlet extends BaseServlet {
         
         int userId = 1;
         try {
-            jakarta.servlet.http.HttpSession session = request.getSession(false);
+            HttpSession session = request.getSession(false);
             if (session != null && session.getAttribute("currentUser") != null) {
                 Object userObj = session.getAttribute("currentUser");
-                if (userObj instanceof com.quanlyphongtro.model.User) {
-                    userId = ((com.quanlyphongtro.model.User) userObj).getId();
+                if (userObj instanceof User) {
+                    userId = ((User) userObj).getId();
                 } else {
-                    java.lang.reflect.Method m = userObj.getClass().getMethod("getId");
+                    Method m = userObj.getClass().getMethod("getId");
                     userId = (Integer) m.invoke(userObj);
                 }
             }

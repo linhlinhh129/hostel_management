@@ -1,4 +1,9 @@
 package com.quanlyphongtro.controller.manager;
+import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
+import java.io.File;
+import com.quanlyphongtro.util.ValidationUtil;
+import java.util.UUID;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -140,7 +145,7 @@ public class ManagerTicketsServlet extends BaseServlet {
 
         try {
             ticket = requestService.getManagerTicketDetail(ticketId, currentUser.getId());
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (Exception e) {
@@ -185,10 +190,10 @@ public class ManagerTicketsServlet extends BaseServlet {
 
     private void handleSchedule(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String appointmentDateStr = req.getParameter("appointmentDate");
-        java.time.LocalDateTime ldt = null;
+        LocalDateTime ldt = null;
         if (appointmentDateStr != null && !appointmentDateStr.trim().isEmpty()) {
             try {
-                ldt = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+                ldt = LocalDateTime.parse(appointmentDateStr.trim());
             } catch (Exception e) {
                 logger.error("Failed to parse appointment date", e);
                 setFlashMessage(req, "danger", "Ngày hẹn không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
@@ -231,9 +236,9 @@ public class ManagerTicketsServlet extends BaseServlet {
             return;
         }
 
-        java.time.LocalDateTime newLdt = null;
+        LocalDateTime newLdt = null;
         try {
-            newLdt = java.time.LocalDateTime.parse(appointmentDateStr.trim());
+            newLdt = LocalDateTime.parse(appointmentDateStr.trim());
         } catch (Exception e) {
             logger.error("Failed to parse reschedule appointment date", e);
             setFlashMessage(req, "danger", "Ngày hẹn mới không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
@@ -250,7 +255,7 @@ public class ManagerTicketsServlet extends BaseServlet {
             } else {
                 setFlashMessage(req, "danger", "Lỗi thay đổi lịch hẹn.");
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (Exception e) {
@@ -272,9 +277,9 @@ public class ManagerTicketsServlet extends BaseServlet {
 
         List<String> fileNames = new ArrayList<>();
         try {
-            String uploadPath = req.getServletContext().getRealPath("") + java.io.File.separator + "uploads"
-                    + java.io.File.separator + "requests";
-            java.io.File uploadDir = new java.io.File(uploadPath);
+            String uploadPath = req.getServletContext().getRealPath("") + File.separator + "uploads"
+                    + File.separator + "requests";
+            File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
             }
@@ -284,16 +289,16 @@ public class ManagerTicketsServlet extends BaseServlet {
                     String originalFileName = getFileName(part);
                     String contentType = part.getContentType();
 
-                    if (!com.quanlyphongtro.util.ValidationUtil.isValidFileType(originalFileName) ||
-                            !com.quanlyphongtro.util.ValidationUtil.isValidMimeType(contentType)) {
+                    if (!ValidationUtil.isValidFileType(originalFileName) ||
+                            !ValidationUtil.isValidMimeType(contentType)) {
                         setFlashMessage(req, "danger",
                                 "File upload không hợp lệ. Chỉ chấp nhận các định dạng ảnh JPG, PNG hoặc tài liệu PDF.");
                         resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
                         return;
                     }
 
-                    String fileName = java.util.UUID.randomUUID().toString() + "_" + originalFileName;
-                    part.write(uploadPath + java.io.File.separator + fileName);
+                    String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
+                    part.write(uploadPath + File.separator + fileName);
                     fileNames.add("/uploads/requests/" + fileName);
                 }
             }

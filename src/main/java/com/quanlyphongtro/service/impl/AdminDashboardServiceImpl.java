@@ -28,83 +28,138 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private final AuditLogDAO     auditLogDAO     = new AuditLogDAO();
     private final RevenueDAO      revenueDAO      = new RevenueDAO();
 
+    // ── Cache Implementation ────────────────────────────────────────────────
+    private long lastCacheTime = 0;
+    private String lastPeriod = "";
+    
+    private BigDecimal monthlyRevenue = BigDecimal.ZERO;
+    private int totalFacilities;
+    private int activeFacilities;
+    private int totalPersonnel;
+    private int managerCount;
+    private int operatorCount;
+    private int totalNotifications;
+    private int todayAuditLogs;
+    private List<FacilityRevenueStatDTO> facilityRevenueStats = new ArrayList<>();
+    private List<RevenueActivityDTO> recentActivities = new ArrayList<>();
+    
+    private final Object cacheLock = new Object();
+
+    private void refreshCacheIfNeeded(String period) {
+        String p = period == null ? "" : period;
+        long now = System.currentTimeMillis();
+        if (now - lastCacheTime < 60_000 && lastPeriod.equals(p)) {
+            return;
+        }
+        synchronized (cacheLock) {
+            if (System.currentTimeMillis() - lastCacheTime < 60_000 && lastPeriod.equals(p)) {
+                return;
+            }
+            lastPeriod = p;
+            
+            try {
+                BigDecimal val = revenueDAO.getMonthlyRevenueTotal(p);
+                monthlyRevenue = val != null ? val : BigDecimal.ZERO;
+            } catch (Exception e) { logger.warn("Dashboard: failed to load monthly revenue", e); monthlyRevenue = BigDecimal.ZERO; }
+            
+            try { totalFacilities = facilityDAO.count("", ""); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load totalFacilities", e); totalFacilities = 0; }
+            
+            try { activeFacilities = facilityDAO.count("", "ACTIVE"); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load activeFacilities", e); activeFacilities = 0; }
+            
+            try { totalPersonnel = personnelDAO.countAll(); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load totalPersonnel", e); totalPersonnel = 0; }
+            
+            try { managerCount = personnelDAO.countByRole("MANAGER"); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load managerCount", e); managerCount = 0; }
+            
+            try { operatorCount = personnelDAO.countByRole("OPERATOR"); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load operatorCount", e); operatorCount = 0; }
+            
+            try { totalNotifications = notificationDAO.count(""); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load totalNotifications", e); totalNotifications = 0; }
+            
+            try { todayAuditLogs = auditLogDAO.countToday(); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load todayAuditLogs", e); todayAuditLogs = 0; }
+            
+            try { facilityRevenueStats = revenueDAO.getFacilityRevenues(p); }
+            catch (Exception e) { logger.warn("Dashboard: failed to load facilityRevenueStats", e); facilityRevenueStats = new ArrayList<>(); }
+            
+            List<RevenueActivityDTO> activities = new ArrayList<>();
+            try {
+                List<AuditLog> logs = auditLogDAO.findRecent(5);
+                for (AuditLog log : logs) {
+                    String actor = log.getCreatedByName() != null ? log.getCreatedByName() : "Hệ thống";
+                    String desc  = buildActionDescription(log);
+                    String time  = log.getCreatedAt() != null ? log.getCreatedAt().format(DTF) : "";
+                    activities.add(new RevenueActivityDTO(actor, desc, time));
+                }
+            } catch (Exception e) { logger.warn("Dashboard: failed to load recentActivities", e); }
+            recentActivities = activities;
+            
+            lastCacheTime = System.currentTimeMillis();
+        }
+    }
+
     @Override
     public BigDecimal getMonthlyRevenue(String period) {
-        try {
-            BigDecimal val = revenueDAO.getMonthlyRevenueTotal(period);
-            return val != null ? val : BigDecimal.ZERO;
-        } catch (Exception e) {
-            logger.warn("Dashboard: failed to load monthly revenue for period={}", period, e);
-            return BigDecimal.ZERO;
-        }
+        refreshCacheIfNeeded(period);
+        return monthlyRevenue;
     }
 
     @Override
     public int getTotalFacilities() {
-        try { return facilityDAO.count("", ""); }
-        catch (Exception e) { logger.warn("Dashboard: failed to load totalFacilities", e); return 0; }
+        refreshCacheIfNeeded(lastPeriod);
+        return totalFacilities;
     }
 
     @Override
     public int getActiveFacilities() {
-        try { return facilityDAO.count("", "ACTIVE"); }
-        catch (Exception e) { logger.warn("Dashboard: failed to load activeFacilities", e); return 0; }
+        refreshCacheIfNeeded(lastPeriod);
+        return activeFacilities;
     }
 
     @Override
     public int getTotalPersonnel() {
-        try { return personnelDAO.countAll(); }
-        catch (Exception e) { logger.warn("Dashboard: failed to load totalPersonnel", e); return 0; }
+        refreshCacheIfNeeded(lastPeriod);
+        return totalPersonnel;
     }
 
     @Override
     public int getManagerCount() {
-        try { return personnelDAO.countByRole("MANAGER"); }
-        catch (Exception e) { logger.warn("Dashboard: failed to load managerCount", e); return 0; }
+        refreshCacheIfNeeded(lastPeriod);
+        return managerCount;
     }
 
     @Override
     public int getOperatorCount() {
-        try { return personnelDAO.countByRole("OPERATOR"); }
-        catch (Exception e) { logger.warn("Dashboard: failed to load operatorCount", e); return 0; }
+        refreshCacheIfNeeded(lastPeriod);
+        return operatorCount;
     }
 
     @Override
     public int getTotalNotifications() {
-        try { return notificationDAO.count(""); }
-        catch (Exception e) { logger.warn("Dashboard: failed to load totalNotifications", e); return 0; }
+        refreshCacheIfNeeded(lastPeriod);
+        return totalNotifications;
     }
 
     @Override
     public int getTodayAuditLogs() {
-        try { return auditLogDAO.countToday(); }
-        catch (Exception e) { logger.warn("Dashboard: failed to load todayAuditLogs", e); return 0; }
+        refreshCacheIfNeeded(lastPeriod);
+        return todayAuditLogs;
     }
 
     @Override
     public List<FacilityRevenueStatDTO> getFacilityRevenueStats(String period) {
-        try { return revenueDAO.getFacilityRevenues(period); }
-        catch (Exception e) {
-            logger.warn("Dashboard: failed to load facilityRevenueStats for period={}", period, e);
-            return new ArrayList<>();
-        }
+        refreshCacheIfNeeded(period);
+        return facilityRevenueStats;
     }
 
     @Override
     public List<RevenueActivityDTO> getRecentActivities() {
-        List<RevenueActivityDTO> result = new ArrayList<>();
-        try {
-            List<AuditLog> logs = auditLogDAO.findRecent(5);
-            for (AuditLog log : logs) {
-                String actor = log.getCreatedByName() != null ? log.getCreatedByName() : "Hệ thống";
-                String desc  = buildActionDescription(log);
-                String time  = log.getCreatedAt() != null ? log.getCreatedAt().format(DTF) : "";
-                result.add(new RevenueActivityDTO(actor, desc, time));
-            }
-        } catch (Exception e) {
-            logger.warn("Dashboard: failed to load recentActivities", e);
-        }
-        return result;
+        refreshCacheIfNeeded(lastPeriod);
+        return recentActivities;
     }
 
     // ── private helper ────────────────────────────────────────────────────

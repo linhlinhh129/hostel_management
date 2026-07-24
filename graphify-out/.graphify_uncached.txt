@@ -1,0 +1,7 @@
+F:\SU26\New folder\hostel_management\.github\workflows\hostel-app-dev-AutoDeployTrigger-11c48c62-a62b-41a3-8b72-0a089c11bbe1.yml
+F:\SU26\New folder\hostel_management\.specify\extensions.yml
+F:\SU26\New folder\hostel_management\.specify\extensions\agent-context\agent-context-config.yml
+F:\SU26\New folder\hostel_management\.specify\extensions\agent-context\extension.yml
+F:\SU26\New folder\hostel_management\.specify\workflows\speckit\workflow.yml
+F:\SU26\New folder\hostel_management\docker\docker-compose.yml
+F:\SU26\New folder\hostel_management\src\main\resources\email-templates\welcome.html

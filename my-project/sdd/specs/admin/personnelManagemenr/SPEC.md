@@ -325,8 +325,6 @@ THE SYSTEM SHALL chuyển trạng thái tài khoản sang "Hoạt động".
 WHEN nhân sự không tồn tại
 THE SYSTEM SHALL từ chối yêu cầu và hiển thị lỗi EMPLOYEE_NOT_FOUND.
 
-WHEN Admin khóa hoặc mở khóa thành công
-THE SYSTEM SHALL ghi nhận lịch sử thao tác.
 
 ### 3.7 Phân quyền
 
@@ -351,7 +349,6 @@ THE SYSTEM SHALL chỉ cho phép nhân sự xem và thao tác dữ liệu thuộ
 | **URL Pattern** | `GET /admin/personnel/{id}/edit` — form chỉnh sửa |
 | **URL Pattern** | `POST /admin/personnel/{id}/edit` — lưu chỉnh sửa |
 | **URL Pattern** | `POST /admin/personnel/{id}/status` — khóa/mở khóa |
-| **URL Pattern** | `POST /admin/personnel/{id}/delete` — xóa mềm |
 | **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
 ---
@@ -440,9 +437,6 @@ Mỗi `User` trong danh sách được enrich thêm `facilityNames` qua `Personn
 - Toggle: `ACTIVE` → `INACTIVE` và ngược lại
 - Không cho phép tự khóa tài khoản của chính mình
 
-**Xóa mềm (`/delete`):**
-- Chỉ xóa được khi status = `INACTIVE`
-- Tự động gỡ gán cơ sở (`unassignFacility` + `unassignOperatorFacility`)
 
 ---
 
@@ -454,7 +448,7 @@ Mỗi `User` trong danh sách được enrich thêm `facilityNames` qua `Personn
 | Role không phải ADMIN | HTTP 403 Forbidden |
 | `{id}` không tồn tại | `NotFoundException` → HTTP 404 |
 | Validation thất bại | Forward về form tương ứng với `errorMessage` |
-| Tự khóa/xóa chính mình | Flash message `error`, redirect về `/admin/personnel/{id}` |
+| Tự khóa chính mình | Flash message `error`, redirect về `/admin/personnel/{id}` |
 
 ## 5. Technical Constraints
 
@@ -476,7 +470,7 @@ Số điện thoại phải là duy nhất trong hệ thống.
 
 Không được xóa cứng nhân sự khỏi cơ sở dữ liệu.
 
-Mọi thao tác tạo, cập nhật, khóa/mở khóa và gán cơ sở quản lý phải được ghi log.
+Mọi thao tác tạo, cập nhật, khóa/mở khóa và gán cơ sở quản lý được ghi nhận qua system log file của máy chủ ứng dụng.
 
 Hệ thống phải tạo mật khẩu tạm thời khi Admin tạo mới nhân sự.
 
@@ -521,21 +515,7 @@ THE SYSTEM SHALL ngăn người dùng đăng nhập hệ thống.
 WHEN nhân sự đăng nhập lần đầu bằng mật khẩu tạm thời
 THE SYSTEM SHALL yêu cầu đổi mật khẩu trước khi tiếp tục sử dụng hệ thống.
 
-### 6.2 Audit Log
 
-Tính năng Quản lý Nhân sự phụ thuộc vào hệ thống Audit Log để ghi nhận lịch sử thao tác.
-
-WHEN Admin tạo mới nhân sự
-THE SYSTEM SHALL ghi nhận lịch sử thao tác.
-
-WHEN Admin cập nhật thông tin nhân sự
-THE SYSTEM SHALL ghi nhận lịch sử thao tác.
-
-WHEN Admin khóa hoặc mở khóa tài khoản nhân sự
-THE SYSTEM SHALL ghi nhận lịch sử thao tác.
-
-WHEN Admin gán hoặc cập nhật cơ sở quản lý cho nhân sự
-THE SYSTEM SHALL ghi nhận lịch sử thao tác.
 
 ### 6.3 Email Service
 

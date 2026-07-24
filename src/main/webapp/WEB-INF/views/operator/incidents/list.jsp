@@ -22,11 +22,10 @@
 
             <div class="data-surface">
                 <%-- Filter bar đồng bộ với admin --%>
-                <form method="GET" action="${ctx}/operator/incidents/my-reports"
-                      style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
+                <form method="GET" action="${ctx}/operator/incidents/my-reports" class="hms-filter-form">
                     <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
                         <div style="flex:2; min-width:160px;">
-                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
+                            <label class="hms-form-label hms-text-sm-steel mb-2" style="margin-top:0;">Trạng thái</label>
                             <select name="status" class="form-select" style="width:100%">
                                 <option value="">Tất cả</option>
                                 <option value="PENDING"     ${paramStatus == 'PENDING'     ? 'selected' : ''}>Chờ quản lý duyệt</option>
@@ -39,7 +38,7 @@
                             </select>
                         </div>
                         <div style="flex:2; min-width:160px;">
-                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Thể loại</label>
+                            <label class="hms-form-label hms-text-sm-steel mb-2" style="margin-top:0;">Thể loại</label>
                             <select name="category" class="form-select" style="width:100%">
                                 <option value="">Tất cả</option>
                                 <c:forEach var="cat" items="${availableCategories}">
@@ -62,11 +61,9 @@
                             </select>
                         </div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
-                        <a href="${ctx}/operator/incidents/my-reports"
-                           style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
-                        <button type="submit"
-                                style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm kiếm</button>
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4" style="border-top-style: dashed !important; border-color: var(--hms-border-soft) !important;">
+                        <a href="${ctx}/operator/incidents/my-reports" class="btn-mintlify-secondary text-decoration-none" style="border-radius: 20px;">Xóa bộ lọc</a>
+                        <button type="submit" class="btn-mintlify-secondary" style="border-radius: 20px;">Tìm kiếm</button>
                     </div>
                 </form>
 
@@ -122,13 +119,14 @@
                                                             data-status="${item.status}"
                                                             data-reason="<c:out value='${item.rejectionReason}' escapeXml='true'/>"
                                                             data-img="${item.attachmentUrls1}"
-                                                            onclick="openIncidentDetail(this)">
+                                                            onclick="event.stopPropagation(); openIncidentDetail(this)">
                                                         Chi tiết
                                                     </button>
                                                     <c:if test="${item.status == 'PENDING'}">
                                                         <a href="${ctx}/operator/incidents/edit?id=${item.requestId}"
                                                            class="btn-mintlify-secondary text-decoration-none"
-                                                           style="padding:4px 12px; font-size:12px;">Sửa</a>
+                                                           style="padding:4px 12px; font-size:12px;"
+                                                           onclick="event.stopPropagation()">Sửa</a>
                                                     </c:if>
                                                 </div>
                                             </td>
@@ -199,15 +197,6 @@
             </div>
         </div>
 
-        <style>
-            .custom-modal-backdrop { display:none; position:fixed; z-index:9999; inset:0; background:rgba(0,0,0,0.5); overflow:auto; }
-            .custom-modal { background:var(--color-canvas); margin:5% auto; border:1px solid var(--hms-border); width:90%; max-width:500px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); animation:modalFadeIn 0.25s; }
-            .custom-modal-header { padding:16px 20px; border-bottom:1px solid var(--hms-border); background:var(--hms-bg-soft); border-radius:12px 12px 0 0; }
-            .custom-modal-body { padding:20px; }
-            .custom-modal-close { color:var(--hms-stone); font-size:24px; font-weight:bold; cursor:pointer; }
-            .custom-modal-close:hover { color:var(--hms-ink); }
-            @keyframes modalFadeIn { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
-        </style>
 
         <script>
             function openIncidentDetail(btn) {

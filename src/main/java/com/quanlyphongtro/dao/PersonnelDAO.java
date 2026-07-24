@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dao;
+import com.quanlyphongtro.model.Facility;
 
 import com.quanlyphongtro.model.User;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -156,7 +157,7 @@ public class PersonnelDAO extends BaseDAO {
      * Lấy danh sách cơ sở ACTIVE chưa có MANAGER.
      * Nếu excludeUserId != null: cũng hiển thị cơ sở mà chính user này đang là MANAGER.
      */
-    public List<com.quanlyphongtro.model.Facility> findFacilitiesForManager(Integer excludeUserId) {
+    public List<Facility> findFacilitiesForManager(Integer excludeUserId) {
         String sql = "SELECT f.*, mgr.full_name AS manager_name, opr.full_name AS operator_name " +
                      "FROM dbo.facilities f " +
                      "LEFT JOIN dbo.users mgr ON mgr.user_id = f.manager_id " +
@@ -165,13 +166,13 @@ public class PersonnelDAO extends BaseDAO {
                      "AND (f.manager_id IS NULL" +
                      (excludeUserId != null ? " OR f.manager_id = ?" : "") +
                      ") ORDER BY f.name";
-        List<com.quanlyphongtro.model.Facility> list = new ArrayList<>();
+        List<Facility> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             if (excludeUserId != null) ps.setInt(1, excludeUserId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    com.quanlyphongtro.model.Facility f = new com.quanlyphongtro.model.Facility();
+                    Facility f = new Facility();
                     f.setId(rs.getInt("facility_id"));
                     f.setCode(rs.getString("code"));
                     f.setName(rs.getString("name"));
@@ -191,7 +192,7 @@ public class PersonnelDAO extends BaseDAO {
      * Lấy danh sách cơ sở ACTIVE chưa có OPERATOR.
      * Nếu excludeUserId != null: cũng hiển thị cơ sở mà chính user này đang là OPERATOR.
      */
-    public List<com.quanlyphongtro.model.Facility> findFacilitiesForOperator(Integer excludeUserId) {
+    public List<Facility> findFacilitiesForOperator(Integer excludeUserId) {
         String sql = "SELECT f.*, mgr.full_name AS manager_name, opr.full_name AS operator_name " +
                      "FROM dbo.facilities f " +
                      "LEFT JOIN dbo.users mgr ON mgr.user_id = f.manager_id " +
@@ -200,13 +201,13 @@ public class PersonnelDAO extends BaseDAO {
                      "AND (f.operator_id IS NULL" +
                      (excludeUserId != null ? " OR f.operator_id = ?" : "") +
                      ") ORDER BY f.name";
-        List<com.quanlyphongtro.model.Facility> list = new ArrayList<>();
+        List<Facility> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             if (excludeUserId != null) ps.setInt(1, excludeUserId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    com.quanlyphongtro.model.Facility f = new com.quanlyphongtro.model.Facility();
+                    Facility f = new Facility();
                     f.setId(rs.getInt("facility_id"));
                     f.setCode(rs.getString("code"));
                     f.setName(rs.getString("name"));

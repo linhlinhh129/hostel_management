@@ -119,11 +119,11 @@
   - Map dữ liệu sang `VNPayConfigDTO` — **không đưa `vnpay.secretKey` vào DTO**.
   - Trả về `VNPayConfigDTO`.
 - Implement `updateEmailConfig(Map<String, String> params, Integer userId)`:
-  - Validate: `host`, `port`, `username`, `password`, `from` không được rỗng.
+  - Validate: `host`, `port`, `username`, `from` không được rỗng. (Lưu ý `password` có thể rỗng).
   - Validate: `port` phải là số nguyên dương.
   - Gọi `SystemConfigDAO.setValue()` cho từng key.
 - Implement `updateVNPayConfig(Map<String, String> params, Integer userId)`:
-  - Validate: `payUrl`, `returnUrl`, `tmnCode`, `secretKey`, `apiUrl` không được rỗng.
+  - Validate: `payUrl`, `returnUrl`, `tmnCode`, `apiUrl` không được rỗng. (Lưu ý `secretKey` có thể rỗng).
   - Gọi `SystemConfigDAO.setValue()` cho từng key.
 - Throw `ValidationException` khi validate thất bại.
 

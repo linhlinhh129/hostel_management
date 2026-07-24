@@ -15,8 +15,8 @@
 
 ### 1.3 Cấu hình cơ sở
 
-* `BR-FM-06` Số tầng tối đa phải nằm trong khoảng từ 1 đến 99.
-* `BR-FM-07` Số phòng tối đa mỗi tầng phải nằm trong khoảng từ 1 đến 99.
+* `BR-FM-06` Số tầng tối đa phải nằm trong khoảng từ 1 đến 10.
+* `BR-FM-07` Số phòng tối đa mỗi tầng phải nằm trong khoảng từ 1 đến 30.
 * `BR-FM-08` Địa chỉ là bắt buộc, không được để trống hoặc chỉ gồm khoảng trắng.
 * `BR-FM-09` Tên cơ sở là bắt buộc, không được chỉ gồm khoảng trắng.
 

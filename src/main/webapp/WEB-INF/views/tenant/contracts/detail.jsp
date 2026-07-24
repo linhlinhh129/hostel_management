@@ -116,21 +116,29 @@
       <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-center gap-3"
            style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
         <div>
-          <h1>
-            Chi tiết Hợp đồng: <c:out value="${contract.code}"/>
-            <c:choose>
-              <c:when test="${contract.status == 'ACTIVE'}">
-                <span class="badge-hms badge-success ms-2">Đang hiệu lực</span>
-              </c:when>
-              <c:otherwise>
-                <span class="badge-hms badge-neutral ms-2">Đã kết thúc</span>
-              </c:otherwise>
-            </c:choose>
-          </h1>
-          <p>Phòng: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
+          <c:choose>
+            <c:when test="${not empty contract}">
+              <h1>
+                Chi tiết Hợp đồng: <c:out value="${contract.code}"/>
+                <c:choose>
+                  <c:when test="${contract.status == 'ACTIVE'}">
+                    <span class="badge-hms badge-success ms-2">Đang hiệu lực</span>
+                  </c:when>
+                  <c:otherwise>
+                    <span class="badge-hms badge-neutral ms-2">Đã kết thúc</span>
+                  </c:otherwise>
+                </c:choose>
+              </h1>
+              <p>Phòng: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
+            </c:when>
+            <c:otherwise>
+              <h1>Hợp đồng của tôi</h1>
+              <p>Chưa có hợp đồng trong hệ thống</p>
+            </c:otherwise>
+          </c:choose>
         </div>
+        <c:if test="${not empty contract}">
         <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
-          <%-- Chỉ hiển thị nút In — người thuê không có quyền tạo, xóa hợp đồng (BR-03) --%>
           <button onclick="window.print()" class="btn-mintlify-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
               <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>
@@ -138,11 +146,31 @@
             In Hợp Đồng / Lưu PDF
           </button>
         </div>
+        </c:if>
       </div>
 
       <div class="document-viewer-wrapper mt-4">
         <!-- A4 Document embedded visually inside the dashboard -->
         <div class="a4-container">
+          <c:choose>
+            <c:when test="${empty contract}">
+              <%-- Empty state: tenant chưa có hợp đồng --%>
+              <div style="text-align:center;padding:4rem 2rem">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none"
+                     stroke="var(--hms-stone)" stroke-width="1.5" style="margin-bottom:1rem">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <h4 style="font-weight:700;margin:0 0 0.5rem">Chưa có hợp đồng</h4>
+                <p style="color:var(--hms-stone);font-size:0.9rem;margin:0">
+                  Bạn chưa có hợp đồng thuê nào trong hệ thống.<br>
+                  Vui lòng liên hệ Ban quản lý để biết thêm thông tin.
+                </p>
+              </div>
+            </c:when>
+            <c:otherwise>
           <div class="text-center mb-4">
             <h4 class="mb-1">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
             <h5 class="mb-2"><u>Độc lập - Tự do - Hạnh phúc</u></h5>
@@ -246,6 +274,9 @@
               <p><strong><c:out value="${contract.manager.fullName}"/></strong></p>
             </div>
           </div>
+        </div>
+            </c:otherwise>
+          </c:choose>
         </div>
       </div>
 

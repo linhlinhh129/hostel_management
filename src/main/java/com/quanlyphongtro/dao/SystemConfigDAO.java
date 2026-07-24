@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SystemConfigDAO {
     private static final Logger logger = LoggerFactory.getLogger(SystemConfigDAO.class);
@@ -27,6 +29,31 @@ public class SystemConfigDAO {
             logger.error("Error fetching config for key: " + key, e);
         }
         return null;
+    }
+
+    public Map<String, String> getEmailConfig() {
+        return getConfigByPrefix("email.");
+    }
+
+    public Map<String, String> getVNPayConfig() {
+        return getConfigByPrefix("vnpay.");
+    }
+
+    private Map<String, String> getConfigByPrefix(String prefix) {
+        Map<String, String> configMap = new HashMap<>();
+        String query = "SELECT config_key, config_value FROM system_config WHERE config_key LIKE ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, prefix + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    configMap.put(rs.getString("config_key"), rs.getString("config_value"));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching config for prefix: " + prefix, e);
+        }
+        return configMap;
     }
 
     public void updateConfigValue(String key, String value, int updatedBy, Connection conn) throws SQLException {

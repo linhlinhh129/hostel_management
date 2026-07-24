@@ -1,4 +1,6 @@
 package com.quanlyphongtro.controller.tenant;
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -56,10 +58,10 @@ public class TenantNotificationServlet extends BaseServlet {
 
                 List<Notification> notifications = notificationService.getNotificationsForTenant(roomId, facilityId, keyword, page, pageSize);
 
-                java.time.LocalDateTime lastRead = currentUser.getLastReadNotificationTime();
-                if (lastRead == null) lastRead = java.time.LocalDateTime.now().minusDays(7);
+                LocalDateTime lastRead = currentUser.getLastReadNotificationTime();
+                if (lastRead == null) lastRead = LocalDateTime.now().minusDays(7);
 
-                final java.time.LocalDateTime lastReadFinal = lastRead;
+                final LocalDateTime lastReadFinal = lastRead;
                 for (Notification n : notifications) {
                     n.setUnread(n.getSentAt() != null && n.getSentAt().isAfter(lastReadFinal));
                     n.generateSummary();
@@ -69,15 +71,15 @@ public class TenantNotificationServlet extends BaseServlet {
                 if ("unread".equals(status)) {
                     notifications = notifications.stream()
                             .filter(Notification::isUnread)
-                            .collect(java.util.stream.Collectors.toList());
+                            .collect(Collectors.toList());
                 } else if ("read".equals(status)) {
                     notifications = notifications.stream()
                             .filter(n -> !n.isUnread())
-                            .collect(java.util.stream.Collectors.toList());
+                            .collect(Collectors.toList());
                 }
 
                 if (page == 1) {
-                    currentUser.setLastReadNotificationTime(java.time.LocalDateTime.now());
+                    currentUser.setLastReadNotificationTime(LocalDateTime.now());
                     req.getSession().setAttribute("currentUser", currentUser);
                 }
 

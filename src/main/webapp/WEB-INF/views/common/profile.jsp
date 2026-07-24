@@ -1,167 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle"  value="Hồ sơ cá nhân - Quản lý Nhà trọ"/>
+<c:set var="pageTitle"  value="Hồ sơ cá nhân - Innolvia Home"/>
 <c:set var="activeMenu" value="profile"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
-
-<style>
-    .avatar-preview {
-        width: 88px;
-        height: 88px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 3px solid var(--hms-canvas);
-        box-shadow: var(--hms-shadow-md);
-    }
-    .avatar-initials {
-        width: 88px;
-        height: 88px;
-        border-radius: 50%;
-        border: 3px solid var(--hms-canvas);
-        box-shadow: var(--hms-shadow-md);
-        background: linear-gradient(135deg, var(--hms-accent) 0%, var(--hms-accent-deep) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #fff;
-        letter-spacing: -1px;
-    }
-    .profile-field-label {
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: var(--hms-text-secondary);
-        margin-bottom: 4px;
-    }
-    .profile-field-label .required {
-        color: var(--hms-danger);
-        margin-left: 2px;
-    }
-    .profile-input {
-        width: 100%;
-        padding: 8px 12px;
-        font-size: 0.875rem;
-        font-family: var(--hms-font);
-        color: var(--hms-text);
-        background: var(--hms-canvas);
-        border: 1px solid var(--hms-border);
-        border-radius: var(--hms-radius);
-        outline: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .profile-input:focus {
-        border-color: var(--hms-accent);
-        box-shadow: 0 0 0 3px var(--hms-accent-glow);
-    }
-    .profile-input:read-only,
-    .profile-input[readonly] {
-        background: var(--hms-surface);
-        color: var(--hms-text-muted);
-        cursor: default;
-    }
-    .was-validated .profile-input:invalid,
-    .was-validated .profile-textarea:invalid,
-    .was-validated .profile-select:invalid {
-        border-color: var(--hms-danger);
-    }
-    .was-validated .profile-input:invalid ~ .invalid-feedback,
-    .was-validated .profile-textarea:invalid ~ .invalid-feedback,
-    .was-validated .profile-select:invalid ~ .invalid-feedback {
-        display: block;
-    }
-    .profile-input.is-invalid {
-        border-color: var(--hms-danger);
-    }
-    .profile-select {
-        width: 100%;
-        padding: 8px 12px;
-        font-size: 0.875rem;
-        font-family: var(--hms-font);
-        color: var(--hms-text);
-        background: var(--hms-canvas);
-        border: 1px solid var(--hms-border);
-        border-radius: var(--hms-radius);
-        outline: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 32px;
-    }
-    .profile-select:focus {
-        border-color: var(--hms-accent);
-        box-shadow: 0 0 0 3px var(--hms-accent-glow);
-    }
-    .profile-textarea {
-        width: 100%;
-        padding: 8px 12px;
-        font-size: 0.875rem;
-        font-family: var(--hms-font);
-        color: var(--hms-text);
-        background: var(--hms-canvas);
-        border: 1px solid var(--hms-border);
-        border-radius: var(--hms-radius);
-        outline: none;
-        resize: vertical;
-        transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .profile-textarea:focus {
-        border-color: var(--hms-accent);
-        box-shadow: 0 0 0 3px var(--hms-accent-glow);
-    }
-    .profile-hint {
-        font-size: 0.78rem;
-        color: var(--hms-text-muted);
-        margin-top: 4px;
-    }
-    .avatar-upload-btn {
-        display: inline-block;
-        padding: 7px 18px;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        font-family: var(--hms-font);
-        color: var(--hms-text-secondary);
-        background: var(--hms-canvas);
-        border: 1px solid var(--hms-border);
-        border-radius: var(--hms-radius-full);
-        cursor: pointer;
-        transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .avatar-upload-btn:hover {
-        border-color: var(--hms-accent);
-        color: var(--hms-accent-deep);
-        box-shadow: var(--hms-shadow-xs);
-    }
-    /* password strength bar */
-    .pw-checklist {
-        list-style: none;
-        padding: 0.35rem 0 0;
-        margin: 0;
-        font-size: 0.775rem;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2px 8px;
-        color: var(--hms-text-muted);
-    }
-    .pw-strength-bar {
-        height: 3px;
-        border-radius: 99px;
-        background: var(--hms-border);
-        margin-top: 6px;
-        overflow: hidden;
-    }
-    .pw-strength-bar-fill {
-        height: 100%;
-        border-radius: 99px;
-        background: var(--hms-danger);
-        transition: width 0.3s, background 0.3s;
-        width: 0;
-    }
-</style>
-
 <body>
 <div class="app-shell">
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
@@ -171,11 +13,9 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <!-- ── Page Header ─────────────────────────────────── -->
-            <div class="page-header hero-sky-gradient"
-                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;
-                            flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+            <%-- Page Header --%>
+            <div class="page-header hero-sky-gradient dash-hero">
+                <div class="dash-hero-inner">
                     <div>
                         <h1>Hồ sơ cá nhân</h1>
                         <p>Cập nhật thông tin và bảo mật tài khoản</p>
@@ -183,10 +23,10 @@
                 </div>
             </div>
 
-            <!-- ── Two-column layout ───────────────────────────── -->
+            <%-- Two-column layout --%>
             <div class="row g-3">
 
-                <!-- Col 1: Thông tin cá nhân -->
+                <%-- Col 1: Thông tin cá nhân --%>
                 <div class="col-lg-8">
                     <div class="widget-surface">
                         <div class="widget-surface-header">
@@ -198,85 +38,105 @@
                                 <input type="hidden" name="csrfToken" value="${csrfToken}">
                                 <input type="hidden" name="action"    value="update_profile">
 
-                                <!-- Avatar row -->
-                                <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem">
+                                <%-- Avatar row --%>
+                                <div class="profile-avatar-row d-flex align-items-center gap-3 mb-4">
                                     <div>
                                         <c:choose>
                                             <c:when test="${not empty userProfile.avatarUrl}">
                                                 <img src="${ctx}${userProfile.avatarUrl}"
-                                                     class="avatar-preview" id="avatarPreview"
+                                                     class="profile-avatar-img" id="avatarPreview"
                                                      alt="Avatar">
                                             </c:when>
                                             <c:otherwise>
-                                                <div class="avatar-initials" id="avatarInitials">
+                                                <div class="profile-avatar-initials" id="avatarInitials">
                                                     <c:out value="${sessionScope.currentUser.initials}"/>
                                                 </div>
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
                                     <div>
-                                        <label for="avatarInput" class="avatar-upload-btn">Đổi ảnh đại diện</label>
+                                        <label for="avatarInput" class="profile-avatar-btn">
+                                            Đổi ảnh đại diện
+                                        </label>
                                         <input type="file" id="avatarInput" name="avatar"
                                                class="d-none" accept="image/*">
-                                        <p class="profile-hint" style="margin-top:6px">Định dạng JPEG, PNG. Tối đa 5 MB.</p>
+                                        <p class="profile-hint">Định dạng JPEG, PNG. Tối đa 5 MB.</p>
                                     </div>
                                 </div>
 
-                                <!-- Fields grid -->
+                                <%-- Fields grid --%>
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Tên đăng nhập</label>
-                                        <input type="text" class="profile-input"
+                                        <label for="prof-username" class="profile-field-label">
+                                            Tên đăng nhập
+                                        </label>
+                                        <input type="text" id="prof-username" class="profile-input"
                                                value="<c:out value='${userProfile.username}'/>" readonly>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Họ và tên<span class="required">*</span></label>
-                                        <input type="text" class="profile-input" name="fullName"
+                                        <label for="prof-fullname" class="profile-field-label">
+                                            Họ và tên <span class="profile-required">*</span>
+                                        </label>
+                                        <input type="text" id="prof-fullname" class="profile-input"
+                                               name="fullName"
                                                value="<c:out value='${userProfile.fullName}'/>" required>
                                         <div class="invalid-feedback">Vui lòng nhập họ và tên.</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Email</label>
-                                        <input type="email" class="profile-input"
+                                        <label for="prof-email" class="profile-field-label">Email</label>
+                                        <input type="email" id="prof-email" class="profile-input"
                                                value="<c:out value='${userProfile.email}'/>" readonly>
                                         <p class="profile-hint">Liên hệ Admin nếu muốn đổi email.</p>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Số điện thoại<span class="required">*</span></label>
-                                        <input type="text" class="profile-input" name="phone"
+                                        <label for="prof-phone" class="profile-field-label">
+                                            Số điện thoại <span class="profile-required">*</span>
+                                        </label>
+                                        <input type="text" id="prof-phone" class="profile-input"
+                                               name="phone"
                                                value="<c:out value='${userProfile.phone}'/>" required>
                                         <div class="invalid-feedback">Vui lòng nhập số điện thoại.</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Số CCCD / CMND<span class="required">*</span></label>
-                                        <input type="text" class="profile-input" name="identityNumber"
+                                        <label for="prof-identity" class="profile-field-label">
+                                            Số CCCD / CMND <span class="profile-required">*</span>
+                                        </label>
+                                        <input type="text" id="prof-identity" class="profile-input"
+                                               name="identityNumber"
                                                value="<c:out value='${userProfile.identityNumber}'/>" required>
                                         <div class="invalid-feedback">Vui lòng nhập số CCCD / CMND.</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Ngày sinh<span class="required">*</span></label>
-                                        <input type="date" class="profile-input" name="dob"
+                                        <label for="prof-dob" class="profile-field-label">
+                                            Ngày sinh <span class="profile-required">*</span>
+                                        </label>
+                                        <input type="date" id="prof-dob" class="profile-input"
+                                               name="dob"
                                                value="<c:out value='${userProfile.dob}'/>" required>
                                         <div class="invalid-feedback">Vui lòng chọn ngày sinh.</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="profile-field-label">Giới tính</label>
-                                        <select class="profile-select" name="gender">
-                                            <option value="" ${empty userProfile.gender ? 'selected' : ''}>-- Chọn giới tính --</option>
+                                        <label for="prof-gender" class="profile-field-label">Giới tính</label>
+                                        <select id="prof-gender" class="profile-select" name="gender">
+                                            <option value="" ${empty userProfile.gender ? 'selected' : ''}>
+                                                -- Chọn giới tính --
+                                            </option>
                                             <option value="Nam"  ${userProfile.gender == 'Nam'  ? 'selected' : ''}>Nam</option>
                                             <option value="Nữ"   ${userProfile.gender == 'Nữ'   ? 'selected' : ''}>Nữ</option>
                                             <option value="Khác" ${userProfile.gender == 'Khác' ? 'selected' : ''}>Khác</option>
                                         </select>
                                     </div>
                                     <div class="col-12">
-                                        <label class="profile-field-label">Địa chỉ thường trú<span class="required">*</span></label>
-                                        <textarea class="profile-textarea" name="permanentAddress"
-                                                  rows="2" required><c:out value="${userProfile.permanentAddress}"/></textarea>
+                                        <label for="prof-address" class="profile-field-label">
+                                            Địa chỉ thường trú <span class="profile-required">*</span>
+                                        </label>
+                                        <textarea id="prof-address" class="profile-textarea"
+                                                  name="permanentAddress" rows="2" required><c:out value="${userProfile.permanentAddress}"/></textarea>
                                         <div class="invalid-feedback">Vui lòng nhập địa chỉ thường trú.</div>
                                     </div>
                                 </div>
 
-                                <div style="display:flex;justify-content:flex-end;margin-top:1.25rem">
+                                <div class="profile-form-actions">
                                     <button type="submit" class="btn-mintlify-primary">Lưu thay đổi</button>
                                 </div>
                             </form>
@@ -284,7 +144,7 @@
                     </div>
                 </div>
 
-                <!-- Col 2: Đổi mật khẩu -->
+                <%-- Col 2: Đổi mật khẩu --%>
                 <div class="col-lg-4">
                     <div class="widget-surface">
                         <div class="widget-surface-header">
@@ -296,17 +156,21 @@
                                 <input type="hidden" name="csrfToken" value="${csrfToken}">
                                 <input type="hidden" name="action"    value="change_password">
 
-                                <div style="margin-bottom:1rem">
-                                    <label class="profile-field-label">Mật khẩu hiện tại<span class="required">*</span></label>
-                                    <input type="password" class="profile-input"
-                                           name="currentPassword" required>
+                                <div class="profile-field-group mb-3">
+                                    <label for="prof-curpw" class="profile-field-label">
+                                        Mật khẩu hiện tại <span class="profile-required">*</span>
+                                    </label>
+                                    <input type="password" id="prof-curpw" class="profile-input"
+                                           name="currentPassword" required autocomplete="current-password">
                                 </div>
 
-                                <div style="margin-bottom:1rem">
-                                    <label class="profile-field-label">Mật khẩu mới<span class="required">*</span></label>
-                                    <input type="password" class="profile-input"
-                                           id="profileNewPw" name="newPassword"
-                                           minlength="8" required>
+                                <div class="profile-field-group mb-3">
+                                    <label for="profileNewPw" class="profile-field-label">
+                                        Mật khẩu mới <span class="profile-required">*</span>
+                                    </label>
+                                    <input type="password" id="profileNewPw" class="profile-input"
+                                           name="newPassword" minlength="8" required
+                                           autocomplete="new-password">
                                     <ul id="profilePwChecklist" class="pw-checklist">
                                         <li id="p-chk-len">&#10007; Ít nhất 8 ký tự</li>
                                         <li id="p-chk-upper">&#10007; 1 chữ hoa (A-Z)</li>
@@ -314,36 +178,37 @@
                                         <li id="p-chk-digit">&#10007; 1 chữ số (0-9)</li>
                                         <li id="p-chk-special">&#10007; 1 ký tự đặc biệt</li>
                                     </ul>
-                                    <div class="pw-strength-bar">
-                                        <div class="pw-strength-bar-fill" id="profilePwBar"></div>
+                                    <div class="pw-strength-track mt-2">
+                                        <div class="pw-strength-bar" id="profilePwBar"></div>
                                     </div>
                                 </div>
 
-                                <div style="margin-bottom:1.25rem">
-                                    <label class="profile-field-label">Xác nhận mật khẩu mới<span class="required">*</span></label>
-                                    <input type="password" class="profile-input"
-                                           id="profileConfirmPw" name="confirmPassword"
-                                           minlength="8" required>
-                                    <div id="profileConfirmMsg"
-                                         style="font-size:0.775rem;margin-top:4px;min-height:1rem"></div>
+                                <div class="profile-field-group mb-4">
+                                    <label for="profileConfirmPw" class="profile-field-label">
+                                        Xác nhận mật khẩu mới <span class="profile-required">*</span>
+                                    </label>
+                                    <input type="password" id="profileConfirmPw" class="profile-input"
+                                           name="confirmPassword" minlength="8" required
+                                           autocomplete="new-password">
+                                    <div id="profileConfirmMsg" class="pw-confirm-msg"></div>
                                 </div>
 
-                                <button type="submit" class="btn-mintlify-primary"
-                                        style="width:100%">Cập nhật mật khẩu</button>
+                                <button type="submit" class="btn-mintlify-primary profile-pw-submit">
+                                    Cập nhật mật khẩu
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
 
-            </div><!-- /row -->
+            </div><%-- /row --%>
         </main>
     </div>
 </div>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
-
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('DOMContentLoaded', function () {
 
     /* ── Avatar preview ──────────────────────────────────────── */
     var avatarInput    = document.getElementById('avatarInput');
@@ -351,42 +216,44 @@ document.addEventListener("DOMContentLoaded", function () {
     var avatarInitials = document.getElementById('avatarInitials');
 
     avatarInput.addEventListener('change', function () {
-        if (this.files && this.files.length > 0) {
-            var file = this.files[0];
-            if (file.type.startsWith('image/')) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    if (avatarPreview) {
-                        avatarPreview.src = e.target.result;
-                    } else if (avatarInitials) {
-                        var img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'avatar-preview';
-                        img.id = 'avatarPreview';
-                        avatarInitials.parentNode.replaceChild(img, avatarInitials);
-                    }
-                };
-                reader.readAsDataURL(file);
+        if (!this.files || !this.files.length) return;
+        var file = this.files[0];
+        if (!file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            if (avatarPreview) {
+                avatarPreview.src = e.target.result;
+            } else if (avatarInitials) {
+                var img      = document.createElement('img');
+                img.src      = e.target.result;
+                img.className = 'profile-avatar-img';
+                img.id        = 'avatarPreview';
+                avatarInitials.parentNode.replaceChild(img, avatarInitials);
+                avatarPreview = img;
             }
-        }
+        };
+        reader.readAsDataURL(file);
     });
 
     /* ── Bootstrap validation ────────────────────────────────── */
     document.querySelectorAll('.needs-validation').forEach(function (form) {
-        form.addEventListener('submit', function (event) {
+        form.addEventListener('submit', function (e) {
             if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
+                e.preventDefault();
+                e.stopPropagation();
             }
             form.classList.add('was-validated');
-        }, false);
+        });
     });
 
     /* ── Password strength & checklist ──────────────────────── */
     (function () {
-        var pwInput  = document.getElementById('profileNewPw');
-        var cfInput  = document.getElementById('profileConfirmPw');
-        var bar      = document.getElementById('profilePwBar');
+        var pwInput = document.getElementById('profileNewPw');
+        var cfInput = document.getElementById('profileConfirmPw');
+        var bar     = document.getElementById('profilePwBar');
+
+        var COLORS  = ['', 'var(--hms-danger)', 'var(--hms-warning)', 'var(--hms-warning)',
+                        'var(--hms-success)', 'var(--hms-success)'];
 
         var checks = {
             len:     { el: document.getElementById('p-chk-len'),     test: function (v) { return v.length >= 8; } },
@@ -412,10 +279,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         pwInput.addEventListener('input', function () {
-            var passed = updateChecklist(this.value);
+            var passed           = updateChecklist(this.value);
             bar.style.width      = (passed * 20) + '%';
-            bar.style.background = ['', 'var(--hms-danger)', 'var(--hms-warning)', 'var(--hms-warning)',
-                                     'var(--hms-success)', 'var(--hms-success)'][passed] || 'var(--hms-danger)';
+            bar.style.background = COLORS[passed] || 'var(--hms-danger)';
             updateConfirm();
         });
 
@@ -426,18 +292,20 @@ document.addEventListener("DOMContentLoaded", function () {
             var match = cfInput.value === pwInput.value;
             if (!cfInput.value) { msg.textContent = ''; return; }
             msg.style.color = match ? 'var(--hms-success)' : 'var(--hms-danger)';
-            msg.textContent = match ? '\u2713 M\u1EADt kh\u1EA9u kh\u1EDBp' : '\u2717 M\u1EADt kh\u1EA9u ch\u01B0a kh\u1EDBp';
+            msg.textContent = match
+                ? '\u2713 M\u1EADt kh\u1EA9u kh\u1EDBp'
+                : '\u2717 M\u1EADt kh\u1EA9u ch\u01B0a kh\u1EDBp';
         }
 
         pwInput.closest('form').addEventListener('submit', function (e) {
-            if (!allPassed(pwInput.value)) {
-                e.preventDefault(); e.stopPropagation(); pwInput.focus(); return false;
-            }
-            if (cfInput.value !== pwInput.value) {
-                e.preventDefault(); e.stopPropagation(); cfInput.focus(); return false;
+            if (!allPassed(pwInput.value) || cfInput.value !== pwInput.value) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!allPassed(pwInput.value)) pwInput.focus();
+                else cfInput.focus();
             }
         });
-    })();
+    }());
 });
 </script>
 </body>

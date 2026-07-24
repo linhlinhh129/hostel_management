@@ -1,4 +1,6 @@
 package com.quanlyphongtro.model;
+import java.util.Date;
+import java.sql.Timestamp;
 
 import java.time.LocalDateTime;
 
@@ -54,8 +56,8 @@ public class CommunityPost {
 
     public boolean isDeleted() { return deletedAt != null; }
 
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
-        return java.sql.Timestamp.valueOf(createdAt);
+        return Timestamp.valueOf(createdAt);
     }
 }

@@ -1,4 +1,6 @@
 package com.quanlyphongtro.service.impl;
+import com.quanlyphongtro.util.ValidationUtil;
+import java.time.format.DateTimeFormatter;
 
 import com.quanlyphongtro.dao.ContractDAO;
 import com.quanlyphongtro.dao.RoomDAO;
@@ -162,14 +164,14 @@ public class ContractServiceImpl implements ContractService {
         if (phone == null || phone.trim().isEmpty()) {
             throw new IllegalArgumentException("Số điện thoại không được để trống.");
         }
-        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone.trim())) {
+        if (!ValidationUtil.isValidVnPhone(phone.trim())) {
             throw new IllegalArgumentException(
                     "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
         }
         if (identityNumber == null || identityNumber.trim().isEmpty()) {
             throw new IllegalArgumentException("Số CMND/CCCD không được để trống.");
         }
-        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber.trim())) {
+        if (!ValidationUtil.isValidVnIdentity(identityNumber.trim())) {
             throw new IllegalArgumentException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
         }
 
@@ -264,7 +266,7 @@ public class ContractServiceImpl implements ContractService {
         }
 
         if (newEndDate.isBefore(contract.getEndDate()) || newEndDate.isEqual(contract.getEndDate())) {
-            throw new IllegalArgumentException("Ngày hết hạn mới phải sau ngày hết hạn hiện tại (" + contract.getEndDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
+            throw new IllegalArgumentException("Ngày hết hạn mới phải sau ngày hết hạn hiện tại (" + contract.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
         }
 
         if (newEndDate.isBefore(LocalDate.now())) {

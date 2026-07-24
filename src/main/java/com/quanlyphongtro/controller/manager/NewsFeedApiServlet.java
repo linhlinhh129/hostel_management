@@ -27,7 +27,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @WebServlet(name = "NewsFeedApiServlet", urlPatterns = {"/api/v1/news-feed", "/api/v1/news-feed/*", "/api/v1/posts/*", "/api/v1/comments/*"})
 public class NewsFeedApiServlet extends HttpServlet {

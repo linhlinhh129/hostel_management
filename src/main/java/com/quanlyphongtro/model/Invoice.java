@@ -1,4 +1,6 @@
 package com.quanlyphongtro.model;
+import java.util.Date;
+import java.sql.Timestamp;
 
 import com.quanlyphongtro.constant.StatusConstant;
 import java.math.BigDecimal;
@@ -35,6 +37,7 @@ public class Invoice {
     private Integer newWaterReading;
     private BigDecimal electricAmount;
     private BigDecimal waterAmount;
+    private BigDecimal lateFee;          // phí chậm nộp tính runtime, không lưu DB
     private String billingPeriod; // Example: "Tháng 05/2026"
     // Transient from JOIN
     private String roomCodeCache;
@@ -108,14 +111,14 @@ public class Invoice {
     public boolean isDeleted() { return deletedAt != null; }
 
     // Backward compatibility for JSP fmt:formatDate
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
-        return java.sql.Timestamp.valueOf(createdAt);
+        return Timestamp.valueOf(createdAt);
     }
 
-    public java.util.Date getUpdatedAtAsDate() {
+    public Date getUpdatedAtAsDate() {
         if (updatedAt == null) return null;
-        return java.sql.Timestamp.valueOf(updatedAt);
+        return Timestamp.valueOf(updatedAt);
     }
 
     public Integer getOldElectricReading() { return oldElectricReading; }
@@ -135,6 +138,9 @@ public class Invoice {
 
     public BigDecimal getWaterAmount() { return waterAmount; }
     public void setWaterAmount(BigDecimal waterAmount) { this.waterAmount = waterAmount; }
+
+    public BigDecimal getLateFee() { return lateFee; }
+    public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
 
     public String getBillingPeriod() { return billingPeriod; }
     public void setBillingPeriod(String billingPeriod) { this.billingPeriod = billingPeriod; }

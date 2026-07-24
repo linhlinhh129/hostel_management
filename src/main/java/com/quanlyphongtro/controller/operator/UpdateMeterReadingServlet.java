@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.operator;
+import java.time.LocalDate;
 
 import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.dto.MeterStatusDTO;
@@ -58,7 +59,7 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                 return;
             }
 
-            java.time.LocalDate now = java.time.LocalDate.now();
+            LocalDate now = LocalDate.now();
             int currentMonth = now.getMonthValue();
             int currentYear = now.getYear();
 

@@ -36,8 +36,8 @@ Feature Quản lý Cơ sở giúp Admin:
 * Mã cơ sở là duy nhất trong toàn hệ thống.
 * Mã cơ sở chỉ gồm chữ cái từ A-Z.
 * Khi Admin nhập mã cơ sở bằng chữ thường, hệ thống tự động chuyển sang chữ in hoa.
-* Số tầng tối đa từ 1 đến 99.
-* Số phòng tối đa mỗi tầng từ 1 đến 99.
+* Số tầng tối đa từ 1 đến 10.
+* Số phòng tối đa mỗi tầng từ 1 đến 30.
 * Cơ sở mới tạo có trạng thái mặc định là DRAFT.
 * Chỉ cơ sở DRAFT mới được kích hoạt.
 * Khi cơ sở chuyển sang ACTIVE, hệ thống tự động sinh danh sách phòng.

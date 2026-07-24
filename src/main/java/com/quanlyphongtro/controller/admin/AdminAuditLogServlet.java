@@ -40,7 +40,7 @@ public class AdminAuditLogServlet extends BaseServlet {
         } catch (Exception e) {
             logger.error("AdminAuditLogServlet doGet error", e);
             handleException(req, resp, e);
-            req.getRequestDispatcher(VIEW_BASE + "list.jsp").forward(req, resp);
+            return;
         }
     }
 
@@ -55,6 +55,7 @@ public class AdminAuditLogServlet extends BaseServlet {
         String filterDateFrom   = e(req.getParameter("dateFrom"));
         String filterDateTo     = e(req.getParameter("dateTo"));
         int page = intOrDefault(req.getParameter("page"), 1);
+        if (page < 1) page = 1;
 
         int total = auditLogService.count(
                 filterActor, filterRole, filterEntityType, filterAction, filterDateFrom, filterDateTo);

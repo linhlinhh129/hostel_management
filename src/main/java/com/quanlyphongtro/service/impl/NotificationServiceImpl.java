@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service.impl;
+import com.quanlyphongtro.dao.RequestDAO;
 
 import com.quanlyphongtro.dao.NotificationDAO;
 import com.quanlyphongtro.dto.PageDTO;
@@ -257,8 +258,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         int meterId = (int) verify.get("meterId");
 
-        // Sinh code request
-        String reqCode = "REQ-UTL-" + System.currentTimeMillis() % 100000;
+        // Sinh code request theo format REQ-UTL-{SEQ}
+        RequestDAO requestDAO = new RequestDAO();
+        String reqCode = requestDAO.generateCode("UTL");
         return notificationDAO.sendOperatorRequestTransaction(reqCode, managerId, title, content, operatorId, meterId);
     }
 

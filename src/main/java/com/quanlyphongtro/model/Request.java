@@ -1,4 +1,6 @@
 package com.quanlyphongtro.model;
+import java.util.Date;
+import java.sql.Timestamp;
 
 import com.quanlyphongtro.constant.StatusConstant;
 import java.time.LocalDateTime;
@@ -78,9 +80,9 @@ public class Request {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     // Backward compatibility for JSP fmt:formatDate
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
-        return java.sql.Timestamp.valueOf(createdAt);
+        return Timestamp.valueOf(createdAt);
     }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }

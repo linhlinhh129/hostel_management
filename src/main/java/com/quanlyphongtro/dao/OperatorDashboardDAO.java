@@ -1,4 +1,8 @@
 package com.quanlyphongtro.dao;
+import java.util.List;
+import com.quanlyphongtro.model.Request;
+import java.util.ArrayList;
+import java.sql.Timestamp;
 
 import com.quanlyphongtro.util.DatabaseUtil;
 
@@ -48,8 +52,8 @@ public class OperatorDashboardDAO {
     /**
      * Lấy danh sách các yêu cầu có lịch hẹn sắp tới.
      */
-    public java.util.List<com.quanlyphongtro.model.Request> getUpcomingAppointments(int operatorId) {
-        java.util.List<com.quanlyphongtro.model.Request> list = new java.util.ArrayList<>();
+    public List<Request> getUpcomingAppointments(int operatorId) {
+        List<Request> list = new ArrayList<>();
         String sql = "SELECT rq.request_id, rq.title, r.code AS room_code, rq.appoint_schedule, rq.status " +
                      "FROM requests rq " +
                      "LEFT JOIN users u ON rq.sender_id = u.user_id " +
@@ -65,11 +69,11 @@ public class OperatorDashboardDAO {
             ps.setInt(1, operatorId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    com.quanlyphongtro.model.Request req = new com.quanlyphongtro.model.Request();
+                    Request req = new Request();
                     req.setRequestId(rs.getInt("request_id"));
                     req.setTitle(rs.getString("title"));
                     req.setRoomCode(rs.getString("room_code"));
-                    java.sql.Timestamp ts = rs.getTimestamp("appoint_schedule");
+                    Timestamp ts = rs.getTimestamp("appoint_schedule");
                     if (ts != null) {
                         req.setAppointSchedule(ts.toLocalDateTime());
                     }

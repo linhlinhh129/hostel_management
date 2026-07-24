@@ -14,7 +14,7 @@
 
 ### 4.3 Danh sách và phân trang
 
-* `BR-AL-07` Danh sách nhật ký phải hỗ trợ phân trang bắt buộc (page 0-based, size mặc định 10).
+* `BR-AL-07` Danh sách nhật ký phải hỗ trợ phân trang bắt buộc (page 1-based, size mặc định 10).
 * `BR-AL-08` Danh sách phải được sắp xếp theo `createdAt` giảm dần theo mặc định.
 * `BR-AL-09` Khi không có bản ghi phù hợp với điều kiện lọc, hệ thống trả về danh sách rỗng và thông báo không có dữ liệu.
 
@@ -22,10 +22,10 @@
 
 * `BR-AL-10` Hỗ trợ lọc theo `entityType` (ví dụ: Tenant, Employee, Facility, Notification).
 * `BR-AL-11` Hỗ trợ lọc theo `action` (CREATE, UPDATE, DELETE).
-* `BR-AL-12` Hỗ trợ lọc theo `createdBy` (ID người thực hiện).
+* `BR-AL-12` Hỗ trợ lọc theo `actor` (Tên người thực hiện, khớp một phần).
 * `BR-AL-13` Hỗ trợ lọc theo khoảng thời gian `fromDate` và `toDate` (định dạng YYYY-MM-DD).
-* `BR-AL-14` `fromDate` lớn hơn `toDate` → HTTP 400 `INVALID_DATE_RANGE`.
-* `BR-AL-15` Tham số lọc không hợp lệ → HTTP 400 `INVALID_FILTER`.
+* `BR-AL-14` `fromDate` lớn hơn `toDate` hoặc sai định dạng ngày → Hệ thống xử lý an toàn và trả về danh sách rỗng (không ném lỗi).
+* `BR-AL-15` Tham số lọc không hợp lệ → Hệ thống xử lý an toàn và trả về danh sách rỗng (không ném lỗi).
 
 ### 4.5 Nội dung bản ghi
 

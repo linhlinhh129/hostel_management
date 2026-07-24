@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 public class SystemConfigServiceImpl implements SystemConfigService {
     private static final Logger logger = LoggerFactory.getLogger(SystemConfigServiceImpl.class);
@@ -22,10 +23,11 @@ public class SystemConfigServiceImpl implements SystemConfigService {
     @Override
     public EmailConfigDTO getUIEmailConfig() {
         EmailConfigDTO dto = new EmailConfigDTO();
-        dto.setHost(configDAO.getConfigValue("email.host"));
-        dto.setPort(configDAO.getConfigValue("email.port"));
-        dto.setUsername(configDAO.getConfigValue("email.username"));
-        dto.setFrom(configDAO.getConfigValue("email.from"));
+        Map<String, String> configMap = configDAO.getEmailConfig();
+        
+        dto.setHost(configMap.get("email.host"));
+        dto.setPort(configMap.get("email.port"));
+        dto.setUsername(configMap.get("email.username"));
         
         SystemConfigDAO.ConfigMetadata meta = configDAO.getConfigMetadata("email.");
         if (meta.updatedAt != null) {
@@ -40,10 +42,12 @@ public class SystemConfigServiceImpl implements SystemConfigService {
     @Override
     public VNPayConfigDTO getUIVNPayConfig() {
         VNPayConfigDTO dto = new VNPayConfigDTO();
-        dto.setPayUrl(configDAO.getConfigValue("vnpay.payUrl"));
-        dto.setReturnUrl(configDAO.getConfigValue("vnpay.returnUrl"));
-        dto.setTmnCode(configDAO.getConfigValue("vnpay.tmnCode"));
-        dto.setApiUrl(configDAO.getConfigValue("vnpay.apiUrl"));
+        Map<String, String> configMap = configDAO.getVNPayConfig();
+        
+        dto.setPayUrl(configMap.get("vnpay.payUrl"));
+        dto.setReturnUrl(configMap.get("vnpay.returnUrl"));
+        dto.setTmnCode(configMap.get("vnpay.tmnCode"));
+        dto.setApiUrl(configMap.get("vnpay.apiUrl"));
         
         SystemConfigDAO.ConfigMetadata meta = configDAO.getConfigMetadata("vnpay.");
         if (meta.updatedAt != null) {
@@ -56,11 +60,10 @@ public class SystemConfigServiceImpl implements SystemConfigService {
     }
 
     @Override
-    public void updateEmailConfig(String host, String portStr, String username, String password, String from, int updatedBy) throws ValidationException {
+    public void updateEmailConfig(String host, String portStr, String username, String password, int updatedBy) throws ValidationException {
         if (host == null || host.trim().isEmpty() ||
             portStr == null || portStr.trim().isEmpty() ||
-            username == null || username.trim().isEmpty() ||
-            from == null || from.trim().isEmpty()) {
+            username == null || username.trim().isEmpty()) {
             throw new ValidationException("Vui lòng nhập đầy đủ các trường bắt buộc.");
         }
 
@@ -80,7 +83,6 @@ public class SystemConfigServiceImpl implements SystemConfigService {
                 configDAO.updateConfigValue("email.host", host.trim(), updatedBy, conn);
                 configDAO.updateConfigValue("email.port", String.valueOf(port), updatedBy, conn);
                 configDAO.updateConfigValue("email.username", username.trim(), updatedBy, conn);
-                configDAO.updateConfigValue("email.from", from.trim(), updatedBy, conn);
                 
                 // Only update password if it's provided and not a mask
                 if (password != null && !password.trim().isEmpty() && !password.matches("^•+$") && !password.matches("^\\*+$")) {

@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.tenant;
+import java.time.LocalDateTime;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -65,8 +66,8 @@ public class TenantDashboardServlet extends BaseServlet {
 
             int facilityId = facilityOpt.map(Facility::getId).orElse(0);
             
-            java.time.LocalDateTime lastRead = currentUser.getLastReadNotificationTime();
-            if (lastRead == null) lastRead = java.time.LocalDateTime.now().minusDays(7);
+            LocalDateTime lastRead = currentUser.getLastReadNotificationTime();
+            if (lastRead == null) lastRead = LocalDateTime.now().minusDays(7);
             
             int unreadCount = notificationService.countUnreadNotifications(room.getId(), facilityId, lastRead);
             req.setAttribute("unreadNotifications", unreadCount);
