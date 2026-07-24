@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context path="/hostel-management">
-  <!-- DATABASE DEV/CLOUD (Commented) 
+  <!-- DATABASE DEV/CLOUD (Active) -->
   <Resource auth="Container" 
             driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" 
             maxIdle="5" 
@@ -14,9 +14,8 @@
             url="jdbc:sqlserver://hostel-sql-dev-atu02378.database.windows.net:1433;database=HostelManagement_Dev_Import;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" 
             username="sqladmin@hostel-sql-dev-atu02378" 
             validationQuery="SELECT 1"/>
-  -->
 
-  <!-- DATABASE LOCAL (Active) -->
+  <!-- DATABASE LOCAL (Commented) 
   <Resource auth="Container" 
             driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" 
             maxIdle="5" 
@@ -30,4 +29,5 @@
             url="jdbc:sqlserver://localhost:1433;databaseName=HostelManagement;encrypt=true;trustServerCertificate=true;" 
             username="sa" 
             validationQuery="SELECT 1"/>
+  -->
 </Context>
