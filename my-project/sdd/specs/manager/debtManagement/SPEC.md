@@ -199,24 +199,29 @@ Số ngày nợ = 5 ngày
 
 ## 3.7 Tính phí chậm nộp tạm tính
 
-KHI hóa đơn ở trạng thái `OVERDUE` (đã quá hạn thanh toán), THE SYSTEM SHALL tính phí chậm nộp tạm tính. Phí chậm nộp chỉ bắt đầu tính khi hóa đơn nộp muộn quá 03 ngày kể từ ngày đến hạn. Công thức tính dựa trên số ngày nợ và `1%` tiền phòng cho mỗi ngày chậm nộp sau thời gian ân hạn 3 ngày:
+KHI hóa đơn ở trạng thái `OVERDUE` (đã quá hạn thanh toán), THE SYSTEM SHALL tính phí chậm nộp tạm tính. Phí chậm nộp được tính ngay từ ngày đầu tiên quá hạn. Công thức tính dựa trên số ngày nợ và `1%` tiền phòng cho mỗi ngày chậm nộp:
 
 ```text
-Số ngày tính phí chậm nộp = MAX(0, Số ngày nợ - 3)
-Phí chậm nộp tạm tính = Số ngày tính phí chậm nộp * (Tiền phòng * 0.01)
+Phí chậm nộp tạm tính = Số ngày nợ * (Tiền phòng * 0.01)
 ```
 
-Ví dụ:
+**Quy tắc đóng băng phí phạt:**
+KHI có một giao dịch thanh toán cho hóa đơn đang ở trạng thái chờ duyệt (`PENDING`), THE SYSTEM SHALL tạm thời đóng băng việc tính phí quá hạn. Số ngày nợ sẽ được tính từ ngày đến hạn đến ngày tạo giao dịch thanh toán đó thay vì ngày hiện tại.
 
+Ví dụ:
 ```text
 Ngày hiện tại = 2026-07-05
 Hạn thanh toán = 2026-06-30
-Số ngày nợ = 5 ngày
-Số ngày tính phí chậm nộp = 5 - 3 = 2 ngày
+Ngày tạo giao dịch thanh toán (PENDING) = 2026-07-02
+
+Số ngày tính nợ (được đóng băng) = 2026-07-02 - 2026-06-30 = 2 ngày
 Tiền phòng = 3,000,000
 
 Phí chậm nộp tạm tính = 2 * (3,000,000 * 0.01) = 60,000 đ
 ```
+
+Nếu giao dịch này bị Ban quản lý từ chối (`REJECTED`), THE SYSTEM SHALL tiếp tục tính phí chậm nộp dựa trên ngày hiện tại.
+Nếu giao dịch này được duyệt (`SUCCESS`), THE SYSTEM SHALL lưu cố định mức phí đã đóng băng này.
 
 KHI hóa đơn chuyển sang trạng thái `PAID`, THE SYSTEM SHALL tính toán lần cuối phí chậm nộp và lưu giá trị này vào cột `late_fee` của bảng `invoices`, đồng thời cập nhật `total_amount` cố định trong cơ sở dữ liệu.
 

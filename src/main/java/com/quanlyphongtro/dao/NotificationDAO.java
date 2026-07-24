@@ -866,7 +866,8 @@ public class NotificationDAO extends BaseDAO {
         Map<String, Object> invoice = null;
         String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.room_fee, i.due_date, " +
                 "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, " +
-                "u.full_name AS tenant_name, u.phone AS tenant_phone " +
+                "u.full_name AS tenant_name, u.phone AS tenant_phone, " +
+                "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
@@ -896,7 +897,13 @@ public class NotificationDAO extends BaseDAO {
                         invoice.put("dueDateLabel", String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear()));
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
 
-                        long days = ChronoUnit.DAYS.between(localDate, LocalDate.now());
+                        LocalDate endDate = LocalDate.now();
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+
+                        long days = ChronoUnit.DAYS.between(localDate, endDate);
                         long overdueDays = days > 0 ? days : 0;
                         invoice.put("overdueDays", overdueDays);
 

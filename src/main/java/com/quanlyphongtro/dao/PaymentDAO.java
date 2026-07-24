@@ -293,15 +293,22 @@ public class PaymentDAO extends BaseDAO {
             int rows = ps.executeUpdate();
             if (rows > 0) {
                 int invoiceId = 0;
-                String getInvoiceIdSql = "SELECT invoice_id FROM payments WHERE payment_id = ?";
+                LocalDate paymentDate = LocalDate.now();
+                String getInvoiceIdSql = "SELECT invoice_id, created_at FROM payments WHERE payment_id = ?";
                 try (PreparedStatement psGetInv = conn.prepareStatement(getInvoiceIdSql)) {
                     psGetInv.setInt(1, paymentId);
                     try (ResultSet rs = psGetInv.executeQuery()) {
-                        if (rs.next()) invoiceId = rs.getInt("invoice_id");
+                        if (rs.next()) {
+                            invoiceId = rs.getInt("invoice_id");
+                            Timestamp createdAt = rs.getTimestamp("created_at");
+                            if (createdAt != null) {
+                                paymentDate = createdAt.toLocalDateTime().toLocalDate();
+                            }
+                        }
                     }
                 }
                 if (invoiceId > 0) {
-                    new InvoiceDAO().markInvoiceAsPaid(conn, invoiceId);
+                    new InvoiceDAO().markInvoiceAsPaid(conn, invoiceId, paymentDate);
                 }
             }
         }

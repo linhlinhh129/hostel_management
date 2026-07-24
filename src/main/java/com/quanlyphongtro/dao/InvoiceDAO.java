@@ -193,13 +193,25 @@ public class InvoiceDAO extends BaseDAO {
                 } catch (SQLException ignore) {}
             }
         } else {
-            if (dueDate != null && i.getRoomFee() != null && LocalDate.now().isAfter(dueDate)) {
-                long daysLate = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
-                lateFee = i.getRoomFee()
-                            .multiply(new BigDecimal("0.01"))
-                            .multiply(new BigDecimal(daysLate))
-                            .setScale(0, RoundingMode.HALF_UP);
+            if (dueDate != null && i.getRoomFee() != null) {
+                LocalDate endDate = LocalDate.now();
+                if (hasColumn(rs, "pending_payment_date")) {
+                    try {
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+                    } catch (SQLException ignore) {}
+                }
+                if (endDate.isAfter(dueDate)) {
+                    long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
+                    lateFee = i.getRoomFee()
+                                .multiply(new BigDecimal("0.01"))
+                                .multiply(new BigDecimal(daysLate))
+                                .setScale(0, RoundingMode.HALF_UP);
+                }
             }
+
             if (i.getTotalAmount() != null) {
                 i.setTotalAmount(i.getTotalAmount().add(lateFee));
             }
@@ -245,7 +257,8 @@ public class InvoiceDAO extends BaseDAO {
                      "  mr.electric AS new_electric, mr.water AS new_water, " +
                      "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, " +
                      "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, " +
-                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period " +
+                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, " +
+                     "  (SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
                      "FROM invoices i " +
                      "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
                      "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
@@ -270,7 +283,8 @@ public class InvoiceDAO extends BaseDAO {
                      "  mr.electric AS new_electric, mr.water AS new_water, " +
                      "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, " +
                      "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, " +
-                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period " +
+                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, " +
+                     "  (SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
                      "FROM invoices i " +
                      "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
                      "WHERE i.invoice_id = ? AND i.room_id = ? AND i.deleted_at IS NULL";
@@ -291,7 +305,9 @@ public class InvoiceDAO extends BaseDAO {
 
     public BigDecimal getUnpaidTotalByRoomId(int roomId) {
         // Lấy tổng base amount + tính lateFee theo từng hóa đơn chưa thanh toán
-        String sql = "SELECT total_amount, room_fee, due_date FROM invoices " +
+        String sql = "SELECT total_amount, room_fee, due_date, " +
+                     "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = invoices.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
+                     "FROM invoices " +
                      "WHERE room_id = ? AND status != 'PAID' AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -308,8 +324,14 @@ public class InvoiceDAO extends BaseDAO {
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     if (dueDateSql != null && roomFee != null) {
                         LocalDate dueDate = dueDateSql.toLocalDate();
-                        if (today.isAfter(dueDate)) {
-                            long daysLate = ChronoUnit.DAYS.between(dueDate, today);
+                        LocalDate endDate = today;
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+                        
+                        if (endDate.isAfter(dueDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
                             BigDecimal lateFee = roomFee
                                 .multiply(new BigDecimal("0.01"))
                                 .multiply(new BigDecimal(daysLate))
@@ -331,7 +353,8 @@ public class InvoiceDAO extends BaseDAO {
                      "  mr.electric AS new_electric, mr.water AS new_water, " +
                      "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, " +
                      "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, " +
-                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period " +
+                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, " +
+                     "  (SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
                      "FROM invoices i " +
                      "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
                      "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
@@ -376,6 +399,10 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public void markInvoiceAsPaid(Connection conn, int invoiceId) throws SQLException {
+        markInvoiceAsPaid(conn, invoiceId, LocalDate.now());
+    }
+
+    public void markInvoiceAsPaid(Connection conn, int invoiceId, LocalDate paymentDate) throws SQLException {
         String fetchSql = "SELECT room_fee, due_date, total_amount FROM invoices WHERE invoice_id = ? AND status != 'PAID'";
         BigDecimal roomFee = BigDecimal.ZERO;
         java.sql.Date dueDate = null;
@@ -398,9 +425,8 @@ public class InvoiceDAO extends BaseDAO {
             BigDecimal lateFee = BigDecimal.ZERO;
             if (dueDate != null && roomFee != null) {
                 LocalDate dueLocalDate = dueDate.toLocalDate();
-                LocalDate today = LocalDate.now();
-                if (today.isAfter(dueLocalDate)) {
-                    long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                if (paymentDate.isAfter(dueLocalDate)) {
+                    long daysLate = ChronoUnit.DAYS.between(dueLocalDate, paymentDate);
                     lateFee = roomFee.multiply(new BigDecimal("0.01"))
                                      .multiply(new BigDecimal(daysLate))
                                      .setScale(0, RoundingMode.HALF_UP);
@@ -437,7 +463,9 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public BigDecimal calculateRealtimeLatePenalty(int invoiceId) {
-        String sql = "SELECT room_fee, due_date FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
+        String sql = "SELECT room_fee, due_date, " +
+                     "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = invoices.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
+                     "FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
@@ -445,9 +473,13 @@ public class InvoiceDAO extends BaseDAO {
                 if (rs.next()) {
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     LocalDate dueDate = rs.getDate("due_date").toLocalDate();
-                    LocalDate today = LocalDate.now();
-                    if (dueDate != null && roomFee != null && today.isAfter(dueDate)) {
-                        long daysLate = ChronoUnit.DAYS.between(dueDate, today);
+                    LocalDate endDate = LocalDate.now();
+                    Date pendingDate = rs.getDate("pending_payment_date");
+                    if (pendingDate != null) {
+                        endDate = pendingDate.toLocalDate();
+                    }
+                    if (dueDate != null && roomFee != null && endDate.isAfter(dueDate)) {
+                        long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
                         BigDecimal penaltyRate = new BigDecimal("0.01").multiply(new BigDecimal(daysLate));
                         return roomFee.multiply(penaltyRate).setScale(0, RoundingMode.HALF_UP);
                     }
@@ -462,7 +494,8 @@ public class InvoiceDAO extends BaseDAO {
     public List<InvoiceListItemDTO> findInvoices(int managerId, String keyword, String status, String billingPeriod, int offset, int limit) {
         List<InvoiceListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT i.invoice_id, i.code, i.total_amount, i.room_fee, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name " +
+            "SELECT i.invoice_id, i.code, i.total_amount, i.room_fee, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, " +
+            "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
@@ -526,9 +559,13 @@ public class InvoiceDAO extends BaseDAO {
                      
                      if (!"PAID".equals(invoiceStatus) && d != null && roomFee != null) {
                          LocalDate dueLocalDate = d.toLocalDate();
-                         LocalDate today = LocalDate.now();
-                         if (today.isAfter(dueLocalDate)) {
-                             long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                         LocalDate endDate = LocalDate.now();
+                         Date pendingDate = rs.getDate("pending_payment_date");
+                         if (pendingDate != null) {
+                             endDate = pendingDate.toLocalDate();
+                         }
+                         if (endDate.isAfter(dueLocalDate)) {
+                             long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
                              BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
                                                          .multiply(new BigDecimal(daysLate))
                                                          .setScale(0, RoundingMode.HALF_UP);
@@ -617,7 +654,8 @@ public class InvoiceDAO extends BaseDAO {
                      "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, " +
                      "(SELECT TOP 1 water FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_water, " +
                      "(SELECT full_name FROM users WHERE user_id = i.created_by) AS creator_name, " +
-                     "FORMAT(mr_curr.reading_date, 'MM/yyyy') AS billing_period " +
+                     "FORMAT(mr_curr.reading_date, 'MM/yyyy') AS billing_period, " +
+                     "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
                      "FROM invoices i " +
                      "INNER JOIN rooms r ON i.room_id = r.room_id " +
                      "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
@@ -703,9 +741,15 @@ public class InvoiceDAO extends BaseDAO {
                           Date dueDateSql = rs.getDate("due_date");
                           if (dueDateSql != null && dto.getRoomFee() != null) {
                               LocalDate dueLocalDate = dueDateSql.toLocalDate();
-                              LocalDate today = LocalDate.now();
-                              if (today.isAfter(dueLocalDate)) {
-                                  long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                              LocalDate endDate = LocalDate.now();
+                              if (hasColumn(rs, "pending_payment_date")) {
+                                  try {
+                                      Date pendingDate = rs.getDate("pending_payment_date");
+                                      if (pendingDate != null) endDate = pendingDate.toLocalDate();
+                                  } catch (SQLException ignore) {}
+                              }
+                              if (endDate.isAfter(dueLocalDate)) {
+                                  long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
                                   lateFee = dto.getRoomFee()
                                               .multiply(new BigDecimal("0.01"))
                                               .multiply(new BigDecimal(daysLate))
