@@ -1,4 +1,11 @@
 package com.quanlyphongtro.dao;
+import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.sql.Types;
+import java.time.temporal.ChronoUnit;
 
 import com.quanlyphongtro.model.Notification;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -154,7 +161,7 @@ public class NotificationDAO extends BaseDAO {
         return Optional.empty();
     }
 
-    public int countUnreadForTenant(int roomId, int facilityId, java.time.LocalDateTime lastReadTime) {
+    public int countUnreadForTenant(int roomId, int facilityId, LocalDateTime lastReadTime) {
         if (lastReadTime == null) return countForTenant(roomId, facilityId);
 
         String sql = "SELECT COUNT(*) FROM dbo.notifications " +
@@ -165,8 +172,8 @@ public class NotificationDAO extends BaseDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, facilityId);
             ps.setInt(2, roomId);
-            ps.setTimestamp(3, java.sql.Timestamp.valueOf(lastReadTime));
-            ps.setTimestamp(4, java.sql.Timestamp.valueOf(lastReadTime));
+            ps.setTimestamp(3, Timestamp.valueOf(lastReadTime));
+            ps.setTimestamp(4, Timestamp.valueOf(lastReadTime));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);
             }
@@ -459,7 +466,7 @@ public class NotificationDAO extends BaseDAO {
                     Timestamp cAt = rs.getTimestamp("created_at");
                     String dateLabel = "";
                     if (cAt != null) {
-                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
                         dateLabel = sdf.format(cAt);
                     }
                     notif.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
@@ -498,12 +505,15 @@ public class NotificationDAO extends BaseDAO {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder incorrectSql = new StringBuilder(
                 "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, f.name AS facility_name, f.code AS facility_code, " +
-                "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount " +
+                "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount, " +
+                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
+                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
+                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                 "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
-                "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL"
+                "WHERE f.manager_id = ? AND mr.status IN ('INCORRECT', 'REPORTED', 'UPDATED') AND i.deleted_at IS NULL AND mr.deleted_at IS NULL"
         );
         List<Object> incParams = new ArrayList<>();
         incParams.add(managerId);
@@ -538,10 +548,13 @@ public class NotificationDAO extends BaseDAO {
                     item.put("water", rs.getInt("water"));
                     item.put("meterStatus", rs.getString("meter_status"));
                     item.put("totalAmount", rs.getDouble("total_amount"));
+                    item.put("ticketStatus", rs.getString("ticket_status"));
+                    item.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
+                    item.put("operatorName", rs.getString("operator_name"));
                     
-                    java.sql.Date rDate = rs.getDate("reading_date");
+                    Date rDate = rs.getDate("reading_date");
                     if (rDate != null) {
-                        java.time.LocalDate localDate = rDate.toLocalDate();
+                        LocalDate localDate = rDate.toLocalDate();
                         item.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
                     } else {
                         item.put("billingPeriod", "—");
@@ -637,8 +650,8 @@ public class NotificationDAO extends BaseDAO {
             ps.setString(2, title.trim());
             ps.setString(3, content.trim());
             ps.setString(4, recipientType);
-            if (facilityId != null) ps.setInt(5, facilityId); else ps.setNull(5, java.sql.Types.INTEGER);
-            if (roomId != null) ps.setInt(6, roomId); else ps.setNull(6, java.sql.Types.INTEGER);
+            if (facilityId != null) ps.setInt(5, facilityId); else ps.setNull(5, Types.INTEGER);
+            if (roomId != null) ps.setInt(6, roomId); else ps.setNull(6, Types.INTEGER);
             ps.setInt(7, createdBy);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -741,7 +754,10 @@ public class NotificationDAO extends BaseDAO {
     public Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId) {
         Map<String, Object> invoice = null;
         String sql = "SELECT i.*, r.code AS room_code, f.facility_id, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
-                "mr.electric, mr.water, mr.reading_date " +
+                "mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, " +
+                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
+                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
+                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
@@ -761,10 +777,14 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("electric", rs.getInt("electric"));
                     invoice.put("water", rs.getInt("water"));
                     invoice.put("totalAmount", rs.getDouble("total_amount"));
+                    invoice.put("meterStatus", rs.getString("meter_status"));
+                    invoice.put("ticketStatus", rs.getString("ticket_status"));
+                    invoice.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
+                    invoice.put("operatorName", rs.getString("operator_name"));
 
-                    java.sql.Date rDate = rs.getDate("reading_date");
+                    Date rDate = rs.getDate("reading_date");
                     if (rDate != null) {
-                        java.time.LocalDate localDate = rDate.toLocalDate();
+                        LocalDate localDate = rDate.toLocalDate();
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
                     } else {
                         invoice.put("billingPeriod", "—");
@@ -844,7 +864,7 @@ public class NotificationDAO extends BaseDAO {
 
     public Map<String, Object> getInvoiceDetailsForSendDebt(int invoiceId) {
         Map<String, Object> invoice = null;
-        String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.due_date, " +
+        String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.room_fee, i.due_date, " +
                 "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, " +
                 "u.full_name AS tenant_name, u.phone AS tenant_phone " +
                 "FROM dbo.invoices i " +
@@ -860,7 +880,8 @@ public class NotificationDAO extends BaseDAO {
                     invoice = new HashMap<>();
                     invoice.put("id", rs.getInt("invoice_id"));
                     invoice.put("code", rs.getString("invoice_code"));
-                    invoice.put("totalAmount", rs.getDouble("total_amount"));
+                    double baseTotal = rs.getDouble("total_amount");
+                    double roomFee = rs.getDouble("room_fee");
                     invoice.put("roomCode", rs.getString("room_code"));
                     invoice.put("roomId", rs.getInt("room_id"));
                     invoice.put("facilityId", rs.getInt("facility_id"));
@@ -869,18 +890,30 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("tenantName", rs.getString("tenant_name") != null ? rs.getString("tenant_name") : "Chưa có");
                     invoice.put("tenantPhone", rs.getString("tenant_phone") != null ? rs.getString("tenant_phone") : "—");
 
-                    java.sql.Date dDate = rs.getDate("due_date");
+                    Date dDate = rs.getDate("due_date");
                     if (dDate != null) {
-                        java.time.LocalDate localDate = dDate.toLocalDate();
+                        LocalDate localDate = dDate.toLocalDate();
                         invoice.put("dueDateLabel", String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear()));
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
-                        
-                        long days = java.time.temporal.ChronoUnit.DAYS.between(localDate, java.time.LocalDate.now());
-                        invoice.put("overdueDays", days > 0 ? days : 0);
+
+                        long days = ChronoUnit.DAYS.between(localDate, LocalDate.now());
+                        long overdueDays = days > 0 ? days : 0;
+                        invoice.put("overdueDays", overdueDays);
+
+                        // Tính phí chậm nộp: 1%/ngày × tiền phòng × số ngày quá hạn
+                        double lateFee = overdueDays > 0 ? roomFee * 0.01 * overdueDays : 0.0;
+                        double totalWithLateFee = baseTotal + lateFee;
+
+                        invoice.put("baseAmount", baseTotal);
+                        invoice.put("lateFee", lateFee);
+                        invoice.put("totalAmount", totalWithLateFee);
                     } else {
                         invoice.put("dueDateLabel", "—");
                         invoice.put("billingPeriod", "—");
                         invoice.put("overdueDays", 0);
+                        invoice.put("baseAmount", baseTotal);
+                        invoice.put("lateFee", 0.0);
+                        invoice.put("totalAmount", baseTotal);
                     }
                 }
             }

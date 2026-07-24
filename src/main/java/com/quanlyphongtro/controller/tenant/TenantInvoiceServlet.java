@@ -1,4 +1,7 @@
 package com.quanlyphongtro.controller.tenant;
+import com.quanlyphongtro.dao.PaymentDAO;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -43,7 +46,7 @@ public class TenantInvoiceServlet extends BaseServlet {
                 List<Invoice> invoices = invoiceService.getInvoicesByRoomId(roomId);
                 BigDecimal unpaidTotal = invoiceService.getUnpaidTotal(roomId);
                 
-                com.quanlyphongtro.dao.PaymentDAO paymentDAO = new com.quanlyphongtro.dao.PaymentDAO();
+                PaymentDAO paymentDAO = new PaymentDAO();
                 for (Invoice inv : invoices) {
                     inv.setHasPendingPayment(paymentDAO.hasPendingPayment(inv.getId()));
                 }
@@ -59,8 +62,27 @@ public class TenantInvoiceServlet extends BaseServlet {
                     Optional<Invoice> invOpt = invoiceService.getInvoiceById(id, roomId);
                     if (invOpt.isPresent()) {
                         Invoice inv = invOpt.get();
-                        inv.setHasPendingPayment(new com.quanlyphongtro.dao.PaymentDAO().hasPendingPayment(inv.getId()));
+                        inv.setHasPendingPayment(new PaymentDAO().hasPendingPayment(inv.getId()));
                         req.setAttribute("invoice", inv);
+
+                        long overdueDays = 0;
+                        BigDecimal penaltyAmount = BigDecimal.ZERO;
+                        BigDecimal totalAmountToPay = inv.getTotalAmount();
+
+                        if ("UNPAID".equals(inv.getStatus()) || "OVERDUE".equals(inv.getStatus())) {
+                            LocalDate dueDate = inv.getDueDate();
+                            LocalDate today = LocalDate.now();
+                            if (dueDate != null && today.isAfter(dueDate)) {
+                                overdueDays = ChronoUnit.DAYS.between(dueDate, today);
+                                // lateFee đã được cộng vào totalAmount trong mapRow(),
+                                // lấy lại để hiển thị riêng trong JSP
+                                penaltyAmount = inv.getLateFee() != null ? inv.getLateFee() : BigDecimal.ZERO;
+                            }
+                        }
+
+                        req.setAttribute("overdueDays", overdueDays);
+                        req.setAttribute("penaltyAmount", penaltyAmount);
+                        req.setAttribute("totalAmountToPay", totalAmountToPay);
                         req.getRequestDispatcher("/WEB-INF/views/tenant/invoices/detail.jsp").forward(req, resp);
                     } else {
                         resp.sendError(HttpServletResponse.SC_NOT_FOUND);

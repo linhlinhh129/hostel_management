@@ -1,730 +1,92 @@
-# ASKS: Phân chia Chi tiết Đầu Việc - Quản lý Nhân sự
+# TASKS: Quản lý Nhân sự (personnelManagement)
 
-**Total Story Points:** ~110 points  
-**Sprint Duration:** 2 weeks × 6 sprints = 12 weeks  
-**Velocity:** ~18 points/sprint
+**Status:** In Progress
+**Priority:** High
 
----
-
-## Epic 1: Backend Infrastructure & Database (22 points)
-
-### Task 1.1: Database Schema Design (4 points)
-**Assignee:** Database Admin  
-**Duration:** 2 days  
-**Description:**
-- Design Employee table (id, code, fullName, email, phone, role, status, createdAt, updatedAt, createdBy, lastLoginAt, passwordResetRequired)
-- Design EmployeeRole table (id, employeeId, role, assignedAt)
-- Design EmployeeFacility table (id, employeeId, facilityId, assignedAt)
-- Design AuditLog extension for employee operations
-- Create ER diagram with relationships
-
-**Acceptance Criteria:**
-- ✓ Tables designed with proper constraints
-- ✓ Unique constraints on email, phone
-- ✓ Foreign keys defined
-- ✓ Indexes on frequently queried columns
+Tài liệu quản lý danh sách đầu việc và tiến độ triển khai cho tính năng Quản lý Nhân sự của Admin.
 
 ---
 
-### Task 1.2: Database Migration Scripts (2 points)
-**Assignee:** Database Admin  
-**Duration:** 1 day  
-**Description:**
-- Write migration scripts
-- Test rollback scripts
-- Create seed data (if needed)
+## 1. Thiết kế & Cơ sở dữ liệu (Database)
+Thiết kế và chuẩn bị các bảng dữ liệu liên quan đến tài khoản người dùng và cơ sở quản lý.
 
-**Acceptance Criteria:**
-- ✓ Migrations execute without error
-- ✓ Rollback working
+- [x] Sử dụng bảng `dbo.users` lưu trữ thông tin nhân sự với các cột: `identity_number` (CCCD), `dob` (ngày sinh), `gender` (giới tính), `permanent_address` (địa chỉ thường trú).
+- [x] Thiết lập ràng buộc khóa ngoại `manager_id` và `operator_id` trong bảng `dbo.facilities` trỏ tới `dbo.users(user_id)`.
+- [x] Đảm bảo các cột `email`, `phone`, và `identity_number` trong bảng `dbo.users` có ràng buộc UNIQUE và hỗ trợ chỉ số (Index) để tìm kiếm nhanh.
 
 ---
 
-### Task 1.3: Entity Implementation - Employee (4 points)
-**Assignee:** Backend Developer  
-**Duration:** 2 days  
-**Description:**
-- Implement Employee JPA entity
-- Implement field validations (email format, phone length, etc.)
-- Implement role enum (MANAGER, TECHNICIAN, COST_MANAGER)
-- Implement status enum (ACTIVE, INACTIVE)
-- Setup relationships (facilities, audit logs)
-- Create repository with custom queries
+## 2. Tầng Data Access Object (DAO)
+Xây dựng các câu truy vấn và phương thức tương tác CSDL trong lớp `PersonnelDAO`.
 
-**Acceptance Criteria:**
-- ✓ Entity mapped correctly
-- ✓ Validations working
-- ✓ Relationships configured
-- ✓ Repository queries support pagination
+- [x] Triển khai `PersonnelDAO.findAll(...)` hỗ trợ tìm kiếm theo keyword (tên, email, số điện thoại, mã), lọc theo vai trò (`MANAGER`/`OPERATOR`), trạng thái (`ACTIVE`/`INACTIVE`), sắp xếp theo ngày tạo giảm dần (`createdAt DESC`), và phân trang.
+- [x] Triển khai `PersonnelDAO.count(...)` để đếm tổng số lượng nhân sự thỏa mãn bộ lọc phục vụ phân trang.
+- [x] Triển khai `PersonnelDAO.findById(id)` lấy thông tin chi tiết nhân sự.
+- [x] Triển khai `PersonnelDAO.findFacilityNamesForUser(userId)` để lấy danh sách tên các cơ sở mà nhân sự đang quản lý/vận hành (Enrich data).
+- [x] Triển khai `PersonnelDAO.findFacilityIdForUser(userId)` để xác định ID cơ sở mà nhân sự đang được gán.
+- [x] Triển khai `PersonnelDAO.findFacilitiesForManager(...)` và `findFacilitiesForOperator(...)` để lấy danh sách cơ sở `ACTIVE` chưa được gán cho ai (kèm loại trừ chính ID đang chỉnh sửa để hiển thị trên form).
+- [x] Triển khai các hàm kiểm tra trùng lặp: `existsByEmail(...)`, `existsByPhone(...)`, `existsByIdentityNumber(...)`.
+- [x] Triển khai các hàm gán và hủy gán cơ sở: `assignFacility(...)`, `unassignFacility(...)`, `assignOperatorFacility(...)`, `unassignOperatorFacility(...)`.
+- [x] Triển khai các hàm đếm số lượng nhân sự active trên một cơ sở để phục vụ kiểm tra ràng buộc duy nhất (mỗi cơ sở tối đa 1 Manager và 1 Operator): `countActiveManagerForFacility(...)`, `countActiveOperatorForFacility(...)`.
 
 ---
 
-### Task 1.4: Entity Implementation - Relationships (4 points)
-**Assignee:** Backend Developer  
-**Duration:** 2 days  
-**Description:**
-- Implement EmployeeFacility junction entity
-- Implement role assignment relationships
-- Setup cascading behaviors
-- Create repository for facility assignments
+## 3. Tầng Service (Business Logic)
+Đóng gói xử lý nghiệp vụ, kiểm tra tính hợp lệ dữ liệu trong `PersonnelService` và `PersonnelServiceImpl`.
 
-**Acceptance Criteria:**
-- ✓ Relationships correct
-- ✓ Cascade delete/update working
-- ✓ Queries optimized with joins
-
----
-
-### Task 1.5: Audit Log Extension (4 points)
-**Assignee:** Backend Developer  
-**Duration:** 2 days  
-**Description:**
-- Extend AuditLog for employee operations
-- Implement logging aspect for CRUD
-- Implement logging for lock/unlock
-- Implement logging for facility assignments
-- Test logging accuracy
-
-**Acceptance Criteria:**
-- ✓ All operations logged
-- ✓ Audit trail complete
-- ✓ User information captured
+- [x] Triển khai phương thức danh sách `list(...)` và chi tiết `getById(...)` kèm theo enrich dữ liệu tên cơ sở.
+- [x] Triển khai nghiệp vụ Tạo nhân sự `create(...)`:
+    - [x] Kiểm tra các trường bắt buộc không được trống (Họ tên, email, số điện thoại, CCCD).
+    - [x] Kiểm tra định dạng email và số điện thoại di động Việt Nam (10 chữ số).
+    - [x] Kiểm tra độ dài và tính hợp lệ của số CCCD (9 hoặc 12 số).
+    - [x] Kiểm tra trùng lặp email, số điện thoại, CCCD trong hệ thống.
+    - [x] Kiểm tra ngày sinh không được lớn hơn ngày hiện tại.
+    - [x] Sinh mật khẩu tạm ngẫu nhiên, mã hóa BCrypt, thiết lập trạng thái tài khoản là `ACTIVE` và `forceChangePass = true`.
+    - [x] **[BUG]** Kiểm tra bắt buộc phải chọn cơ sở quản lý (`facilityId` không được null/trống) đối với vai trò `MANAGER` và `OPERATOR` khi Tạo mới.
+    - [x] Kiểm tra cơ sở được gán phải tồn tại và đang `ACTIVE`.
+    - [x] Kiểm tra cơ sở chưa có nhân sự cùng vai trò hoạt động (chặn trùng lặp).
+    - [x] Gọi DAO để lưu nhân sự và gán cơ sở.
+    - [x] Gửi mật khẩu tạm thời đến email của nhân sự một cách bất đồng bộ (async).
+- [x] Triển khai nghiệp vụ Cập nhật thông tin `update(...)`:
+    - [x] Kiểm tra các trường bắt buộc, định dạng dữ liệu, ngày sinh, tính duy nhất của email/sđt/CCCD (loại trừ tài khoản hiện tại).
+    - [x] Kiểm tra bắt buộc phải chọn cơ sở quản lý cho `MANAGER` hoặc `OPERATOR`.
+    - [x] Thu hồi cơ sở cũ và gán cơ sở mới (xử lý đổi vai trò hoặc đổi cơ sở).
+- [x] Triển khai nghiệp vụ Khóa/Mở khóa tài khoản `toggleStatus(...)`:
+    - [x] Chuyển đổi trạng thái tài khoản giữa `ACTIVE` và `INACTIVE`.
+    - [x] Ngăn chặn Admin tự khóa tài khoản của chính mình (ném lỗi).
 
 ---
 
-### Task 1.6: Validation & Error Handling (4 points)
-**Assignee:** Backend Developer  
-**Duration:** 2 days  
-**Description:**
-- Implement validation annotations
-- Create custom validators (email, phone)
-- Map all error codes
-- Create global exception handler
+## 4. Tầng Controller (Servlet)
+Xây dựng lớp điều phối luồng web `AdminPersonnelServlet`.
 
-**Acceptance Criteria:**
-- ✓ All validations working
-- ✓ Error codes mapped
-- ✓ Proper HTTP status codes
-
----
-
-## Epic 2: Employee Management Service (32 points)
-
-### Task 2.1: Employee Code Generation (2 points)
-**Assignee:** Backend Developer  
-**Duration:** 1 day  
-**Description:**
-- Implement auto-generated employee code
-- Format: EMP + sequential number (EMP001, EMP002, etc.)
-- Ensure uniqueness
-- Non-editable after creation
-
-**Acceptance Criteria:**
-- ✓ Code auto-generated
-- ✓ Format correct & unique
-- ✓ Cannot be edited
+- [x] Ánh xạ URL patterns: `/admin/personnel` và `/admin/personnel/*`.
+- [x] Phân quyền truy cập thông qua bộ lọc `RoleFilter` (bắt buộc vai trò là `ADMIN`).
+- [x] Xử lý `doGet` chuyển tiếp dữ liệu đến các trang JSP:
+    - [x] Trang danh sách `/admin/personnel` (nhận tham số lọc, phân trang).
+    - [x] Trang tạo mới `/admin/personnel/create` (tải danh sách cơ sở có thể gán).
+    - [x] Trang chi tiết `/admin/personnel/{id}`.
+    - [x] Trang chỉnh sửa `/admin/personnel/{id}/edit`.
+- [x] Xử lý `doPost` nhận request cập nhật:
+    - [x] Tạo mới `/admin/personnel/create`. Nếu validation thất bại, giữ lại dữ liệu form bằng `PersonnelFormDTO` và forward lại trang kèm `errorMessage`.
+    - [x] Chỉnh sửa `/admin/personnel/{id}/edit`. Nếu lỗi, forward lại kèm dữ liệu cũ và thông báo lỗi.
+    - [x] Thay đổi trạng thái `/admin/personnel/{id}/status`.
 
 ---
 
-### Task 2.2: Create Employee Service (6 points)
-**Assignee:** Backend Developer  
-**Duration:** 3 days  
-**Description:**
-- Implement createEmployee() service
-- Validate required fields (name, email, phone, role)
-- Validate email format & uniqueness
-- Validate phone format & uniqueness
-- Prevent Admin role creation
-- Check Cost Manager constraint if role = COST_MANAGER
-- Generate temporary password
-- Set status = ACTIVE by default
-- Trigger email sending
-- Create audit log
+## 5. Giao diện người dùng (JSP / View)
+Thiết kế trang giao diện theo hệ thống thiết kế chung của dự án.
 
-**Acceptance Criteria:**
-- ✓ Employee created
-- ✓ All validations working
-- ✓ Error codes correct (INVALID_EMAIL_FORMAT, EMAIL_ALREADY_EXISTS, etc.)
-- ✓ Temp password generated
-- ✓ Email triggered
-- ✓ Cost Manager constraint checked
-- ✓ Audit logged
-
-**Unit Tests:**
-- Test valid creation
-- Test validation errors
-- Test Cost Manager constraint
-- Test email trigger
+- [x] Trang danh sách (`list.jsp`): Hiển thị bảng nhân sự, bộ lọc tìm kiếm/vai trò/trạng thái, phân trang, nút chuyển sang chi tiết/sửa/khóa.
+- [x] Trang chi tiết (`detail.jsp`): Xem toàn bộ thông tin cá nhân và thông tin cơ sở quản lý.
+- [x] Trang tạo mới (`create.jsp`): Biểu mẫu nhập liệu, script JS tự động chuyển đổi danh sách cơ sở khả dụng tùy thuộc vào vai trò được chọn (`MANAGER` hay `OPERATOR`).
+- [x] Trang chỉnh sửa (`edit.jsp`): Hiển thị dữ liệu cũ, hỗ trợ cập nhật vai trò và đổi cơ sở quản lý.
 
 ---
 
-### Task 2.3: Get Employee List Service (3 points)
-**Assignee:** Backend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Implement getEmployeeList() with pagination
-- Support search by name, email, phone
-- Support filter by role (MANAGER, TECHNICIAN, COST_MANAGER)
-- Support filter by status (ACTIVE, INACTIVE)
-- Return employee + facility list
-
-**Acceptance Criteria:**
-- ✓ Pagination working
-- ✓ Search working
-- ✓ Filter working
-- ✓ Facilities populated
-- ✓ Empty result handled
-
----
-
-### Task 2.4: Get Employee Detail Service (2 points)
-**Assignee:** Backend Developer  
-**Duration:** 1 day  
-**Description:**
-- Implement getEmployeeDetail(id) service
-- Return employee info with facilities list
-- Handle EMPLOYEE_NOT_FOUND error
-
-**Acceptance Criteria:**
-- ✓ Detail retrieved
-- ✓ Facilities populated
-- ✓ 404 handled
-
----
-
-### Task 2.5: Update Employee Info Service (5 points)
-**Assignee:** Backend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Implement updateEmployee() service
-- Allow update: fullName, email, phone, role, facilities
-- Prevent employee from updating own role
-- Validate email uniqueness (excluding self)
-- Validate phone uniqueness (excluding self)
-- Prevent changing to ADMIN role
-- Update facility assignments
-- Create audit log
-
-**Acceptance Criteria:**
-- ✓ Updates applied
-- ✓ Validations working
-- ✓ Self-role change prevented
-- ✓ Facilities updated
-- ✓ Audit logged
-
-**Unit Tests:**
-- Test valid updates
-- Test validation errors
-- Test role prevention
-- Test facility updates
-
----
-
-### Task 2.6: Cost Manager Constraint Service (6 points)
-**Assignee:** Backend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Implement checkCostManagerUniqueness() service
-- On create: Check if active Cost Manager exists
-- On update role to COST_MANAGER: Check constraint
-- On lock COST_MANAGER: Check if only one, allow if deactivating
-- On unlock COST_MANAGER: Check if another active exists, prevent if yes
-- Error: COST_MANAGER_ALREADY_ACTIVE
-
-**Acceptance Criteria:**
-- ✓ Constraint enforced on create
-- ✓ Constraint enforced on role change
-- ✓ Constraint enforced on lock/unlock
-- ✓ Error messages clear
-- ✓ Edge cases tested (concurrent requests, multiple state changes)
-
-**Unit Tests:**
-- Test create with existing active Cost Manager
-- Test update to Cost Manager role
-- Test lock/unlock scenarios
-- Test concurrent operations
-
----
-
-### Task 2.7: Facility Assignment Service (4 points)
-**Assignee:** Backend Developer  
-**Duration:** 2 days  
-**Description:**
-- Implement assignFacilities() service
-- Manager/Technician must have >= 1 facility
-- Only assign active facilities
-- Validate facility exists & is active
-- Clear old assignments & set new
-- Create audit log for changes
-
-**Acceptance Criteria:**
-- ✓ Facilities assigned correctly
-- ✓ Validation working (active only)
-- ✓ Manager/Technician constraint enforced
-- ✓ Old assignments cleared
-- ✓ Audit logged
-
----
-
-### Task 2.8: Lock/Unlock Account Service (4 points)
-**Assignee:** Backend Developer  
-**Duration:** 2 days  
-**Description:**
-- Implement lockAccount(id) service
-- Prevent locking own account (error: CANNOT_DEACTIVATE_SELF)
-- Change status to INACTIVE
-- Create audit log
-- Implement unlockAccount(id) service
-- Change status to ACTIVE
-- Check Cost Manager constraint if applicable
-- Create audit log
-
-**Acceptance Criteria:**
-- ✓ Lock/unlock working
-- ✓ Self-lock prevented
-- ✓ Cost Manager constraint enforced on unlock
-- ✓ Audit logged
-
----
-
-## Epic 3: Authentication & Password Management (18 points)
-
-### Task 3.1: Temporary Password Generation (3 points)
-**Assignee:** Backend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Implement generateTemporaryPassword() utility
-- Generate secure random password (12 chars, mix of upper/lower/numbers/special)
-- Create hash for storage
-- Return plain password for email sending
-
-**Acceptance Criteria:**
-- ✓ Password strong & random
-- ✓ Hash stored correctly
-- ✓ Plain password returned once
-
----
-
-### Task 3.2: Email Service Integration (5 points)
-**Assignee:** Backend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Implement EmailService integration
-- Create employee welcome email template
-- Send async (don't block API)
-- Implement retry logic (max 3 retries)
-- Log send success/failure
-- Handle send failure gracefully
-
-**Acceptance Criteria:**
-- ✓ Email service integrated
-- ✓ Async sending working
-- ✓ Retry logic implemented
-- ✓ Logging complete
-- ✓ Failure handling graceful
-
----
-
-### Task 3.3: First Login Password Reset (5 points)
-**Assignee:** Backend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Implement passwordResetRequired flag in Employee
-- On login with temp password: Set flag = true
-- Require password change on first login
-- After password change: Set flag = false
-- Validate new password strength
-- Update password hash
-
-**Acceptance Criteria:**
-- ✓ Flag set on first login
-- ✓ Password change enforced
-- ✓ Password validation working
-- ✓ Flag cleared after change
-- ✓ Old password invalidated
-
----
-
-### Task 3.4: Password Reset Endpoint (5 points)
-**Assignee:** Backend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Implement self-service password reset
-- Employee can reset own password
-- Send confirmation email
-- Generate reset token (expire in 24 hours)
-- Validate token on password reset
-- Update password hash
-
-**Acceptance Criteria:**
-- ✓ Reset request creates token
-- ✓ Email sent with token
-- ✓ Token validation working
-- ✓ Password updated
-- ✓ Token expires correctly
-
----
-
-## Epic 4: Employee API & Controller (16 points)
-
-### Task 4.1: Employee API Controller (5 points)
-**Assignee:** Backend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Create REST controller with endpoints:
-  - POST /api/v1/employees (create)
-  - GET /api/v1/employees (list)
-  - GET /api/v1/employees/{id} (detail)
-  - PUT /api/v1/employees/{id} (update)
-  - POST /api/v1/employees/{id}/lock (lock)
-  - POST /api/v1/employees/{id}/unlock (unlock)
-- Implement DTOs for request/response
-- Add authorization (Admin only)
-- Handle exceptions
-
-**Acceptance Criteria:**
-- ✓ All endpoints working
-- ✓ DTOs correct
-- ✓ Authorization enforced
-- ✓ Error handling complete
-
----
-
-### Task 4.2: Facility Assignment API (3 points)
-**Assignee:** Backend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Add endpoint to facility assignment APIs
-- PUT /api/v1/employees/{id}/facilities (assign)
-- GET /api/v1/employees/{id}/facilities (list assigned)
-- Implement DTOs
-
-**Acceptance Criteria:**
-- ✓ Endpoints working
-- ✓ DTOs correct
-- ✓ Validation working
-
----
-
-### Task 4.3: Search & Filter API (3 points)
-**Assignee:** Backend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Implement query parameters for search
-- Implement filter by role & status
-- Implement sorting options
-- Optimize database queries
-
-**Acceptance Criteria:**
-- ✓ Search working
-- ✓ Filters working
-- ✓ Sorting working
-- ✓ Performance acceptable
-
----
-
-### Task 4.4: Response Formatting (2 points)
-**Assignee:** Backend Developer  
-**Duration:** 1 day  
-**Description:**
-- Standardize all API responses
-- Implement pagination wrapper
-- Implement error response format
-- Add metadata (timestamps, etc.)
-
-**Acceptance Criteria:**
-- ✓ Response format consistent
-- ✓ Pagination metadata included
-- ✓ Error format standard
-
----
-
-### Task 4.5: API Documentation (3 points)
-**Assignee:** Backend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Generate Swagger/OpenAPI docs
-- Document all endpoints
-- Document error codes
-- Add examples
-
-**Acceptance Criteria:**
-- ✓ Documentation complete
-- ✓ All endpoints documented
-- ✓ Examples clear
-
----
-
-## Epic 5: Frontend Development (24 points)
-
-### Task 5.1: Employee List Page (4 points)
-**Assignee:** Frontend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Create table with columns: Code, Name, Email, Role, Status, Facilities
-- Implement pagination
-- Implement search by name/email/phone
-- Implement filter by role & status
-- Implement action buttons (view, edit, lock/unlock)
-
-**Acceptance Criteria:**
-- ✓ Table displays correctly
-- ✓ Pagination working
-- ✓ Search/filter working
-- ✓ Action buttons working
-- ✓ Responsive design
-
----
-
-### Task 5.2: Create Employee Form (5 points)
-**Assignee:** Frontend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Create form with fields: fullName, email, phone, role, facilities
-- Implement role selector (MANAGER, TECHNICIAN, COST_MANAGER)
-- Implement multi-select for facilities
-- Show validation errors
-- Implement client-side validation
-- Call create API
-
-**Acceptance Criteria:**
-- ✓ Form displays correctly
-- ✓ Validation working
-- ✓ Role selection working
-- ✓ Facility multi-select working
-- ✓ API call correct
-- ✓ Success/error handling
-
----
-
-### Task 5.3: Employee Edit Form (5 points)
-**Assignee:** Frontend Developer  
-**Duration:** 2-3 days  
-**Description:**
-- Create form similar to create
-- Show employee code as read-only
-- Pre-populate form with current data
-- Implement facility assignment UI
-- Call update API
-
-**Acceptance Criteria:**
-- ✓ Form pre-populated correctly
-- ✓ Read-only fields locked
-- ✓ Update API call correct
-- ✓ Facility changes reflected
-
----
-
-### Task 5.4: Employee Detail Page (4 points)
-**Assignee:** Frontend Developer  
-**Duration:** 2 days  
-**Description:**
-- Display employee info in read-only view
-- Show code, name, email, phone, role, status
-- Show assigned facilities
-- Show timestamps
-- Implement action buttons (edit, lock/unlock)
-
-**Acceptance Criteria:**
-- ✓ Detail displays correctly
-- ✓ All info shown
-- ✓ Action buttons present
-- ✓ Responsive design
-
----
-
-### Task 5.5: Lock/Unlock Dialogs (2 points)
-**Assignee:** Frontend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Create confirmation dialogs for lock/unlock
-- Show warning messages
-- Call API on confirmation
-- Handle success/error responses
-
-**Acceptance Criteria:**
-- ✓ Dialogs appear correctly
-- ✓ API calls correct
-- ✓ Results handled
-
----
-
-### Task 5.6: Facility Assignment Selector (2 points)
-**Assignee:** Frontend Developer  
-**Duration:** 1 day  
-**Description:**
-- Create multi-select component for facilities
-- Load active facilities on form open
-- Show already selected facilities
-- Validate selection (Manager/Technician need >= 1)
-
-**Acceptance Criteria:**
-- ✓ Multi-select working
-- ✓ Facilities loaded correctly
-- ✓ Validation working
-- ✓ Selection persisted
-
----
-
-### Task 5.7: UI/UX Polish (2 points)
-**Assignee:** Frontend Developer  
-**Duration:** 1 day  
-**Description:**
-- Review UI consistency
-- Test responsive design
-- Optimize performance
-- Add accessibility features
-
-**Acceptance Criteria:**
-- ✓ Consistent styling
-- ✓ Responsive
-- ✓ Accessible
-- ✓ Fast
-
----
-
-## Epic 6: Testing & Quality (15 points)
-
-### Task 6.1: Unit Tests - Backend (4 points)
-**Assignee:** Backend Developer / QA  
-**Duration:** 2 days  
-**Description:**
-- Test service methods
-- Test validation logic
-- Test Cost Manager constraint
-- Aim for >= 80% coverage
-
-**Acceptance Criteria:**
-- ✓ Coverage >= 80%
-- ✓ All tests passing
-- ✓ Edge cases covered
-
----
-
-### Task 6.2: Unit Tests - Authentication (3 points)
-**Assignee:** Backend Developer  
-**Duration:** 1-2 days  
-**Description:**
-- Test password generation
-- Test temporary password logic
-- Test first login reset
-- Test password reset token
-
-**Acceptance Criteria:**
-- ✓ All password tests passing
-- ✓ Security tests covered
-
----
-
-### Task 6.3: Integration Tests (4 points)
-**Assignee:** QA Engineer  
-**Duration:** 2 days  
-**Description:**
-- Test API endpoints
-- Test complete workflows
-- Test error scenarios
-- Test Cost Manager constraint across endpoints
-
-**Acceptance Criteria:**
-- ✓ All APIs tested
-- ✓ Workflows working
-- ✓ Error handling verified
-
----
-
-### Task 6.4: E2E & UAT (2 points)
-**Assignee:** QA Engineer  
-**Duration:** 1-2 days  
-**Description:**
-- Write E2E tests
-- Manual UAT
-- Performance testing
-
-**Acceptance Criteria:**
-- ✓ E2E tests passing
-- ✓ UAT completed
-- ✓ Performance acceptable
-
----
-
-### Task 6.5: Security Testing (2 points)
-**Assignee:** QA Engineer  
-**Duration:** 1 day  
-**Description:**
-- Test authorization
-- Test input validation
-- Test password security
-- Test email verification
-
-**Acceptance Criteria:**
-- ✓ Security tests passing
-- ✓ No vulnerabilities
-
----
-
-## Epic 7: Documentation & Deployment (3 points)
-
-### Task 7.1: User Documentation (1 point)
-**Assignee:** Tech Lead  
-**Duration:** 1 day  
-**Description:**
-- Write admin guide for employee management
-- Add screenshots
-- Document workflows
-
-**Acceptance Criteria:**
-- ✓ Guide complete
-- ✓ Clear & helpful
-
----
-
-### Task 7.2: Deployment (2 points)
-**Assignee:** DevOps / Tech Lead  
-**Duration:** 2-3 days  
-**Description:**
-- Prepare environment
-- Run migrations
-- Deploy code
-- Setup monitoring
-- Go-live verification
-
-**Acceptance Criteria:**
-- ✓ Deployment successful
-- ✓ No issues
-- ✓ Monitoring active
-
----
-
-## Summary by Sprint
-
-| Sprint | Duration | Points | Focus |
-|--------|----------|--------|-------|
-| Sprint 1 | Wk 1-2 | 22 | DB design, entities, migrations |
-| Sprint 2 | Wk 3-4 | 20 | Create, list, detail services |
-| Sprint 3 | Wk 5-6 | 20 | Update, lock/unlock, constraints |
-| Sprint 4 | Wk 7 | 18 | Password, authentication, email |
-| Sprint 5 | Wk 8 | 16 | Frontend list, create, edit forms |
-| Sprint 6 | Wk 9-12 | 14 | Testing, UAT, deployment |
-
----
-
-## Critical Dependencies
-
-- Task 1.1 → 1.2 → 1.3, 1.4, 1.5, 1.6
-- Task 1.3 → 2.1, 2.2, 2.3, 2.4
-- Task 2.2 → 3.1, 3.2 (temp password)
-- Task 2.6 → 2.2, 2.5 (Cost Manager checks)
-- Task 2.7 → 2.2, 2.5 (Facility assignment)
-- Task 4.1 → Task 5.1, 5.2, 5.3 (Frontend)
-
----
-
-## Resource Allocation
-
-| Role | Hours | Duration |
-|------|-------|----------|
-| Backend Developer | 200 | 5-6 weeks |
-| Frontend Developer | 120 | 3-4 weeks |
-| QA Engineer | 80 | 2 weeks |
-| Database Admin | 30 | 1 week |
-| Tech Lead | 60 | 1.5 weeks |
+## 6. Kiểm thử & Đánh giá (Testing)
+
+- [ ] Viết Unit Test kiểm tra logic kiểm tra ràng buộc duy nhất của Manager/Operator trên cơ sở và kiểm tra ngày sinh trong Service.
+- [ ] Thực hiện Manual Test luồng tạo mới tài khoản không chọn cơ sở để đảm bị chặn lỗi.
+- [ ] Thực hiện Manual Test luồng gửi email và xác thực mật khẩu tạm thời.
+- [ ] Thực hiện Manual Test luồng tự khóa tài khoản của bản thân để đảm bảo bị chặn lỗi.

@@ -1,4 +1,9 @@
 package com.quanlyphongtro.controller.operator;
+import com.quanlyphongtro.dto.UserSessionDTO;
+import com.quanlyphongtro.dao.FacilityDAO;
+import com.quanlyphongtro.model.Facility;
+import java.util.ArrayList;
+import com.quanlyphongtro.model.Request;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dao.OperatorDashboardDAO;
@@ -36,14 +41,14 @@ public class OperatorDashboardServlet extends BaseServlet {
         // Get operatorId from session
         int operatorId = 1;
         if (req.getSession(false) != null && req.getSession(false).getAttribute("currentUser") != null) {
-            com.quanlyphongtro.dto.UserSessionDTO currentUser = (com.quanlyphongtro.dto.UserSessionDTO) req.getSession(false).getAttribute("currentUser");
+            UserSessionDTO currentUser = (UserSessionDTO) req.getSession(false).getAttribute("currentUser");
             operatorId = currentUser.getId();
         }
 
-        com.quanlyphongtro.dao.FacilityDAO facilityDAO = new com.quanlyphongtro.dao.FacilityDAO();
-        java.util.List<com.quanlyphongtro.model.Facility> allFacilities = facilityDAO.findActiveList();
-        java.util.List<String> myFacilityNames = new java.util.ArrayList<>();
-        for (com.quanlyphongtro.model.Facility f : allFacilities) {
+        FacilityDAO facilityDAO = new FacilityDAO();
+        List<Facility> allFacilities = facilityDAO.findActiveList();
+        List<String> myFacilityNames = new ArrayList<>();
+        for (Facility f : allFacilities) {
             if (f.getOperatorId() != null && f.getOperatorId().equals(operatorId)) {
                 myFacilityNames.add(f.getName());
             }
@@ -94,7 +99,7 @@ public class OperatorDashboardServlet extends BaseServlet {
         req.setAttribute("ticketCountDone", ticketCountDone);
 
         // 3. Lấy Lịch hẹn sắp tới
-        List<com.quanlyphongtro.model.Request> upcomingAppointments = dashboardDAO.getUpcomingAppointments(operatorId);
+        List<Request> upcomingAppointments = dashboardDAO.getUpcomingAppointments(operatorId);
         req.setAttribute("upcomingAppointments", upcomingAppointments);
 
         req.getRequestDispatcher("/WEB-INF/views/operator/dashboard.jsp").forward(req, resp);

@@ -144,8 +144,8 @@ Là Admin, khi vào feature Quản lý Phòng, tôi muốn chọn cơ sở đang
 * KHI Admin bỏ trống số tầng tối đa, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `MAX_FLOORS_REQUIRED`.
 * KHI Admin bỏ trống số phòng tối đa mỗi tầng, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `MAX_ROOMS_REQUIRED`.
 * KHI Admin nhập mã cơ sở đã tồn tại, THE SYSTEM SHALL trả về HTTP 409 với mã lỗi `FACILITY_CODE_ALREADY_EXISTS`.
-* KHI Admin nhập số tầng tối đa nhỏ hơn 1 hoặc lớn hơn 99, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `MAX_FLOORS_OUT_OF_RANGE`.
-* KHI Admin nhập số phòng tối đa mỗi tầng nhỏ hơn 1 hoặc lớn hơn 99, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `MAX_ROOMS_OUT_OF_RANGE`.
+* KHI Admin nhập số tầng tối đa nhỏ hơn 1 hoặc lớn hơn 10, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `MAX_FLOORS_OUT_OF_RANGE`.
+* KHI Admin nhập số phòng tối đa mỗi tầng nhỏ hơn 1 hoặc lớn hơn 30, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `MAX_ROOMS_OUT_OF_RANGE`.
 * KHI Admin nhập mã cơ sở chứa số, khoảng trắng hoặc ký tự đặc biệt, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `FACILITY_CODE_INVALID_FORMAT`.
 * KHI Admin nhập tên cơ sở chỉ gồm khoảng trắng, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `FACILITY_NAME_BLANK`.
 * KHI Admin bỏ trống địa chỉ, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `ADDRESS_REQUIRED`.
@@ -205,6 +205,8 @@ THE SYSTEM SHALL hiển thị thông tin quản lý hiện tại.
 
 * KHI cơ sở chưa được gán quản lý,
 THE SYSTEM SHALL hiển thị trạng thái "Chưa phân công quản lý".
+
+* VỀ giá dịch vụ: THE SYSTEM SHALL hiển thị các loại Giá dịch vụ (điện, nước, internet, dịch vụ chung) ở chế độ chỉ xem. Admin không có quyền tạo hay chỉnh sửa các giá này (việc thiết lập do Nhân sự quản lý phụ trách).
 ---
 
 ### 3.4 Cập nhật cơ sở DRAFT
@@ -349,8 +351,7 @@ Ví dụ:
 | **URL Pattern** | `POST /admin/facilities/{id}/edit` — lưu chỉnh sửa |
 | **URL Pattern** | `POST /admin/facilities/{id}/activate` — kích hoạt |
 | **URL Pattern** | `POST /admin/facilities/{id}/deactivate` — vô hiệu hóa |
-| **URL Pattern** | `POST /admin/facilities/{id}/rooms/{roomId}/area` — cập nhật diện tích phòng |
-| **Phân quyền** | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
+| **Phân quyền**  | Role = `ADMIN` (kiểm tra qua `BaseServlet`) |
 
 ---
 
@@ -358,7 +359,7 @@ Ví dụ:
 
 | Attribute | Java Type | Nguồn dữ liệu | Mô tả |
 |---|---|---|---|
-| `page` | `PageDTO<Facility>` | `FacilityDAO.findAll(keyword, status, page, 10)` | Dữ liệu phân trang, `PAGE_SIZE = 10` |
+| `page` | `PageDTO<Facility>` | `FacilityService.list(keyword, status, page, 10)` | Dữ liệu phân trang, `PAGE_SIZE = 10` |
 | `keyword` | `String` | Query param `keyword` | Giữ lại giá trị tìm kiếm trên form |
 | `selectedStatus` | `String` | Query param `status` | Giữ lại filter trạng thái (`DRAFT`, `ACTIVE`, `INACTIVE`) |
 
@@ -368,8 +369,8 @@ Ví dụ:
 
 | Attribute | Java Type | Nguồn dữ liệu | Mô tả |
 |---|---|---|---|
-| `facility` | `Facility` | `FacilityDAO.findById(id)` | Thông tin đầy đủ cơ sở |
-| `rooms` | `List<Room>` | `FacilityDAO.findRoomsByFacilityId(id)` | Chỉ set khi `status != DRAFT` |
+| `facility` | `Facility` | `FacilityService.getById(id)` | Thông tin đầy đủ cơ sở |
+| `rooms` | `List<Room>` | `FacilityService.getRooms(id)` | Chỉ set khi `status != DRAFT` |
 
 ---
 
@@ -377,7 +378,7 @@ Ví dụ:
 
 | Attribute | Java Type | Nguồn dữ liệu | Mô tả |
 |---|---|---|---|
-| `facility` | `Facility` | `FacilityDAO.findById(id)` | Chỉ có ở form edit |
+| `facility` | `Facility` | `FacilityService.getById(id)` | Chỉ có ở form edit |
 | `errorMessage` | `String` | `ValidationException.getMessage()` | Thông báo lỗi khi submit thất bại |
 
 ---
@@ -390,8 +391,8 @@ Ví dụ:
 | `code` | Chưa tồn tại trong DB | `ValidationException` |
 | `name` | Không rỗng | `ValidationException` |
 | `address` | Không rỗng | `ValidationException` |
-| `floorCount` | Số nguyên, `1–99` | `ValidationException` |
-| `roomsPerFloor` | Số nguyên, `1–99` | `ValidationException` |
+| `floorCount` | Số nguyên, `1–10` | `ValidationException` |
+| `roomsPerFloor` | Số nguyên, `1–30` | `ValidationException` |
 | Mã code | Tự động `toUpperCase()` trước khi lưu | — |
 
 ---
@@ -435,8 +436,8 @@ Ví dụ:
 * Facility Code chỉ gồm các chữ cái A–Z
 * Facility Name: tối đa 255 ký tự
 * Address: tối đa 500 ký tự
-* Max Floors: 1 → 99
-* Max Rooms Per Floor: 1 → 99
+* Max Floors: 1 → 10
+* Max Rooms Per Floor: 1 → 30
 
 Luồng trạng thái:
 

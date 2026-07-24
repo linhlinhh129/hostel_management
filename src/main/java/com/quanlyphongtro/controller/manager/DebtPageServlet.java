@@ -60,10 +60,15 @@ public class DebtPageServlet extends HttpServlet {
 
         List<DebtListItemDTO> debts = debtService.getDebts(managerId, keyword, status, page, PAGE_SIZE);
         int totalPages = debtService.getTotalPages(managerId, keyword, status, PAGE_SIZE);
+        // Tính totalRecords: các trang trước đầy, trang cuối = số thực tế
+        int totalRecords = totalPages > 0
+            ? (totalPages - 1) * PAGE_SIZE + (page == totalPages ? debts.size() : PAGE_SIZE)
+            : 0;
 
         request.setAttribute("debts", debts);
         request.setAttribute("currentPage", page);
-        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalPages", Math.max(1, totalPages));
+        request.setAttribute("totalRecords", totalRecords);
         request.setAttribute("keyword", keyword);
         request.setAttribute("status", status);
 
@@ -89,6 +94,9 @@ public class DebtPageServlet extends HttpServlet {
             }
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/manager/debts");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServletException("Lỗi khi tải chi tiết công nợ: " + e.getMessage(), e);
         }
     }
 }

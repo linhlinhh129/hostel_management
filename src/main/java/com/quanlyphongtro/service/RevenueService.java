@@ -8,6 +8,6 @@ public interface RevenueService {
     SystemRevenueDTO getSystemRevenue(String period);
     List<FacilityRevenueStatDTO> getFacilityRevenues(String period);
     List<FacilityRevenueStatDTO> getFacilityRevenuesPaged(String period, int page, int pageSize);
-    int countFacilitiesWithRevenue(String period);
+    int countActiveFacilities();
     List<FacilityRevenueStatDTO> getRevenueTrend(int months);
 }

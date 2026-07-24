@@ -1,4 +1,7 @@
 package com.quanlyphongtro.dao;
+import java.util.Map;
+import java.util.HashMap;
+import java.sql.Date;
 
 import com.quanlyphongtro.dto.FacilityRevenueStatDTO;
 import com.quanlyphongtro.dto.SystemRevenueDTO;
@@ -147,7 +150,17 @@ public class RevenueDAO extends BaseDAO {
         return list;
     }
 
-    public int countFacilitiesWithRevenue(String period) {
+    /**
+     * Đếm tổng số facility ACTIVE để tính số trang phân trang cho by-facility view.
+     * <p>
+     * Lưu ý: {@code period} được nhận vào để đồng bộ với interface nhưng
+     * <b>không được dùng để filter</b> — đây là thiết kế có chủ đích.
+     * by-facility luôn hiển thị <b>tất cả facility ACTIVE</b>, kể cả
+     * những facility không có hóa đơn trong kỳ (revenue = 0).
+     * Truy vấn {@code getFacilityRevenuesPaged} dùng LEFT JOIN để đảm bảo
+     * điều này, nên tổng số trang cũng phải tính trên toàn bộ facility ACTIVE.
+     */
+    public int countActiveFacilities() {
         String sql = "SELECT COUNT(DISTINCT f.facility_id) " +
             "FROM dbo.facilities f " +
             "WHERE f.deleted_at IS NULL AND f.status = 'ACTIVE'";
@@ -156,7 +169,7 @@ public class RevenueDAO extends BaseDAO {
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) return rs.getInt(1);
         } catch (Exception e) {
-            logger.error("RevenueDAO.countFacilitiesWithRevenue failed", e);
+            logger.error("RevenueDAO.countActiveFacilities failed", e);
         }
         return 0;
     }
@@ -181,10 +194,10 @@ public class RevenueDAO extends BaseDAO {
             "WHERE deleted_at IS NULL AND created_at >= ? " +
             "GROUP BY YEAR(created_at), MONTH(created_at)";
 
-        java.util.Map<String, FacilityRevenueStatDTO> map = new java.util.HashMap<>();
+        Map<String, FacilityRevenueStatDTO> map = new HashMap<>();
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, java.sql.Date.valueOf(startDate));
+            ps.setDate(1, Date.valueOf(startDate));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String period = String.format("%02d/%d", rs.getInt("m"), rs.getInt("y"));

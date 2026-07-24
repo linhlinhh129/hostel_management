@@ -44,9 +44,11 @@
                                         <th class="d-none d-md-table-cell text-center">Hành động</th>
                                     </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="ticketsTbody">
                                     <c:forEach var="ticket" items="${tickets}" varStatus="st">
-                                        <tr style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both">
+                                        <tr class="tr-clickable"
+                                            data-href="${ctx}/tenant/tickets/${ticket.id}"
+                                            style="animation:fadeInUp 0.4s ease ${st.index * 0.04}s both; cursor:pointer">
                                             <td style="font-weight:600;color:var(--hms-ink); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 <c:out value="${ticket.title}"/>
                                             </td>
@@ -60,12 +62,22 @@
                                                 <span class="badge-hms ${ticket.statusBadgeClass}"><c:out value="${ticket.statusLabel}"/></span>
                                             </td>
                                             <td class="d-none d-md-table-cell text-center">
-                                                <a href="${ctx}/tenant/tickets/${ticket.id}" class="btn-mintlify-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Chi tiết</a>
+                                                <a href="${ctx}/tenant/tickets/${ticket.id}"
+                                                   class="btn-mintlify-secondary"
+                                                   style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
+                                                   onclick="event.stopPropagation()">Chi tiết</a>
                                             </td>
                                         </tr>
                                     </c:forEach>
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="table-footer d-flex justify-content-between align-items-center px-3 py-2">
+                              <span class="text-muted" style="font-size:0.875rem">
+                                Tổng <strong id="ticketsTotal"></strong> yêu cầu
+                                · Trang <span id="ticketsPage">1</span> / <span id="ticketsTotalPages">1</span>
+                              </span>
+                              <div class="d-flex gap-1" id="ticketsBtns"></div>
                             </div>
                         </div>
                     </div>
@@ -88,3 +100,4 @@
         </main>
     </div></div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+<script>clientPaginate('ticketsTbody','ticketsTotal','ticketsPage','ticketsTotalPages','ticketsBtns');</script>

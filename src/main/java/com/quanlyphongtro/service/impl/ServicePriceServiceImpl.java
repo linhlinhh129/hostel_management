@@ -1,4 +1,7 @@
 package com.quanlyphongtro.service.impl;
+import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import com.quanlyphongtro.dao.AuditLogDAO;
 import com.quanlyphongtro.dao.FacilityDAO;
@@ -29,14 +32,22 @@ public class ServicePriceServiceImpl implements ServicePriceService {
         
         if (facilityOpt.isPresent()) {
             Facility facility = facilityOpt.get();
-            String updatedAt = facility.getUpdatedAt() != null
-                    ? facility.getUpdatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
-                    : "";
+            Map<String, LocalDateTime> updatesMap = auditLogDAO.getLatestPriceUpdates(facility.getFacilityId());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             
-            prices.add(new ServicePriceDTO("ELECTRICITY", "Giá điện", "VNĐ/kWh", facility.getElectricityPrice(), updatedAt, null, null));
-            prices.add(new ServicePriceDTO("WATER", "Giá nước", "VNĐ/m3", facility.getWaterPrice(), updatedAt, null, null));
-            prices.add(new ServicePriceDTO("SERVICE_FEE", "Phí dịch vụ", "VNĐ/tháng", facility.getServiceFee(), updatedAt, null, null));
-            prices.add(new ServicePriceDTO("INTERNET", "Phí Internet", "VNĐ/tháng", facility.getInternetFee(), updatedAt, null, null));
+            String defaultTime = facility.getUpdatedAt() != null
+                    ? facility.getUpdatedAt().format(formatter)
+                    : (facility.getCreatedAt() != null ? facility.getCreatedAt().format(formatter) : "");
+
+            String elecTime = updatesMap.containsKey("ELECTRICITY") ? updatesMap.get("ELECTRICITY").format(formatter) : defaultTime;
+            String waterTime = updatesMap.containsKey("WATER") ? updatesMap.get("WATER").format(formatter) : defaultTime;
+            String svcFeeTime = updatesMap.containsKey("SERVICE_FEE") ? updatesMap.get("SERVICE_FEE").format(formatter) : defaultTime;
+            String netTime = updatesMap.containsKey("INTERNET") ? updatesMap.get("INTERNET").format(formatter) : defaultTime;
+            
+            prices.add(new ServicePriceDTO("ELECTRICITY", "Giá điện", "VNĐ/kWh", facility.getElectricityPrice(), elecTime, null, null));
+            prices.add(new ServicePriceDTO("WATER", "Giá nước", "VNĐ/m3", facility.getWaterPrice(), waterTime, null, null));
+            prices.add(new ServicePriceDTO("SERVICE_FEE", "Phí dịch vụ", "VNĐ/tháng", facility.getServiceFee(), svcFeeTime, null, null));
+            prices.add(new ServicePriceDTO("INTERNET", "Phí Internet", "VNĐ/tháng", facility.getInternetFee(), netTime, null, null));
         }
         
         return prices;
@@ -73,6 +84,10 @@ public class ServicePriceServiceImpl implements ServicePriceService {
                 facility.setInternetFee(newPrice);
                 break;
             default: return false;
+        }
+
+        if (oldPrice != null && oldPrice.compareTo(newPrice) == 0) {
+            return true; // Trả về true nhưng không ghi đè DB hay log lịch sử mới nếu giá trị không đổi
         }
         
         boolean updated = facilityDAO.update(facility);

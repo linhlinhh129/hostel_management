@@ -1,4 +1,7 @@
 package com.quanlyphongtro.controller.tenant;
+import jakarta.servlet.http.Part;
+import java.nio.file.Paths;
+import java.io.File;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -97,15 +100,15 @@ public class TenantRequestServlet extends BaseServlet {
             }
 
             try {
-                jakarta.servlet.http.Part filePart = req.getPart("attachment");
+                Part filePart = req.getPart("attachment");
                 if (filePart != null && filePart.getSize() > 0) {
-                    String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-                    String uploadDir = getServletContext().getRealPath("/") + "uploads" + java.io.File.separator + "tickets";
-                    java.io.File dir = new java.io.File(uploadDir);
+                    String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                    String uploadDir = getServletContext().getRealPath("/") + "uploads" + File.separator + "tickets";
+                    File dir = new File(uploadDir);
                     if (!dir.exists()) dir.mkdirs();
 
                     String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
-                    String savePath = uploadDir + java.io.File.separator + uniqueFileName;
+                    String savePath = uploadDir + File.separator + uniqueFileName;
                     filePart.write(savePath);
                     request.setAttachmentUrls1("/uploads/tickets/" + uniqueFileName);
                 }

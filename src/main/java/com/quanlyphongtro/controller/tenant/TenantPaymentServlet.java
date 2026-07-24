@@ -1,13 +1,11 @@
 package com.quanlyphongtro.controller.tenant;
+import com.quanlyphongtro.service.TenantService;
+import com.quanlyphongtro.service.impl.TenantServiceImpl;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.model.Invoice;
 import com.quanlyphongtro.model.Room;
-import com.quanlyphongtro.service.InvoiceService;
-import com.quanlyphongtro.service.TenantService;
-import com.quanlyphongtro.service.impl.InvoiceServiceImpl;
-import com.quanlyphongtro.service.impl.TenantServiceImpl;
 import com.quanlyphongtro.util.VNPayConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,9 +75,8 @@ public class TenantPaymentServlet extends BaseServlet {
                 return;
             }
 
-            // Lấy tiền phạt trễ hạn
-            BigDecimal penalty = invoiceDAO.calculateRealtimeLatePenalty(invoiceId);
-            BigDecimal total = baseAmount.add(penalty);
+            // totalAmount trong Invoice đã bao gồm lateFee từ mapRow()
+            BigDecimal total = baseAmount;
 
             long finalAmountVND = total.multiply(BigDecimal.valueOf(100)).longValue();
 
@@ -139,7 +136,7 @@ public class TenantPaymentServlet extends BaseServlet {
     }
 
     private int getRoomIdByTenant(int tenantId) {
-        com.quanlyphongtro.service.TenantService tenantService = new com.quanlyphongtro.service.impl.TenantServiceImpl();
+        TenantService tenantService = new TenantServiceImpl();
         Optional<Room> roomOpt = tenantService.getTenantRoom(tenantId);
         return roomOpt.map(Room::getId).orElse(-1);
     }

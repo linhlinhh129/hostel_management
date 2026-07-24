@@ -1,4 +1,6 @@
 package com.quanlyphongtro.controller.auth;
+import com.quanlyphongtro.util.ValidationUtil;
+import com.quanlyphongtro.util.PasswordValidator;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dao.UserDAO;
@@ -85,7 +87,7 @@ public class ProfileServlet extends BaseServlet {
                 String permanentAddress = request.getParameter("permanentAddress");
 
                 if (phone != null && !phone.trim().isEmpty()) {
-                    if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+                    if (!ValidationUtil.isValidVnPhone(phone)) {
                         setFlashMessage(request, "error",
                             "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
                         response.sendRedirect(request.getContextPath() + "/profile");
@@ -93,7 +95,7 @@ public class ProfileServlet extends BaseServlet {
                     }
                 }
                 if (identityNumber != null && !identityNumber.trim().isEmpty()) {
-                    if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+                    if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
                         setFlashMessage(request, "error",
                             "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
                         response.sendRedirect(request.getContextPath() + "/profile");
@@ -142,7 +144,7 @@ public class ProfileServlet extends BaseServlet {
                 String newPassword     = request.getParameter("newPassword");
                 String confirmPassword = request.getParameter("confirmPassword");
 
-                if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
+                if (!PasswordValidator.isValid(newPassword)) {
                     setFlashMessage(request, "error",
                         "Mật khẩu mới không đạt chuẩn bảo mật (cần ít nhất 8 ký tự, có chữ hoa, chữ số và ký tự đặc biệt).");
                     response.sendRedirect(request.getContextPath() + "/profile");

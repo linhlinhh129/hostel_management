@@ -19,7 +19,6 @@ Hiện tại việc tổng hợp doanh thu từ nhiều cơ sở mất nhiều t
 * Chỉ các hóa đơn hợp lệ được sử dụng để tính doanh thu.
 * Khoảng thời gian lọc phải hợp lệ.
 * Hệ thống phải hỗ trợ số lượng cơ sở lớn.
-* Mọi thao tác xem báo cáo phải được ghi nhận Audit Log.
 
 ## Open Questions
 

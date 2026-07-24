@@ -1,6 +1,7 @@
 package com.quanlyphongtro.model;
+import java.util.Date;
+import java.sql.Timestamp;
 
-import com.quanlyphongtro.constant.StatusConstant;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,14 +74,14 @@ public class Room {
     public boolean isDeleted() { return deletedAt != null; }
 
     // Backward compatibility for JSP fmt:formatDate
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
-        return java.sql.Timestamp.valueOf(createdAt);
+        return Timestamp.valueOf(createdAt);
     }
 
-    public java.util.Date getUpdatedAtAsDate() {
+    public Date getUpdatedAtAsDate() {
         if (updatedAt == null) return null;
-        return java.sql.Timestamp.valueOf(updatedAt);
+        return Timestamp.valueOf(updatedAt);
     }
 
     /** Trích số tầng từ mã phòng — 2 ký tự trước 2 ký tự cuối. VD: HL0103 → "01" */

@@ -65,7 +65,7 @@ THE SYSTEM SHALL từ chối cập nhật và hiển thị thông báo lỗi "Di
 
 | Attribute | Java Type | Nguồn dữ liệu | Mô tả |
 |---|---|---|---|
-| `room` | `Map<String, Object>` | `RoomDAO.getRoomDetail(roomId)` | Thông tin chi tiết phòng (bao gồm mã, diện tích, giá, tenant) |
+| `room` | `Map<String, Object>` | `RoomDAO.findDetailForAdmin(roomId)` | Thông tin chi tiết phòng (bao gồm mã, diện tích, giá, tenant) |
 | `success` | `String` | Flash attribute | Thông báo khi cập nhật thành công |
 | `error` | `String` | Flash/Request attribute | Thông báo lỗi khi cập nhật thất bại |
 

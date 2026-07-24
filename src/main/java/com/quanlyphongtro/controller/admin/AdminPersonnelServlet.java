@@ -2,6 +2,7 @@ package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.PageDTO;
+import com.quanlyphongtro.dto.PersonnelFormDTO;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.exception.NotFoundException;
 import com.quanlyphongtro.exception.ValidationException;
@@ -21,7 +22,7 @@ public class AdminPersonnelServlet extends BaseServlet {
 
     private final PersonnelService personnelService = new PersonnelServiceImpl();
 
-    private static final int    PAGE_SIZE = 20;
+    private static final int    PAGE_SIZE = 10;
     private static final String BASE_PATH = "/admin/personnel";
     private static final String VIEW_BASE = "/WEB-INF/views/admin/personnel/";
 
@@ -63,14 +64,13 @@ public class AdminPersonnelServlet extends BaseServlet {
                 doUpdate(req, resp, idPrefix(path));
             } else if (path.matches("/\\d+/status")) {
                 doToggleStatus(req, resp, idPrefix(path));
-            } else if (path.matches("/\\d+/delete")) {
-                doDelete(req, resp, idPrefix(path));
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         } catch (ValidationException e) {
             req.setAttribute("errorMessage", e.getMessage());
             if (path.equals("/create")) {
+                req.setAttribute("dto", PersonnelFormDTO.of(req));
                 req.setAttribute("managerFacilities",  personnelService.findFacilitiesForManager(null));
                 req.setAttribute("operatorFacilities", personnelService.findFacilitiesForOperator(null));
                 req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
@@ -200,21 +200,6 @@ public class AdminPersonnelServlet extends BaseServlet {
             setFlashMessage(req, "error", e.getMessage());
         }
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
-    }
-
-    private void doDelete(HttpServletRequest req, HttpServletResponse resp, int id)
-            throws Exception {
-        UserSessionDTO me = getCurrentUser(req);
-        int currentUserId = (me != null && me.getId() != null) ? me.getId() : -1;
-
-        try {
-            personnelService.softDelete(id, currentUserId);
-            setFlashMessage(req, "success", "Đã xóa nhân sự thành công.");
-            resp.sendRedirect(req.getContextPath() + BASE_PATH);
-        } catch (ValidationException e) {
-            setFlashMessage(req, "error", e.getMessage());
-            resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
-        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

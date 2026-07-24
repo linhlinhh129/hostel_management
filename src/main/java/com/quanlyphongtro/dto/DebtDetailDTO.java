@@ -3,7 +3,6 @@ package com.quanlyphongtro.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class DebtDetailDTO {
     private Integer invoiceId;
@@ -156,6 +155,11 @@ public class DebtDetailDTO {
 
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+
+    /** Trả về dueDate dạng String "yyyy-MM-dd" để dùng với fmt:parseDate trong JSP */
+    public String getDueDateStr() {
+        return dueDate != null ? dueDate.toString() : "";
+    }
 
     public Integer getOverdueDays() { return overdueDays; }
     public void setOverdueDays(Integer overdueDays) { this.overdueDays = overdueDays; }

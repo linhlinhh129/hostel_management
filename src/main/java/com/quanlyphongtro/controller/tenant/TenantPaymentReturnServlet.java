@@ -1,25 +1,15 @@
 package com.quanlyphongtro.controller.tenant;
 
-import com.quanlyphongtro.constant.StatusConstant;
 import com.quanlyphongtro.controller.BaseServlet;
-import com.quanlyphongtro.dao.InvoiceDAO;
-import com.quanlyphongtro.dao.PaymentDAO;
-import com.quanlyphongtro.dto.UserSessionDTO;
-import com.quanlyphongtro.model.Invoice;
-import com.quanlyphongtro.model.Room;
-import com.quanlyphongtro.service.TenantService;
-import com.quanlyphongtro.service.impl.TenantServiceImpl;
 import com.quanlyphongtro.util.VNPayConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -27,8 +17,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 import com.quanlyphongtro.util.DatabaseUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

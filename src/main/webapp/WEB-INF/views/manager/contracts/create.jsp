@@ -96,7 +96,7 @@
                 <select name="roomId" class="form-select" required>
                   <option value="">-- Click để chọn phòng --</option>
                   <c:forEach var="r" items="${availableRooms}">
-                    <option value="${r.id}" ${not empty preselectedRoomId && r.id == preselectedRoomId ? 'selected' : ''}>Phòng ${r.code}</option>
+                    <option value="${r.id}" ${(not empty preselectedRoomId and r.id == preselectedRoomId) or (not empty contract.roomId and r.id == contract.roomId) ? 'selected' : ''}>Phòng ${r.code}</option>
                   </c:forEach>
                 </select>
                 <small class="form-text text-muted mt-1 d-block">Lưu ý: Chỉ những phòng đang ở trạng thái <strong>Trống</strong> mới có thể được tạo hợp đồng.</small>
@@ -113,39 +113,39 @@
               <div class="row g-3 mb-3">
                 <div class="col-md-6">
                   <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
-                  <input type="text" name="tenantFullName" class="form-control" required placeholder="Nhập đầy đủ họ tên"/>
+                  <input type="text" name="tenantFullName" value="<c:out value="${contract.tenantFullName}"/>" class="form-control" required placeholder="Nhập đầy đủ họ tên"/>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Ngày sinh</label>
-                  <input type="date" name="tenantDob" class="form-control"/>
+                  <input type="date" name="tenantDob" value="${contract.tenantDob}" class="form-control"/>
                 </div>
               </div>
 
               <div class="row g-3 mb-3">
                 <div class="col-md-6">
                   <label class="form-label">CCCD / CMND <span class="text-danger">*</span></label>
-                  <input type="text" name="tenantIdentityNumber" class="form-control" required placeholder="Số thẻ căn cước"/>
+                  <input type="text" name="tenantIdentityNumber" value="<c:out value="${contract.tenantIdentityNumber}"/>" class="form-control" required placeholder="Số thẻ căn cước"/>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Số điện thoại</label>
-                  <input type="text" name="tenantPhone" class="form-control" placeholder="09xxxxxxxxx"/>
+                  <input type="text" name="tenantPhone" value="<c:out value="${contract.tenantPhone}"/>" class="form-control" placeholder="09xxxxxxxxx"/>
                 </div>
               </div>
 
               <div class="row g-3 mb-3">
                 <div class="col-md-6">
                   <label class="form-label">Ngày cấp CCCD</label>
-                  <input type="date" name="tenantIdentityIssueDate" class="form-control"/>
+                  <input type="date" name="tenantIdentityIssueDate" value="${contract.tenantIdentityIssueDate}" class="form-control"/>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Nơi cấp</label>
-                  <input type="text" name="tenantIdentityIssuePlace" class="form-control" placeholder="Cục cảnh sát..."/>
+                  <input type="text" name="tenantIdentityIssuePlace" value="<c:out value="${contract.tenantIdentityIssuePlace}"/>" class="form-control" placeholder="Cục cảnh sát..."/>
                 </div>
               </div>
 
               <div class="mb-1">
                 <label class="form-label">Địa chỉ thường trú</label>
-                <input type="text" name="tenantPermanentAddress" class="form-control" placeholder="Nhập địa chỉ theo sổ hộ khẩu"/>
+                <input type="text" name="tenantPermanentAddress" value="<c:out value="${contract.tenantPermanentAddress}"/>" class="form-control" placeholder="Nhập địa chỉ theo sổ hộ khẩu"/>
               </div>
             </div>
 
@@ -158,21 +158,21 @@
 
               <div class="mb-3">
                 <label class="form-label">Giá thuê (bằng chữ)</label>
-                <input type="text" name="amountInWords" class="form-control" placeholder="VD: Ba triệu năm trăm nghìn đồng chẵn"/>
+                <input type="text" name="amountInWords" value="<c:out value="${contract.amountInWords}"/>" class="form-control" placeholder="VD: Ba triệu năm trăm nghìn đồng chẵn"/>
               </div>
 
               <div class="row g-3">
                 <div class="col-md-4">
                   <label class="form-label">Ngày ký <span class="text-danger">*</span></label>
-                  <input type="date" name="signedDate" class="form-control" required/>
+                  <input type="date" name="signedDate" value="${contract.signedDate}" class="form-control" required/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
-                  <input type="date" name="startDate" class="form-control" required/>
+                  <input type="date" name="startDate" value="${contract.startDate}" class="form-control" required/>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Ngày hết hạn <span class="text-danger">*</span></label>
-                  <input type="date" name="endDate" class="form-control" required/>
+                  <input type="date" name="endDate" value="${contract.endDate}" class="form-control" required/>
                 </div>
               </div>
             </div>
@@ -215,11 +215,17 @@
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
-  // Tự động gán ngày hiện tại cho "Ngày ký" và "Ngày bắt đầu"
+  // Tự động gán ngày hiện tại cho "Ngày ký" và "Ngày bắt đầu" chỉ khi chúng trống
   document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
-    document.querySelector('input[name="signedDate"]').value = today;
-    document.querySelector('input[name="startDate"]').value = today;
+    const signedDateInput = document.querySelector('input[name="signedDate"]');
+    const startDateInput = document.querySelector('input[name="startDate"]');
+    if (signedDateInput && !signedDateInput.value) {
+      signedDateInput.value = today;
+    }
+    if (startDateInput && !startDateInput.value) {
+      startDateInput.value = today;
+    }
   });
 </script>
 </body>

@@ -53,13 +53,13 @@
                       <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
                       <select class="form-select" name="status" style="width:100%">
                         <option value="">Tất cả</option>
-                        <option value="PENDING"     ${filterStatus=='PENDING'     ? 'selected' : ''}>Mới</option>
-                        <option value="RECEIVED"    ${filterStatus=='RECEIVED'    ? 'selected' : ''}>Đã tiếp nhận</option>
-                        <option value="ASSIGNED"    ${filterStatus=='ASSIGNED'    ? 'selected' : ''}>Đã phân công</option>
-                        <option value="IN_PROGRESS" ${filterStatus=='IN_PROGRESS' ? 'selected' : ''}>Đang xử lý</option>
-                        <option value="DONE"        ${filterStatus=='DONE'        ? 'selected' : ''}>Hoàn thành</option>
-                        <option value="REJECTED"    ${filterStatus=='REJECTED'    ? 'selected' : ''}>Từ chối</option>
-                        <option value="CANCELLED"   ${filterStatus=='CANCELLED'   ? 'selected' : ''}>Đã hủy</option>
+                        <option value="PENDING" ${filterStatus=='PENDING' ? 'selected' : '' }>Mới</option>
+                        <option value="RECEIVED" ${filterStatus=='RECEIVED' ? 'selected' : '' }>Đã tiếp nhận</option>
+                        <c:if test="${filterType == 'TENANT'}">
+                          <option value="IN_PROGRESS" ${filterStatus=='IN_PROGRESS' ? 'selected' : '' }>Đang xử lý</option>
+                        </c:if>
+                        <option value="DONE" ${filterStatus=='DONE' ? 'selected' : '' }>Hoàn thành</option>
+                        <option value="REJECTED" ${filterStatus=='REJECTED' ? 'selected' : '' }>Từ chối</option>
                       </select>
                     </div>
                   </div>
@@ -107,7 +107,9 @@
                                     <c:when test="${ticket.category == 'CLEANING'}">Vệ sinh</c:when>
                                     <c:when test="${ticket.category == 'COMPLAINT'}">Khiếu nại / Phản ánh</c:when>
                                     <c:when test="${ticket.category == 'OTHER'}">Khác</c:when>
-                                    <c:otherwise><c:out value="${ticket.category}"/></c:otherwise>
+                                    <c:otherwise>
+                                      <c:out value="${ticket.category}" />
+                                    </c:otherwise>
                                   </c:choose>
                                 </span>
                               </td>
@@ -136,7 +138,7 @@
                                   <c:when test="${ticket.status == 'PENDING'}">
                                     <span class="badge-hms badge-info">Mới</span>
                                   </c:when>
-                                  <c:when test="${ticket.status == 'RECEIVED'}">
+                                  <c:when test="${ticket.status == 'RECEIVED' or (ticket.senderRole == 'OPERATOR' and (ticket.status == 'ASSIGNED' or ticket.status == 'IN_PROGRESS'))}">
                                     <span class="badge-hms badge-warning">Đã tiếp nhận</span>
                                   </c:when>
                                   <c:when test="${ticket.status == 'ASSIGNED'}">

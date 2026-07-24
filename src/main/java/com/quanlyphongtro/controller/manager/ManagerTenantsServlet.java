@@ -1,4 +1,10 @@
 package com.quanlyphongtro.controller.manager;
+import java.nio.file.AccessDeniedException;
+import com.quanlyphongtro.util.ValidationUtil;
+import java.util.Optional;
+import com.quanlyphongtro.model.Room;
+import java.time.format.DateTimeFormatter;
+import com.quanlyphongtro.util.LoginAttemptTracker;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.UserSessionDTO;
@@ -224,7 +230,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             if (tenant != null) {
                 dependents = tenantService.getTenantDependents(tenantId);
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (Exception e) {
@@ -262,14 +268,14 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
 
         if (phone != null && !phone.trim().isEmpty()) {
-            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+            if (!ValidationUtil.isValidVnPhone(phone)) {
                 setFlashMessage(req, "danger", "Số điện thoại người phụ thuộc không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
                 resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
                 return;
             }
         }
         if (identityNumber != null && !identityNumber.trim().isEmpty()) {
-            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+            if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
                 setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
                 resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
                 return;
@@ -280,6 +286,11 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
                 dob = LocalDate.parse(dobStr.trim());
+                if (dob.isAfter(LocalDate.now())) {
+                    setFlashMessage(req, "danger", "Ngày sinh của người phụ thuộc không thể ở tương lai.");
+                    resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                    return;
+                }
             } catch (Exception e) {
                 setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
                 resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
@@ -299,7 +310,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             } else {
                 setFlashMessage(req, "danger", "Không thể thêm người phụ thuộc.");
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (Exception e) {
@@ -344,7 +355,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             } else {
                 setFlashMessage(req, "danger", "Lỗi khi xóa người phụ thuộc.");
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (IllegalStateException e) {
@@ -362,6 +373,26 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
+        }
+
+        String endDateStr = req.getParameter("endDate");
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            try {
+                LocalDate endDate = LocalDate.parse(endDateStr.trim());
+                Optional<Room> roomOpt = tenantService.getTenantRoom(tenantId);
+                if (roomOpt.isPresent() && roomOpt.get().getContractStartDate() != null) {
+                    LocalDate startDate = roomOpt.get().getContractStartDate();
+                    if (endDate.isBefore(startDate)) {
+                        setFlashMessage(req, "danger", "Ngày kết thúc thuê không thể trước ngày bắt đầu hợp đồng (" + startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
+                        resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                setFlashMessage(req, "danger", "Ngày kết thúc thuê không đúng định dạng (yyyy-MM-dd).");
+                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                return;
+            }
         }
 
         boolean success = tenantService.endRental(tenantId);
@@ -428,7 +459,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
 
         if (phone != null && !phone.trim().isEmpty()) {
-            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+            if (!ValidationUtil.isValidVnPhone(phone)) {
                 setFlashMessage(req, "danger", "Số điện thoại người phụ thuộc không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
                 if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
                     resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
@@ -439,7 +470,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
         }
         if (identityNumber != null && !identityNumber.trim().isEmpty()) {
-            if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+            if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
                 setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
                 if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
                     resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
@@ -454,6 +485,15 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
                 dob = LocalDate.parse(dobStr.trim());
+                if (dob.isAfter(LocalDate.now())) {
+                    setFlashMessage(req, "danger", "Ngày sinh của người phụ thuộc không thể ở tương lai.");
+                    if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
+                        resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
+                    } else {
+                        resp.sendRedirect(req.getContextPath() + "/manager/dependents/" + dependentId);
+                    }
+                    return;
+                }
             } catch (Exception e) {
                 setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
                 if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
@@ -492,7 +532,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             } else {
                 setFlashMessage(req, "danger", "Lỗi khi cập nhật người phụ thuộc.");
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (IllegalStateException e) {
@@ -531,12 +571,12 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
-        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnPhone(phone)) {
+        if (!ValidationUtil.isValidVnPhone(phone)) {
             setFlashMessage(req, "danger", "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
             return;
         }
-        if (!com.quanlyphongtro.util.ValidationUtil.isValidVnIdentity(identityNumber)) {
+        if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
             setFlashMessage(req, "danger", "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
             return;
@@ -565,7 +605,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             } else {
                 setFlashMessage(req, "danger", "Lỗi khi cập nhật thông tin người thuê.");
             }
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
         } catch (IllegalArgumentException e) {
@@ -635,7 +675,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
 
         boolean success = tenantService.unlockTenantAccount(tenantId, username -> {
-            com.quanlyphongtro.util.LoginAttemptTracker.reset(username);
+            LoginAttemptTracker.reset(username);
         });
 
         if (success) {

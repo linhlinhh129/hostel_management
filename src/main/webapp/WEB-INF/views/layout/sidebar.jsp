@@ -1,19 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
-    <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-        <c:set var="ctx" value="${pageContext.request.contextPath}" />
-        <c:set var="role"
-            value="${not empty sessionScope.currentUser.role ? sessionScope.currentUser.role : pageRole}" />
-        <c:set var="menu" value="${activeMenu}" />
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<c:set var="role" value="${not empty sessionScope.currentUser.role ? sessionScope.currentUser.role : pageRole}" />
+<c:set var="menu" value="${activeMenu}" />
 
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <div class="sidebar-brand-icon">HT</div>
+                <div class="sidebar-brand-icon">IH</div>
                 <div class="sidebar-brand-text">
-                    <c:choose>
-                        <c:when test="${role == 'TENANT'}">Cổng cư dân</c:when>
-                        <c:when test="${role == 'OPERATOR'}">Vận hành cơ sở</c:when>
-                        <c:otherwise>Quản lý Nhà trọ</c:otherwise>
-                    </c:choose>
+                    Innolvia Home
                     <small>
                         <c:choose>
                             <c:when test="${role == 'ADMIN'}">Admin Panel</c:when>
@@ -317,5 +312,8 @@
                 </c:if>
             </nav>
 
-            <div class="sidebar-footer">v1.0 · Hostel Management</div>
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-dot"></div>
+                Innolvia Home · v1.0
+            </div>
         </aside>

@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service.impl;
+import java.util.Date;
 
 import com.quanlyphongtro.dao.RoomDAO;
 import com.quanlyphongtro.dto.PageResult;
@@ -140,9 +141,9 @@ public class RoomServiceImpl implements RoomService {
     }
 
     /**
-     * Chuyển Timestamp (từ Map DAO) sang java.util.Date cho JSP fmt:formatDate.
+     * Chuyển Timestamp (từ Map DAO) sang Date cho JSP fmt:formatDate.
      */
-    private java.util.Date toJavaDate(Object obj) {
+    private Date toJavaDate(Object obj) {
         if (obj instanceof Timestamp) return (Timestamp) obj;
         return null;
     }

@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context path="/hostel-management">
+  <!-- DATABASE DEV/CLOUD (Active) -->
+  <Resource auth="Container" 
+            driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" 
+            maxIdle="5" 
+            maxTotal="20" 
+            maxWaitMillis="5000" 
+            minIdle="1" 
+            name="jdbc/HostelManagement"
+            password="Admin@123" 
+            testOnBorrow="true" 
+            type="javax.sql.DataSource" 
+            url="jdbc:sqlserver://hostel-sql-dev-atu02378.database.windows.net:1433;database=HostelManagement_Dev_Import;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" 
+            username="sqladmin@hostel-sql-dev-atu02378" 
+            validationQuery="SELECT 1"/>
+
+  <!-- DATABASE LOCAL (Commented) 
   <Resource auth="Container" 
             driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" 
             maxIdle="5" 
@@ -7,6 +23,7 @@
             maxWaitMillis="5000" 
             minIdle="1" 
             name="jdbc/HostelManagement" 
+<<<<<<< HEAD
            username="sa" 
             password="123" 
             testOnBorrow="true" 
@@ -14,3 +31,13 @@
             url="jdbc:sqlserver://localhost:1433;databaseName=HostelManagement;encrypt=true;trustServerCertificate=true;"
             validationQuery="SELECT 1"/>
 </Context>
+=======
+            password="123" 
+            testOnBorrow="true" 
+            type="javax.sql.DataSource" 
+            url="jdbc:sqlserver://localhost:1433;databaseName=HostelManagement;encrypt=true;trustServerCertificate=true;" 
+            username="sa" 
+            validationQuery="SELECT 1"/>
+  -->
+</Context>
+>>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09

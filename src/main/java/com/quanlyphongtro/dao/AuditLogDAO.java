@@ -1,4 +1,15 @@
 package com.quanlyphongtro.dao;
+import com.quanlyphongtro.dto.ServicePriceHistoryDTO;
+import java.sql.ResultSet;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.time.LocalDateTime;
 
 import com.quanlyphongtro.model.AuditLog;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -80,8 +91,8 @@ public class AuditLogDAO extends BaseDAO {
         }
     }
 
-    public java.util.List<com.quanlyphongtro.dto.ServicePriceHistoryDTO> getPriceHistories(int facilityId, String priceType, int page, int size) {
-        java.util.List<com.quanlyphongtro.dto.ServicePriceHistoryDTO> result = new java.util.ArrayList<>();
+    public List<ServicePriceHistoryDTO> getPriceHistories(int facilityId, String priceType, int page, int size) {
+        List<ServicePriceHistoryDTO> result = new ArrayList<>();
         String actionType = "UPDATE_" + priceType;
         String sql = """
                 SELECT a.audit_log_id, a.old_value, a.new_value, a.comment, a.created_at, a.created_by, u.full_name, f.code as facility_code
@@ -100,9 +111,9 @@ public class AuditLogDAO extends BaseDAO {
             ps.setString(2, actionType);
             ps.setInt(3, (page - 1) * size);
             ps.setInt(4, size);
-            try (java.sql.ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    com.quanlyphongtro.dto.ServicePriceHistoryDTO dto = new com.quanlyphongtro.dto.ServicePriceHistoryDTO();
+                    ServicePriceHistoryDTO dto = new ServicePriceHistoryDTO();
                     dto.setHistoryId(rs.getInt("audit_log_id"));
                     dto.setFacilityId(facilityId);
                     dto.setFacilityCode(rs.getString("facility_code"));
@@ -110,14 +121,15 @@ public class AuditLogDAO extends BaseDAO {
                     
                     String oldValStr = rs.getString("old_value");
                     String newValStr = rs.getString("new_value");
-                    dto.setOldPrice(oldValStr != null ? new java.math.BigDecimal(oldValStr) : null);
-                    dto.setNewPrice(newValStr != null ? new java.math.BigDecimal(newValStr) : null);
+                    dto.setOldPrice(oldValStr != null ? new BigDecimal(oldValStr) : null);
+                    dto.setNewPrice(newValStr != null ? new BigDecimal(newValStr) : null);
                     
                     dto.setNote(rs.getString("comment"));
                     
-                    java.sql.Timestamp createdTs = rs.getTimestamp("created_at");
+                    Timestamp createdTs = rs.getTimestamp("created_at");
                     if (createdTs != null) {
-                        dto.setChangedAt(createdTs.toLocalDateTime().toString());
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                        dto.setChangedAt(createdTs.toLocalDateTime().format(formatter));
                     }
                     
                     dto.setChangedBy(rs.getInt("created_by"));
@@ -295,18 +307,18 @@ public class AuditLogDAO extends BaseDAO {
         if (logs == null || logs.isEmpty()) return;
 
         // Nhóm id theo từng entityType
-        java.util.Map<String, java.util.List<Integer>> groups = new java.util.LinkedHashMap<>();
+        Map<String, List<Integer>> groups = new LinkedHashMap<>();
         for (AuditLog log : logs) {
             if (log.getEntityType() == null || log.getEntityId() == null) continue;
-            groups.computeIfAbsent(log.getEntityType(), k -> new java.util.ArrayList<>())
+            groups.computeIfAbsent(log.getEntityType(), k -> new ArrayList<>())
                   .add(log.getEntityId());
         }
 
         // Query từng nhóm
-        java.util.Map<String, java.util.Map<Integer, String>> nameCache = new java.util.HashMap<>();
-        for (java.util.Map.Entry<String, java.util.List<Integer>> entry : groups.entrySet()) {
+        Map<String, Map<Integer, String>> nameCache = new HashMap<>();
+        for (Map.Entry<String, List<Integer>> entry : groups.entrySet()) {
             String type = entry.getKey();
-            java.util.List<Integer> ids = entry.getValue();
+            List<Integer> ids = entry.getValue();
             String nameCol, idCol, table;
             switch (type) {
                 case "users":         nameCol = "full_name"; idCol = "user_id";         table = "dbo.users";         break;
@@ -318,7 +330,7 @@ public class AuditLogDAO extends BaseDAO {
                 default: continue;
             }
             // Deduplicate
-            java.util.Set<Integer> uniqueIds = new java.util.LinkedHashSet<>(ids);
+            Set<Integer> uniqueIds = new LinkedHashSet<>(ids);
             StringBuilder placeholders = new StringBuilder();
             for (int i = 0; i < uniqueIds.size(); i++) {
                 if (i > 0) placeholders.append(',');
@@ -326,7 +338,7 @@ public class AuditLogDAO extends BaseDAO {
             }
             String q = "SELECT " + idCol + ", " + nameCol + " FROM " + table
                      + " WHERE " + idCol + " IN (" + placeholders + ")";
-            java.util.Map<Integer, String> map = new java.util.HashMap<>();
+            Map<Integer, String> map = new HashMap<>();
             try (Connection conn = DatabaseUtil.getConnection();
                  PreparedStatement ps = conn.prepareStatement(q)) {
                 int idx = 1;
@@ -342,7 +354,7 @@ public class AuditLogDAO extends BaseDAO {
 
         // Gán vào từng log
         for (AuditLog log : logs) {
-            java.util.Map<Integer, String> m = nameCache.get(log.getEntityType());
+            Map<Integer, String> m = nameCache.get(log.getEntityType());
             if (m != null && log.getEntityId() != null) {
                 log.setEntityName(m.get(log.getEntityId()));
             }
@@ -440,5 +452,30 @@ public class AuditLogDAO extends BaseDAO {
             logger.error("AuditLogDAO.findRecent failed", e);
         }
         return list;
+    }
+
+    public Map<String, LocalDateTime> getLatestPriceUpdates(int facilityId) {
+        Map<String, LocalDateTime> map = new HashMap<>();
+        String sql = "SELECT action, MAX(created_at) as last_updated " +
+                     "FROM dbo.audit_logs " +
+                     "WHERE entity_type = 'SERVICE_PRICE' AND entity_id = ? " +
+                     "GROUP BY action";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, facilityId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String action = rs.getString("action");
+                    Timestamp ts = rs.getTimestamp("last_updated");
+                    if (action != null && ts != null && action.startsWith("UPDATE_")) {
+                        String priceType = action.substring("UPDATE_".length());
+                        map.put(priceType, ts.toLocalDateTime());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("getLatestPriceUpdates failed for facilityId={}", facilityId, e);
+        }
+        return map;
     }
 }

@@ -1,4 +1,6 @@
 package com.quanlyphongtro.service.impl;
+import java.nio.file.AccessDeniedException;
+import java.time.LocalDate;
 
 import com.quanlyphongtro.dao.RoomDAO;
 import com.quanlyphongtro.dao.UserDAO;
@@ -55,7 +57,7 @@ public class TenantServiceImpl implements TenantService {
         // Verify manager has permission for this tenant
         boolean hasPermission = userDAO.verifyTenantEditPermission(tenantId, managerId);
         if (!hasPermission) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền xem thông tin người thuê này.");
+            throw new AccessDeniedException("Bạn không có quyền xem thông tin người thuê này.");
         }
         return tenant;
     }
@@ -66,11 +68,15 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public boolean editTenant(int tenantId, int managerId, String fullName, String phone, String email, String identityNumber, String permanentAddress, String gender, java.time.LocalDate dob) throws Exception {
+    public boolean editTenant(int tenantId, int managerId, String fullName, String phone, String email, String identityNumber, String permanentAddress, String gender, LocalDate dob) throws Exception {
         // 1. Verify manager permissions for this tenant
         boolean hasPermission = userDAO.verifyTenantEditPermission(tenantId, managerId);
         if (!hasPermission) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền chỉnh sửa thông tin người thuê này.");
+            throw new AccessDeniedException("Bạn không có quyền chỉnh sửa thông tin người thuê này.");
+        }
+
+        if (dob != null && dob.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày sinh của người thuê không thể ở tương lai.");
         }
 
         // 2. Check for duplicate username/email
@@ -125,7 +131,7 @@ public class TenantServiceImpl implements TenantService {
         Map<String, String> statusOut = new HashMap<>();
         int tenantId = dependentDAO.verifyDependentAndGetTenantId(dependentId, managerId, statusOut);
         if (tenantId == 0) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền xóa người phụ thuộc này.");
+            throw new AccessDeniedException("Bạn không có quyền xóa người phụ thuộc này.");
         }
 
         String tenantStatus = statusOut.get("status");
@@ -137,11 +143,11 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public boolean editDependent(int dependentId, int managerId, String fullName, String relationship, String phone, String gender, java.time.LocalDate dob, String identityNumber) throws Exception {
+    public boolean editDependent(int dependentId, int managerId, String fullName, String relationship, String phone, String gender, LocalDate dob, String identityNumber) throws Exception {
         Map<String, String> statusOut = new HashMap<>();
         int tenantId = dependentDAO.verifyDependentAndGetTenantId(dependentId, managerId, statusOut);
         if (tenantId == 0) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền chỉnh sửa người phụ thuộc này.");
+            throw new AccessDeniedException("Bạn không có quyền chỉnh sửa người phụ thuộc này.");
         }
 
         String tenantStatus = statusOut.get("status");
@@ -153,11 +159,11 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public boolean addDependent(int tenantId, int managerId, String fullName, String relationship, String phone, String gender, java.time.LocalDate dob, String identityNumber) throws Exception {
+    public boolean addDependent(int tenantId, int managerId, String fullName, String relationship, String phone, String gender, LocalDate dob, String identityNumber) throws Exception {
         // Verify manager controls the tenant
         boolean hasPermission = userDAO.verifyTenantEditPermission(tenantId, managerId);
         if (!hasPermission) {
-            throw new java.nio.file.AccessDeniedException("Bạn không có quyền thêm người phụ thuộc cho người thuê này.");
+            throw new AccessDeniedException("Bạn không có quyền thêm người phụ thuộc cho người thuê này.");
         }
 
         return dependentDAO.addDependent(tenantId, fullName.trim(), relationship.trim(), phone, gender, dob, identityNumber);

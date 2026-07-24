@@ -1,5 +1,6 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
 <c:set var="pageTitle"  value="Chi tiết người phụ thuộc - Manager"/>
 <c:set var="pageRole"   value="MANAGER"/>
@@ -71,7 +72,8 @@
                                     <td style="padding:9px 0">
                                         <c:choose>
                                             <c:when test="${not empty dependent.dob}">
-                                                <c:out value="${dependent.dob}"/>
+                                                <fmt:parseDate value="${dependent.dob}" pattern="yyyy-MM-dd" var="parsedDepDob" type="date" />
+                                                <fmt:formatDate value="${parsedDepDob}" pattern="dd/MM/yyyy" />
                                             </c:when>
                                             <c:otherwise>
                                                 <em style="color:var(--hms-stone)">Chưa cập nhật</em>

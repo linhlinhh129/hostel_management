@@ -1,4 +1,7 @@
 package com.quanlyphongtro.controller.auth;
+import com.quanlyphongtro.util.PasswordValidator;
+import java.util.Optional;
+import com.quanlyphongtro.model.User;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dao.UserDAO;
@@ -57,8 +60,8 @@ public class FirstLoginServlet extends BaseServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
-            request.setAttribute("errorMessage", com.quanlyphongtro.util.PasswordValidator.POLICY_MESSAGE);
+        if (!PasswordValidator.isValid(newPassword)) {
+            request.setAttribute("errorMessage", PasswordValidator.POLICY_MESSAGE);
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
             return;
         }
@@ -68,7 +71,7 @@ public class FirstLoginServlet extends BaseServlet {
             return;
         }
 
-        java.util.Optional<com.quanlyphongtro.model.User> userOpt = userDAO.findById(currentUser.getId());
+        Optional<User> userOpt = userDAO.findById(currentUser.getId());
         if (userOpt.isPresent() && PasswordUtil.verify(newPassword, userOpt.get().getPasswordHash())) {
             request.setAttribute("errorMessage", "Mật khẩu mới không được trùng với mật khẩu cũ.");
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);

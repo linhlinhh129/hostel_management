@@ -24,34 +24,35 @@ public class TenantContractServlet extends BaseServlet {
             UserSessionDTO currentUser = getCurrentUser(req);
             String idParam = req.getParameter("id");
 
-            if (idParam == null || idParam.trim().isEmpty()) {
-                // View Contract List
-                List<Contract> contracts = contractService.getContractsByTenant(currentUser.getId());
-                req.setAttribute("contracts", contracts);
-                req.setAttribute("activeMenu", "contracts");
-                req.getRequestDispatcher("/WEB-INF/views/tenant/contracts/list.jsp").forward(req, resp);
-            } else {
-                // View Contract Detail
-                int contractId;
+            // Lấy hợp đồng theo id cụ thể hoặc hợp đồng duy nhất của tenant
+            Contract contract = null;
+
+            if (idParam != null && !idParam.trim().isEmpty()) {
                 try {
-                    contractId = Integer.parseInt(idParam);
+                    int contractId = Integer.parseInt(idParam);
+                    contract = contractService.getContractDetailForTenant(contractId, currentUser.getId());
                 } catch (NumberFormatException e) {
                     resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID hợp đồng không hợp lệ");
                     return;
                 }
-
-                Contract contract = contractService.getContractDetailForTenant(contractId, currentUser.getId());
                 if (contract == null) {
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hợp đồng hoặc bạn không có quyền xem.");
                     return;
                 }
-
-                req.setAttribute("contract", contract);
-                req.setAttribute("activeMenu", "contracts");
-                req.getRequestDispatcher("/WEB-INF/views/tenant/contracts/detail.jsp").forward(req, resp);
+            } else {
+                // Không có id → lấy hợp đồng đầu tiên (tenant chỉ có 1 hợp đồng)
+                List<Contract> contracts = contractService.getContractsByTenant(currentUser.getId());
+                if (contracts != null && !contracts.isEmpty()) {
+                    contract = contractService.getContractDetailForTenant(contracts.get(0).getContractId(), currentUser.getId());
+                }
             }
+
+            req.setAttribute("contract", contract);
+            req.setAttribute("activeMenu", "contracts");
+            req.getRequestDispatcher("/WEB-INF/views/tenant/contracts/detail.jsp").forward(req, resp);
+
         } catch (Exception e) {
-            forwardError(req, resp, "/WEB-INF/views/tenant/contracts/list.jsp", e);
+            forwardError(req, resp, "/WEB-INF/views/tenant/contracts/detail.jsp", e);
         }
     }
 }

@@ -92,8 +92,25 @@
                   <td style="padding:12px 16px"><c:out value="${invoice.tenantPhone}"/></td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
-                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Tổng tiền cần đóng</td>
-                  <td style="padding:12px 16px;font-weight:700;color:var(--hms-danger-color,#ef4444);font-size:0.9375rem">
+                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Tiền hóa đơn gốc</td>
+                  <td style="padding:12px 16px;font-weight:600">
+                    <fmt:formatNumber value="${invoice.baseAmount}" pattern="#,##0"/> đ
+                  </td>
+                </tr>
+                <c:if test="${invoice.overdueDays > 0}">
+                <tr style="border-bottom:1px solid var(--hms-border)">
+                  <td style="padding:12px 16px;color:var(--hms-text-muted)">
+                    Phí chậm nộp<br>
+                    <small style="font-size:0.75rem">(1%/ngày × <c:out value="${invoice.overdueDays}"/> ngày)</small>
+                  </td>
+                  <td style="padding:12px 16px;font-weight:600;color:#d97706">
+                    + <fmt:formatNumber value="${invoice.lateFee}" pattern="#,##0"/> đ
+                  </td>
+                </tr>
+                </c:if>
+                <tr style="border-bottom:1px solid var(--hms-border);background:#fff1f2">
+                  <td style="padding:12px 16px;font-weight:700;color:var(--hms-danger-color,#ef4444)">Tổng tiền cần đóng</td>
+                  <td style="padding:12px 16px;font-weight:700;color:var(--hms-danger-color,#ef4444);font-size:1rem">
                     <fmt:formatNumber value="${invoice.totalAmount}" pattern="#,##0"/> đ
                   </td>
                 </tr>

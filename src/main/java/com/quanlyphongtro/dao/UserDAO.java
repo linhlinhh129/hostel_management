@@ -1,6 +1,9 @@
 package com.quanlyphongtro.dao;
+import java.sql.Date;
+import java.sql.Types;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 
-import com.quanlyphongtro.constant.StatusConstant;
 import com.quanlyphongtro.model.User;
 import com.quanlyphongtro.util.DatabaseUtil;
 
@@ -148,9 +151,9 @@ public class UserDAO extends BaseDAO {
             ps.setString(3, user.getAvatarUrl());
             ps.setString(4, user.getIdentityNumber());
             if (user.getDob() != null) {
-                ps.setDate(5, java.sql.Date.valueOf(user.getDob()));
+                ps.setDate(5, Date.valueOf(user.getDob()));
             } else {
-                ps.setNull(5, java.sql.Types.DATE);
+                ps.setNull(5, Types.DATE);
             }
             ps.setString(6, user.getGender());
             ps.setString(7, user.getPermanentAddress());
@@ -166,7 +169,7 @@ public class UserDAO extends BaseDAO {
         StringBuilder whereClause = new StringBuilder(
             " WHERE u.role = 'TENANT' AND u.deleted_at IS NULL" +
             " AND (r.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)" +
-            "      OR cr.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL))");
+            "      OR EXISTS (SELECT 1 FROM dbo.contracts c INNER JOIN dbo.rooms cr ON c.room_id = cr.room_id AND cr.deleted_at IS NULL WHERE c.tenant_id = u.user_id AND c.deleted_at IS NULL AND cr.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)))");
         List<Object> params = new ArrayList<>();
         params.add(managerId);
         params.add(managerId);
@@ -185,10 +188,8 @@ public class UserDAO extends BaseDAO {
             params.add(status.trim());
         }
 
-        String countSql = "SELECT COUNT(DISTINCT u.user_id) FROM dbo.users u" +
+        String countSql = "SELECT COUNT(1) FROM dbo.users u" +
             " LEFT JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
-            " LEFT JOIN dbo.contracts c ON c.tenant_id = u.user_id AND c.deleted_at IS NULL" +
-            " LEFT JOIN dbo.rooms cr ON c.room_id = cr.room_id AND cr.deleted_at IS NULL" +
             whereClause.toString();
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -212,7 +213,7 @@ public class UserDAO extends BaseDAO {
         StringBuilder whereClause = new StringBuilder(
             " WHERE u.role = 'TENANT' AND u.deleted_at IS NULL" +
             " AND (r.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)" +
-            "      OR cr.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL))");
+            "      OR EXISTS (SELECT 1 FROM dbo.contracts c INNER JOIN dbo.rooms cr ON c.room_id = cr.room_id AND cr.deleted_at IS NULL WHERE c.tenant_id = u.user_id AND c.deleted_at IS NULL AND cr.facility_id IN (SELECT facility_id FROM dbo.facilities WHERE manager_id = ? AND deleted_at IS NULL)))");
         List<Object> params = new ArrayList<>();
         params.add(managerId);
         params.add(managerId);
@@ -235,8 +236,6 @@ public class UserDAO extends BaseDAO {
             " r.room_id, r.code AS room_code, r.contract_start_date" +
             " FROM dbo.users u" +
             " LEFT JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
-            " LEFT JOIN dbo.contracts c ON c.tenant_id = u.user_id AND c.deleted_at IS NULL" +
-            " LEFT JOIN dbo.rooms cr ON c.room_id = cr.room_id AND cr.deleted_at IS NULL" +
             whereClause.toString() +
             " ORDER BY u.user_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
@@ -259,8 +258,8 @@ public class UserDAO extends BaseDAO {
                     tenant.put("email", rs.getString("email"));
                     tenant.put("roomId", rs.getInt("room_id"));
                     tenant.put("roomCode", rs.getString("room_code"));
-                    java.sql.Date sDate = rs.getDate("contract_start_date");
-                    tenant.put("contractStartDate", sDate != null ? sDate.toString() : null);
+                    Date sDate = rs.getDate("contract_start_date");
+                    tenant.put("contractStartDate", sDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(sDate) : null);
                     tenant.put("status", rs.getString("status"));
                     tenants.add(tenant);
                 }
@@ -287,7 +286,7 @@ public class UserDAO extends BaseDAO {
                     tenant.put("id", rs.getInt("user_id"));
                     tenant.put("tenantCode", rs.getString("username"));
                     tenant.put("fullName", rs.getString("full_name"));
-                    java.sql.Date dob = rs.getDate("dob");
+                    Date dob = rs.getDate("dob");
                     tenant.put("dob", dob != null ? dob.toString() : null);
                     tenant.put("gender", rs.getString("gender"));
                     tenant.put("phone", rs.getString("phone"));
@@ -297,8 +296,8 @@ public class UserDAO extends BaseDAO {
                     tenant.put("status", rs.getString("status"));
                     tenant.put("roomId", rs.getInt("room_id"));
                     tenant.put("roomCode", rs.getString("room_code"));
-                    java.sql.Date sDate = rs.getDate("contract_start_date");
-                    tenant.put("contractStartDate", sDate != null ? sDate.toString() : null);
+                    Date sDate = rs.getDate("contract_start_date");
+                    tenant.put("contractStartDate", sDate != null ? new SimpleDateFormat("dd/MM/yyyy").format(sDate) : null);
                     int contractId = rs.getInt("contract_id");
                     tenant.put("contractId", rs.wasNull() ? null : contractId);
                 }
@@ -344,7 +343,7 @@ public class UserDAO extends BaseDAO {
         }
     }
 
-    public boolean updateTenantInfo(int tenantId, String username, String email, String fullName, String phone, String identityNumber, java.time.LocalDate dob, String gender, String permanentAddress) {
+    public boolean updateTenantInfo(int tenantId, String username, String email, String fullName, String phone, String identityNumber, LocalDate dob, String gender, String permanentAddress) {
         String updateSql = 
             "UPDATE dbo.users SET username = ?, email = ?, full_name = ?, phone = ?, identity_number = ?, " +
             "dob = ?, gender = ?, permanent_address = ?, updated_at = GETDATE() " +
@@ -356,7 +355,7 @@ public class UserDAO extends BaseDAO {
             ps.setString(3, fullName);
             ps.setString(4, phone);
             ps.setString(5, identityNumber);
-            ps.setDate(6, dob != null ? java.sql.Date.valueOf(dob) : null);
+            ps.setDate(6, dob != null ? Date.valueOf(dob) : null);
             ps.setString(7, gender);
             ps.setString(8, permanentAddress);
             ps.setInt(9, tenantId);

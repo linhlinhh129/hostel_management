@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Thêm nhân sự - Admin"/>
-<c:set var="pageRole" value="ADMIN"/>
+<c:set var="ctx"        value="${pageContext.request.contextPath}"/>
+<c:set var="pageTitle"  value="Thêm nhân sự - Admin"/>
+<c:set var="pageRole"   value="ADMIN"/>
 <c:set var="activeMenu" value="personnel"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 <body>
@@ -14,16 +14,23 @@
         <main class="page-content">
             <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-            <div class="page-header hero-sky-gradient">
-                <h1>Thêm nhân sự</h1>
-                <p>Tạo tài khoản nhân sự mới — mật khẩu tạm thời sẽ được gửi qua email</p>
+            <div class="page-header hero-sky-gradient"
+                 style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;
+                            flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+                    <div>
+                        <h1>Thêm nhân sự</h1>
+                        <p>Tạo tài khoản nhân sự mới — mật khẩu tạm thời sẽ được gửi qua email</p>
+                    </div>
+                    <a href="${ctx}/admin/personnel"
+                       class="btn-mintlify-secondary text-decoration-none"
+                       style="position:relative;z-index:1">&#8592; Danh sách</a>
+                </div>
             </div>
 
-            <div class="data-surface" style="max-width:720px">
+            <div class="data-surface" style="max-width:720px;margin:0 auto">
                 <form method="post" action="${ctx}/admin/personnel/create" class="p-4">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-
-
 
                     <h2 class="h6 mb-3">Thông tin cá nhân</h2>
                     <div class="row">
@@ -72,13 +79,12 @@
                         </div>
                     </div>
 
-                    <h2 class="h6 mb-3 mt-2">Vai trò & Cơ sở</h2>
+                    <h2 class="h6 mb-3 mt-2">Vai trò &amp; Cơ sở</h2>
                     <div class="mb-3">
                         <label for="role" class="form-label">Vai trò <span class="text-danger">*</span></label>
                         <select class="form-select" id="role" name="role" required
                                 onchange="toggleFacilitySection(this.value)">
                             <option value="">Chọn vai trò</option>
-                            <%-- Admin.md §9: chỉ có Ban Quản Lý và Nhân Viên vận hành --%>
                             <option value="MANAGER"  ${dto.role == 'MANAGER'  ? 'selected' : ''}>Ban Quản lý</option>
                             <option value="OPERATOR" ${dto.role == 'OPERATOR' ? 'selected' : ''}>Nhân viên vận hành</option>
                         </select>
@@ -94,7 +100,7 @@
                             </select>
                             <div id="noFacilityWarning" class="form-text text-warning" style="display:none">
                                 Tất cả cơ sở đã được phân công cho vai trò này.
-                                <a href="${ctx}/admin/facilities">Quản lý cơ sở →</a>
+                                <a href="${ctx}/admin/facilities">Quản lý cơ sở &#8594;</a>
                             </div>
                             <div class="form-text">Mỗi nhân sự chỉ được phân công một cơ sở duy nhất</div>
                         </div>
@@ -106,15 +112,19 @@
                     </div>
                 </form>
 
-                <%-- Dữ liệu cơ sở cho JS — nằm ngoài form, render thành <option> theo từng nhóm --%>
+                <%-- Dữ liệu cơ sở cho JS --%>
                 <select id="managerFacilitiesSelect" style="display:none" aria-hidden="true">
                     <c:forEach var="fac" items="${managerFacilities}">
-                        <option value="${fac.id}"><c:out value="${fac.code}"/> — <c:out value="${fac.name}"/></option>
+                        <option value="${fac.id}">
+                            <c:out value="${fac.code}"/> — <c:out value="${fac.name}"/>
+                        </option>
                     </c:forEach>
                 </select>
                 <select id="operatorFacilitiesSelect" style="display:none" aria-hidden="true">
                     <c:forEach var="fac" items="${operatorFacilities}">
-                        <option value="${fac.id}"><c:out value="${fac.code}"/> — <c:out value="${fac.name}"/></option>
+                        <option value="${fac.id}">
+                            <c:out value="${fac.code}"/> — <c:out value="${fac.name}"/>
+                        </option>
                     </c:forEach>
                 </select>
             </div>
@@ -123,6 +133,8 @@
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
+var _restoredFacilityId = '${dto.facilityId}';
+
 function toggleFacilitySection(role) {
     var show = (role === 'MANAGER' || role === 'OPERATOR');
     document.getElementById('facilitySection').style.display = show ? 'block' : 'none';
@@ -135,18 +147,14 @@ function populateFacilities(role) {
     var target   = document.getElementById('facilityId');
     var warning  = document.getElementById('noFacilityWarning');
 
-    var opts = source.options;
-    // Reset về option mặc định
     target.length = 0;
     target.add(new Option('— Chọn cơ sở —', ''));
-
-    for (var i = 0; i < opts.length; i++) {
-        target.add(new Option(opts[i].text, opts[i].value));
+    for (var i = 0; i < source.options.length; i++) {
+        target.add(new Option(source.options[i].text, source.options[i].value));
     }
-
-    warning.style.display = opts.length === 0 ? 'block' : 'none';
+    warning.style.display = source.options.length === 0 ? 'block' : 'none';
+    if (_restoredFacilityId) target.value = _restoredFacilityId;
 }
 
-// Init on load
 toggleFacilitySection(document.getElementById('role').value);
 </script>

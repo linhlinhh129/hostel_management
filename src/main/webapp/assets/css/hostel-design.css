@@ -582,7 +582,9 @@ body {
   justify-content: center;
   color: #fff;
   font-weight: 800;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
+  font-family: var(--hms-font);
+  letter-spacing: 0.02em;
   box-shadow: 0 2px 8px rgba(0, 212, 164, 0.28);
   transition: transform var(--t) var(--hms-ease-spring), box-shadow var(--t) var(--hms-ease);
 }
@@ -595,15 +597,17 @@ body {
 .sidebar-brand-text {
   color: var(--hms-ink);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  font-family: var(--hms-font);
   line-height: 1.25;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .sidebar-brand-text small {
   display: block;
   font-size: 0.6875rem;
   font-weight: 500;
+  font-family: var(--hms-font);
   color: var(--hms-stone);
   letter-spacing: 0;
 }
@@ -1450,6 +1454,12 @@ body {
   margin-bottom: 1.5rem;
   box-shadow: var(--hms-shadow-xs);
   transition: box-shadow var(--t) var(--hms-ease);
+}
+
+/* Căn giữa khi có max-width inline (trang create/form) */
+.data-surface[style*="max-width"] {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .data-surface:hover {
@@ -2912,4 +2922,1695 @@ textarea.form-control {
   .table-mintlify .hide-tablet {
     display: table-cell !important;
   }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  AUDIT LOGS — shared utility classes                         ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ── detail.jsp: info panel rows ─────────────────────────────── */
+
+/* Mỗi hàng trong panel thông tin chung — dùng <div>+<span>, không dùng dl/dt/dd */
+.audit-detail-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  gap: 12px;
+}
+
+/* Modifier: align top cho hàng nhiều dòng (Đối tượng, Ghi chú) */
+.audit-detail-row--top {
+  align-items: flex-start;
+}
+
+/* Hàng cuối không có border */
+.audit-detail-row:last-child {
+  border-bottom: none;
+}
+
+/* Nhãn bên trái */
+.audit-detail-label {
+  width: 44%;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: var(--hms-text-muted);
+  font-weight: 500;
+}
+
+/* Giá trị text thông thường */
+.audit-detail-value {
+  font-size: 0.8125rem;
+  color: var(--hms-text-secondary);
+  min-width: 0;
+}
+
+/* Giá trị monospace (IP address) */
+.audit-detail-value--mono {
+  font-family: var(--hms-font-mono);
+  font-size: 0.8125rem;
+  color: var(--hms-text-secondary);
+  min-width: 0;
+}
+
+/* Log ID */
+.audit-detail-value--id {
+  font-family: var(--hms-font-mono);
+  font-weight: 700;
+  color: var(--hms-accent-deep);
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+/* Tên người / đối tượng */
+.audit-detail-value--name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--hms-text);
+  line-height: 1.4;
+  min-width: 0;
+}
+
+/* ── _diff-table.jsp: bảng so sánh ──────────────────────────── */
+
+/* Banner "N trường thay đổi" */
+.diff-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: rgba(255, 200, 0, 0.08);
+  border: 1px solid rgba(255, 200, 0, 0.25);
+}
+
+.diff-banner__text {
+  font-size: 0.8rem;
+  color: #c37d0d;
+  font-weight: 600;
+}
+
+/* Bảng diff */
+.diff-table {
+  width: 100%;
+  font-size: 0.8125rem;
+  border-collapse: collapse;
+}
+
+.diff-table thead tr {
+  background: var(--hms-surface-soft);
+}
+
+.diff-th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--hms-border);
+  color: var(--hms-text-muted);
+}
+
+.diff-th--field { width: 30%; }
+.diff-th--old   { color: var(--hms-danger); }
+.diff-th--new   { color: var(--hms-success); }
+
+.diff-td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-text-secondary);
+}
+
+.diff-td--field {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-text-muted);
+  font-weight: 500;
+}
+
+.diff-row--changed {
+  background: rgba(255, 200, 0, 0.05);
+}
+
+.diff-td--old-changed {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-danger);
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.diff-td--new-changed {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--hms-border-soft);
+  color: var(--hms-success);
+  font-weight: 600;
+}
+
+.diff-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+
+.diff-empty__icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.diff-empty__text {
+  color: var(--hms-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ── list.jsp: filter bar label ──────────────────────────────── */
+.filter-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hms-text-muted);
+  margin-bottom: 8px;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  FACILITIES — shared utility classes                         ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* detail.jsp: bảng thông tin cơ sở */
+.info-table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.info-table td {
+  padding: 6px 0;
+  vertical-align: top;
+}
+
+.info-label {
+  color: var(--hms-text-muted);
+  width: 48%;
+}
+
+.info-value {
+  font-size: 0.875rem;
+}
+
+.info-value--bold {
+  font-weight: 600;
+}
+
+/* edit.jsp: field readonly khi ACTIVE */
+.field-readonly {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  REVENUE — shared utility classes                            ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* 2-column grid layout cho trang index */
+.revenue-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .revenue-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* Bảng revenue — amount cell */
+.rev-amount {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rev-amount--paid {
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.rev-amount--outstanding {
+  font-weight: 600;
+  color: var(--hms-warning);
+  white-space: nowrap;
+}
+
+.rev-amount--total {
+  font-weight: 700;
+  color: var(--hms-accent-deep);
+  white-space: nowrap;
+}
+
+.rev-sub {
+  font-size: 0.75rem;
+  color: var(--hms-stone);
+  margin-top: 2px;
+}
+
+/* Hàng tháng mới nhất trong by-period */
+.row-highlight {
+  background: var(--hms-accent-bg);
+}
+
+/* Responsive cho bảng facility */
+@media (max-width: 768px) {
+  .facility-tbl th:nth-child(1),
+  .facility-tbl td:nth-child(1) { display: none; }
+
+  .facility-tbl,
+  .period-tbl { font-size: 0.75rem; }
+
+  .facility-tbl th,
+  .facility-tbl td,
+  .period-tbl th,
+  .period-tbl td { padding: 0.5rem 0.375rem; }
+
+  .facility-tbl .rev-amount--paid,
+  .period-tbl .rev-amount--paid { font-size: 0.8125rem !important; }
+
+  .facility-tbl .rev-sub,
+  .period-tbl .rev-sub { font-size: 0.625rem !important; }
+
+  #byFacilityPicker { width: 140px !important; font-size: 0.8125rem !important; }
+}
+
+/* Nút "Xem tháng/Xem" trong hero header trang revenue */
+.rev-period-btn {
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 7px 16px;
+  border-radius: var(--hms-radius-full);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--hms-accent-deep);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow var(--t-fast) var(--hms-ease);
+}
+
+.rev-period-btn:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  DASHBOARD — shared utility classes                          ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* Quick action bar */
+.quick-actions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+/* Activity list item */
+.activity-item {
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid var(--hms-border-soft);
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--hms-radius-sm);
+  background: linear-gradient(135deg, var(--hms-accent), var(--hms-accent-soft));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.activity-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-actor {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-desc {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--hms-stone);
+}
+
+.activity-time {
+  font-size: 0.625rem;
+  color: var(--hms-muted);
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  SYSTEM CONFIG — tab styles                                  ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+#config-tabs .nav-link {
+  color: var(--hms-stone);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--hms-radius-full);
+  padding: 7px 20px;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+  background: transparent;
+}
+
+#config-tabs .nav-link:hover:not(.active) {
+  color: var(--hms-accent-deep);
+  background: var(--hms-accent-bg);
+  border-color: var(--hms-border-soft);
+}
+
+#config-tabs .nav-link.active {
+  color: var(--hms-accent-deep);
+  background: var(--hms-accent-bg);
+  border-color: var(--hms-accent);
+  box-shadow: none;
+}
+
+/* Config dl row: label/value */
+.config-dl dt {
+  color: var(--hms-stone);
+  font-weight: 500;
+}
+
+.config-dl dd {
+  font-weight: 600;
+  word-break: break-all;
+  margin-bottom: 0;
+}
+
+/* "Cập nhật lần cuối" footer */
+.config-updated {
+  margin-top: 1.25rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--hms-border-soft);
+  font-size: 0.75rem;
+  color: var(--hms-stone);
+}
+
+/* Hint box trong side card */
+.config-hint {
+  background: var(--hms-surface-soft);
+  border-radius: var(--hms-radius-sm);
+  padding: 0.625rem 0.75rem;
+}
+
+.config-hint--warning { border-left: 3px solid var(--hms-warning); }
+.config-hint--danger  { border-left: 3px solid var(--hms-danger); }
+
+/* Modal header/footer của system-config */
+.config-modal-header {
+  border-bottom: 1px solid var(--hms-border-soft);
+  padding: 1.25rem 1.5rem;
+}
+
+.config-modal-footer {
+  border-top: 1px solid var(--hms-border-soft);
+  padding: 1rem 1.5rem;
+  gap: 8px;
+}
+
+/* Nút toggle ẩn/hiện password trong input-group */
+.btn-toggle-password {
+  border-color: #dee2e6;
+  background: #fff;
+  padding: 0 12px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  DASHBOARD ADMIN — Enhanced styles (refactor 2024)           ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ── Hero header layout ──────────────────────────────────────── */
+/* Thêm border-radius cho hero trên dashboard, giữ nguyên margin
+   của hero-sky-gradient (-1.75rem -2rem 1.75rem) */
+.page-header.dash-hero {
+  border-radius: var(--hms-radius-lg);
+}
+
+.dash-hero-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Widget link (trong header) ──────────────────────────────── */
+.widget-link {
+  font-size: 0.8125rem;
+  color: var(--hms-accent-deep);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--t-fast) var(--hms-ease);
+}
+
+.widget-link:hover {
+  color: var(--hms-accent);
+}
+
+/* ── Widget icon trong header ────────────────────────────────── */
+.widget-header-icon {
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+
+/* ── Widget surface height modifier ──────────────────────────── */
+.widget-surface--full-height {
+  height: 100%;
+}
+
+/* ── KPI value size variants ─────────────────────────────────── */
+.kpi-value--lg {
+  font-size: 1.5rem;
+  letter-spacing: -1.5px;
+}
+
+/* ── Personnel stats grid ────────────────────────────────────── */
+.personnel-stats {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.personnel-stat {
+  text-align: center;
+}
+
+.personnel-stat__value {
+  display: block;              /* tránh inline flow với label */
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--hms-ink);
+  line-height: 1.2;
+}
+
+.personnel-stat__label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--hms-stone);
+  margin-top: 0.2rem;
+}
+
+.personnel-stat-divider {
+  width: 1px;
+  height: 3rem;
+  background: var(--hms-border);
+}
+
+/* ── Activity list (reset ul) ────────────────────────────────── */
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Revenue table columns ───────────────────────────────────── */
+.col-facility {
+  min-width: 120px;
+  max-width: 140px;
+}
+
+.col-revenue {
+  min-width: 110px;
+}
+
+/* ── Facility link in table ──────────────────────────────────── */
+.facility-link {
+  font-weight: 700;
+  font-size: 0.8125rem;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--hms-info);
+  text-decoration: none;
+  transition: color var(--t-fast) var(--hms-ease);
+}
+
+.facility-link:hover {
+  color: var(--hms-accent-deep);
+}
+
+.facility-name {
+  font-size: 0.6875rem;
+  color: var(--hms-stone);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 130px;
+}
+
+/* ── Table size variants ─────────────────────────────────────── */
+.table-mintlify--sm {
+  font-size: 0.8125rem;
+}
+
+.table-mintlify--sm th {
+  padding: 0.7rem 1.25rem;
+}
+
+.table-mintlify--sm td {
+  padding: 0.8125rem 1.25rem;
+}
+
+/* ── Text alignment utilities ────────────────────────────────── */
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+/* ── Responsive: Dashboard mobile ────────────────────────────── */
+@media (max-width: 575px) {
+  .dash-hero-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dash-hero-inner > a {
+    margin-left: auto;
+    align-self: flex-end;
+  }
+
+  .personnel-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .personnel-stat-divider {
+    width: 80%;
+    height: 1px;
+  }
+
+  .personnel-stat__value {
+    font-size: 1.5rem;
+  }
+
+  .col-facility {
+    min-width: 90px;
+    max-width: 110px;
+  }
+
+  .facility-name {
+    max-width: 100px;
+  }
+
+  .col-revenue {
+    min-width: 90px;
+  }
+
+  .table-mintlify--sm th,
+  .table-mintlify--sm td {
+    padding: 0.5625rem 0.625rem;
+    font-size: 0.75rem;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  SYSTEM CONFIG — Extended styles (refactor)                  ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ── config-dl size variant ──────────────────────────────────── */
+.config-dl--sm {
+  font-size: 0.9rem;
+  row-gap: 0.5rem;
+}
+
+/* Ô mật khẩu / bị ẩn */
+.config-dl__hidden {
+  font-weight: 400;
+  color: var(--hms-stone);
+}
+
+/* URL dài — cho phép wrap */
+.config-dl__url {
+  font-size: 0.8125rem;
+  word-break: break-all;
+}
+
+/* ── Badge size variant nhỏ (xs) ─────────────────────────────── */
+.badge-hms--xs {
+  font-size: 0.625rem;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ── Nút chỉnh sửa nhỏ trong widget-surface-header ──────────── */
+.btn-edit-sm {
+  font-size: 0.8125rem;
+  padding: 5px 14px;
+  background: var(--hms-canvas);
+  border: 1px solid var(--hms-border-soft);
+  border-radius: var(--hms-radius-full);
+  color: var(--hms-ink);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all var(--t-fast) var(--hms-ease);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.btn-edit-sm:hover {
+  background: var(--hms-surface);
+  border-color: var(--hms-border);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
+}
+
+/* ── Guide body (hướng dẫn side card) ───────────────────────── */
+.config-guide-body {
+  font-size: 0.8125rem;
+  color: var(--hms-stone);
+  line-height: 1.6;
+}
+
+.config-guide-intro {
+  margin-bottom: 0.75rem;
+}
+
+.config-guide-list {
+  padding-left: 1.25rem;
+  margin-bottom: 0.875rem;
+}
+
+.config-guide-list li + li {
+  margin-top: 0.25rem;
+}
+
+/* ── Tiêu đề in đậm trong config-hint ───────────────────────── */
+.config-hint__title {
+  color: var(--hms-ink);
+}
+
+/* ── Modal content bo góc ────────────────────────────────────── */
+.config-modal-content {
+  border-radius: var(--hms-radius-lg);
+  border: 1px solid var(--hms-border);
+}
+
+/* ── Modal title ─────────────────────────────────────────────── */
+.config-modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--hms-ink);
+  margin: 0;
+}
+
+/* ── Modal body padding ──────────────────────────────────────── */
+.config-modal-body {
+  padding: 1.5rem;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  AUTH — Extended styles (refactor)                           ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ── Brand logo block (icon trên đầu form) ───────────────────── */
+/* Dùng class .auth-brand-logo để tránh conflict với .auth-brand-icon
+   nếu có trong design system khác */
+.auth-brand-logo {
+  width: 48px;
+  height: 48px;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  font-family: var(--hms-font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--hms-accent) 0%, var(--hms-accent-soft) 100%);
+  border-radius: var(--hms-radius-sm);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 212, 164, 0.28);
+  overflow: hidden;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* ── Auth page headings ──────────────────────────────────────── */
+.auth-heading {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: var(--hms-font);
+  letter-spacing: -1.5px;
+  margin-bottom: 0.5rem;
+  color: var(--hms-ink);
+}
+
+.auth-subtitle {
+  color: var(--hms-text-muted);
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Form input pill style (auth pages) ─────────────────────── */
+/* Dùng specificity cao hơn thay vì !important */
+.auth-card .form-control.auth-input,
+.auth-card .auth-input {
+  border-radius: 16px;
+  padding: 0.75rem 1rem;
+  height: auto;
+}
+
+.auth-card .form-control.auth-input--with-toggle,
+.auth-card .auth-input--with-toggle {
+  border-radius: 16px;
+  padding: 0.75rem 3rem 0.75rem 1rem;
+  height: auto;
+}
+
+/* ── Toggle password button (absolute inside position-relative) */
+.auth-toggle-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  z-index: 10;
+  border-radius: 0 16px 16px 0;
+  padding: 0 0.875rem;
+  color: var(--hms-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color var(--t-fast) var(--hms-ease);
+}
+
+.auth-toggle-btn:hover {
+  color: var(--hms-ink);
+}
+
+/* ── Toggle span (login.jsp — dùng span thay button) ────────── */
+.auth-pw-toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: var(--hms-text-muted);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Password strength bar ───────────────────────────────────── */
+.pw-strength-track {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--hms-border);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.pw-strength-bar {
+  height: 100%;
+  width: 0;
+  border-radius: 99px;
+  background: var(--hms-danger);
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.pw-strength-track--spaced {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Password checklist ──────────────────────────────────────── */
+.pw-checklist {
+  list-style: none;
+  padding: 0.5rem 0 0;
+  margin: 0;
+  font-size: 0.8rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+}
+
+.pw-checklist li {
+  color: var(--hms-stone);
+}
+
+/* ── Confirm password feedback ───────────────────────────────── */
+.pw-confirm-msg {
+  font-size: 0.8rem;
+  margin-top: 4px;
+  min-height: 1rem;
+}
+
+/* ── Small muted / accent links ─────────────────────────────── */
+.auth-link-sm {
+  font-size: 0.875rem;
+  color: var(--hms-stone);
+  text-decoration: none;
+  transition: color var(--t-fast) var(--hms-ease);
+}
+
+.auth-link-sm:hover {
+  color: var(--hms-ink);
+}
+
+.auth-link-accent {
+  font-size: 0.875rem;
+  color: var(--hms-accent);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--t-fast) var(--hms-ease);
+}
+
+.auth-link-accent:hover {
+  color: var(--hms-accent-deep);
+}
+
+/* ── Remember me label ───────────────────────────────────────── */
+.auth-remember-label {
+  font-size: 0.875rem;
+}
+
+/* ── Submit button full-width pill ──────────────────────────── */
+.auth-submit-btn {
+  border-radius: var(--hms-radius-full);
+  padding: 11px;
+}
+
+/* ── Success state (forgot-password) ─────────────────────────── */
+.auth-success-state {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.auth-success-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.auth-success-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.auth-success-text {
+  font-size: 0.875rem;
+  color: var(--hms-stone);
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+/* ── Back button trong success state ────────────────────────── */
+.auth-back-btn {
+  display: inline-flex;
+  padding: 9px 20px;
+}
+
+/* ── forceChange note ────────────────────────────────────────── */
+.auth-force-note {
+  color: var(--hms-stone);
+  font-weight: 400;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  MODAL & UTILITIES (Incidents & Common)                      ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+.custom-modal-backdrop {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    overflow: auto;
+}
+
+.custom-modal {
+    background: var(--hms-canvas);
+    margin: 5% auto;
+    border: 1px solid var(--hms-border);
+    width: 90%;
+    max-width: 500px;
+    border-radius: var(--hms-radius-lg);
+    box-shadow: var(--hms-shadow-lg);
+    animation: modalFadeIn 0.25s var(--hms-ease);
+}
+
+.custom-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--hms-border);
+    background: var(--hms-surface-soft);
+    border-radius: var(--hms-radius-lg) var(--hms-radius-lg) 0 0;
+}
+
+.custom-modal-body {
+    padding: 20px;
+}
+
+.custom-modal-close {
+    color: var(--hms-stone);
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.custom-modal-close:hover {
+    color: var(--hms-ink);
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hms-form-label {
+    font-weight: 500;
+    display: block;
+}
+
+.hms-form-label-required::after {
+    content: " *";
+    color: var(--hms-danger);
+}
+
+.hms-text-sm-steel {
+    font-size: 13px;
+    color: var(--hms-steel);
+    margin-top: 4px;
+}
+
+.hms-invalid-feedback {
+    font-size: 13px;
+    color: var(--hms-danger);
+    margin-top: 4px;
+}
+
+.hms-image-preview-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: var(--hms-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--hms-border);
+}
+
+.hms-image-preview-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hms-image-preview-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.hms-filter-form {
+    background: var(--hms-canvas);
+    border: 1px solid var(--hms-border-soft);
+    border-radius: var(--hms-radius-md);
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--hms-shadow-xs);
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  PROFILE — shared styles                                     ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ── Avatar ──────────────────────────────────────────────────── */
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-avatar-img {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--hms-canvas);
+  box-shadow: var(--hms-shadow-md);
+  flex-shrink: 0;
+}
+
+.profile-avatar-initials {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid var(--hms-canvas);
+  box-shadow: var(--hms-shadow-md);
+  background: linear-gradient(135deg, var(--hms-accent) 0%, var(--hms-accent-deep) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+.profile-avatar-btn {
+  display: inline-block;
+  padding: 7px 18px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--hms-text-secondary);
+  background: var(--hms-canvas);
+  border: 1px solid var(--hms-border);
+  border-radius: var(--hms-radius-full);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--hms-ease),
+              box-shadow var(--t-fast) var(--hms-ease),
+              color var(--t-fast) var(--hms-ease);
+}
+
+.profile-avatar-btn:hover {
+  border-color: var(--hms-accent);
+  color: var(--hms-accent-deep);
+  box-shadow: var(--hms-shadow-xs);
+}
+
+/* ── Field label & hint ──────────────────────────────────────── */
+.profile-field-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--hms-text-secondary);
+  margin-bottom: 4px;
+}
+
+.profile-required {
+  color: var(--hms-danger);
+  margin-left: 2px;
+}
+
+.profile-hint {
+  font-size: 0.78rem;
+  color: var(--hms-text-muted);
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* ── Form inputs ─────────────────────────────────────────────── */
+.profile-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-family: var(--hms-font);
+  color: var(--hms-text);
+  background: var(--hms-canvas);
+  border: 1px solid var(--hms-border);
+  border-radius: var(--hms-radius);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.profile-input:focus {
+  border-color: var(--hms-accent);
+  box-shadow: 0 0 0 3px var(--hms-accent-glow);
+}
+
+.profile-input:read-only,
+.profile-input[readonly] {
+  background: var(--hms-surface);
+  color: var(--hms-text-muted);
+  cursor: default;
+}
+
+/* ── Select ──────────────────────────────────────────────────── */
+.profile-select {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  font-size: 0.875rem;
+  font-family: var(--hms-font);
+  color: var(--hms-text);
+  background: var(--hms-canvas);
+  border: 1px solid var(--hms-border);
+  border-radius: var(--hms-radius);
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.profile-select:focus {
+  border-color: var(--hms-accent);
+  box-shadow: 0 0 0 3px var(--hms-accent-glow);
+}
+
+/* ── Textarea ────────────────────────────────────────────────── */
+.profile-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-family: var(--hms-font);
+  color: var(--hms-text);
+  background: var(--hms-canvas);
+  border: 1px solid var(--hms-border);
+  border-radius: var(--hms-radius);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.profile-textarea:focus {
+  border-color: var(--hms-accent);
+  box-shadow: 0 0 0 3px var(--hms-accent-glow);
+}
+
+/* ── Validation states ───────────────────────────────────────── */
+.was-validated .profile-input:invalid,
+.was-validated .profile-textarea:invalid,
+.was-validated .profile-select:invalid,
+.profile-input.is-invalid {
+  border-color: var(--hms-danger);
+}
+
+.was-validated .profile-input:invalid ~ .invalid-feedback,
+.was-validated .profile-textarea:invalid ~ .invalid-feedback,
+.was-validated .profile-select:invalid ~ .invalid-feedback {
+  display: block;
+}
+
+/* ── Field group spacing (password form) ─────────────────────── */
+.profile-field-group {
+  margin-bottom: 1rem;
+}
+
+.profile-field-group:last-of-type {
+  margin-bottom: 1.25rem;
+}
+
+/* ── Form footer actions ─────────────────────────────────────── */
+.profile-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+/* ── Password submit full-width ──────────────────────────────── */
+.profile-pw-submit {
+  width: 100%;
+  justify-content: center;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  CLICKABLE TABLE ROW                                         ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.tr-clickable {
+  cursor: pointer;
+  transition: background var(--t-fast) var(--hms-ease);
+}
+
+.tr-clickable:hover {
+  background: var(--hms-accent-bg) !important;
+}
+
+/* Nút/link bên trong row không bị ảnh hưởng bởi hover của row */
+.tr-clickable a,
+.tr-clickable button {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  TENANT NOTIFICATIONS — list styles                          ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* Row chưa đọc: nền nhạt xanh */
+.notif-row--unread {
+  background: rgba(37, 99, 235, 0.03);
+}
+
+/* Cột mã TB */
+.notif-code {
+  font-family: var(--hms-font-mono);
+  font-size: 0.8125rem;
+  color: var(--hms-stone);
+}
+
+.notif-col-code { width: 14%; }
+.notif-col-date { width: 16%; }
+
+/* Tiêu đề */
+.notif-title {
+  font-weight: 500;
+  color: var(--hms-slate);
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-title--unread {
+  font-weight: 700;
+  color: var(--hms-ink);
+}
+
+/* Dot chưa đọc */
+.notif-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hms-accent);
+  flex-shrink: 0;
+}
+
+/* Summary (tóm tắt nội dung) */
+.notif-summary {
+  font-size: 0.8125rem;
+  color: var(--hms-stone);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 480px;
+}
+
+/* Ngày */
+.notif-date {
+  font-size: 0.8125rem;
+  color: var(--hms-text-muted);
+  white-space: nowrap;
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  TABLE — compact variant                                     ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* Font nhỏ hơn + padding compact hơn table-mintlify--sm */
+.table-mintlify--compact th {
+  padding: 0.6rem 0.875rem;
+  font-size: 0.625rem;
+}
+
+.table-mintlify--compact td {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  TENANT CONTRACTS — list styles                              ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+.contract-code {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--hms-ink);
+  font-family: var(--hms-font-mono);
+  white-space: nowrap;
+}
+
+/* Sub-line hiện trên mobile (khi cột Phòng bị ẩn) */
+.contract-room-inline {
+  font-size: 0.6875rem;
+  color: var(--hms-stone);
+  margin-top: 2px;
+}
+
+.contract-date {
+  font-size: 0.8125rem;
+  color: var(--hms-stone);
+  white-space: nowrap;
+}
+
+.contract-amount {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--hms-ink);
+  white-space: nowrap;
+}
+
+.contract-amount--muted {
+  color: var(--hms-stone);
+  font-weight: 500;
+}
+
+/* Alerts & Toasts */
+.hms-inactive-banner {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.25rem;
+    z-index: 9998;
+    max-width: 340px;
+    min-width: 260px;
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border: 1px solid #fcd34d;
+    border-radius: .5rem;
+    padding: .75rem 1rem;
+    display: none;
+    align-items: flex-start;
+    gap: .625rem;
+    font-size: .875rem;
+    line-height: 1.4;
+    color: #78350f;
+    box-shadow: 0 4px 16px rgba(0,0,0,.14);
+    transition: opacity .4s ease, transform .4s ease;
+    animation: hmsToastIn .25s ease;
+}
+
+.hms-inactive-banner__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 2px;
+    color: #92400e;
+    font-size: 1.1rem;
+    line-height: 1;
+    opacity: .6;
+    flex-shrink: 0;
+}
+
+.hms-toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.25rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    min-width: 280px;
+    max-width: 400px;
+}
+
+.hms-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: .625rem;
+    padding: .75rem 1rem;
+    border-radius: .5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,.14);
+    font-size: .875rem;
+    line-height: 1.4;
+    opacity: 1;
+    transition: opacity .4s ease, transform .4s ease;
+    animation: hmsToastIn .25s ease;
+}
+@keyframes hmsToastIn {
+    from { opacity: 0; transform: translateX(-40px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.hms-toast--success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+.hms-toast--error   { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+.hms-toast--warning { background: #fef9c3; color: #854d0e; border-left: 4px solid #f59e0b; }
+.hms-toast__icon    { font-size: 1rem; flex-shrink: 0; margin-top: .05rem; }
+.hms-toast__msg     { flex: 1; }
+.hms-toast__close   {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.1rem; line-height: 1; padding: 0;
+    color: inherit; opacity: .6; flex-shrink: 0;
+}
+.hms-toast__close:hover { opacity: 1; }
+.hms-toast--fade-out { opacity: 0; transform: translateX(-40px); }
+
+/* Inline Alerts */
+.hms-inline-alert {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+.hms-inline-alert--error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+.hms-inline-alert--success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+.hms-inline-alert--warning {
+    background-color: #fef9c3;
+    color: #854d0e;
+    border-left: 4px solid #f59e0b;
+}
+.hms-inline-alert__icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.hms-inline-alert__msg {
+    flex: 1;
+}
+/* ================================================================
+   Audit Logs — filter label, diff table, detail rows
+   ================================================================ */
+
+/* Filter label (used by audit-logs filter bar) */
+.filter-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--hms-text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── Diff banner ────────────────────────────────────────────── */
+.diff-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--hms-warning-bg);
+    border: 1px solid var(--hms-warning-border);
+    border-radius: var(--hms-radius-sm);
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.8125rem;
+    color: var(--hms-warning);
+}
+.diff-banner__text { font-weight: 500; }
+
+/* ── Empty diff state ───────────────────────────────────────── */
+.diff-empty { text-align: center; padding: 2rem 1rem; color: var(--hms-text-muted); }
+.diff-empty__icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.diff-empty__text { font-size: 0.875rem; }
+
+/* ── Diff table ─────────────────────────────────────────────── */
+.diff-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+
+.diff-th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--hms-stone);
+    border-bottom: 1px solid var(--hms-border);
+    background: var(--hms-surface-soft);
+}
+.diff-th--field { width: 30%; }
+.diff-th--old { color: var(--hms-danger); }
+.diff-th--new { color: var(--hms-success); }
+
+.diff-td,
+.diff-td--field,
+.diff-td--old-changed,
+.diff-td--new-changed {
+    padding: 9px 12px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--hms-border-soft);
+    line-height: 1.45;
+}
+.diff-td--field { font-weight: 600; color: var(--hms-slate); white-space: nowrap; }
+.diff-row--changed { background: #fffbeb; }
+.diff-td--old-changed { color: var(--hms-danger); background: #fff5f5; text-decoration: line-through; opacity: 0.8; }
+.diff-td--new-changed { color: var(--hms-success); background: #f0fdf9; font-weight: 500; }
+
+/* ── Audit detail rows ──────────────────────────────────────── */
+.audit-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--hms-border-soft);
+    font-size: 0.8125rem;
+}
+.audit-detail-row--top { align-items: flex-start; }
+.audit-detail-row:last-child { border-bottom: none; }
+
+.audit-detail-label {
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--hms-stone);
+    flex-shrink: 0;
+    min-width: 120px;
+}
+.audit-detail-value { color: var(--hms-text); text-align: right; }
+.audit-detail-value--id {
+    font-family: var(--hms-font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--hms-accent-deep);
+    text-align: right;
+}
+.audit-detail-value--name { font-weight: 500; text-align: right; }
+.audit-detail-value--mono {
+    font-family: var(--hms-font-mono);
+    font-size: 0.75rem;
+    color: var(--hms-slate);
+    text-align: right;
+}
+
+/* ── Audit list table helpers ───────────────────────────────── */
+.audit-date-cell { white-space: nowrap; font-size: 0.8125rem; color: var(--hms-text-muted); }
+.audit-date-time { font-size: 0.75rem; color: var(--hms-stone); }
+.audit-actor-avatar {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--hms-hero-c1), var(--hms-accent));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.625rem; font-weight: 700; flex-shrink: 0;
+}
+.audit-actor-name { font-size: 0.8125rem; font-weight: 500; }
+.audit-log-link { font-family: var(--hms-font-mono); font-size: 0.75rem; font-weight: 700; }
+.audit-detail-link { font-size: 0.8125rem; color: var(--hms-info); font-weight: 600; }
+
+/* ── Modal & Image Preview (Incidents & Common) ─────────────── */
+.custom-modal-backdrop {
+    display: none; position: fixed; z-index: 9999;
+    inset: 0; background: rgba(0, 0, 0, 0.5); overflow: auto;
+}
+.custom-modal {
+    background: var(--hms-canvas); margin: 5% auto;
+    border: 1px solid var(--hms-border); width: 90%; max-width: 500px;
+    border-radius: var(--hms-radius-lg); box-shadow: var(--hms-shadow-lg);
+    animation: modalFadeIn 0.25s var(--hms-ease);
+}
+.custom-modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--hms-border);
+    background: var(--hms-surface-soft);
+    border-radius: var(--hms-radius-lg) var(--hms-radius-lg) 0 0;
+}
+.custom-modal-body { padding: 20px; }
+.custom-modal-close { color: var(--hms-stone); font-size: 24px; font-weight: bold; cursor: pointer; }
+.custom-modal-close:hover { color: var(--hms-ink); }
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hms-form-label { font-weight: 500; display: block; }
+.hms-form-label-required::after { content: " *"; color: var(--hms-danger); }
+.hms-text-sm-steel { font-size: 13px; color: var(--hms-steel); margin-top: 4px; }
+.hms-invalid-feedback { font-size: 13px; color: var(--hms-danger); margin-top: 4px; }
+
+.hms-image-preview-wrapper {
+    position: relative; width: 100px; height: 100px;
+    border-radius: var(--hms-radius-md); overflow: hidden;
+    border: 1px solid var(--hms-border);
+}
+.hms-image-preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+.hms-image-preview-remove {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0, 0, 0, 0.6); color: #fff; border: none;
+    border-radius: 50%; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; line-height: 1;
+}
+
+.hms-filter-form {
+    background: var(--hms-canvas);
+    border: 1px solid var(--hms-border-soft);
+    border-radius: var(--hms-radius-md);
+    padding: 20px; margin-bottom: 20px;
+    box-shadow: var(--hms-shadow-xs);
+}
+
+.tr-clickable {
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--hms-ease);
+}
+.tr-clickable:hover {
+    background-color: var(--hms-surface-soft) !important;
 }

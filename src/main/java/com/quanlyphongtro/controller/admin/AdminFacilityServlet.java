@@ -1,6 +1,7 @@
 package com.quanlyphongtro.controller.admin;
 
 import com.quanlyphongtro.controller.BaseServlet;
+import com.quanlyphongtro.dto.FacilityFormDTO;
 import com.quanlyphongtro.dto.PageDTO;
 import com.quanlyphongtro.exception.NotFoundException;
 import com.quanlyphongtro.exception.ValidationException;
@@ -63,17 +64,11 @@ public class AdminFacilityServlet extends BaseServlet {
                 doActivate(req, resp, idPrefix(path));
             } else if (path.matches("/\\d+/deactivate")) {
                 doDeactivate(req, resp, idPrefix(path));
-            } else if (path.matches("/\\d+/rooms/\\d+/area")) {
-                doUpdateRoomArea(req, resp, path);
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         } catch (ValidationException e) {
-            if (path.matches("/\\d+/rooms/\\d+/area")) {
-                int facilityId = Integer.parseInt(path.split("/")[1]);
-                setFlashMessage(req, "error", e.getMessage());
-                resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + facilityId);
-            } else if (path.matches("/\\d+/edit")) {
+            if (path.matches("/\\d+/edit")) {
                 // Re-render edit form with error
                 int editId = idPrefix(path);
                 try {
@@ -85,6 +80,7 @@ public class AdminFacilityServlet extends BaseServlet {
                 }
             } else {
                 req.setAttribute("errorMessage", e.getMessage());
+                req.setAttribute("dto", FacilityFormDTO.of(req));
                 req.getRequestDispatcher(VIEW_BASE + "create.jsp").forward(req, resp);
             }
         } catch (NotFoundException e) {
@@ -137,11 +133,7 @@ public class AdminFacilityServlet extends BaseServlet {
             req.getParameter("name"),
             req.getParameter("address"),
             req.getParameter("floorCount"),
-            req.getParameter("roomsPerFloor"),
-            req.getParameter("electricityPrice"),
-            req.getParameter("waterPrice"),
-            req.getParameter("internetFee"),
-            req.getParameter("serviceFee")
+            req.getParameter("roomsPerFloor")
         );
         setFlashMessage(req, "success", "Tạo cơ sở thành công.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH);
@@ -154,11 +146,7 @@ public class AdminFacilityServlet extends BaseServlet {
             req.getParameter("name"),
             req.getParameter("address"),
             req.getParameter("floorCount"),
-            req.getParameter("roomsPerFloor"),
-            req.getParameter("electricityPrice"),
-            req.getParameter("waterPrice"),
-            req.getParameter("internetFee"),
-            req.getParameter("serviceFee")
+            req.getParameter("roomsPerFloor")
         );
         setFlashMessage(req, "success", "Cập nhật cơ sở thành công.");
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
@@ -184,18 +172,6 @@ public class AdminFacilityServlet extends BaseServlet {
             setFlashMessage(req, "error", e.getMessage());
         }
         resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + id);
-    }
-
-    private void doUpdateRoomArea(HttpServletRequest req, HttpServletResponse resp, String path)
-            throws Exception {
-        // path: /{facilityId}/rooms/{roomId}/area
-        String[] parts    = path.split("/");
-        int facilityId    = Integer.parseInt(parts[1]);
-        int roomId        = Integer.parseInt(parts[3]);
-
-        facilityService.updateRoomArea(facilityId, roomId, req.getParameter("area"));
-        setFlashMessage(req, "success", "Đã cập nhật diện tích phòng.");
-        resp.sendRedirect(req.getContextPath() + BASE_PATH + "/" + facilityId);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

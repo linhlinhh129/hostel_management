@@ -69,7 +69,7 @@ public class AdminRevenueServlet extends BaseServlet {
         String selectedPeriod = resolvePeriod(req.getParameter("period"));
         int page = parseIntOrDefault(req.getParameter("page"), 1);
 
-        int total = revenueService.countFacilitiesWithRevenue(selectedPeriod);
+        int total = revenueService.countActiveFacilities();
         List<FacilityRevenueStatDTO> items =
             revenueService.getFacilityRevenuesPaged(selectedPeriod, page, PAGE_SIZE);
 

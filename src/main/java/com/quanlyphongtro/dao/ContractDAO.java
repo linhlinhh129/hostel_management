@@ -1,4 +1,9 @@
 package com.quanlyphongtro.dao;
+import com.quanlyphongtro.model.Room;
+import com.quanlyphongtro.model.Facility;
+import com.quanlyphongtro.model.User;
+import java.sql.Types;
+import java.sql.Date;
 
 import com.quanlyphongtro.model.Contract;
 import com.quanlyphongtro.util.DatabaseUtil;
@@ -44,10 +49,10 @@ public class ContractDAO extends BaseDAO {
 
     public List<Contract> findAllByManagerId(int managerId, String searchName) {
         StringBuilder sql = new StringBuilder("SELECT c.* FROM dbo.contracts c " +
-                     "JOIN dbo.rooms r ON c.room_id = r.room_id " +
-                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                     "WHERE f.manager_id = ? AND c.deleted_at IS NULL ");
-        
+                "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND c.deleted_at IS NULL ");
+
         if (searchName != null && !searchName.trim().isEmpty()) {
             sql.append(" AND c.tenant_full_name LIKE ? ");
         }
@@ -55,7 +60,7 @@ public class ContractDAO extends BaseDAO {
 
         List<Contract> contracts = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             ps.setInt(1, managerId);
             if (searchName != null && !searchName.trim().isEmpty()) {
                 ps.setString(2, "%" + searchName.trim() + "%");
@@ -71,17 +76,17 @@ public class ContractDAO extends BaseDAO {
         return contracts;
     }
 
-    public List<com.quanlyphongtro.model.Room> getAvailableRooms(int managerId) {
+    public List<Room> getAvailableRooms(int managerId) {
         String sql = "SELECT r.* FROM dbo.rooms r " +
-                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                     "WHERE f.manager_id = ? AND r.tenant_id IS NULL AND r.deleted_at IS NULL";
-        List<com.quanlyphongtro.model.Room> rooms = new ArrayList<>();
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND r.tenant_id IS NULL AND r.deleted_at IS NULL";
+        List<Room> rooms = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, managerId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
+                    Room room = new Room();
                     room.setId(rs.getInt("room_id"));
                     room.setCode(rs.getString("code"));
                     rooms.add(room);
@@ -95,41 +100,42 @@ public class ContractDAO extends BaseDAO {
 
     public Optional<Contract> findByIdAndManagerId(int contractId, int managerId) {
         String sql = "SELECT c.*, " +
-                     "r.code as r_code, r.room_fee as r_fee, " +
-                     "f.address as f_address, f.electricity_price as f_elec, f.internet_fee as f_net, f.service_fee as f_svc, " +
-                     "m.full_name as m_name, m.dob as m_dob, m.identity_number as m_id_num, m.phone as m_phone " +
-                     "FROM dbo.contracts c " +
-                     "JOIN dbo.rooms r ON c.room_id = r.room_id " +
-                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                     "JOIN dbo.users m ON f.manager_id = m.user_id " +
-                     "WHERE c.contract_id = ? AND f.manager_id = ? AND c.deleted_at IS NULL";
+                "r.code as r_code, r.room_fee as r_fee, " +
+                "f.address as f_address, f.electricity_price as f_elec, f.internet_fee as f_net, f.service_fee as f_svc, "
+                +
+                "m.full_name as m_name, m.dob as m_dob, m.identity_number as m_id_num, m.phone as m_phone " +
+                "FROM dbo.contracts c " +
+                "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "JOIN dbo.users m ON f.manager_id = m.user_id " +
+                "WHERE c.contract_id = ? AND f.manager_id = ? AND c.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, contractId);
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Contract contract = mapRow(rs);
-                    
-                    com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
+
+                    Room room = new Room();
                     room.setCode(rs.getString("r_code"));
                     room.setRoomFee(rs.getBigDecimal("r_fee"));
                     contract.setRoom(room);
-                    
-                    com.quanlyphongtro.model.Facility facility = new com.quanlyphongtro.model.Facility();
+
+                    Facility facility = new Facility();
                     facility.setAddress(rs.getString("f_address"));
                     facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
                     facility.setInternetFee(rs.getBigDecimal("f_net"));
                     facility.setServiceFee(rs.getBigDecimal("f_svc"));
                     contract.setFacility(facility);
-                    
-                    com.quanlyphongtro.model.User managerObj = new com.quanlyphongtro.model.User();
+
+                    User managerObj = new User();
                     managerObj.setFullName(rs.getString("m_name"));
                     managerObj.setDob(toLocalDate(rs, "m_dob"));
                     managerObj.setIdentityNumber(rs.getString("m_id_num"));
                     managerObj.setPhone(rs.getString("m_phone"));
                     contract.setManager(managerObj);
-                    
+
                     return Optional.of(contract);
                 }
             }
@@ -142,7 +148,7 @@ public class ContractDAO extends BaseDAO {
     public Optional<Contract> findActiveContractByRoomId(int roomId) {
         String sql = "SELECT * FROM dbo.contracts WHERE room_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -158,62 +164,62 @@ public class ContractDAO extends BaseDAO {
     public int create(Contract contract) {
         // Tự động sửa lỗi Database NOT NULL cho tenant_id để cứu sinh viên
         try (Connection conn = DatabaseUtil.getConnection();
-             java.sql.Statement stmt = conn.createStatement()) {
+                Statement stmt = conn.createStatement()) {
             stmt.execute("ALTER TABLE dbo.contracts ALTER COLUMN tenant_id INT NULL;");
         } catch (Exception ignored) {
             // Lỗi do không có quyền hoặc đã alter rồi thì bỏ qua
         }
 
         String sql = "INSERT INTO dbo.contracts (code, room_id, tenant_id, tenant_full_name, tenant_dob, " +
-                     "tenant_permanent_address, tenant_identity_number, tenant_identity_issue_date, " +
-                     "tenant_identity_issue_place, tenant_phone, amount_in_words, signed_date, start_date, " +
-                     "end_date, status, created_by) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "tenant_permanent_address, tenant_identity_number, tenant_identity_issue_date, " +
+                "tenant_identity_issue_place, tenant_phone, amount_in_words, signed_date, start_date, " +
+                "end_date, status, created_by) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, contract.getCode());
             ps.setInt(2, contract.getRoomId());
             if (contract.getTenantId() != null) {
                 ps.setInt(3, contract.getTenantId());
             } else {
-                ps.setNull(3, java.sql.Types.INTEGER);
+                ps.setNull(3, Types.INTEGER);
             }
             ps.setString(4, contract.getTenantFullName());
             if (contract.getTenantDob() != null) {
-                ps.setDate(5, java.sql.Date.valueOf(contract.getTenantDob()));
+                ps.setDate(5, Date.valueOf(contract.getTenantDob()));
             } else {
-                ps.setNull(5, java.sql.Types.DATE);
+                ps.setNull(5, Types.DATE);
             }
             ps.setString(6, contract.getTenantPermanentAddress());
             ps.setString(7, contract.getTenantIdentityNumber());
             if (contract.getTenantIdentityIssueDate() != null) {
-                ps.setDate(8, java.sql.Date.valueOf(contract.getTenantIdentityIssueDate()));
+                ps.setDate(8, Date.valueOf(contract.getTenantIdentityIssueDate()));
             } else {
-                ps.setNull(8, java.sql.Types.DATE);
+                ps.setNull(8, Types.DATE);
             }
             ps.setString(9, contract.getTenantIdentityIssuePlace());
             ps.setString(10, contract.getTenantPhone());
             ps.setString(11, contract.getAmountInWords());
             if (contract.getSignedDate() != null) {
-                ps.setDate(12, java.sql.Date.valueOf(contract.getSignedDate()));
+                ps.setDate(12, Date.valueOf(contract.getSignedDate()));
             } else {
-                ps.setNull(12, java.sql.Types.DATE);
+                ps.setNull(12, Types.DATE);
             }
             if (contract.getStartDate() != null) {
-                ps.setDate(13, java.sql.Date.valueOf(contract.getStartDate()));
+                ps.setDate(13, Date.valueOf(contract.getStartDate()));
             } else {
-                ps.setNull(13, java.sql.Types.DATE);
+                ps.setNull(13, Types.DATE);
             }
             if (contract.getEndDate() != null) {
-                ps.setDate(14, java.sql.Date.valueOf(contract.getEndDate()));
+                ps.setDate(14, Date.valueOf(contract.getEndDate()));
             } else {
-                ps.setNull(14, java.sql.Types.DATE);
+                ps.setNull(14, Types.DATE);
             }
             ps.setString(15, contract.getStatus());
             if (contract.getCreatedBy() != null) {
                 ps.setInt(16, contract.getCreatedBy());
             } else {
-                ps.setNull(16, java.sql.Types.INTEGER);
+                ps.setNull(16, Types.INTEGER);
             }
 
             int affectedRows = ps.executeUpdate();
@@ -232,11 +238,11 @@ public class ContractDAO extends BaseDAO {
 
     public List<Contract> findAllByTenantId(int tenantId) {
         StringBuilder sql = new StringBuilder("SELECT c.* FROM dbo.contracts c " +
-                     "WHERE c.tenant_id = ? AND c.deleted_at IS NULL " +
-                     "ORDER BY c.created_at DESC");
+                "WHERE c.tenant_id = ? AND c.deleted_at IS NULL " +
+                "ORDER BY c.created_at DESC");
         List<Contract> contracts = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             ps.setInt(1, tenantId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -251,43 +257,44 @@ public class ContractDAO extends BaseDAO {
 
     public Optional<Contract> findByIdAndTenantId(int contractId, int tenantId) {
         String sql = "SELECT c.*, " +
-                     "r.code as r_code, r.room_fee as r_fee, r.deposit_amount as r_deposit, " +
-                     "f.address as f_address, f.electricity_price as f_elec, f.water_price as f_water, f.internet_fee as f_net, f.service_fee as f_svc, " +
-                     "m.full_name as m_name, m.dob as m_dob, m.identity_number as m_id_num, m.phone as m_phone " +
-                     "FROM dbo.contracts c " +
-                     "JOIN dbo.rooms r ON c.room_id = r.room_id " +
-                     "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                     "LEFT JOIN dbo.users m ON f.manager_id = m.user_id " +
-                     "WHERE c.contract_id = ? AND c.tenant_id = ? AND c.deleted_at IS NULL";
+                "r.code as r_code, r.room_fee as r_fee, r.deposit_amount as r_deposit, " +
+                "f.address as f_address, f.electricity_price as f_elec, f.water_price as f_water, f.internet_fee as f_net, f.service_fee as f_svc, "
+                +
+                "m.full_name as m_name, m.dob as m_dob, m.identity_number as m_id_num, m.phone as m_phone " +
+                "FROM dbo.contracts c " +
+                "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN dbo.users m ON f.manager_id = m.user_id " +
+                "WHERE c.contract_id = ? AND c.tenant_id = ? AND c.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, contractId);
             ps.setInt(2, tenantId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Contract contract = mapRow(rs);
-                    
-                    com.quanlyphongtro.model.Room room = new com.quanlyphongtro.model.Room();
+
+                    Room room = new Room();
                     room.setCode(rs.getString("r_code"));
                     room.setRoomFee(rs.getBigDecimal("r_fee"));
                     room.setDepositAmount(rs.getBigDecimal("r_deposit"));
                     contract.setRoom(room);
-                    
-                    com.quanlyphongtro.model.Facility facility = new com.quanlyphongtro.model.Facility();
+
+                    Facility facility = new Facility();
                     facility.setAddress(rs.getString("f_address"));
                     facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
                     facility.setWaterPrice(rs.getBigDecimal("f_water"));
                     facility.setInternetFee(rs.getBigDecimal("f_net"));
                     facility.setServiceFee(rs.getBigDecimal("f_svc"));
                     contract.setFacility(facility);
-                    
-                    com.quanlyphongtro.model.User managerObj = new com.quanlyphongtro.model.User();
+
+                    User managerObj = new User();
                     managerObj.setFullName(rs.getString("m_name"));
                     managerObj.setDob(toLocalDate(rs, "m_dob"));
                     managerObj.setIdentityNumber(rs.getString("m_id_num"));
                     managerObj.setPhone(rs.getString("m_phone"));
                     contract.setManager(managerObj);
-                    
+
                     return Optional.of(contract);
                 }
             }
@@ -303,7 +310,7 @@ public class ContractDAO extends BaseDAO {
                 "JOIN dbo.rooms r ON c.room_id = r.room_id " +
                 "WHERE c.contract_id = ? AND c.created_by = ? AND c.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, contractId);
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -317,9 +324,9 @@ public class ContractDAO extends BaseDAO {
                     prefilledContract.put("tenantIdentityNumber", rs.getString("tenant_identity_number"));
                     prefilledContract.put("tenantPermanentAddress", rs.getString("tenant_permanent_address"));
                     prefilledContract.put("tenantId", getInteger(rs, "tenant_id"));
-                    java.sql.Date dob = rs.getDate("tenant_dob");
+                    Date dob = rs.getDate("tenant_dob");
                     prefilledContract.put("tenantDob", dob != null ? dob.toString() : "");
-                    java.sql.Date sDate = rs.getDate("start_date");
+                    Date sDate = rs.getDate("start_date");
                     prefilledContract.put("startDate", sDate != null ? sDate.toString() : "");
                 }
             }
@@ -332,10 +339,11 @@ public class ContractDAO extends BaseDAO {
     public Integer getUserIdByUsername(String username) {
         String sql = "SELECT user_id FROM dbo.users WHERE username = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt("user_id");
+                if (rs.next())
+                    return rs.getInt("user_id");
             }
         } catch (Exception e) {
             logger.error("getUserIdByUsername failed", e);
@@ -347,7 +355,7 @@ public class ContractDAO extends BaseDAO {
         Map<String, Object> user = null;
         String sql = "SELECT user_id, role, full_name, identity_number FROM dbo.users WHERE username = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -366,16 +374,18 @@ public class ContractDAO extends BaseDAO {
 
     public int countActiveChecksForUser(int userId) {
         String activeCheckSql = "SELECT COUNT(*) FROM (" +
-                "SELECT contract_id FROM dbo.contracts WHERE tenant_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL " +
+                "SELECT contract_id FROM dbo.contracts WHERE tenant_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL "
+                +
                 "UNION ALL " +
                 "SELECT room_id FROM dbo.rooms WHERE tenant_id = ? AND deleted_at IS NULL" +
                 ") active_checks";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(activeCheckSql)) {
+                PreparedStatement ps = conn.prepareStatement(activeCheckSql)) {
             ps.setInt(1, userId);
             ps.setInt(2, userId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next())
+                    return rs.getInt(1);
             }
         } catch (Exception e) {
             logger.error("countActiveChecksForUser failed", e);
@@ -383,11 +393,15 @@ public class ContractDAO extends BaseDAO {
         return 0;
     }
 
-    public boolean addTenantTransaction(boolean userExists, int userId, String passwordHash, String fullName, String phone, String identityNumber, LocalDate dob, String gender, String permanentAddress, String email, int roomId, LocalDate startDate, int contractId) {
+    public boolean addTenantTransaction(boolean userExists, int userId, String passwordHash, String fullName,
+            String phone, String identityNumber, LocalDate dob, String gender, String permanentAddress, String email,
+            int roomId, LocalDate startDate, int contractId) {
         String updUserSql = "UPDATE dbo.users SET status = 'ACTIVE', password_hash = ?, full_name = ?, phone = ?, " +
-                "identity_number = ?, dob = ?, gender = ?, permanent_address = ?, force_change_pass = 1, updated_at = GETDATE() " +
+                "identity_number = ?, dob = ?, gender = ?, permanent_address = ?, force_change_pass = 1, updated_at = GETDATE() "
+                +
                 "WHERE user_id = ?";
-        String insUserSql = "INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, identity_number, dob, gender, permanent_address, force_change_pass, created_at, updated_at) " +
+        String insUserSql = "INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, identity_number, dob, gender, permanent_address, force_change_pass, created_at, updated_at) "
+                +
                 "VALUES (?, ?, 'TENANT', ?, ?, ?, 'ACTIVE', ?, ?, ?, ?, 1, GETDATE(), GETDATE())";
         String updRoomSql = "UPDATE dbo.rooms SET tenant_id = ?, status = 'OCCUPIED', contract_start_date = ?, contract_end_date = ?, updated_at = GETDATE() WHERE room_id = ?";
         String updContractSql = "UPDATE dbo.contracts SET tenant_id = ?, updated_at = GETDATE() WHERE contract_id = ?";
@@ -404,7 +418,7 @@ public class ContractDAO extends BaseDAO {
                     ps.setString(2, fullName.trim());
                     ps.setString(3, phone.trim());
                     ps.setString(4, identityNumber.trim());
-                    ps.setDate(5, dob != null ? java.sql.Date.valueOf(dob) : null);
+                    ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
                     ps.setString(6, gender);
                     ps.setString(7, permanentAddress);
                     ps.setInt(8, userId);
@@ -418,7 +432,7 @@ public class ContractDAO extends BaseDAO {
                     ps.setString(4, email.trim());
                     ps.setString(5, phone.trim());
                     ps.setString(6, identityNumber.trim());
-                    ps.setDate(7, dob != null ? java.sql.Date.valueOf(dob) : null);
+                    ps.setDate(7, dob != null ? Date.valueOf(dob) : null);
                     ps.setString(8, gender);
                     ps.setString(9, permanentAddress);
                     ps.executeUpdate();
@@ -433,8 +447,8 @@ public class ContractDAO extends BaseDAO {
             // Update room
             try (PreparedStatement ps = conn.prepareStatement(updRoomSql)) {
                 ps.setInt(1, finalUserId);
-                ps.setDate(2, java.sql.Date.valueOf(startDate));
-                ps.setDate(3, java.sql.Date.valueOf(startDate.plusYears(1))); // Default 1 year contract
+                ps.setDate(2, Date.valueOf(startDate));
+                ps.setDate(3, Date.valueOf(startDate.plusYears(1))); // Default 1 year contract
                 ps.setInt(4, roomId);
                 ps.executeUpdate();
             }
@@ -450,13 +464,20 @@ public class ContractDAO extends BaseDAO {
             return true;
         } catch (Exception e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ignored) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {
+                }
             }
             logger.error("addTenantTransaction failed", e);
             return false;
         } finally {
             if (conn != null) {
-                try { conn.setAutoCommit(true); conn.close(); } catch (Exception ignored) {}
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (Exception ignored) {
+                }
             }
         }
     }
@@ -464,7 +485,7 @@ public class ContractDAO extends BaseDAO {
     public Map<String, String> verifyContractForDelete(int contractId, int managerId) {
         String checkSql = "SELECT status, code FROM dbo.contracts WHERE contract_id = ? AND created_by = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                PreparedStatement ps = conn.prepareStatement(checkSql)) {
             ps.setInt(1, contractId);
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -484,12 +505,64 @@ public class ContractDAO extends BaseDAO {
     public boolean softDeleteContract(int contractId) {
         String deleteSql = "UPDATE dbo.contracts SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                PreparedStatement ps = conn.prepareStatement(deleteSql)) {
             ps.setInt(1, contractId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             logger.error("softDeleteContract failed", e);
             return false;
+        }
+    }
+
+    public boolean extendContractTransaction(int contractId, LocalDate newEndDate, Integer tenantId, int roomId) {
+        String updContract = "UPDATE dbo.contracts SET end_date = ?, status = 'ACTIVE', updated_at = GETDATE() WHERE contract_id = ?";
+        String updRoom = "UPDATE dbo.rooms SET contract_end_date = ?, tenant_id = ?, status = 'OCCUPIED', updated_at = GETDATE() WHERE room_id = ?";
+        String updUser = "UPDATE dbo.users SET status = 'ACTIVE', updated_at = GETDATE() WHERE user_id = ?";
+        
+        Connection conn = null;
+        try {
+            conn = DatabaseUtil.getConnection();
+            conn.setAutoCommit(false);
+            
+            // 1. Update contract
+            try (PreparedStatement ps = conn.prepareStatement(updContract)) {
+                ps.setDate(1, Date.valueOf(newEndDate));
+                ps.setInt(2, contractId);
+                ps.executeUpdate();
+            }
+            
+            // 2. Update room
+            try (PreparedStatement ps = conn.prepareStatement(updRoom)) {
+                ps.setDate(1, Date.valueOf(newEndDate));
+                if (tenantId != null) {
+                    ps.setInt(2, tenantId);
+                } else {
+                    ps.setNull(2, Types.INTEGER);
+                }
+                ps.setInt(3, roomId);
+                ps.executeUpdate();
+            }
+            
+            // 3. Update user if tenantId is not null
+            if (tenantId != null) {
+                try (PreparedStatement ps = conn.prepareStatement(updUser)) {
+                    ps.setInt(1, tenantId);
+                    ps.executeUpdate();
+                }
+            }
+            
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ignored) {}
+            }
+            logger.error("extendContractTransaction failed for contractId={}", contractId, e);
+            return false;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (Exception ignored) {}
+            }
         }
     }
 }

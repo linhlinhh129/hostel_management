@@ -1,4 +1,6 @@
 package com.quanlyphongtro.dto;
+import java.util.Date;
+import java.sql.Timestamp;
 
 import java.time.LocalDateTime;
 
@@ -58,9 +60,9 @@ public class CommunityPostDTO {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public java.util.Date getCreatedAtAsDate() {
+    public Date getCreatedAtAsDate() {
         if (createdAt == null) return null;
-        return java.sql.Timestamp.valueOf(createdAt);
+        return Timestamp.valueOf(createdAt);
     }
     
     public int getTotalLikes() { return totalLikes; }

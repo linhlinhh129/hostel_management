@@ -1,4 +1,8 @@
 package com.quanlyphongtro.util;
+import com.quanlyphongtro.dao.SystemConfigDAO;
+import java.io.InputStream;
+import java.util.Scanner;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
@@ -9,7 +13,7 @@ import java.util.Properties;
 
 public final class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
-    private static final com.quanlyphongtro.dao.SystemConfigDAO configDAO = new com.quanlyphongtro.dao.SystemConfigDAO();
+    private static final SystemConfigDAO configDAO = new SystemConfigDAO();
 
     private EmailService() {}
 
@@ -122,12 +126,12 @@ public final class EmailService {
     }
 
     private static String loadTemplate(String templateName) {
-        try (java.io.InputStream is = EmailService.class.getClassLoader().getResourceAsStream("email-templates/" + templateName)) {
+        try (InputStream is = EmailService.class.getClassLoader().getResourceAsStream("email-templates/" + templateName)) {
             if (is == null) {
                 logger.error("Email template not found: " + templateName);
                 return "";
             }
-            try (java.util.Scanner s = new java.util.Scanner(is, java.nio.charset.StandardCharsets.UTF_8.name())) {
+            try (Scanner s = new Scanner(is, StandardCharsets.UTF_8.name())) {
                 s.useDelimiter("\\A");
                 return s.hasNext() ? s.next() : "";
             }

@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dto;
+import java.time.LocalDateTime;
 
 import java.io.Serializable;
 
@@ -20,7 +21,7 @@ public class UserSessionDTO implements Serializable {
     /** true nếu force_change_pass=1 trong DB — bắt redirect về change-password */
     private boolean firstLogin;
     
-    private java.time.LocalDateTime lastReadNotificationTime;
+    private LocalDateTime lastReadNotificationTime;
 
     public UserSessionDTO() {}
 
@@ -60,8 +61,8 @@ public class UserSessionDTO implements Serializable {
     public boolean isFirstLogin() { return firstLogin; }
     public void setFirstLogin(boolean firstLogin) { this.firstLogin = firstLogin; }
 
-    public java.time.LocalDateTime getLastReadNotificationTime() { return lastReadNotificationTime; }
-    public void setLastReadNotificationTime(java.time.LocalDateTime lastReadNotificationTime) { this.lastReadNotificationTime = lastReadNotificationTime; }
+    public LocalDateTime getLastReadNotificationTime() { return lastReadNotificationTime; }
+    public void setLastReadNotificationTime(LocalDateTime lastReadNotificationTime) { this.lastReadNotificationTime = lastReadNotificationTime; }
 
     private String resolveRoleLabel(String role) {
         if (role == null) return "";

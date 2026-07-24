@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.auth;
+import com.quanlyphongtro.util.PasswordValidator;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dao.UserDAO;
@@ -68,8 +69,8 @@ public class ResetPasswordServlet extends BaseServlet {
             return;
         }
 
-        if (!com.quanlyphongtro.util.PasswordValidator.isValid(newPassword)) {
-            req.setAttribute("errorMessage", com.quanlyphongtro.util.PasswordValidator.POLICY_MESSAGE);
+        if (!PasswordValidator.isValid(newPassword)) {
+            req.setAttribute("errorMessage", PasswordValidator.POLICY_MESSAGE);
             req.setAttribute("resetToken", token);
             req.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp").forward(req, resp);
             return;

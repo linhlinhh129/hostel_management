@@ -90,17 +90,6 @@ THE SYSTEM SHALL trả về lỗi NOTIFICATION_NOT_FOUND.
 WHEN Admin tìm kiếm theo từ khóa tiêu đề thông báo
 THE SYSTEM SHALL trả về danh sách thông báo có tiêu đề chứa từ khóa được nhập.
 
-### 3.5 Phân quyền
-
-WHILE người dùng không có quyền quản lý thông báo
-THE SYSTEM SHALL từ chối truy cập chức năng quản lý thông báo.
-
-WHILE người dùng chưa được xác thực
-THE SYSTEM SHALL trả về lỗi UNAUTHORIZED.
-
-WHILE người dùng đã được xác thực nhưng không có quyền quản lý thông báo
-THE SYSTEM SHALL trả về lỗi FORBIDDEN.
-
 ## 4. API Contract
 
 ### Tạo thông báo
@@ -312,8 +301,6 @@ Max response time: 500ms (P95)
 Rate limit: 100 requests/phút/người dùng
 
 Hỗ trợ phân trang cho danh sách thông báo
-
-Ghi nhận Audit Log cho thao tác tạo và xem thông báo
 
 Chỉ người dùng được phân quyền mới được truy cập API
 

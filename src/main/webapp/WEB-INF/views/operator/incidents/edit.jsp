@@ -48,12 +48,6 @@
                         </c:choose>
                     </div>
 
-                    <c:if test="${not empty error}">
-                        <div class="alert alert-danger border-0" style="border-radius: 8px; background-color: #ffeaea; color: #d45656; margin-bottom: 24px;">
-                            <c:out value="${error}"/>
-                        </div>
-                    </c:if>
-
                     <form action="${ctx}/operator/incidents/edit" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                         <input type="hidden" name="csrfToken" value="${csrfToken}">
                         <input type="hidden" name="requestId" value="${requestObj.requestId}">
@@ -61,14 +55,14 @@
 
                         <div class="row mb-4">
                             <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="facilityName" class="form-label" style="font-weight: 500;">Cơ sở / Tòa nhà</label>
+                                <label for="facilityName" class="hms-form-label">Cơ sở / Tòa nhà</label>
                                 <input type="text" class="mintlify-text-input" id="facilityName" name="facilityName"
                                        value="${parsedFacilityName}" readonly
                                        style="background-color: var(--hms-bg-subtle); color: var(--hms-text-muted);">
                                 <div style="font-size: 12px; color: var(--color-steel); margin-top: 4px;">Không thể thay đổi cơ sở sau khi đã báo cáo.</div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" style="font-weight: 500;">Vị trí sự cố</label>
+                                <label class="hms-form-label">Vị trí sự cố</label>
                                 <input type="text" class="mintlify-text-input"
                                        value="${parsedRoomCode ne '' ? parsedRoomCode : 'Khu vực chung'}" readonly
                                        style="background-color: var(--hms-bg-subtle); color: var(--hms-text-muted);">
@@ -77,7 +71,7 @@
 
                         <div class="row mb-4">
                             <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="category" class="form-label" style="font-weight: 500;">Phân loại <span style="color: #d45656;">*</span></label>
+                                <label for="category" class="hms-form-label hms-form-label-required">Phân loại</label>
                                 <select class="form-select mintlify-text-input" id="category" name="category" required>
                                     <option value="Điện"      ${requestObj.category == 'Điện'      ? 'selected' : ''}>Điện</option>
                                     <option value="Nước"      ${requestObj.category == 'Nước'      ? 'selected' : ''}>Nước</option>
@@ -86,10 +80,10 @@
                                     <option value="Vệ sinh"   ${requestObj.category == 'Vệ sinh'   ? 'selected' : ''}>Vệ sinh</option>
                                     <option value="Khác"      ${requestObj.category == 'Khác'      ? 'selected' : ''}>Khác</option>
                                 </select>
-                                <div class="invalid-feedback" style="font-size: 13px;">Vui lòng chọn phân loại.</div>
+                                <div class="invalid-feedback hms-invalid-feedback">Vui lòng chọn phân loại.</div>
                             </div>
                             <div class="col-md-6">
-                                <label for="priority" class="form-label" style="font-weight: 500;">Mức độ ưu tiên <span style="color: #d45656;">*</span></label>
+                                <label for="priority" class="hms-form-label hms-form-label-required">Mức độ ưu tiên</label>
                                 <select class="form-select mintlify-text-input" id="priority" name="priority" required>
                                     <option value="Bình thường" ${parsedPriority == 'Bình thường' ? 'selected' : ''}>Bình thường</option>
                                     <option value="Khẩn cấp"   ${parsedPriority == 'Khẩn cấp'   ? 'selected' : ''}>Khẩn cấp</option>
@@ -98,19 +92,19 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="description" class="form-label" style="font-weight: 500;">Mô tả chi tiết <span style="color: #d45656;">*</span></label>
+                            <label for="description" class="hms-form-label hms-form-label-required">Mô tả chi tiết</label>
                             <textarea class="mintlify-text-input" id="description" name="description" rows="4" required><c:out value="${parsedDescription}"/></textarea>
-                            <div class="invalid-feedback" style="font-size: 13px;">Vui lòng nhập mô tả chi tiết.</div>
+                            <div class="invalid-feedback hms-invalid-feedback">Vui lòng nhập mô tả chi tiết.</div>
                         </div>
 
                         <div class="mb-4">
-                            <label for="attachments" class="form-label" style="font-weight: 500;">Thêm ảnh đính kèm (Không bắt buộc)</label>
+                            <label for="attachments" class="hms-form-label">Thêm ảnh đính kèm (Không bắt buộc)</label>
                             <input class="form-control" type="file" id="attachments" name="attachments" accept="image/*" multiple>
-                            <div style="font-size: 12px; color: var(--color-steel); margin-top: 4px;">Chọn thêm ảnh sẽ tải lên cùng với các ảnh đã có.</div>
+                            <div class="hms-text-sm-steel">Chọn thêm ảnh sẽ tải lên cùng với các ảnh đã có.</div>
                             <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-3">
                                 <c:forEach var="img" items="${requestObj.images}">
-                                    <div style="width: 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-hairline-soft);">
-                                        <img src="${ctx}${img}" class="w-100 h-100" style="object-fit: cover;" alt="Current Image">
+                                    <div class="hms-image-preview-wrapper">
+                                        <img src="${ctx}${img}" alt="Current Image">
                                     </div>
                                 </c:forEach>
                             </div>
@@ -150,10 +144,10 @@
                         var reader = new FileReader();
                         reader.onload = function (e) {
                             var wrapper = document.createElement('div');
-                            wrapper.style.cssText = 'width:100px;height:100px;border-radius:8px;overflow:hidden;border:2px solid var(--hms-success);';
+                            wrapper.className = 'hms-image-preview-wrapper';
+                            wrapper.style.border = '2px solid var(--hms-success)';
                             var img = document.createElement('img');
                             img.src = e.target.result;
-                            img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0.8;';
                             wrapper.appendChild(img);
                             previewContainer.appendChild(wrapper);
                         };

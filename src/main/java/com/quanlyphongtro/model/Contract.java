@@ -1,4 +1,5 @@
 package com.quanlyphongtro.model;
+import java.time.format.DateTimeFormatter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -241,5 +242,13 @@ public class Contract {
 
     public String getSignedYear() {
         return signedDate != null ? String.valueOf(signedDate.getYear()) : "......";
+    }
+
+    public String getFormattedEndDate() {
+        return endDate != null ? endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+    }
+
+    public String getFormattedStartDate() {
+        return startDate != null ? startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
     }
 }

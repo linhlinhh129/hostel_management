@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.manager;
+import java.nio.file.AccessDeniedException;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dto.PageResult;
@@ -159,7 +160,7 @@ public class ManagerRoomsServlet extends BaseServlet {
 
             req.setAttribute("room", room);
             req.getRequestDispatcher("/WEB-INF/views/manager/rooms/detail.jsp").forward(req, resp);
-        } catch (java.nio.file.AccessDeniedException e) {
+        } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
         } catch (Exception e) {
             logger.error("Failed to query room details", e);

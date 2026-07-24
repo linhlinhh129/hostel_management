@@ -1,4 +1,6 @@
 package com.quanlyphongtro.controller.operator;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 
 import com.quanlyphongtro.controller.BaseServlet;
 import com.quanlyphongtro.dao.RequestDAO;
@@ -150,8 +152,8 @@ public class EditIncidentServlet extends BaseServlet {
             }
         } catch (Throwable t) {
             try {
-                java.io.FileWriter fw = new java.io.FileWriter("f:\\SU26\\New folder\\hostel_management\\error.log", true);
-                java.io.PrintWriter pw = new java.io.PrintWriter(fw);
+                FileWriter fw = new FileWriter("f:\\SU26\\New folder\\hostel_management\\error.log", true);
+                PrintWriter pw = new PrintWriter(fw);
                 pw.println("--- ERROR IN EditIncidentServlet ---");
                 t.printStackTrace(pw);
                 pw.close();

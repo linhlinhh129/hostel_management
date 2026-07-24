@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dao;
+import java.sql.Types;
 
 import com.quanlyphongtro.dto.CommunityPostDTO;
 import com.quanlyphongtro.dto.NewsFeedDTO;
@@ -27,7 +28,7 @@ public class CommunityPostDAO extends BaseDAO {
             if (post.getReviewedBy() != null) {
                 ps.setInt(6, post.getReviewedBy());
             } else {
-                ps.setNull(6, java.sql.Types.INTEGER);
+                ps.setNull(6, Types.INTEGER);
             }
             ps.executeUpdate();
             
@@ -269,7 +270,7 @@ public class CommunityPostDAO extends BaseDAO {
             if (post.getReviewedBy() != null) {
                 ps.setInt(6, post.getReviewedBy());
             } else {
-                ps.setNull(6, java.sql.Types.INTEGER);
+                ps.setNull(6, Types.INTEGER);
             }
 
             int affectedRows = ps.executeUpdate();

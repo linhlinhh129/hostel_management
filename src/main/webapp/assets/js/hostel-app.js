@@ -173,3 +173,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+/* ── Clickable table rows (.tr-clickable[data-href]) ───────────
+   Click anywhere on the row → navigate to data-href.
+   Elements with onclick / links / buttons inside stop propagation. */
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('tr.tr-clickable[data-href]').forEach(function (row) {
+    var href = row.getAttribute('data-href');
+    if (!href) return;
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', function (e) {
+      // Ignore clicks directly on interactive children
+      var tag = e.target.tagName.toUpperCase();
+      if (tag === 'A' || tag === 'BUTTON' || tag === 'INPUT' || tag === 'SELECT') return;
+      if (e.target.closest('a, button, input, select')) return;
+      window.location.href = href;
+    });
+  });
+});

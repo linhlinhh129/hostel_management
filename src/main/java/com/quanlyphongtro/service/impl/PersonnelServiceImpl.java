@@ -102,6 +102,9 @@ public class PersonnelServiceImpl implements PersonnelService {
 
         // ── Facility ──────────────────────────────────────────────────────
         Integer facilityId = parseFacilityId(facilityIdStr);
+        if (("MANAGER".equals(role) || "OPERATOR".equals(role)) && facilityId == null) {
+            throw new ValidationException("Nhân sự phải được gán một cơ sở quản lý.");
+        }
         if (facilityId != null) {
             validateFacilityAssignment(facilityId, role, null);
         }
@@ -142,7 +145,7 @@ public class PersonnelServiceImpl implements PersonnelService {
         try {
             EmailService.sendTempPassword(finalEmail, finalFullName, finalEmail, finalPwd, loginLink);
         } catch (Exception ex) {
-            logger.warn("Email send failed for new user id={}", newId, ex);
+            logger.warn("Lỗi gửi email", newId, ex);
         }
     }
 
@@ -243,19 +246,6 @@ public class PersonnelServiceImpl implements PersonnelService {
         personnelDAO.updateStatus(id, newStatus);
     }
 
-    @Override
-    public void softDelete(int id, int currentUserId) throws NotFoundException, ValidationException {
-        if (currentUserId == id)
-            throw new ValidationException("Không thể xóa tài khoản của chính mình.");
-
-        User user = personnelDAO.findById(id).orElseThrow(NotFoundException::new);
-        if (!"INACTIVE".equals(user.getStatus()))
-            throw new ValidationException("Chỉ có thể xóa nhân sự đang ở trạng thái bị khóa.");
-
-        int affected = personnelDAO.softDelete(id);
-        if (affected == 0)
-            throw new ValidationException("Xóa nhân sự thất bại. Vui lòng thử lại.");
-    }
 
     // ── Private helpers ───────────────────────────────────────────────────
 

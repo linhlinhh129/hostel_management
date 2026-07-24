@@ -72,6 +72,7 @@
             <version>2.10.1</version>
         </dependency>
 
+<<<<<<< HEAD
         <!-- Unit Testing: JUnit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -83,18 +84,36 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+=======
+        <!-- ==================== TEST DEPENDENCIES ==================== -->
+
+        <!-- JUnit 5: test runner (junit-team/junit-framework trên GitHub) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+>>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
             <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
 
+<<<<<<< HEAD
         <!-- Unit Testing: Mockito -->
+=======
+        <!-- Mockito: mocking framework -->
+>>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>5.14.2</version>
             <scope>test</scope>
+<<<<<<< HEAD
             <type>jar</type>
         </dependency>
+=======
+        </dependency>
+
+        <!-- Mockito JUnit 5 extension -->
+>>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
@@ -102,6 +121,7 @@
             <scope>test</scope>
         </dependency>
 
+<<<<<<< HEAD
         <!-- Unit Testing: AssertJ -->
         <dependency>
             <groupId>org.assertj</groupId>
@@ -135,12 +155,21 @@
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>4.19.1</version>
+=======
+        <!-- AssertJ: fluent assertions (dễ đọc hơn JUnit assert) -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.26.3</version>
+>>>>>>> 57d213ff7840aa0ed4cd98c1ac753c6564b84c09
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <finalName>hostel-management</finalName>
+        <!-- Khai báo tường minh để NetBeans nhận Test Packages -->
+        <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -159,6 +188,37 @@
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
+            <!-- Surefire: bắt buộc để Maven chạy được JUnit 5 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+            </plugin>
+
+            <!-- Thêm plugin JaCoCo vào đây -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version> 
+                <executions>
+                  
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                  
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>
                 <artifactId>tomcat10-maven-plugin</artifactId>
