@@ -116,66 +116,22 @@ ROOM_NOT_FOUND
 
 ---
 
-## 4. API Contract
+## 4. Giao tiếp Hệ thống (System Flow)
 
-### Endpoint
+### Đường dẫn (Endpoint)
+* **Endpoint:** `POST /operator/meter-readings/update`
+* **Loại dữ liệu (Content-Type):** `multipart/form-data` (form submit chứa file ảnh)
 
-```http
-POST /api/v1/meter-readings
-```
+### Request Form Data
+* `roomId` / `roomCode` (text/number, bắt buộc)
+* `newElectricReading` (number, bắt buộc)
+* `newWaterReading` (number, bắt buộc)
+* `electricMeterImage` (file, bắt buộc)
+* `waterMeterImage` (file, bắt buộc)
 
-### Request
-
-> Nên sử dụng `multipart/form-data` vì có upload file ảnh.
-
-```text
-roomCode=P101
-newElectricReading=1250
-newWaterReading=350
-electricMeterImage=<file>
-waterMeterImage=<file>
-```
-
-### Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "roomCode": "P101",
-    "previousElectricReading": 1200,
-    "newElectricReading": 1250,
-    "previousWaterReading": 330,
-    "newWaterReading": 350,
-    "status": "UPDATED",
-    "updatedAt": "2026-06-11T09:30:00Z"
-  }
-}
-```
-
-### Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ELECTRIC_READING_INVALID",
-    "message": "New electric reading must be greater than or equal to previous reading."
-  }
-}
-```
-
-### Response 404
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ROOM_NOT_FOUND",
-    "message": "Room not found."
-  }
-}
-```
+### Phản hồi Hệ thống (System Response)
+* **Thành công (OK):** Forward hoặc Redirect về trang danh sách `/operator/meter-readings` kèm thông báo thành công `successMessage`.
+* **Thất bại (Validation Error/Exception):** Forward lại trang JSP hiện tại kèm theo attribute `errorMessage` tương ứng với lỗi nghiệp vụ.
 
 ---
 

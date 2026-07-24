@@ -86,52 +86,21 @@ Không có yêu cầu nào phù hợp
 
 ---
 
-## 4. API Contract
+## 4. Giao tiếp Hệ thống (System Flow)
 
-### Endpoint
+### Đường dẫn (Endpoint)
+* **Endpoint:** `GET /operator/requests`
+* **Loại dữ liệu (Content-Type):** Trả về HTML (JSP)
 
-```http
-GET /api/v1/requests
-```
+### Request Query Parameters (URL)
+* `status` (string, tuỳ chọn)
+* `category` (string, tuỳ chọn)
+* `page` (number, mặc định: 1)
+* `limit` (number, mặc định: 20)
 
-### Request Query Parameters
-
-| Tham số | Kiểu | Bắt buộc | Mô tả |
-|----------|--------|----------|--------|
-| `status` | string | Không | Enum: `pending`, `in_progress`, `completed` |
-| `category_id` | number | Không | ID thể loại |
-| `facility_id` | number | Không | ID cơ sở |
-| `room_id` | number | Không | ID phòng |
-| `page` | number | Không | Mặc định: `1` |
-| `limit` | number | Không | Mặc định: `20` |
-
-### Response 200 (OK)
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "title": "Sửa điều hòa phòng 202",
-        "room_name": "Phòng 202",
-        "appointment_date": "2026-06-12",
-        "status": "pending",
-        "category_name": "Điện lạnh"
-      }
-    ],
-    "total": 50,
-    "page": 1,
-    "total_pages": 3
-  }
-}
-```
-
-### Response Errors
-
-- **401 Unauthorized** – Token hết hạn hoặc không hợp lệ.
-- **500 Internal Server Error** – Lỗi hệ thống.
+### Phản hồi Hệ thống (System Response)
+* **Thành công (OK):** Forward đến trang giao diện `/WEB-INF/views/operator/requests/list.jsp` với các Attributes chứa danh sách phân trang: `requestList`, `totalPages`, `currentPage`, `totalRecords`.
+* **Lỗi (Unauthorized/Exception):** Forward sang trang báo lỗi hoặc yêu cầu đăng nhập.
 
 ---
 
