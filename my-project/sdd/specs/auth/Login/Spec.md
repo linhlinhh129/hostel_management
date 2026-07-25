@@ -51,7 +51,7 @@ Chức năng đăng nhập là chốt chặn bảo mật đầu tiên của hệ
 
 * **Thành công (Đăng nhập lần đầu):**
 * Server thiết lập `HttpSession` với đối tượng `UserSessionDTO` (chứa cờ `firstLogin = true`).
-* Redirect (HTTP 302) đến `/auth/force-change-password`.
+* Redirect (HTTP 302) đến `/first-login`.
 
 
 * **Thành công (Đăng nhập bình thường):**
@@ -79,8 +79,8 @@ Chức năng đăng nhập là chốt chặn bảo mật đầu tiên của hệ
 * **Công nghệ:** Sử dụng Servlet/JSP Form-based authentication. Không sử dụng REST API hay JWT.
 * **Xử lý hiển thị:** Bắt buộc dùng thẻ `<c:if>` trong file `.jsp` để render các thông báo lỗi trả về từ Controller/Servlet.
 * **Cơ chế đếm lỗi:** Số lần đăng nhập sai được theo dõi theo từng `username` trên bộ nhớ tạm (RAM).
-* **Khóa tài khoản:** Khi sai 5 lần, thực thi câu lệnh SQL cơ bản để cập nhật (ví dụ: `UPDATE Users SET status = 'LOCKED' WHERE username = '...'`) thay vì dùng PreparedStatements. Tài khoản bị vô hiệu hóa cho đến khi Admin mở khóa.
-* **Bảo vệ luồng:** Sử dụng Servlet Filter để kiểm tra Session. Nếu `firstLogin == true` (hoặc `force_change_pass = 1`), mọi request truy cập tài nguyên khác đều bị Redirect về trang đổi mật khẩu.
+* **Khóa tài khoản:** Khi sai 5 lần, thực thi câu lệnh SQL để cập nhật (ví dụ: `UPDATE Users SET status = 'LOCKED' WHERE username = '...'`) sử dụng PreparedStatements. Tài khoản bị vô hiệu hóa cho đến khi Admin mở khóa.
+* **Bảo vệ luồng:** Sử dụng Servlet Filter để kiểm tra Session. Nếu `firstLogin == true` (hoặc `force_change_pass = 1`), mọi request truy cập tài nguyên khác đều bị Redirect về trang đổi mật khẩu (`/first-login`).
 
 ### Chính sách Mật khẩu (Business Constraints)
 

@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dao;
+
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.math.RoundingMode;
@@ -32,7 +33,7 @@ public class InvoiceDAO extends BaseDAO {
         public BigDecimal internetFee;
         public BigDecimal serviceFee;
     }
-    
+
     public static class InvoicePriceSnapshot {
         public BigDecimal roomFee;
         public BigDecimal electricityPrice;
@@ -44,11 +45,12 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public InvoiceRoomSnapshot getRoomSnapshotForInvoice(String roomCode, int managerId) throws SQLException {
-        String sql = "SELECT r.room_id, r.status, r.tenant_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee " +
-                     "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
+        String sql = "SELECT r.room_id, r.status, r.tenant_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee "
+                +
+                "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, roomCode);
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -58,11 +60,17 @@ public class InvoiceDAO extends BaseDAO {
                     rs.getInt("tenant_id");
                     snapshot.hasTenant = !rs.wasNull();
                     snapshot.roomId = rs.getInt("room_id");
-                    snapshot.roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
-                    snapshot.electricityPrice = rs.getBigDecimal("electricity_price") != null ? rs.getBigDecimal("electricity_price") : BigDecimal.ZERO;
-                    snapshot.waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price") : BigDecimal.ZERO;
-                    snapshot.internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
-                    snapshot.serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
+                    snapshot.roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee")
+                            : BigDecimal.ZERO;
+                    snapshot.electricityPrice = rs.getBigDecimal("electricity_price") != null
+                            ? rs.getBigDecimal("electricity_price")
+                            : BigDecimal.ZERO;
+                    snapshot.waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price")
+                            : BigDecimal.ZERO;
+                    snapshot.internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee")
+                            : BigDecimal.ZERO;
+                    snapshot.serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee")
+                            : BigDecimal.ZERO;
                     return snapshot;
                 }
             }
@@ -73,7 +81,7 @@ public class InvoiceDAO extends BaseDAO {
     public boolean checkInvoiceCodeExists(String invoiceCode) throws SQLException {
         String sql = "SELECT invoice_id FROM invoices WHERE code = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, invoiceCode);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -82,26 +90,35 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public InvoicePriceSnapshot getInvoicePriceSnapshot(int invoiceId) throws SQLException {
-        String sql = "SELECT i.room_fee, i.electricity_price, i.water_price, i.internet_fee, i.service_fee, i.due_date, mr.reading_date " +
-                     "FROM invoices i LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id WHERE i.invoice_id = ?";
+        String sql = "SELECT i.room_fee, i.electricity_price, i.water_price, i.internet_fee, i.service_fee, i.due_date, mr.reading_date "
+                +
+                "FROM invoices i LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id WHERE i.invoice_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     InvoicePriceSnapshot snap = new InvoicePriceSnapshot();
-                    snap.roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
-                    snap.electricityPrice = rs.getBigDecimal("electricity_price") != null ? rs.getBigDecimal("electricity_price") : BigDecimal.ZERO;
-                    snap.waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price") : BigDecimal.ZERO;
-                    snap.internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee") : BigDecimal.ZERO;
-                    snap.serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee") : BigDecimal.ZERO;
-                    
+                    snap.roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee")
+                            : BigDecimal.ZERO;
+                    snap.electricityPrice = rs.getBigDecimal("electricity_price") != null
+                            ? rs.getBigDecimal("electricity_price")
+                            : BigDecimal.ZERO;
+                    snap.waterPrice = rs.getBigDecimal("water_price") != null ? rs.getBigDecimal("water_price")
+                            : BigDecimal.ZERO;
+                    snap.internetFee = rs.getBigDecimal("internet_fee") != null ? rs.getBigDecimal("internet_fee")
+                            : BigDecimal.ZERO;
+                    snap.serviceFee = rs.getBigDecimal("service_fee") != null ? rs.getBigDecimal("service_fee")
+                            : BigDecimal.ZERO;
+
                     Date existingDue = rs.getDate("due_date");
-                    if (existingDue != null) snap.dueDate = existingDue.toLocalDate();
-                    
+                    if (existingDue != null)
+                        snap.dueDate = existingDue.toLocalDate();
+
                     Date rdDate = rs.getDate("reading_date");
-                    if (rdDate != null) snap.readingDate = rdDate.toLocalDate();
-                    
+                    if (rdDate != null)
+                        snap.readingDate = rdDate.toLocalDate();
+
                     return snap;
                 }
             }
@@ -112,12 +129,13 @@ public class InvoiceDAO extends BaseDAO {
     public Integer getMeterIdByInvoiceId(int invoiceId) throws SQLException {
         String sql = "SELECT meter_id FROM invoices WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     int mId = rs.getInt("meter_id");
-                    if (!rs.wasNull()) return mId;
+                    if (!rs.wasNull())
+                        return mId;
                 }
             }
         }
@@ -147,12 +165,19 @@ public class InvoiceDAO extends BaseDAO {
             conn.commit();
         } catch (Exception e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ignored) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {
+                }
             }
             throw e;
         } finally {
             if (conn != null) {
-                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
             }
         }
     }
@@ -181,28 +206,54 @@ public class InvoiceDAO extends BaseDAO {
         i.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
         i.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
 
-        // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
+        // Lấy phí chậm nộp từ DB nếu đã thanh toán, nếu chưa thì tính runtime
         BigDecimal lateFee = BigDecimal.ZERO;
         LocalDate dueDate = i.getDueDate();
-        if (dueDate != null && i.getRoomFee() != null && LocalDate.now().isAfter(dueDate)) {
-            long daysLate = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
-            lateFee = i.getRoomFee()
-                        .multiply(new BigDecimal("0.01"))
-                        .multiply(new BigDecimal(daysLate))
-                        .setScale(0, RoundingMode.HALF_UP);
+
+        if ("PAID".equals(i.getStatus())) {
+            if (hasColumn(rs, "late_fee")) {
+                try {
+                    BigDecimal dbLateFee = rs.getBigDecimal("late_fee");
+                    if (dbLateFee != null)
+                        lateFee = dbLateFee;
+                } catch (SQLException ignore) {
+                }
+            }
+        } else {
+            if (dueDate != null && i.getRoomFee() != null) {
+                LocalDate endDate = LocalDate.now();
+                if (hasColumn(rs, "pending_payment_date")) {
+                    try {
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+                    } catch (SQLException ignore) {
+                    }
+                }
+                if (endDate.isAfter(dueDate)) {
+                    long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
+                    lateFee = i.getRoomFee()
+                            .multiply(new BigDecimal("0.01"))
+                            .multiply(new BigDecimal(daysLate))
+                            .setScale(0, RoundingMode.HALF_UP);
+                }
+            }
+
+            if (i.getTotalAmount() != null) {
+                i.setTotalAmount(i.getTotalAmount().add(lateFee));
+            }
         }
         i.setLateFee(lateFee);
-        if (i.getTotalAmount() != null) {
-            i.setTotalAmount(i.getTotalAmount().add(lateFee));
-        }
 
         if (hasColumn(rs, "old_electric")) {
             i.setOldElectricReading(getInteger(rs, "old_electric"));
             i.setNewElectricReading(getInteger(rs, "new_electric"));
             i.setOldWaterReading(getInteger(rs, "old_water"));
             i.setNewWaterReading(getInteger(rs, "new_water"));
-            
-            if (i.getNewElectricReading() != null && i.getOldElectricReading() != null && i.getElectricityPrice() != null) {
+
+            if (i.getNewElectricReading() != null && i.getOldElectricReading() != null
+                    && i.getElectricityPrice() != null) {
                 int used = i.getNewElectricReading() - i.getOldElectricReading();
                 i.setElectricAmount(i.getElectricityPrice().multiply(new BigDecimal(used)));
             } else {
@@ -219,30 +270,43 @@ public class InvoiceDAO extends BaseDAO {
                 LocalDate rd = toLocalDate(rs, "reading_date");
                 i.setBillingPeriod("Tháng " + String.format("%02d/%d", rd.getMonthValue(), rd.getYear()));
             } else if (i.getDueDate() != null) {
-                i.setBillingPeriod("Tháng " + String.format("%02d/%d", i.getDueDate().getMonthValue(), i.getDueDate().getYear()));
+                i.setBillingPeriod(
+                        "Tháng " + String.format("%02d/%d", i.getDueDate().getMonthValue(), i.getDueDate().getYear()));
             }
         } else {
             try {
                 i.setBillingPeriod(rs.getString("billing_period"));
-            } catch (SQLException ignore) {}
+            } catch (SQLException ignore) {
+            }
         }
-        
+
+        if (hasColumn(rs, "meter_status")) {
+            try {
+                i.setMeterReadingStatus(rs.getString("meter_status"));
+            } catch (SQLException ignore) {
+            }
+        }
+
         return i;
     }
 
     public List<Invoice> findByRoomId(int roomId) {
         String sql = "SELECT i.*, " +
-                     "  mr.electric AS new_electric, mr.water AS new_water, " +
-                     "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, " +
-                     "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, " +
-                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period " +
-                     "FROM invoices i " +
-                     "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
-                     "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
-                     "ORDER BY i.created_at DESC";
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, " +
+                "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
+                +
+                "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
+                +
+                "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, " +
+                "  (SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
+                +
+                "FROM invoices i " +
+                "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
+                "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
+                "ORDER BY i.created_at DESC";
         List<Invoice> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -257,15 +321,19 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> findByIdAndRoomId(int id, int roomId) {
         String sql = "SELECT i.*, " +
-                     "  mr.electric AS new_electric, mr.water AS new_water, " +
-                     "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, " +
-                     "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, " +
-                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period " +
-                     "FROM invoices i " +
-                     "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
-                     "WHERE i.invoice_id = ? AND i.room_id = ? AND i.deleted_at IS NULL";
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, " +
+                "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
+                +
+                "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
+                +
+                "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, " +
+                "  (SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
+                +
+                "FROM invoices i " +
+                "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
+                "WHERE i.invoice_id = ? AND i.room_id = ? AND i.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.setInt(2, roomId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -281,29 +349,39 @@ public class InvoiceDAO extends BaseDAO {
 
     public BigDecimal getUnpaidTotalByRoomId(int roomId) {
         // Lấy tổng base amount + tính lateFee theo từng hóa đơn chưa thanh toán
-        String sql = "SELECT total_amount, room_fee, due_date FROM invoices " +
-                     "WHERE room_id = ? AND status != 'PAID' AND deleted_at IS NULL";
+        String sql = "SELECT total_amount, room_fee, due_date, " +
+                "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = invoices.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
+                +
+                "FROM invoices " +
+                "WHERE room_id = ? AND status != 'PAID' AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
             try (ResultSet rs = ps.executeQuery()) {
                 BigDecimal total = BigDecimal.ZERO;
                 LocalDate today = LocalDate.now();
                 while (rs.next()) {
                     BigDecimal baseAmount = rs.getBigDecimal("total_amount");
-                    if (baseAmount == null) continue;
+                    if (baseAmount == null)
+                        continue;
                     total = total.add(baseAmount);
                     // Cộng thêm lateFee nếu quá hạn
                     Date dueDateSql = rs.getDate("due_date");
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     if (dueDateSql != null && roomFee != null) {
                         LocalDate dueDate = dueDateSql.toLocalDate();
-                        if (today.isAfter(dueDate)) {
-                            long daysLate = ChronoUnit.DAYS.between(dueDate, today);
+                        LocalDate endDate = today;
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+
+                        if (endDate.isAfter(dueDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
                             BigDecimal lateFee = roomFee
-                                .multiply(new BigDecimal("0.01"))
-                                .multiply(new BigDecimal(daysLate))
-                                .setScale(0, RoundingMode.HALF_UP);
+                                    .multiply(new BigDecimal("0.01"))
+                                    .multiply(new BigDecimal(daysLate))
+                                    .setScale(0, RoundingMode.HALF_UP);
                             total = total.add(lateFee);
                         }
                     }
@@ -318,16 +396,20 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> getCurrentInvoiceByRoomId(int roomId) {
         String sql = "SELECT TOP 1 i.*, " +
-                     "  mr.electric AS new_electric, mr.water AS new_water, " +
-                     "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, " +
-                     "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, " +
-                     "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period " +
-                     "FROM invoices i " +
-                     "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
-                     "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
-                     "ORDER BY i.created_at DESC";
+                "  mr.electric AS new_electric, mr.water AS new_water, " +
+                "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
+                +
+                "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
+                +
+                "  FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, " +
+                "  (SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
+                +
+                "FROM invoices i " +
+                "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
+                "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
+                "ORDER BY i.created_at DESC";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, roomId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -339,13 +421,21 @@ public class InvoiceDAO extends BaseDAO {
         }
         return Optional.empty();
     }
-    
-    
 
     public boolean updateStatus(int invoiceId, String status) {
+        if ("PAID".equals(status)) {
+            try (Connection conn = DatabaseUtil.getConnection()) {
+                markInvoiceAsPaid(conn, invoiceId);
+                return true;
+            } catch (Exception e) {
+                logger.error("updateStatus to PAID failed for invoiceId={}", invoiceId, e);
+                return false;
+            }
+        }
+
         String sql = "UPDATE dbo.invoices SET status = ?, updated_at = GETDATE() WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, invoiceId);
             return ps.executeUpdate() > 0;
@@ -355,12 +445,60 @@ public class InvoiceDAO extends BaseDAO {
         return false;
     }
 
+    public void markInvoiceAsPaid(Connection conn, int invoiceId) throws SQLException {
+        markInvoiceAsPaid(conn, invoiceId, LocalDate.now());
+    }
+
+    public void markInvoiceAsPaid(Connection conn, int invoiceId, LocalDate paymentDate) throws SQLException {
+        String fetchSql = "SELECT room_fee, due_date, total_amount FROM invoices WHERE invoice_id = ? AND status != 'PAID'";
+        BigDecimal roomFee = BigDecimal.ZERO;
+        java.sql.Date dueDate = null;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        boolean found = false;
+
+        try (PreparedStatement psFetch = conn.prepareStatement(fetchSql)) {
+            psFetch.setInt(1, invoiceId);
+            try (ResultSet rs = psFetch.executeQuery()) {
+                if (rs.next()) {
+                    roomFee = rs.getBigDecimal("room_fee");
+                    dueDate = rs.getDate("due_date");
+                    totalAmount = rs.getBigDecimal("total_amount");
+                    found = true;
+                }
+            }
+        }
+
+        if (found) {
+            BigDecimal lateFee = BigDecimal.ZERO;
+            if (dueDate != null && roomFee != null) {
+                LocalDate dueLocalDate = dueDate.toLocalDate();
+                if (paymentDate.isAfter(dueLocalDate)) {
+                    long daysLate = ChronoUnit.DAYS.between(dueLocalDate, paymentDate);
+                    lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                            .multiply(new BigDecimal(daysLate))
+                            .setScale(0, RoundingMode.HALF_UP);
+                }
+            }
+            if (totalAmount == null)
+                totalAmount = BigDecimal.ZERO;
+            BigDecimal finalTotal = totalAmount.add(lateFee);
+
+            String updateSql = "UPDATE invoices SET status = 'PAID', late_fee = ?, total_amount = ?, updated_at = GETDATE() WHERE invoice_id = ?";
+            try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                psUpdate.setBigDecimal(1, lateFee);
+                psUpdate.setBigDecimal(2, finalTotal);
+                psUpdate.setInt(3, invoiceId);
+                psUpdate.executeUpdate();
+            }
+        }
+    }
+
     public boolean verifyInvoiceOwnership(int invoiceId, int tenantId) {
         String sql = "SELECT 1 FROM dbo.invoices i " +
-                     "JOIN dbo.rooms r ON i.room_id = r.room_id " +
-                     "WHERE i.invoice_id = ? AND r.tenant_id = ? AND i.deleted_at IS NULL";
+                "JOIN dbo.rooms r ON i.room_id = r.room_id " +
+                "WHERE i.invoice_id = ? AND r.tenant_id = ? AND i.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
             ps.setInt(2, tenantId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -373,17 +511,24 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public BigDecimal calculateRealtimeLatePenalty(int invoiceId) {
-        String sql = "SELECT room_fee, due_date FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
+        String sql = "SELECT room_fee, due_date, " +
+                "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = invoices.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
+                +
+                "FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     LocalDate dueDate = rs.getDate("due_date").toLocalDate();
-                    LocalDate today = LocalDate.now();
-                    if (dueDate != null && roomFee != null && today.isAfter(dueDate)) {
-                        long daysLate = ChronoUnit.DAYS.between(dueDate, today);
+                    LocalDate endDate = LocalDate.now();
+                    Date pendingDate = rs.getDate("pending_payment_date");
+                    if (pendingDate != null) {
+                        endDate = pendingDate.toLocalDate();
+                    }
+                    if (dueDate != null && roomFee != null && endDate.isAfter(dueDate)) {
+                        long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
                         BigDecimal penaltyRate = new BigDecimal("0.01").multiply(new BigDecimal(daysLate));
                         return roomFee.multiply(penaltyRate).setScale(0, RoundingMode.HALF_UP);
                     }
@@ -395,132 +540,189 @@ public class InvoiceDAO extends BaseDAO {
         return BigDecimal.ZERO;
     }
 
-    public List<InvoiceListItemDTO> findInvoices(int managerId, String keyword, String status, String billingPeriod, int offset, int limit) {
+    public List<InvoiceListItemDTO> findInvoices(int managerId, String keyword, String status, String billingPeriod,
+            int offset, int limit) {
         List<InvoiceListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT i.invoice_id, i.code, i.total_amount, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name " +
-            "FROM invoices i " +
-            "INNER JOIN rooms r ON i.room_id = r.room_id " +
-            "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-            "LEFT JOIN contracts c ON c.contract_id = (" +
-            "    SELECT TOP 1 contract_id FROM contracts " +
-            "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date " +
-            "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
-            ") " +
-            "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
-            "WHERE i.deleted_at IS NULL AND f.manager_id = ? "
-        );
-        
+                "SELECT i.invoice_id, i.code, i.total_amount, i.room_fee, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, "
+                        +
+                        "FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, "
+                        +
+                        "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
+                        +
+                        "FROM invoices i " +
+                        "INNER JOIN rooms r ON i.room_id = r.room_id " +
+                        "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                        "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
+                        "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
+                        "LEFT JOIN contracts c ON c.contract_id = (" +
+                        "    SELECT TOP 1 contract_id FROM contracts " +
+                        "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date "
+                        +
+                        "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+                        ") " +
+                        "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                        "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
+
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND i.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
-        if (billingPeriod != null && !billingPeriod.trim().isEmpty()) {
-            if (billingPeriod.length() == 6) {
-                String year = billingPeriod.substring(0, 4);
-                String month = billingPeriod.substring(4, 6);
-                sql.append("AND YEAR(i.due_date) = ").append(year).append(" ");
-                sql.append("AND MONTH(i.due_date) = ").append(month).append(" ");
-            }
+        if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+            sql.append("AND (YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ? OR i.code LIKE ?) ");
         }
-        
+
         sql.append("ORDER BY i.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-             
-             int paramIndex = 1;
-             ps.setInt(paramIndex++, managerId);
-             
-             if (status != null && !status.trim().isEmpty()) {
-                 ps.setString(paramIndex++, status);
-             }
-             if (keyword != null && !keyword.trim().isEmpty()) {
-                 String kw = "%" + keyword + "%";
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-             }
-             if (billingPeriod != null && billingPeriod.length() == 6) {
-                 ps.setString(paramIndex++, "%-" + billingPeriod);
-             }
-             ps.setInt(paramIndex++, offset);
-             ps.setInt(paramIndex++, limit);
-             
-             try (ResultSet rs = ps.executeQuery()) {
-                 while (rs.next()) {
-                     InvoiceListItemDTO dto = new InvoiceListItemDTO();
-                     dto.setInvoiceId(rs.getInt("invoice_id"));
-                     dto.setInvoiceCode(rs.getString("code"));
-                     dto.setTotalAmount(rs.getBigDecimal("total_amount"));
-                     Date d = rs.getDate("due_date");
-                     if (d != null) dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
-                     dto.setStatus(rs.getString("status"));
-                     dto.setRoomCode(rs.getString("room_code"));
-                     dto.setTenantName(rs.getString("tenant_name"));
-                     list.add(dto);
-                 }
-             }
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, managerId);
+
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+            }
+            if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+                try {
+                    int year = Integer.parseInt(billingPeriod.substring(0, 4));
+                    int month = Integer.parseInt(billingPeriod.substring(4, 6));
+                    ps.setInt(paramIndex++, year);
+                    ps.setInt(paramIndex++, month);
+                    ps.setString(paramIndex++, "%-" + billingPeriod);
+                } catch (NumberFormatException ignored) {}
+            }
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex++, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    InvoiceListItemDTO dto = new InvoiceListItemDTO();
+                    dto.setInvoiceId(rs.getInt("invoice_id"));
+                    dto.setInvoiceCode(rs.getString("code"));
+                    BigDecimal baseTotal = rs.getBigDecimal("total_amount");
+                    String invoiceStatus = rs.getString("status");
+                    Date d = rs.getDate("due_date");
+                    BigDecimal roomFee = rs.getBigDecimal("room_fee");
+
+                    if (!"PAID".equals(invoiceStatus) && d != null && roomFee != null) {
+                        LocalDate dueLocalDate = d.toLocalDate();
+                        LocalDate endDate = LocalDate.now();
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+                        if (endDate.isAfter(dueLocalDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
+                            BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                                    .multiply(new BigDecimal(daysLate))
+                                    .setScale(0, RoundingMode.HALF_UP);
+                            if (baseTotal != null)
+                                baseTotal = baseTotal.add(lateFee);
+                        }
+                    }
+
+                    dto.setTotalAmount(baseTotal);
+                    if (d != null)
+                        dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
+                    dto.setStatus(rs.getString("status"));
+                    dto.setRoomCode(rs.getString("room_code"));
+                    dto.setTenantName(rs.getString("tenant_name"));
+
+                    String bp = rs.getString("billing_period");
+                    if (bp != null && !bp.trim().isEmpty()) {
+                        dto.setBillingPeriod("Tháng " + bp);
+                    } else if (dto.getInvoiceCode() != null && dto.getInvoiceCode().contains("-")) {
+                        String[] parts = dto.getInvoiceCode().split("-");
+                        if (parts.length >= 3 && parts[parts.length - 1].length() == 6) {
+                            String period = parts[parts.length - 1];
+                            dto.setBillingPeriod("Tháng " + period.substring(4, 6) + "/" + period.substring(0, 4));
+                        } else if (d != null) {
+                            dto.setBillingPeriod("Tháng " + new SimpleDateFormat("MM/yyyy").format(d));
+                        } else {
+                            dto.setBillingPeriod("—");
+                        }
+                    } else if (d != null) {
+                        dto.setBillingPeriod("Tháng " + new SimpleDateFormat("MM/yyyy").format(d));
+                    } else {
+                        dto.setBillingPeriod("—");
+                    }
+
+                    list.add(dto);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
     }
-    
+
     public int countInvoices(int managerId, String keyword, String status, String billingPeriod) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(1) " +
-            "FROM invoices i " +
-            "INNER JOIN rooms r ON i.room_id = r.room_id " +
-            "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-            "LEFT JOIN contracts c ON c.contract_id = (" +
-            "    SELECT TOP 1 contract_id FROM contracts " +
-            "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date " +
-            "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
-            ") " +
-            "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
-            "WHERE i.deleted_at IS NULL AND f.manager_id = ? "
-        );
-        
+                "SELECT COUNT(1) " +
+                        "FROM invoices i " +
+                        "INNER JOIN rooms r ON i.room_id = r.room_id " +
+                        "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                        "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
+                        "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
+                        "LEFT JOIN contracts c ON c.contract_id = (" +
+                        "    SELECT TOP 1 contract_id FROM contracts " +
+                        "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date "
+                        +
+                        "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+                        ") " +
+                        "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                        "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
+
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND i.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
-        if (billingPeriod != null && billingPeriod.length() == 6) {
-            sql.append("AND i.code LIKE ? "); 
+        if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+            sql.append("AND (YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ? OR i.code LIKE ?) ");
         }
-        
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-             
-             int paramIndex = 1;
-             ps.setInt(paramIndex++, managerId);
-             
-             if (status != null && !status.trim().isEmpty()) {
-                 ps.setString(paramIndex++, status);
-             }
-             if (keyword != null && !keyword.trim().isEmpty()) {
-                 String kw = "%" + keyword + "%";
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-             }
-             if (billingPeriod != null && billingPeriod.length() == 6) {
-                 ps.setString(paramIndex++, "%-" + billingPeriod);
-             }
-             
-             try (ResultSet rs = ps.executeQuery()) {
-                 if (rs.next()) {
-                     count = rs.getInt(1);
-                 }
-             }
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, managerId);
+
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+            }
+            if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+                try {
+                    int year = Integer.parseInt(billingPeriod.substring(0, 4));
+                    int month = Integer.parseInt(billingPeriod.substring(4, 6));
+                    ps.setInt(paramIndex++, year);
+                    ps.setInt(paramIndex++, month);
+                    ps.setString(paramIndex++, "%-" + billingPeriod);
+                } catch (NumberFormatException ignored) {}
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -529,163 +731,209 @@ public class InvoiceDAO extends BaseDAO {
 
     public InvoiceDetailDTO findById(int managerId, int invoiceId) {
         String sql = "SELECT i.*, r.code AS room_code, " +
-                     "COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, " +
-                     "COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
-                     "u.email AS tenant_email, " +
-                     "f.name AS facility_name, f.address AS facility_address, " +
-                     "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_img, mr_curr.water_img, " +
-                     "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, " +
-                     "(SELECT TOP 1 water FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_water, " +
-                     "(SELECT full_name FROM users WHERE user_id = i.created_by) AS creator_name, " +
-                     "FORMAT(mr_curr.reading_date, 'MM/yyyy') AS billing_period " +
-                     "FROM invoices i " +
-                     "INNER JOIN rooms r ON i.room_id = r.room_id " +
-                     "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                     "LEFT JOIN contracts c ON c.contract_id = (" +
-                     "    SELECT TOP 1 contract_id FROM contracts " +
-                     "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date " +
-                     "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
-                     ") " +
-                     "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
-                     "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
-                     "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND f.manager_id = ?";
-                      
+                "COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, " +
+                "COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
+                "u.email AS tenant_email, " +
+                "f.name AS facility_name, f.address AS facility_address, " +
+                "c.start_date AS contract_start_date, c.end_date AS contract_end_date, " +
+                "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_img, mr_curr.water_img, "
+                +
+                "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, "
+                +
+                "(SELECT TOP 1 water FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_water, "
+                +
+                "(SELECT full_name FROM users WHERE user_id = i.created_by) AS creator_name, " +
+                "FORMAT(mr_curr.reading_date, 'MM/yyyy') AS billing_period, " +
+                "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
+                +
+                "FROM invoices i " +
+                "INNER JOIN rooms r ON i.room_id = r.room_id " +
+                "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
+                "LEFT JOIN contracts c ON c.contract_id = (" +
+                "    SELECT TOP 1 contract_id FROM contracts " +
+                "    WHERE room_id = i.room_id " +
+                "    ORDER BY CASE WHEN CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, " +
+                "             CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, " +
+                "             CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+                ") " +
+                "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
+                "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND f.manager_id = ?";
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-             ps.setInt(1, invoiceId);
-             ps.setInt(2, managerId);
-             try (ResultSet rs = ps.executeQuery()) {
-                  if (rs.next()) {
-                      InvoiceDetailDTO dto = new InvoiceDetailDTO();
-                      dto.setInvoiceId(rs.getInt("invoice_id"));
-                      dto.setInvoiceCode(rs.getString("code"));
-                      dto.setStatus(rs.getString("status"));
-                      
-                      Date d = rs.getDate("due_date");
-                      if (d != null) dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
-                      
-                      Timestamp created = rs.getTimestamp("created_at");
-                      if (created != null) dto.setCreatedAt(created.toString());
-                      
-                      dto.setRoomCode(rs.getString("room_code"));
-                      dto.setTenantName(rs.getString("tenant_name"));
-                      dto.setTenantPhone(rs.getString("tenant_phone"));
-                      dto.setTenantEmail(rs.getString("tenant_email"));
-                      dto.setFacilityName(rs.getString("facility_name"));
-                      dto.setFacilityAddress(rs.getString("facility_address"));
-                      
-                      dto.setRoomFee(rs.getBigDecimal("room_fee"));
-                      dto.setElectricImg(rs.getString("electric_img"));
-                      dto.setWaterImg(rs.getString("water_img"));
-                      dto.setMeterId(rs.getObject("meter_id") != null ? rs.getInt("meter_id") : null);
-                      
-                      int ne = rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0;
-                      int oe = rs.getObject("old_electric") != null ? rs.getInt("old_electric") : 0;
-                      int nw = rs.getObject("new_water") != null ? rs.getInt("new_water") : 0;
-                      int ow = rs.getObject("old_water") != null ? rs.getInt("old_water") : 0;
-                      
-                      dto.setNewElectricReading(ne);
-                      dto.setOldElectricReading(oe);
-                      dto.setNewWaterReading(nw);
-                      dto.setOldWaterReading(ow);
-                      
-                      dto.setElectricUsage(Math.max(0, ne - oe));
-                      dto.setWaterUsage(Math.max(0, nw - ow));
-                      
-                      dto.setElectricUnitPrice(rs.getBigDecimal("electricity_price"));
-                      dto.setWaterUnitPrice(rs.getBigDecimal("water_price"));
-                      
-                      if (dto.getElectricUnitPrice() != null) {
-                          dto.setElectricAmount(dto.getElectricUnitPrice().multiply(new BigDecimal(dto.getElectricUsage())));
-                      } else {
-                          dto.setElectricAmount(BigDecimal.ZERO);
-                      }
-                      
-                      if (dto.getWaterUnitPrice() != null) {
-                          dto.setWaterAmount(dto.getWaterUnitPrice().multiply(new BigDecimal(dto.getWaterUsage())));
-                      } else {
-                          dto.setWaterAmount(BigDecimal.ZERO);
-                      }
-                      
-                      dto.setInternetFee(rs.getBigDecimal("internet_fee"));
-                      dto.setServiceFee(rs.getBigDecimal("service_fee"));
-                      dto.setOtherFee(rs.getBigDecimal("other_fee"));
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            ps.setInt(2, managerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    InvoiceDetailDTO dto = new InvoiceDetailDTO();
+                    dto.setInvoiceId(rs.getInt("invoice_id"));
+                    dto.setInvoiceCode(rs.getString("code"));
+                    dto.setStatus(rs.getString("status"));
 
-                      // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
-                      BigDecimal lateFee = BigDecimal.ZERO;
-                      Date dueDateSql = rs.getDate("due_date");
-                      if (dueDateSql != null && dto.getRoomFee() != null) {
-                          LocalDate dueLocalDate = dueDateSql.toLocalDate();
-                          LocalDate today = LocalDate.now();
-                          if (today.isAfter(dueLocalDate)) {
-                              long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
-                              lateFee = dto.getRoomFee()
-                                          .multiply(new BigDecimal("0.01"))
-                                          .multiply(new BigDecimal(daysLate))
-                                          .setScale(0, RoundingMode.HALF_UP);
-                          }
-                      }
-                      dto.setLateFee(lateFee);
-                      // otherFee giữ nguyên giá trị từ DB, không cộng lateFee vào
+                    Date d = rs.getDate("due_date");
+                    if (d != null)
+                        dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
 
-                      BigDecimal subtotal = BigDecimal.ZERO;
-                      if (dto.getRoomFee() != null) subtotal = subtotal.add(dto.getRoomFee());
-                      if (dto.getElectricAmount() != null) subtotal = subtotal.add(dto.getElectricAmount());
-                      if (dto.getWaterAmount() != null) subtotal = subtotal.add(dto.getWaterAmount());
-                      if (dto.getServiceFee() != null) subtotal = subtotal.add(dto.getServiceFee());
-                      if (dto.getInternetFee() != null) subtotal = subtotal.add(dto.getInternetFee());
-                      if (dto.getOtherFee() != null) subtotal = subtotal.add(dto.getOtherFee());
-                      subtotal = subtotal.add(lateFee); // cộng phí chậm nộp vào tạm tính riêng
-                      dto.setSubtotal(subtotal);
-                      
-                      dto.setTaxRate(rs.getBigDecimal("tax"));
-                      if (dto.getTaxRate() != null) {
-                          dto.setTaxAmount(subtotal.multiply(dto.getTaxRate()).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP));
-                      } else {
-                          dto.setTaxAmount(BigDecimal.ZERO);
-                      }
+                    Timestamp created = rs.getTimestamp("created_at");
+                    if (created != null)
+                        dto.setCreatedAt(created.toString());
 
-                      // Tổng tiền = subtotal (đã gồm lateFee) + thuế
-                      BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : BigDecimal.ZERO;
-                      dto.setTotalAmount(subtotal.add(taxAmt));
-                      dto.setNote(rs.getString("note"));
-                      
-                      dto.setCreatedByName(rs.getString("creator_name"));
-                      
-                      String bp = rs.getString("billing_period");
-                      if (bp != null) {
-                          dto.setBillingPeriod(bp);
-                      } else if (dto.getInvoiceCode() != null) {
-                          String[] partsCode = dto.getInvoiceCode().split("-");
-                          if (partsCode.length >= 3) {
-                              String period = partsCode[partsCode.length - 1];
-                              if (period.length() == 6) {
-                                  dto.setBillingPeriod(period.substring(4, 6) + "/" + period.substring(0, 4));
-                              }
-                          }
-                      }
-                      
-                      Timestamp updated = rs.getTimestamp("updated_at");
-                      if (updated != null) dto.setUpdatedAt(
-                          updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-                      dto.setUpdatedByName(""); 
-                      
-                      return dto;
-                  }
-              }
-         } catch (Exception e) {
-             e.printStackTrace();
-         }
-         return null;
-     }
-    
+                    dto.setRoomCode(rs.getString("room_code"));
+                    dto.setTenantName(rs.getString("tenant_name"));
+                    dto.setTenantPhone(rs.getString("tenant_phone"));
+                    dto.setTenantEmail(rs.getString("tenant_email"));
+                    dto.setFacilityName(rs.getString("facility_name"));
+                    dto.setFacilityAddress(rs.getString("facility_address"));
+
+                    Date cStart = rs.getDate("contract_start_date");
+                    Date cEnd = rs.getDate("contract_end_date");
+                    if (cStart != null && cEnd != null) {
+                        SimpleDateFormat sdfDate = new SimpleDateFormat("dd/MM/yyyy");
+                        dto.setContractPeriod(sdfDate.format(cStart) + " - " + sdfDate.format(cEnd));
+                    } else {
+                        dto.setContractPeriod("Chưa có hợp đồng");
+                    }
+
+                    dto.setRoomFee(rs.getBigDecimal("room_fee"));
+                    dto.setElectricImg(rs.getString("electric_img"));
+                    dto.setWaterImg(rs.getString("water_img"));
+                    dto.setMeterId(rs.getObject("meter_id") != null ? rs.getInt("meter_id") : null);
+
+                    int ne = rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0;
+                    int oe = rs.getObject("old_electric") != null ? rs.getInt("old_electric") : 0;
+                    int nw = rs.getObject("new_water") != null ? rs.getInt("new_water") : 0;
+                    int ow = rs.getObject("old_water") != null ? rs.getInt("old_water") : 0;
+
+                    dto.setNewElectricReading(ne);
+                    dto.setOldElectricReading(oe);
+                    dto.setNewWaterReading(nw);
+                    dto.setOldWaterReading(ow);
+
+                    dto.setElectricUsage(Math.max(0, ne - oe));
+                    dto.setWaterUsage(Math.max(0, nw - ow));
+
+                    dto.setElectricUnitPrice(rs.getBigDecimal("electricity_price"));
+                    dto.setWaterUnitPrice(rs.getBigDecimal("water_price"));
+
+                    if (dto.getElectricUnitPrice() != null) {
+                        dto.setElectricAmount(
+                                dto.getElectricUnitPrice().multiply(new BigDecimal(dto.getElectricUsage())));
+                    } else {
+                        dto.setElectricAmount(BigDecimal.ZERO);
+                    }
+
+                    if (dto.getWaterUnitPrice() != null) {
+                        dto.setWaterAmount(dto.getWaterUnitPrice().multiply(new BigDecimal(dto.getWaterUsage())));
+                    } else {
+                        dto.setWaterAmount(BigDecimal.ZERO);
+                    }
+
+                    dto.setInternetFee(rs.getBigDecimal("internet_fee"));
+                    dto.setServiceFee(rs.getBigDecimal("service_fee"));
+                    dto.setOtherFee(rs.getBigDecimal("other_fee"));
+
+                    // Tính phí chậm nộp runtime hoặc lấy từ DB
+                    BigDecimal lateFee = BigDecimal.ZERO;
+                    if ("PAID".equals(dto.getStatus())) {
+                        try {
+                            BigDecimal dbLateFee = rs.getBigDecimal("late_fee");
+                            if (dbLateFee != null)
+                                lateFee = dbLateFee;
+                        } catch (SQLException ignore) {
+                        }
+                    } else {
+                        Date dueDateSql = rs.getDate("due_date");
+                        if (dueDateSql != null && dto.getRoomFee() != null) {
+                            LocalDate dueLocalDate = dueDateSql.toLocalDate();
+                            LocalDate endDate = LocalDate.now();
+                            if (hasColumn(rs, "pending_payment_date")) {
+                                try {
+                                    Date pendingDate = rs.getDate("pending_payment_date");
+                                    if (pendingDate != null)
+                                        endDate = pendingDate.toLocalDate();
+                                } catch (SQLException ignore) {
+                                }
+                            }
+                            if (endDate.isAfter(dueLocalDate)) {
+                                long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
+                                lateFee = dto.getRoomFee()
+                                        .multiply(new BigDecimal("0.01"))
+                                        .multiply(new BigDecimal(daysLate))
+                                        .setScale(0, RoundingMode.HALF_UP);
+                            }
+                        }
+                    }
+                    dto.setLateFee(lateFee);
+                    // otherFee giữ nguyên giá trị từ DB, không cộng lateFee vào
+
+                    BigDecimal subtotal = BigDecimal.ZERO;
+                    if (dto.getRoomFee() != null)
+                        subtotal = subtotal.add(dto.getRoomFee());
+                    if (dto.getElectricAmount() != null)
+                        subtotal = subtotal.add(dto.getElectricAmount());
+                    if (dto.getWaterAmount() != null)
+                        subtotal = subtotal.add(dto.getWaterAmount());
+                    if (dto.getServiceFee() != null)
+                        subtotal = subtotal.add(dto.getServiceFee());
+                    if (dto.getInternetFee() != null)
+                        subtotal = subtotal.add(dto.getInternetFee());
+                    if (dto.getOtherFee() != null)
+                        subtotal = subtotal.add(dto.getOtherFee());
+                    subtotal = subtotal.add(lateFee); // cộng phí chậm nộp vào tạm tính riêng
+                    dto.setSubtotal(subtotal);
+
+                    dto.setTaxRate(rs.getBigDecimal("tax"));
+                    if (dto.getTaxRate() != null) {
+                        dto.setTaxAmount(subtotal.multiply(dto.getTaxRate()).divide(new BigDecimal("100"), 2,
+                                RoundingMode.HALF_UP));
+                    } else {
+                        dto.setTaxAmount(BigDecimal.ZERO);
+                    }
+
+                    // Tổng tiền = subtotal (đã gồm lateFee) + thuế
+                    BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : BigDecimal.ZERO;
+                    dto.setTotalAmount(subtotal.add(taxAmt));
+                    dto.setNote(rs.getString("note"));
+
+                    dto.setCreatedByName(rs.getString("creator_name"));
+
+                    String bp = rs.getString("billing_period");
+                    if (bp != null) {
+                        dto.setBillingPeriod(bp);
+                    } else if (dto.getInvoiceCode() != null) {
+                        String[] partsCode = dto.getInvoiceCode().split("-");
+                        if (partsCode.length >= 3) {
+                            String period = partsCode[partsCode.length - 1];
+                            if (period.length() == 6) {
+                                dto.setBillingPeriod(period.substring(4, 6) + "/" + period.substring(0, 4));
+                            }
+                        }
+                    }
+
+                    Timestamp updated = rs.getTimestamp("updated_at");
+                    if (updated != null)
+                        dto.setUpdatedAt(
+                                updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                    dto.setUpdatedByName("");
+
+                    return dto;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public void insert(Invoice invoice) throws SQLException {
         String sql = "INSERT INTO invoices (code, room_id, meter_id, due_date, status, tax, other_fee, " +
-                     "room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, invoice.getCode());
             ps.setInt(2, invoice.getRoomId());
             ps.setInt(3, invoice.getMeterId());
@@ -709,23 +957,23 @@ public class InvoiceDAO extends BaseDAO {
             }
         }
     }
-    
+
     /**
      * Tính tổng tiền còn nợ (chưa thanh toán) của một phòng theo mã phòng.
      * Tiền nợ = tổng (total_amount - paid_amount) của các hóa đơn UNPAID/OVERDUE.
      */
     public BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId) {
         String sql = "SELECT COALESCE(SUM(i.total_amount - COALESCE((" +
-                     "  SELECT SUM(p.payment_amount) FROM payments p " +
-                     "  WHERE p.invoice_id = i.invoice_id AND p.status = 'SUCCESS' AND p.deleted_at IS NULL" +
-                     "), 0)), 0) " +
-                     "FROM invoices i " +
-                     "INNER JOIN rooms r ON i.room_id = r.room_id " +
-                     "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "WHERE r.code = ? AND f.manager_id = ? " +
-                     "AND i.status IN ('UNPAID', 'OVERDUE') AND i.deleted_at IS NULL";
+                "  SELECT SUM(p.payment_amount) FROM payments p " +
+                "  WHERE p.invoice_id = i.invoice_id AND p.status = 'SUCCESS' AND p.deleted_at IS NULL" +
+                "), 0)), 0) " +
+                "FROM invoices i " +
+                "INNER JOIN rooms r ON i.room_id = r.room_id " +
+                "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                "WHERE r.code = ? AND f.manager_id = ? " +
+                "AND i.status IN ('UNPAID', 'OVERDUE') AND i.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, roomCode);
             ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -741,10 +989,11 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public void update(Invoice invoice) throws SQLException {
-        String sql = "UPDATE invoices SET due_date = ?, tax = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() " +
-                     "WHERE invoice_id = ? AND deleted_at IS NULL";
+        String sql = "UPDATE invoices SET due_date = ?, tax = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() "
+                +
+                "WHERE invoice_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(invoice.getDueDate()));
             ps.setBigDecimal(2, invoice.getTax());
             ps.setBigDecimal(3, invoice.getOtherFee());

@@ -85,6 +85,8 @@ WHEN Management Board approves a valid transaction (PENDING or REJECTED) THE SYS
 
 WHEN transaction is approved successfully THE SYSTEM SHALL update the related invoice/debt status to PAID.
 
+**Quy tắc cập nhật phí phạt:** KHI giao dịch được duyệt thành công, THE SYSTEM SHALL lấy thời điểm tạo giao dịch (`created_at`) để chốt số tiền phạt chậm nộp (nếu có) và lưu vĩnh viễn vào hóa đơn. Điều này đảm bảo tiền phạt không tăng thêm trong thời gian chờ duyệt.
+
 WHEN transaction is already approved THE SYSTEM SHALL return HTTP 400 with error code PAYMENT_ALREADY_APPROVED.
 
 ### **Từ chối giao dịch**

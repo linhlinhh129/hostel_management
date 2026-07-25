@@ -426,7 +426,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             } else {
                 setFlashMessage(req, "danger", "Gửi thông báo thất bại.");
             }
-            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
+            resp.sendRedirect(req.getContextPath() + "/manager/invoices");
 
         } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());

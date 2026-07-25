@@ -11,7 +11,7 @@ Bảng dữ liệu `payments` đã tồn tại trong `schema.sql` (chứa các t
   - Lấy danh sách giao dịch có phân trang: `findPayments(keyword, status, offset, limit)`.
   - Đếm tổng số giao dịch để phân trang: `countPayments(keyword, status)`.
   - Lấy chi tiết một giao dịch: `findById(paymentId)`.
-  - Cập nhật trạng thái `payments`: `updatePaymentStatus()`.
+  - Cập nhật trạng thái `payments`: `updatePaymentStatus(status)`. Hàm này được dùng cho cả thao tác Duyệt (chuyển sang `SUCCESS`) và Từ chối (chuyển sang `REJECTED`).
   - Thiết lập hàm phụ cập nhật trạng thái hóa đơn `invoices` liên quan sang 'PAID' thông qua một câu Query UPDATE an toàn, bảo đảm gọi kèm Audit Log theo quy định của SPEC. (Note: Không thay đổi `InvoiceDAO.java` để tránh đứt gãy hệ thống cũ).
 
 ## 2. API & Servlets Controller
@@ -23,12 +23,14 @@ Sẽ tách thành 2 Servlet riêng biệt để tránh đụng độ wild-card m
   - Gọi Service lấy DTO list và số liệu Pagination.
   - Forward attribute trang tới view: `WEB-INF/views/manager/payments/list.jsp`.
 
-- **2. PaymentDetailServlet.java (`GET /manager/payments/*` và `POST /manager/payments/*/approve`)**
+- **2. PaymentDetailServlet.java (`GET /manager/payments/*`, `POST /manager/payments/*/approve` và `POST /manager/payments/*/reject`)**
   - HTTP `GET`: Parse ID từ URL, kiểm tra điều kiện NotFound. Lấy DTO detail, forward trả về view `detail.jsp` kèm url ảnh chứng từ.
-  - HTTP `POST` cho Approve:
+  - HTTP `POST` cho Approve/Reject:
     - Bắt Error: Nếu ID sai `404`, nếu user chưa auth báo `401`/`403`.
-    - Handle IllegalStateException (`PAYMENT_ALREADY_APPROVED`).
-    - Gọi DAO Update payment status sang `PAID`, sau đó gọi DAO update invoice thành `PAID`.
+    - Handle IllegalStateException (`PAYMENT_ALREADY_APPROVED`) theo logic State Machine: Giao dịch `PENDING` hoặc `REJECTED` thì cho phép Duyệt. Giao dịch đã `SUCCESS` thì không cho phép Từ chối hoặc Duyệt lại.
+    - Nếu là hành động Approve (`/approve`): Gọi DAO Update payment status sang `SUCCESS`, sau đó gọi DAO update invoice thành `PAID`.
+    - Nếu là hành động Reject (`/reject`): Gọi DAO Update payment status sang `REJECTED`.
+    - Đảm bảo ghi lại Audit vết: Cập nhật `approvedBy` và `approvedAt` khi thực hiện Duyệt hoặc Từ chối.
     - Trả về Flash Message và redirect lại màn Chi tiết.
 
 ## 3. Các tầng Service và Model DTO

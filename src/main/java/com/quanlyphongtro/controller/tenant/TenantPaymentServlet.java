@@ -75,6 +75,12 @@ public class TenantPaymentServlet extends BaseServlet {
                 return;
             }
 
+            if (invoice.isMeterReported() || "REPORTED".equalsIgnoreCase(invoice.getMeterReadingStatus())) {
+                setFlashMessage(request, "warning", "Hóa đơn đang được xử lý sai số điện nước, tạm thời chưa thể thanh toán.");
+                response.sendRedirect(request.getContextPath() + "/tenant/invoices/" + invoiceId);
+                return;
+            }
+
             // totalAmount trong Invoice đã bao gồm lateFee từ mapRow()
             BigDecimal total = baseAmount;
 

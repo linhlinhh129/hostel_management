@@ -23,7 +23,8 @@ public class DebtDAO extends BaseDAO {
             "u.user_id AS tenant_id, u.full_name AS tenant_name, u.phone AS tenant_phone, " +
             "f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
             "i.total_amount, i.room_fee, i.due_date, i.status, " +
-            "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount " +
+            "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount, " +
+            "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "LEFT JOIN users u ON r.tenant_id = u.user_id " +
@@ -73,16 +74,35 @@ public class DebtDAO extends BaseDAO {
                     dto.setFacilityId(rs.getInt("facility_id"));
                     dto.setFacilityCode(rs.getString("facility_code"));
                     dto.setFacilityName(rs.getString("facility_name"));
-                    dto.setInvoiceTotalAmount(rs.getBigDecimal("total_amount"));
-                    dto.setRoomFee(rs.getBigDecimal("room_fee"));
-                    
+                    BigDecimal baseTotal = rs.getBigDecimal("total_amount");
+                    String invoiceStatus = rs.getString("status");
                     Date dueDate = rs.getDate("due_date");
+                    BigDecimal roomFee = rs.getBigDecimal("room_fee");
+                    
+                    if (!"PAID".equals(invoiceStatus) && dueDate != null && roomFee != null) {
+                        LocalDate dueLocalDate = dueDate.toLocalDate();
+                        LocalDate endDate = LocalDate.now();
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+                        if (endDate.isAfter(dueLocalDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
+                            BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                                                        .multiply(new BigDecimal(daysLate))
+                                                        .setScale(0, RoundingMode.HALF_UP);
+                            if (baseTotal != null) baseTotal = baseTotal.add(lateFee);
+                        }
+                    }
+                    dto.setInvoiceTotalAmount(baseTotal);
+                    dto.setRoomFee(roomFee);
+                    
                     if (dueDate != null) {
                         dto.setDueDate(dueDate.toLocalDate());
                         dto.setBillingPeriod(new SimpleDateFormat("yyyyMM").format(dueDate));
                     }
                     
-                    dto.setStatus(rs.getString("status"));
+                    dto.setStatus(invoiceStatus);
                     dto.setPaidAmount(rs.getBigDecimal("paid_amount"));
                     
                     list.add(dto);
@@ -149,7 +169,8 @@ public class DebtDAO extends BaseDAO {
             "i.electricity_price, i.water_price, " +
             "i.service_fee, i.internet_fee, i.other_fee, i.tax AS tax_rate, i.total_amount, " +
             "i.due_date, i.status, i.note, i.created_at, i.created_by, i.updated_at, " +
-            "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount " +
+            "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount, " +
+            "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "LEFT JOIN meter_readings m_new ON i.meter_id = m_new.meter_id " +
@@ -218,9 +239,13 @@ public class DebtDAO extends BaseDAO {
                     Date dueDateSql = rs.getDate("due_date");
                     if (dueDateSql != null && dto.getRoomFee() != null) {
                         LocalDate dueLocalDate = dueDateSql.toLocalDate();
-                        LocalDate today = LocalDate.now();
-                        if (today.isAfter(dueLocalDate)) {
-                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, today);
+                        LocalDate endDate = LocalDate.now();
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+                        if (endDate.isAfter(dueLocalDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
                             lateFee = dto.getRoomFee()
                                         .multiply(new BigDecimal("0.01"))
                                         .multiply(new BigDecimal(daysLate))

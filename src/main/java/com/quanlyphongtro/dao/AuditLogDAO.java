@@ -21,46 +21,7 @@ import java.util.Optional;
 
 public class AuditLogDAO extends BaseDAO {
 
-    /**
-     * Ghi audit log vào bảng audit_logs.
-     *
-     * @param entityType loại entity, ví dụ "INVOICE"
-     * @param entityId   id của entity
-     * @param action     hành động, ví dụ "CREATE" / "UPDATE"
-     * @param oldValue   giá trị cũ (JSON hoặc string mô tả)
-     * @param newValue   giá trị mới
-     * @param ipAddress  địa chỉ IP của request
-     * @param createdBy  user_id thực hiện thao tác
-     */
-    public void log(String entityType, int entityId, String action,
-                    String oldValue, String newValue,
-                    String ipAddress, Integer createdBy) {
-        String sql = """
-                INSERT INTO dbo.audit_logs
-                    (entity_type, entity_id, action, old_value, new_value,
-                     ip_address, created_by, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())
-                """;
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, entityType);
-            ps.setInt(2, entityId);
-            ps.setString(3, action);
-            ps.setString(4, oldValue);
-            ps.setString(5, newValue);
-            ps.setString(6, ipAddress);
-            if (createdBy != null) {
-                ps.setInt(7, createdBy);
-            } else {
-                ps.setNull(7, Types.INTEGER);
-            }
-            ps.executeUpdate();
-        } catch (Exception e) {
-            logger.error("AuditLogDAO.log failed for entityType={}, entityId={}, action={}",
-                    entityType, entityId, action, e);
-        }
-    }
-
+    // ghi log kèm theo ghi chú
     public void logWithComment(String entityType, int entityId, String action,
                                String oldValue, String newValue,
                                String ipAddress, Integer createdBy, String comment) {
@@ -90,7 +51,8 @@ public class AuditLogDAO extends BaseDAO {
                     entityType, entityId, action, e);
         }
     }
-
+    
+    // lấy danh sách lịch sử thay đổi giá   
     public List<ServicePriceHistoryDTO> getPriceHistories(int facilityId, String priceType, int page, int size) {
         List<ServicePriceHistoryDTO> result = new ArrayList<>();
         String actionType = "UPDATE_" + priceType;
@@ -161,7 +123,6 @@ public class AuditLogDAO extends BaseDAO {
         try {
             log.setCreatedByName(rs.getString("created_by_name"));
         } catch (SQLException ignored) {
-            // column not present
         }
         return log;
     }
@@ -171,6 +132,7 @@ public class AuditLogDAO extends BaseDAO {
         "FROM dbo.audit_logs al " +
         "LEFT JOIN dbo.users u ON u.user_id = al.created_by";
 
+    // tìm kiếm danh sách log của MANAGER và OPERATOR (mặc định)
     public List<AuditLog> findAll(String actor, String entityType, String action,
                                    String dateFrom, String dateTo,
                                    int page, int pageSize) {
@@ -223,11 +185,11 @@ public class AuditLogDAO extends BaseDAO {
         } catch (Exception e) {
             logger.error("AuditLogDAO.findAll failed", e);
         }
-        // Lookup entity name cho từng log (batch per entity type)
         enrichEntityNames(list);
         return list;
     }
 
+    // đếm số log của MANAGER và OPERATOR
     public int count(String actor, String entityType, String action,
                      String dateFrom, String dateTo) {
         return count(actor, null, entityType, action, dateFrom, dateTo);
@@ -299,22 +261,16 @@ public class AuditLogDAO extends BaseDAO {
         return Optional.empty();
     }
 
-    /**
-     * Batch lookup entityName cho danh sách log.
-     * Gom nhóm theo entityType, dùng IN query để tránh N+1.
-     */
+    // lấy tên entity và cập nhật vào log
     private void enrichEntityNames(List<AuditLog> logs) {
         if (logs == null || logs.isEmpty()) return;
 
-        // Nhóm id theo từng entityType
         Map<String, List<Integer>> groups = new LinkedHashMap<>();
         for (AuditLog log : logs) {
             if (log.getEntityType() == null || log.getEntityId() == null) continue;
             groups.computeIfAbsent(log.getEntityType(), k -> new ArrayList<>())
                   .add(log.getEntityId());
         }
-
-        // Query từng nhóm
         Map<String, Map<Integer, String>> nameCache = new HashMap<>();
         for (Map.Entry<String, List<Integer>> entry : groups.entrySet()) {
             String type = entry.getKey();
@@ -329,7 +285,6 @@ public class AuditLogDAO extends BaseDAO {
                 case "payments":      nameCol = "code";      idCol = "payment_id";      table = "dbo.payments";      break;
                 default: continue;
             }
-            // Deduplicate
             Set<Integer> uniqueIds = new LinkedHashSet<>(ids);
             StringBuilder placeholders = new StringBuilder();
             for (int i = 0; i < uniqueIds.size(); i++) {
@@ -351,7 +306,6 @@ public class AuditLogDAO extends BaseDAO {
             }
             nameCache.put(type, map);
         }
-
         // Gán vào từng log
         for (AuditLog log : logs) {
             Map<Integer, String> m = nameCache.get(log.getEntityType());
@@ -361,10 +315,7 @@ public class AuditLogDAO extends BaseDAO {
         }
     }
 
-    /**
-     * Tra cứu tên hiển thị của entity dựa vào entityType và entityId.
-     * Trả về null nếu không tìm thấy hoặc entityType không được hỗ trợ.
-     */
+    // Tra cứu tên hiển thị của entity dựa vào entityType và entityId  
     private String lookupEntityName(String entityType, Integer entityId) {
         if (entityType == null || entityId == null) return null;
         String sql;
@@ -425,8 +376,9 @@ public class AuditLogDAO extends BaseDAO {
         }
     }
 
+    // đếm số log hôm nay của MANAGER và OPERATOR
     public int countToday() {
-        String sql = "SELECT COUNT(*) FROM dbo.audit_logs a LEFT JOIN dbo.users u ON a.created_by = u.user_id WHERE CAST(a.created_at AS DATE) = CAST(GETDATE() AS DATE) AND (u.role IS NULL OR u.role != 'ADMIN')";
+        String sql = "SELECT COUNT(*) FROM dbo.audit_logs a LEFT JOIN dbo.users u ON a.created_by = u.user_id WHERE CAST(a.created_at AS DATE) = CAST(GETDATE() AS DATE) AND u.role IN ('MANAGER', 'OPERATOR')";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

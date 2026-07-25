@@ -755,9 +755,13 @@ public class NotificationDAO extends BaseDAO {
         Map<String, Object> invoice = null;
         String sql = "SELECT i.*, r.code AS room_code, f.facility_id, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
                 "mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, " +
-                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
-                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
-                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
+                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
+                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
+                "(SELECT TOP 1 req.title FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_title, " +
+                "(SELECT TOP 1 req.content FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_content, " +
+                "(SELECT TOP 1 req.rejection_reason FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_notes, " +
+                "(SELECT TOP 1 req.created_at FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_created_at, " +
+                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
@@ -780,6 +784,10 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("meterStatus", rs.getString("meter_status"));
                     invoice.put("ticketStatus", rs.getString("ticket_status"));
                     invoice.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
+                    invoice.put("ticketTitle", rs.getString("ticket_title"));
+                    invoice.put("ticketContent", rs.getString("ticket_content"));
+                    invoice.put("ticketNotes", rs.getString("ticket_notes"));
+                    invoice.put("ticketCreatedAt", rs.getTimestamp("ticket_created_at"));
                     invoice.put("operatorName", rs.getString("operator_name"));
 
                     Date rDate = rs.getDate("reading_date");
@@ -866,7 +874,8 @@ public class NotificationDAO extends BaseDAO {
         Map<String, Object> invoice = null;
         String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.room_fee, i.due_date, " +
                 "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, " +
-                "u.full_name AS tenant_name, u.phone AS tenant_phone " +
+                "u.full_name AS tenant_name, u.phone AS tenant_phone, " +
+                "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
@@ -896,7 +905,13 @@ public class NotificationDAO extends BaseDAO {
                         invoice.put("dueDateLabel", String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear()));
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
 
-                        long days = ChronoUnit.DAYS.between(localDate, LocalDate.now());
+                        LocalDate endDate = LocalDate.now();
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+
+                        long days = ChronoUnit.DAYS.between(localDate, endDate);
                         long overdueDays = days > 0 ? days : 0;
                         invoice.put("overdueDays", overdueDays);
 

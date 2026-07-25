@@ -7,13 +7,11 @@ import java.util.List;
 
 public interface AuditLogService {
 
-    /**
-     * Lấy danh sách audit log có filter và phân trang.
-     * Mặc định chỉ hiển thị log của MANAGER và OPERATOR khi role = null.
-     */
+    // hiển thị log của MANAGER và OPERATOR khi role = null.
     List<AuditLog> list(String actor, String role, String entityType, String action,
                         String dateFrom, String dateTo, int page, int pageSize);
 
+    // đếm số lượng log
     int count(String actor, String role, String entityType, String action,
               String dateFrom, String dateTo);
 

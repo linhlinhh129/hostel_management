@@ -37,11 +37,16 @@ public class Invoice {
     private Integer newWaterReading;
     private BigDecimal electricAmount;
     private BigDecimal waterAmount;
-    private BigDecimal lateFee;          // phí chậm nộp tính runtime, không lưu DB
+    private BigDecimal lateFee;
     private String billingPeriod; // Example: "Tháng 05/2026"
     // Transient from JOIN
     private String roomCodeCache;
     private boolean hasPendingPayment;
+    private String meterReadingStatus;
+
+    public String getMeterReadingStatus() { return meterReadingStatus; }
+    public void setMeterReadingStatus(String meterReadingStatus) { this.meterReadingStatus = meterReadingStatus; }
+    public boolean isMeterReported() { return "REPORTED".equalsIgnoreCase(meterReadingStatus); }
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

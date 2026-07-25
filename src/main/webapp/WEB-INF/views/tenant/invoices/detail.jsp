@@ -139,6 +139,9 @@
                             </c:if>
                             <div class="mb-2">
                                 <c:choose>
+                                    <c:when test="${invoice.meterReadingStatus == 'REPORTED' or invoice.isMeterReported()}">
+                                        <span class="badge-hms badge-warning" style="background-color:#f59e0b;color:#fff">⚠️ Đang xử lý sai số điện nước</span>
+                                    </c:when>
                                     <c:when test="${invoice.status == 'PAID'}">
                                         <span class="badge-hms badge-success">✓ Đã thanh toán</span>
                                     </c:when>
@@ -160,34 +163,47 @@
                     </div>
 
                     <%-- Hướng dẫn thanh toán & VNPAY --%>
-                    <c:if test="${not invoice.hasPendingPayment and (invoice.status == 'UNPAID' or invoice.status == 'OVERDUE')}">
-                        <div class="widget-surface" style="background:var(--hms-accent-bg); border-color:var(--hms-accent);">
-                            <div class="widget-surface-header border-bottom-0 pb-0">
-                                <h3 style="color:var(--hms-ink)">💳 Thanh toán</h3>
-                            </div>
-                            <div class="widget-surface-body">
-                                <div style="font-size:0.8125rem;color:var(--hms-slate);line-height:1.7;margin-bottom:1rem">
-                                    <div>Ngân hàng: <strong>Vietcombank</strong></div>
-                                    <div>Số tài khoản: <strong style="font-family:var(--hms-font-mono)">1234567890</strong></div>
-                                    <div>Chủ tài khoản: <strong>Công ty Quản lý Nhà trọ</strong></div>
-                                    <div>Nội dung CK: <strong style="font-family:var(--hms-font-mono)">
-                                        <c:out value="${invoice.code}"/>
-                                    </strong></div>
-                                </div>
-                                <hr/>
-                                <div class="d-grid mt-3">
-                                    <form method="post" action="${ctx}/tenant/payment/create">
-                                        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                                        <input type="hidden" name="invoiceId" value="${invoice.id}"/>
-                                        <input type="hidden" name="amount" value="${totalAmountToPay}"/>
-                                        <button type="submit" class="btn btn-mintlify-primary w-100">
-                                            Thanh toán qua VNPAY
-                                        </button>
-                                    </form>
+                    <c:choose>
+                        <c:when test="${invoice.meterReadingStatus == 'REPORTED' or invoice.isMeterReported()}">
+                            <div class="widget-surface" style="background:#fffbeb; border:1px solid #fde68a;">
+                                <div class="widget-surface-body text-center p-3">
+                                    <div style="font-size:1.5rem;margin-bottom:0.25rem">⚠️</div>
+                                    <h4 style="font-size:0.9375rem;font-weight:700;color:#92400e;margin-bottom:0.25rem">Đang xử lý sai số điện nước</h4>
+                                    <p style="font-size:0.8125rem;color:#b45309;margin:0;line-height:1.5">
+                                        Hóa đơn này đang được nhân viên vận hành kiểm tra và xác minh lại chỉ số điện nước. Tạm thời nút thanh toán bị khóa cho tới khi có số liệu cập nhật.
+                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    </c:if>
+                        </c:when>
+                        <c:when test="${not invoice.hasPendingPayment and (invoice.status == 'UNPAID' or invoice.status == 'OVERDUE')}">
+                            <div class="widget-surface" style="background:var(--hms-accent-bg); border-color:var(--hms-accent);">
+                                <div class="widget-surface-header border-bottom-0 pb-0">
+                                    <h3 style="color:var(--hms-ink)">💳 Thanh toán</h3>
+                                </div>
+                                <div class="widget-surface-body">
+                                    <div style="font-size:0.8125rem;color:var(--hms-slate);line-height:1.7;margin-bottom:1rem">
+                                        <div>Ngân hàng: <strong>Vietcombank</strong></div>
+                                        <div>Số tài khoản: <strong style="font-family:var(--hms-font-mono)">1234567890</strong></div>
+                                        <div>Chủ tài khoản: <strong>Công ty Quản lý Nhà trọ</strong></div>
+                                        <div>Nội dung CK: <strong style="font-family:var(--hms-font-mono)">
+                                            <c:out value="${invoice.code}"/>
+                                        </strong></div>
+                                    </div>
+                                    <hr/>
+                                    <div class="d-grid mt-3">
+                                        <form method="post" action="${ctx}/tenant/payment/create">
+                                            <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                                            <input type="hidden" name="invoiceId" value="${invoice.id}"/>
+                                            <input type="hidden" name="amount" value="${totalAmountToPay}"/>
+                                            <button type="submit" class="btn btn-mintlify-primary w-100">
+                                                Thanh toán qua VNPAY
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:when>
+                    </c:choose>
                 </div>
             </div>
         </main>

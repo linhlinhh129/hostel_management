@@ -44,8 +44,7 @@ public class AdminAuditLogServlet extends BaseServlet {
         }
     }
 
-    // ── GET handlers ──────────────────────────────────────────────────────
-
+    // hiển thị danh sách nhật ký
     private void showList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String filterActor      = e(req.getParameter("actor"));
@@ -76,6 +75,7 @@ public class AdminAuditLogServlet extends BaseServlet {
         req.getRequestDispatcher(VIEW_BASE + "list.jsp").forward(req, resp);
     }
 
+    // hiển thị chi tiết nhật ký
     private void showDetail(HttpServletRequest req, HttpServletResponse resp, int id)
             throws ServletException, IOException {
         AuditLog log = auditLogService.getById(id);
@@ -83,16 +83,17 @@ public class AdminAuditLogServlet extends BaseServlet {
         req.getRequestDispatcher(VIEW_BASE + "detail.jsp").forward(req, resp);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-
+    // lấy đường dẫn sau /admin/audit-logs/
     private String subPath(HttpServletRequest req) {
         String uri = req.getRequestURI();
         String sub = uri.substring(req.getContextPath().length() + BASE_PATH.length());
         return sub.isEmpty() ? "/" : sub;
     }
-
+    // kiểm tra có phải là URL gốc  
     private boolean isRoot(String p) { return p == null || p.isEmpty() || p.equals("/"); }
+    // chuyển đổi chuỗi
     private String e(String s)       { return s == null ? "" : s.trim(); }
+    // chuyển đổi chuỗi sang số
     private int intOrDefault(String s, int def) {
         try { return Integer.parseInt(s); } catch (Exception ex) { return def; }
     }

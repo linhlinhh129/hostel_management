@@ -70,20 +70,23 @@
                                                 <fmt:formatNumber value="${inv.totalAmount}" pattern="#,##0"/> đ
                                             </td>
                                             <td class="text-center">
-                                                <c:choose>
-                                                    <c:when test="${inv.hasPendingPayment}">
-                                                        <span class="badge-hms badge-info">⌛ Chờ duyệt</span>
-                                                    </c:when>
-                                                    <c:when test="${inv.status == 'PAID'}">
-                                                        <span class="badge-hms badge-success">✓ Đã thanh toán</span>
-                                                    </c:when>
-                                                    <c:when test="${inv.status == 'OVERDUE'}">
-                                                        <span class="badge-hms badge-danger">⚠ Quá hạn</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="badge-hms badge-warning">Chưa thanh toán</span>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                 <c:choose>
+                                                     <c:when test="${inv.meterReadingStatus == 'REPORTED' or inv.isMeterReported()}">
+                                                         <span class="badge-hms badge-warning" style="background-color:#f59e0b;color:#fff">⚠️ Đang xử lý sai số điện nước</span>
+                                                     </c:when>
+                                                     <c:when test="${inv.hasPendingPayment}">
+                                                         <span class="badge-hms badge-info">⌛ Chờ duyệt</span>
+                                                     </c:when>
+                                                     <c:when test="${inv.status == 'PAID'}">
+                                                         <span class="badge-hms badge-success">✓ Đã thanh toán</span>
+                                                     </c:when>
+                                                     <c:when test="${inv.status == 'OVERDUE'}">
+                                                         <span class="badge-hms badge-danger">⚠ Quá hạn</span>
+                                                     </c:when>
+                                                     <c:otherwise>
+                                                         <span class="badge-hms badge-warning">Chưa thanh toán</span>
+                                                     </c:otherwise>
+                                                 </c:choose>
                                             </td>
                                             <td class="d-none d-md-table-cell text-center">
                                                 <a href="${ctx}/tenant/invoices/${inv.id}"

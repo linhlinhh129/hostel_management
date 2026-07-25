@@ -1,4 +1,4 @@
 {
-    "project_name": "Hostel Management System",
-    "feature_directory": "my-project/sdd/specs/admin/configSystem"
+  "project_name": "Hostel Management System",
+  "feature_directory": "my-project/sdd/specs/manager/invoiceManagement"
 }

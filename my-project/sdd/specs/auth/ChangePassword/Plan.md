@@ -40,7 +40,7 @@ Trong quá trình đối chiếu giữa `Context.md` của tính năng này và 
 - **`AuthService.resetPassword(token, newPassword)`**:
   - Tra cứu token bằng `PasswordResetTokenDAO`.
   - Nếu token lỗi / hết hạn: Quăng Exception -> Servlet trả HTTP 400.
-  - Nếu hợp lệ: Băm `newPassword` bằng `Argon2id` -> Gọi `UserDAO.updatePassword()` -> `PasswordResetTokenDAO.markAsUsed()`.
+  - Nếu hợp lệ: Băm `newPassword` bằng `BCrypt` -> Gọi `UserDAO.updatePassword()` -> `PasswordResetTokenDAO.markAsUsed()`.
 
 ### 3.3. Tầng Data Access (DAO)
 - **`PasswordResetTokenDAO`**:
@@ -56,5 +56,5 @@ Trong quá trình đối chiếu giữa `Context.md` của tính năng này và 
 
 ## 4. Bảo mật & An toàn Cơ sở dữ liệu
 - Tuân thủ `safety.md`, hệ thống không tự sinh lệnh `CREATE TABLE` tự động. Giả định bảng lưu token (ví dụ: `password_reset_tokens`) đã được tạo sẵn trong `schema.sql`. (Nếu chưa có, cần thông báo yêu cầu con người duyệt script DB).
-- Băm mật khẩu luôn dùng `Argon2id` (chuyển qua thư viện `argon2-jvm` đã cấu hình ở chức năng Login).
+- Băm mật khẩu luôn dùng `BCrypt`.
 - Tránh lộ thông tin nhạy cảm: Tuyệt đối không in Token hoặc Email tường minh trong log lỗi hệ thống (Cần dùng mask: `n*****n@gmail.com`).

@@ -1,72 +1,40 @@
-# PLAN: Kế hoạch Thực thi Quản lý Thông báo cho Ban quản lý (Manager)
+# PLAN: Kế hoạch Thiết kế & Triển khai liên module Manager & Operator (Cập nhật UI Nút "Xem" duy nhất)
 
-**Status:** Completed  
-**Date:** 2026-07-13  
+**Status:** Approved (Updated: Single View Button & Removed Delete Flow)  
+**Date:** 2026-07-25  
 **Priority:** High  
-**Estimated Duration:** Completed
+**Feature Branch:** `notificationFacilityManagement`
 
 ---
 
-## 1. Tổng quan Giải pháp
+## 1. Tổng quan Thiết kế Chuẩn hóa
 
-Tính năng Quản lý Thông báo cho Ban quản lý cho phép Manager gửi thông báo chung (theo cơ sở/phòng), nhắc nợ quá hạn tiền phòng (gửi đến phòng có hóa đơn nợ), và báo lỗi chỉ số điện nước gửi Operator.
-
-**Kiến trúc:**
-- Backend API: Servlet Controller (`ManagerNotificationsServlet.java`) tiếp nhận các yêu cầu GET/POST gửi từ giao diện.
-- Service & DAO: `NotificationServiceImpl.java` và `NotificationDAO.java` xử lý nghiệp vụ, giao dịch cập nhật trạng thái chỉ số điện nước và thêm yêu cầu sửa chỉ số cho Operator.
-- Database: Tác động vào các bảng `dbo.notifications`, `dbo.requests`, `dbo.meter_readings` và `dbo.invoices`.
-- Audit Log: Ghi nhận lịch sử hoạt động vào bảng `dbo.audit_logs`.
-
----
-
-## 2. Giai đoạn Thực thi
-
-### Giai đoạn 1: Thiết kế & Chuẩn bị (Hoàn thành)
-- Thiết kế luồng phân loại thông báo theo tabs (`general`, `payment-reminder`, `incorrect-utility`).
-- Thiết kế cấu trúc lưu trữ thông báo nhắc nợ (sử dụng mã tiền tố `NTF-DEBT-`).
-- Thiết kế luồng báo lỗi chỉ số điện nước và bàn giao công việc cho Operator thông qua bảng `requests` với danh mục `UTILITY`.
-
-### Giai đoạn 2: Backend Development (Hoàn thành)
-- Implement `countManagerNotifications` và `getManagerNotifications` hỗ trợ phân trang, tìm kiếm và lọc theo tabs.
-- Implement nghiệp vụ gửi nhắc nợ `sendDebtReminder()` và tạo mã tự động.
-- Implement nghiệp vụ báo cáo chỉ số điện nước sai lệch bằng cơ chế Transaction: đổi trạng thái chỉ số điện nước thành `REPORTED` và chèn bản ghi yêu cầu hỗ trợ `'PENDING'` gán cho Operator.
-- Enforce check phân quyền cơ sở (`verifyFacilityManager` / `verifyRoomManagerAndGetFacilityId`).
-
-### Giai đoạn 3: Frontend Development (Hoàn thành)
-- Xây dựng giao diện danh sách thông báo chia theo tabs và danh sách hóa đơn bị báo sai chỉ số.
-- Thiết kế form gửi thông báo chung, form gửi nhắc nợ tiền phòng quá hạn và form gửi yêu cầu sửa chỉ số cho Operator.
-
-### Giai đoạn 4: Testing & Deployment (Hoàn thành)
+Kế hoạch này cập nhật cấu trúc giao diện của **Module Hóa Đơn (`manager`)** theo quy chuẩn mới:
+1. **Trang Danh sách Hóa đơn (`/manager/invoices`)**:
+   - Cột thao tác trên bảng chỉ chứa duy nhất **Nút "Xem"** (`href="${ctx}/manager/invoices/${invoice.invoiceId}"`).
+   - Loại bỏ các nút "Báo sai số" bên ngoài và nút "Xóa" khỏi bảng danh sách.
+2. **Trang Chi tiết Hóa đơn (`/manager/invoices/{id}`)**:
+   - Nút **"Báo cáo sai số"** nằm bên trong trang chi tiết dành cho các hóa đơn chưa thanh toán.
+   - **Loại bỏ hoàn toàn luồng Xóa Hóa đơn** khỏi hệ thống.
+3. **Form Gửi Operator & Module Operator (`/operator/requests`)**:
+   - Khi bấm "Báo cáo sai số" từ trang chi tiết hóa đơn, hệ thống tới `/manager/notifications/send-operator?invoiceId={id}` nạp sẵn Tiêu đề và Nội dung.
+   - Đẩy bản ghi công việc `UTILITY` `PENDING` sang **Module Danh sách Yêu cầu của Operator**.
+   - Operator tiếp nhận (`IN_PROGRESS`) và báo cáo hoàn thành (`COMPLETED`) với ghi chú optional.
+4. **Tạm khóa thanh toán Cư dân**:
+   - Cư dân bị ngưng thanh toán hóa đơn và hiển thị nhãn *"⚠️ Đang xử lý sai số điện nước"* khi chỉ số ở trạng thái `REPORTED`.
 
 ---
 
-## 3. Key Technical Aspects
+## 2. Chi tiết Giao diện & Component
 
-### Overdue Debt Reminders
-- Generated using a specialized helper method `sendDebtReminder` in DAO.
-- Generates notification code starting with `NTF-DEBT-` to easily classify them in the database.
-- Targeted at a specific room (`target_type = 'ROOM'`).
-
-### Utility Incorrect Report Transaction
-- Executed as a database transaction (`sendOperatorRequestTransaction`).
-- Inserts a request record under `UTILITY` category, status `PENDING`, assigned to the selected Operator.
-- Updates the status of the related meter reading to `REPORTED` to lock it from billing actions.
-
-### Scope and Authorization
-- Manager is restricted to facilities where `manager_id` matches their own user ID.
-- Attempts to target foreign rooms/facilities are verified and rejected by the service layer.
+- `src/main/webapp/WEB-INF/views/manager/invoices/list.jsp`: Cột thao tác hiển thị duy nhất nút "Xem".
+- `src/main/webapp/WEB-INF/views/manager/invoices/detail.jsp`: Hiển thị nút "Báo cáo sai số" & "Sửa Hóa Đơn". Đã xóa bỏ nút/form "Xóa Hóa Đơn".
+- `src/main/webapp/WEB-INF/views/manager/notifications/send_operator.jsp`: Luôn hiển thị Form tạo yêu cầu cho Operator.
 
 ---
 
-## 4. Success Criteria
+## 3. Success Criteria
 
-- ✓ Manager can send announcements, debt reminders, and operator requests.
-- ✓ Tabs filtration and pagination working.
-- ✓ Scope restrictions strictly enforced.
-- ✓ Database transactions commit/rollback safely on error.
-- ✓ Actions logged in audit logs.
-
----
-
-## 5. Timeline
-- Completed.
+- ✓ 100% dòng trong bảng danh sách hóa đơn chỉ có nút "Xem".
+- ✓ 100% luồng xóa hóa đơn chưa thanh toán đã được gỡ bỏ khỏi giao diện.
+- ✓ Nút "Báo cáo sai số" xuất hiện duy nhất trong trang xem chi tiết và liên kết đúng form gửi Operator.

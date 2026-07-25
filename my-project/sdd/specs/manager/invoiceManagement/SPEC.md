@@ -216,10 +216,11 @@ KHI Ban quản lý chọn một hóa đơn, THE SYSTEM SHALL hiển thị:
 - Thông tin tính tiền (Tiền phòng, điện, nước, phí dịch vụ, Internet, phí khác)
 - Chỉ số cũ, mới, mức sử dụng, đơn giá, và thành tiền chi tiết cho điện nước
 - Tạm tính, Thuế, Tổng tiền phải nộp
+- Phí chậm nộp (Nếu hóa đơn quá hạn. KHI có giao dịch thanh toán chờ duyệt, phí phạt được đóng băng tại thời điểm tạo giao dịch thay vì tính đến hiện tại).
 - Ghi chú (Note)
 - Hình ảnh công tơ điện, công tơ nước (nếu có)
 - Thông tin người thuê (Họ tên, SĐT, Email)
-- Thông tin chung: Mã hóa đơn, Phòng, Kỳ hóa đơn, Hạn thanh toán, Trạng thái thanh toán, Ngày tạo, Cập nhật cuối
+- Thông tin chung: Mã hóa đơn, Phòng, Kỳ hóa đơn, Kỳ hợp đồng (tự động truy xuất từ hợp đồng hoạt động của phòng theo định dạng dd/MM/yyyy - dd/MM/yyyy, nếu chưa có hợp đồng hiển thị "Chưa có hợp đồng"), Hạn thanh toán, Trạng thái thanh toán, Ngày tạo, Cập nhật cuối
 
 KHI hóa đơn không tồn tại, THE SYSTEM SHALL trả về HTTP 404 với mã lỗi `INVOICE_NOT_FOUND`.
 

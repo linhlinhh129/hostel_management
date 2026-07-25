@@ -25,12 +25,8 @@
             <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
             <div class="d-flex gap-2 flex-wrap align-items-center">
             <c:if test="${invoice.status ne 'PAID'}">
-              <a href="${ctx}/manager/notifications?action=report-incorrect&invoiceId=${invoice.invoiceId}" class="btn-mintlify-danger text-decoration-none" style="background-color: var(--hms-danger); color: white; padding: 8px 16px; border-radius: 6px;">Báo cáo sai số</a>
+              <a href="${ctx}/manager/notifications/send-operator?invoiceId=${invoice.invoiceId}" class="btn text-decoration-none text-white" style="background-color: #f59e0b; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">Báo cáo sai số</a>
               <a href="${ctx}/manager/invoices/${invoice.invoiceId}/edit" class="btn-mintlify-secondary text-decoration-none">Sửa Hóa Đơn</a>
-              <form action="${ctx}/manager/invoices/${invoice.invoiceId}/delete" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này sẽ giải phóng chỉ số điện nước liên quan (nếu có sai lệch).');">
-                <input type="hidden" name="csrfToken" value="${csrfToken}">
-                <button type="submit" class="btn btn-danger" style="background-color: var(--hms-danger); color: white; border: none; padding: 8px 16.5px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">Xóa Hóa Đơn</button>
-              </form>
             </c:if>
             <button onclick="window.print()" class="btn-mintlify-primary">Xuất PDF / In</button>
           </div>
@@ -231,6 +227,10 @@
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Kỳ hóa đơn</span>
                   <span class="fw-bold"><c:out value="${invoice.billingPeriod}"/></span>
+                </li>
+                <li class="mb-3">
+                  <span class="text-muted d-block" style="font-size:0.875rem">Kỳ hợp đồng</span>
+                  <span class="fw-bold"><c:out value="${invoice.contractPeriod}" default="Chưa có hợp đồng"/></span>
                 </li>
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Hạn thanh toán</span>

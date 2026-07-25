@@ -619,3 +619,4 @@ UNION ALL SELECT 'post_reactions', COUNT(*) FROM dbo.post_reactions
 UNION ALL SELECT 'post_comments', COUNT(*) FROM dbo.post_comments
 GO
 
+
