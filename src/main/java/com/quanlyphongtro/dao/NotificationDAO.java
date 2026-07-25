@@ -319,7 +319,7 @@ public class NotificationDAO extends BaseDAO {
             default:         typeTag = "ALL";  break;
         }
         // Use MAX to avoid duplicates under concurrent inserts
-        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 2, 3) AS INT)), 0) " +
+        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 1, 10) AS INT)), 0) " +
                      "FROM dbo.notifications " +
                      "WHERE code LIKE ? AND deleted_at IS NULL";
         String prefix = "NTF-" + typeTag + "-";
@@ -827,6 +827,24 @@ public class NotificationDAO extends BaseDAO {
             }
         } catch (Exception e) {
             logger.error("getActiveOperatorsForFacility failed", e);
+        }
+
+        if (operators.isEmpty()) {
+            String fallbackSql = "SELECT u.user_id, u.full_name FROM dbo.users u " +
+                    "WHERE u.role = 'OPERATOR' AND u.status = 'ACTIVE' AND u.deleted_at IS NULL " +
+                    "ORDER BY u.full_name";
+            try (Connection conn = DatabaseUtil.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(fallbackSql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> op = new HashMap<>();
+                    op.put("id", rs.getInt("user_id"));
+                    op.put("fullName", rs.getString("full_name"));
+                    operators.add(op);
+                }
+            } catch (Exception e) {
+                logger.error("getActiveOperatorsForFacility fallback failed", e);
+            }
         }
         return operators;
     }

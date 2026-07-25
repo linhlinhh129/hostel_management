@@ -218,14 +218,25 @@ public class RequestDAO extends BaseDAO {
     }
 
     public boolean updateAppointmentSchedule(int requestId, LocalDateTime appointSchedule) {
-        String sql = "UPDATE requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'ASSIGNED'";
+        return updateAppointmentSchedule(requestId, appointSchedule, 0);
+    }
+
+    public boolean updateAppointmentSchedule(int requestId, LocalDateTime appointSchedule, int operatorId) {
+        String sql = operatorId > 0
+                ? "UPDATE dbo.requests SET status = 'IN_PROGRESS', appoint_schedule = ?, assigned_staff_id = ISNULL(assigned_staff_id, ?), updated_at = GETDATE() WHERE request_id = ? AND deleted_at IS NULL"
+                : "UPDATE dbo.requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setTimestamp(1, Timestamp.valueOf(appointSchedule));
-            ps.setInt(2, requestId);
+            if (operatorId > 0) {
+                ps.setInt(2, operatorId);
+                ps.setInt(3, requestId);
+            } else {
+                ps.setInt(2, requestId);
+            }
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            logger.error("updateAppointmentSchedule failed", e);
+            logger.error("updateAppointmentSchedule failed for requestId=" + requestId, e);
         }
         return false;
     }
@@ -399,7 +410,7 @@ public class RequestDAO extends BaseDAO {
                 : "GEN";
         if (tag.length() > 6) tag = tag.substring(0, 6);
         String prefix = "REQ-" + tag + "-";
-        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 2, 5) AS INT)), 0) " +
+        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 1, 10) AS INT)), 0) " +
                      "FROM dbo.requests " +
                      "WHERE code LIKE ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();

@@ -99,8 +99,12 @@ public class DetailRequestServlet extends HttpServlet {
                 }
                 // Parse date and schedule properly
                 try {
-                    LocalDateTime appointSchedule = LocalDateTime.parse(appointmentDateStr.trim());
-                    success = requestService.scheduleAppointment(requestId, appointSchedule);
+                    String cleanDateStr = appointmentDateStr.trim().replace(" ", "T");
+                    if (cleanDateStr.length() == 16) {
+                        cleanDateStr += ":00";
+                    }
+                    LocalDateTime appointSchedule = LocalDateTime.parse(cleanDateStr);
+                    success = requestService.scheduleAppointment(requestId, appointSchedule, operatorId);
                 } catch (Exception e) {
                     request.setAttribute("error", "Định dạng ngày hẹn không hợp lệ.");
                     doGet(request, response);

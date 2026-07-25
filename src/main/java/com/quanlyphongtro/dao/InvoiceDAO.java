@@ -992,6 +992,9 @@ public class InvoiceDAO extends BaseDAO {
         String sql = "UPDATE invoices SET due_date = ?, tax = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() "
                 +
                 "WHERE invoice_id = ? AND deleted_at IS NULL";
+        String updateMeterSql = "UPDATE dbo.meter_readings SET status = 'UPDATED', updated_at = GETDATE() "
+                +
+                "WHERE meter_id = (SELECT meter_id FROM dbo.invoices WHERE invoice_id = ?) AND status = 'REPORTED'";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(invoice.getDueDate()));
@@ -1001,6 +1004,13 @@ public class InvoiceDAO extends BaseDAO {
             ps.setString(5, invoice.getNote());
             ps.setInt(6, invoice.getInvoiceId());
             ps.executeUpdate();
+
+            try (PreparedStatement psMeter = conn.prepareStatement(updateMeterSql)) {
+                psMeter.setInt(1, invoice.getInvoiceId());
+                psMeter.executeUpdate();
+            } catch (Exception e) {
+                logger.error("Failed to update meter reading status to UPDATED for invoiceId=" + invoice.getInvoiceId(), e);
+            }
         }
     }
 

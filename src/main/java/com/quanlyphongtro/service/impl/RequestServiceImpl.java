@@ -74,6 +74,11 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    public boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule, int operatorId) {
+        return requestDAO.updateAppointmentSchedule(requestId, appointSchedule, operatorId);
+    }
+
+    @Override
     public int countManagerTickets(int managerId, String type, String status, String keyword) {
         return requestDAO.countManagerTickets(managerId, type, status, keyword);
     }
