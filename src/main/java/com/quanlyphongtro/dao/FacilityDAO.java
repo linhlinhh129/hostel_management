@@ -43,7 +43,7 @@ public class FacilityDAO extends BaseDAO {
                "LEFT JOIN dbo.users opr ON opr.user_id = f.operator_id " +
                "WHERE f.deleted_at IS NULL";
     }
-
+    // danh sách cơ sở
     public List<Facility> findAll(String keyword, String status, int page, int pageSize) {
         List<Facility> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(buildBaseSelect());
@@ -75,7 +75,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return list;
     }
-
+    // đếm số lượng cơ sở 
     public int count(String keyword, String status) {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) FROM dbo.facilities f WHERE f.deleted_at IS NULL");
@@ -104,7 +104,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return 0;
     }
-
+    //tìm cơ sở theo id
     public Optional<Facility> findById(int id) {
         String sql = buildBaseSelect() + " AND f.facility_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -118,7 +118,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return Optional.empty();
     }
-    
+    // tìm cơ sở theo mã
     public Optional<Facility> findByCode(String code) {
         String sql = buildBaseSelect() + " AND f.code = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -132,11 +132,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return Optional.empty();
     }
-
-    /**
-     * Lấy cơ sở mà một manager (user_id) đang phụ trách.
-     * Theo schema: facilities.manager_id = user_id (unique index).
-     */
+    // tìm cơ sở theo managerId
     public Optional<Facility> findByManagerId(int managerId) {
         String sql = buildBaseSelect() + " AND f.manager_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -150,10 +146,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return Optional.empty();
     }
-
-    /**
-     * Lấy cơ sở mà một operator (user_id) đang vận hành.
-     */
+    // tìm cơ sở theo operatorId
     public Optional<Facility> findByOperatorId(int operatorId) {
         String sql = buildBaseSelect() + " AND f.operator_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -167,7 +160,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return Optional.empty();
     }
-
+    // tìm danh sách cơ sở hoạt động
     public List<Facility> findActiveList() {
         List<Facility> list = new ArrayList<>();
         String sql = buildBaseSelect() + " AND f.status = 'ACTIVE' ORDER BY f.name";
@@ -180,7 +173,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return list;
     }
-
+    // thêm cơ sở   
     public int insert(Facility f) {
         String sql = "INSERT INTO dbo.facilities " +
             "(code, name, address, floor_count, rooms_per_floor, status, manager_id, operator_id, " +
@@ -207,7 +200,7 @@ public class FacilityDAO extends BaseDAO {
         } catch (Exception e) { logger.error("FacilityDAO.insert failed", e); }
         return -1;
     }
-
+    // cập nhật cơ sở   
     public boolean update(Facility f) {
         String sql = "UPDATE dbo.facilities SET " +
             "code = ?, name = ?, address = ?, floor_count = ?, rooms_per_floor = ?, " +
@@ -234,7 +227,7 @@ public class FacilityDAO extends BaseDAO {
         } catch (Exception e) { logger.error("FacilityDAO.update failed for id={}", f.getId(), e); }
         return false;
     }
-
+    // cập nhật trạng thái cơ sở    
     public void updateStatus(int id, String status) {
         String sql = "UPDATE dbo.facilities SET status = ?, updated_at = GETDATE() WHERE facility_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -246,10 +239,7 @@ public class FacilityDAO extends BaseDAO {
             logger.error("FacilityDAO.updateStatus failed for id={}", id, e);
         }
     }
-
-    /**
-     * Update status using a provided connection (for use within an existing transaction).
-     */
+    // cập nhật trạng thái cơ sở trong giao dịch
     public void updateStatus(int id, String status, Connection conn) throws SQLException {
         String sql = "UPDATE dbo.facilities SET status = ?, updated_at = GETDATE() WHERE facility_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -259,10 +249,7 @@ public class FacilityDAO extends BaseDAO {
         }
     }
 
-    /**
-     * Generates rooms for the facility in the same transaction.
-     * Room code format: facilityCode + floor(2-digit) + room(2-digit)
-     */
+    // tạo phòng trong cơ sở   
     public void generateRooms(int facilityId, String facilityCode, int floors, int roomsPerFloor,
                                Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.rooms (facility_id, code, status, room_fee, deposit_amount) " +
@@ -281,7 +268,7 @@ public class FacilityDAO extends BaseDAO {
             ps.executeBatch();
         }
     }
-
+    // đếm số cơ sở có cùng mã 
     public int countByCode(String code, Integer excludeId) {
         String sql = excludeId != null
             ? "SELECT COUNT(*) FROM dbo.facilities WHERE UPPER(code) = UPPER(?) AND facility_id <> ? AND deleted_at IS NULL"
@@ -298,7 +285,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return 0;
     }
-
+    // kiểm tra manager có hoạt động không   
     public boolean existsActiveManager(int managerId, Integer excludeFacilityId) {
         String sql = excludeFacilityId != null
             ? "SELECT COUNT(*) FROM dbo.facilities WHERE manager_id = ? AND facility_id <> ? AND deleted_at IS NULL AND status <> 'DRAFT'"
@@ -315,10 +302,8 @@ public class FacilityDAO extends BaseDAO {
         }
         return false;
     }
-
-    /**
-     * Lấy danh sách phòng đã sinh theo cơ sở, sắp xếp theo code.
-     */
+    
+    // tìm danh sách phòng theo cơ sở 
     public List<Room> findRoomsByFacilityId(int facilityId) {
         List<Room> list = new ArrayList<>();
         String sql =
@@ -358,10 +343,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return list;
     }
-
-    /**
-     * Đếm số phòng đang có người thuê (tenant_id IS NOT NULL) trong một cơ sở.
-     */
+    // đếm số phòng đang có người thuê trong một cơ sở  
     public int countOccupiedRooms(int facilityId) {
         String sql = "SELECT COUNT(*) FROM dbo.rooms " +
                      "WHERE facility_id = ? AND tenant_id IS NOT NULL AND deleted_at IS NULL";
@@ -376,10 +358,7 @@ public class FacilityDAO extends BaseDAO {
         }
         return 0;
     }
-
-    /**
-     * Chuyển toàn bộ phòng của cơ sở sang trạng thái INACTIVE.
-     */
+    // chuyển toàn bộ phòng của cơ sở sang trạng thái INACTIVE  
     public void deactivateAllRooms(int facilityId) {
         String sql = "UPDATE dbo.rooms SET status = 'INACTIVE', updated_at = GETDATE() " +
                      "WHERE facility_id = ? AND deleted_at IS NULL";

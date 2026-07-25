@@ -16,7 +16,7 @@ shell commands, and other important information, read the current plan:
 
 ## Thông tin dự án
 
-* **Dự án:** Quanlynhatro - HomeX
+* **Dự án:** Quanlynhatro 
 * **Loại:** Ứng dụng Web
 * **Giai đoạn:** Đang phát triển (Sprint 1)
 

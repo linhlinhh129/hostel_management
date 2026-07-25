@@ -13,6 +13,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
+    // danh sách log có filter và phân trang
     @Override
     public List<AuditLog> list(String actor, String role, String entityType, String action,
                                String dateFrom, String dateTo, int page, int pageSize) {
@@ -21,7 +22,8 @@ public class AuditLogServiceImpl implements AuditLogService {
         }
         return auditLogDAO.findAll(actor, role, entityType, action, dateFrom, dateTo, page, pageSize);
     }
-
+    
+    // đếm số lượng log
     @Override
     public int count(String actor, String role, String entityType, String action,
                      String dateFrom, String dateTo) {
@@ -31,11 +33,13 @@ public class AuditLogServiceImpl implements AuditLogService {
         return auditLogDAO.count(actor, role, entityType, action, dateFrom, dateTo);
     }
 
+    // tìm log theo id
     @Override
     public AuditLog getById(int id) throws NotFoundException {
         return auditLogDAO.findById(id).orElseThrow(NotFoundException::new);
     }
 
+    // kiểm tra định dạng ngày
     private boolean isValidDate(String dateStr) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             return true;
@@ -48,6 +52,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         }
     }
 
+    // kiểm tra ngày bắt đầu có trước ngày kết thúc không
     private boolean isRangeValid(String dateFrom, String dateTo) {
         if (dateFrom == null || dateFrom.trim().isEmpty() || dateTo == null || dateTo.trim().isEmpty()) {
             return true;

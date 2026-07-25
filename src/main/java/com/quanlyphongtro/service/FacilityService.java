@@ -10,50 +10,35 @@ import java.util.List;
 
 public interface FacilityService {
 
-    // ── List / read ───────────────────────────────────────────────────────
-
+    // Tìm kiếm danh sách cơ sở
     PageDTO<Facility> list(String keyword, String status, int page, int pageSize);
 
+    // Tìm theo ID
     Facility getById(int id) throws NotFoundException;
 
-    /** Chỉ dùng khi cơ sở đã ACTIVE hoặc INACTIVE (đã sinh phòng). */
+    // Danh sách phòng
     List<Room> getRooms(int facilityId);
 
-    // ── Create / update ───────────────────────────────────────────────────
-
-    /**
-     * Tạo cơ sở mới ở trạng thái DRAFT.
-     */
+    // Tạo cơ sở    
     void create(String code, String name, String address,
                 String floorCountStr, String roomsPerFloorStr)
             throws ValidationException;
 
-    /**
-     * Cập nhật cơ sở.
-     * Khi ACTIVE: chỉ cho sửa name.
-     * Khi DRAFT: cho sửa tất cả bao gồm code, floorCount, roomsPerFloor, address.
-     */
+    // Sửa cơ sở                        
     void update(int id,
                 String code, String name, String address,
                 String floorCountStr, String roomsPerFloorStr)
             throws NotFoundException, ValidationException;
 
-    // ── Status transitions ────────────────────────────────────────────────
-
-    /** Kích hoạt DRAFT → ACTIVE, sinh phòng tự động trong 1 transaction. */
+    // Kích hoạt cơ sở                      
     void activate(int id) throws NotFoundException, ValidationException;
 
-    /**
-     * Vô hiệu hóa ACTIVE → INACTIVE.
-     * Chặn nếu còn phòng đang thuê.
-     */
+    // Vô hiệu hóa cơ sở                      
     void deactivate(int id) throws NotFoundException, ValidationException;
 
-    // ── Lookup helpers (dùng cho RoleFilter, PersonnelService) ───────────
-
-    /** Trả về Facility mà manager đang phụ trách, hoặc null. */
+    //  Tìm cơ sở theo quản lý                      
     Facility findByManagerId(int managerId);
 
-    /** Trả về Facility mà operator đang phụ trách, hoặc null. */
+    // Tìm cơ sở theo người vận hành                      
     Facility findByOperatorId(int operatorId);
 }
