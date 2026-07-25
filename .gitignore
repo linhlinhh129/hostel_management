@@ -52,3 +52,4 @@ USE_CASE_SPEC copy.md
 src/main/webapp/META-INF/context.xml
 
 
+tomcat-dist/

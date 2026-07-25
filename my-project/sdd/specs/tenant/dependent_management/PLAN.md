@@ -30,13 +30,13 @@ Tính năng này là read-only đối với Tenant; Ban Quản Lý vẫn có th�
 ## 3. Scope
 
 ### In scope
-- `GET /api/v1/tenant/dependents`
-- `GET /api/v1/tenant/dependents/{dependentId}`
-- Hiển thị danh sách người phụ thuộc hoạt động (deleted_at IS NULL)
-- Mask CCCD/CMND theo quy định SEC-01
-- Chỉ cho Tenant xem người phụ thuộc thuộc phòng/hợp đồng thuê hiện tại
+- `GET /tenant/dependents` (`TenantDependentListServlet`) → Forward `/WEB-INF/views/tenant/dependent-list.jsp`
+- `GET /tenant/dependent-detail?id={dependentId}` (`TenantDependentDetailServlet`) → Forward `/WEB-INF/views/tenant/dependent-detail.jsp`
+- Hiển thị danh sách người phụ thuộc hoạt động (`deleted_at IS NULL`)
+- Mask CCCD/CMND theo quy định SEC-01 (`0790******123`)
+- Chỉ cho Tenant xem người phụ thuộc thuộc phòng/hợp đồng thuê hiện tại của chính mình
 - Hiển thị empty state khi không có người phụ thuộc
-- Xử lý lỗi 401, 403, 404, 500
+- Xử lý các trang lỗi / chuyển hướng 401 (Login redirect), 403 (Forbidden), 404 (Not Found), 500
 
 ### Out of scope
 - Thêm/sửa/xóa người phụ thuộc
@@ -49,26 +49,17 @@ Tính năng này là read-only đối với Tenant; Ban Quản Lý vẫn có th�
 
 ## 4. Architecture & Design
 
-### Data Access
-- Kiểm tra quyền truy cập dựa trên tenantId và quan hệ giữa tenant và dependent.
-- Chỉ chọn record `deleted_at IS NULL`.
-- Người thuê không được truy vấn người phụ thuộc của tenant khác.
+### Data Access & DAO
+- `DependentDAO.getDependentsByTenantId(int tenantId)`: Lấy danh sách người phụ thuộc `deleted_at IS NULL`.
+- `DependentDAO.getDependentByIdAndTenantId(int dependentId, int tenantId)`: Lấy chi tiết 1 người phụ thuộc, đảm bảo sở hữu theo `tenant_id`.
 
-### PII Protection
-- CCCD/CMND phải được mask trước khi trả về client.
-- Không gian lận dữ liệu: email, số điện thoại, ngày sinh chỉ hiển thị trong phạm vi được phép.
-- Avatar có thể trả về URL nếu tồn tại; nếu không, hiển thị ảnh mặc định.
+### PII Protection & Controller
+- CCCD/CMND phải được mask server-side (`0790******123`) trước khi chuyển tới JSP.
+- Xác thực phiên làm việc người dùng thông qua `request.getSession()`.
 
-### Performance
-- Danh sách và chi tiết API trả về dưới 200ms (P95).
-- Sử dụng chỉ mục trên `tenant_id`, `deleted_at`, `relationship`, `full_name` nếu cần.
-- Giới hạn số bản ghi trả về cho danh sách và hỗ trợ phân trang.
-
-### API Contract
-- `GET /api/v1/tenant/dependents`
-- `GET /api/v1/tenant/dependents/{dependentId}`
-
-Trả lỗi chuẩn định dạng JSON với HTTP code tương ứng.
+### Servlet Mappings & Views
+- `TenantDependentListServlet` (`/tenant/dependents`): `request.setAttribute("dependentList", List<DependentDTO>)` → Forward `/WEB-INF/views/tenant/dependent-list.jsp`.
+- `TenantDependentDetailServlet` (`/tenant/dependent-detail`): `request.setAttribute("dependent", DependentDetailDTO)` → Forward `/WEB-INF/views/tenant/dependent-detail.jsp`.
 
 ---
 

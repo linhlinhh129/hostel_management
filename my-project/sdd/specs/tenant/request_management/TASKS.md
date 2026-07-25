@@ -141,194 +141,109 @@
 
 ---
 
-## Epic 2: API Endpoints & Error Handling (12 points)
+## Epic 2: Controller Servlets (12 points)
 
-### Task 2.1: List Requests API (2 points)
+### Task 2.1: TenantRequestListServlet (3 points)
 **Priority:** HIGH  
-**Duration:** 1 day  
+**Duration:** 1.5 days  
 **Dependencies:** Task 1.5  
 **Assignee:** Backend Developer
 
 **Description:**
-- Build `GET /api/v1/tenant/requests`
-- Validate JWT auth
-- Accept query params: page, pageSize, status, search
-- Return success response with request list
+- Tạo `TenantRequestListServlet` mapped với `@WebServlet("/tenant/requests")`.
+- Đọc `page`, `pageSize`, `search`, `status` từ query params.
+- Lấy `tenantId` từ Session.
+- Gọi `RequestService.getRequestList()`, gán `request.setAttribute("requestList", list)` và forward sang `/WEB-INF/views/tenant/request-list.jsp`.
 
 **Acceptance Criteria:**
-- ✅ Authenticated tenant only
-- ✅ Pagination and filters work
-- ✅ Response matches spec
-- ✅ 401 for unauthenticated
-- ✅ 500 on server errors handled
+- ✅ Servlet điều hướng đúng route.
+- ✅ Lọc danh sách đúng theo `tenantId` trong session.
 
 ---
 
-### Task 2.2: Create Request API (3 points)
+### Task 2.2: TenantRequestCreateFormServlet (2 points)
 **Priority:** HIGH  
-**Duration:** 1.5 days  
+**Duration:** 1 day  
+**Dependencies:** Task 1.1  
+**Assignee:** Backend Developer
+
+**Description:**
+- Tạo `TenantRequestCreateFormServlet` mapped với `@WebServlet("/tenant/request-create")` (GET).
+- Lấy danh sách thể loại yêu cầu (`RequestCategoryDTO`).
+- Gán `request.setAttribute("categories", categories)` và forward sang `/WEB-INF/views/tenant/request-create.jsp`.
+
+---
+
+### Task 2.3: TenantRequestCreateServlet (4 points)
+**Priority:** HIGH  
+**Duration:** 2 days  
 **Dependencies:** Task 1.4  
 **Assignee:** Backend Developer
 
 **Description:**
-- Build `POST /api/v1/tenant/requests`
-- Accept body: categoryId, title, content, attachmentUrl(s)
-- Validate inputs and return correct error codes
-- Create request and return created summary
-
-**Acceptance Criteria:**
-- ✅ Returns 201 on success
-- ✅ Error codes correct
-- ✅ Request stored with correct status
-- ✅ Attachments linked properly
+- Tạo `TenantRequestCreateServlet` mapped với `@WebServlet("/tenant/request-create")` (POST).
+- Cấu hình `@MultipartConfig` nhận file upload (max 5MB, định dạng JPG/JPEG/PNG).
+- Read `categoryId`, `title`, `content`. Validate thiếu thông tin.
+- Gọi service tạo yêu cầu mới (status `PENDING`), lưu file đính kèm.
+- Success Redirect: `response.sendRedirect(request.getContextPath() + "/tenant/requests?msg=created_success")`.
+- Error: Forward lại `request-create.jsp` kèm thông báo lỗi.
 
 ---
 
-### Task 2.3: Request Detail API (2 points)
-**Priority:** HIGH  
-**Duration:** 1 day  
-**Dependencies:** Task 1.6  
-**Assignee:** Backend Developer
-
-**Description:**
-- Build `GET /api/v1/tenant/requests/{requestId}`
-- Validate `requestId` format
-- Enforce tenant access
-- Return full request detail DTO
-
-**Acceptance Criteria:**
-- ✅ Returns full detail
-- ✅ 404 if not found/deleted
-- ✅ 403 if not owner
-- ✅ 401 if unauthenticated
-
----
-
-### Task 2.4: Attachment Download API (2 points)
-**Priority:** MEDIUM  
-**Duration:** 1 day  
-**Dependencies:** Task 1.6  
-**Assignee:** Backend Developer
-
-**Description:**
-- Build `GET /api/v1/tenant/requests/{requestId}/attachments/{attachmentId}`
-- Validate request ownership
-- Return file stream or signed URL
-- Secure file access to tenant only
-
-**Acceptance Criteria:**
-- ✅ Tenant can download own attachments
-- ✅ 403 for unauthorized access
-- ✅ 404 for missing attachment
-- ✅ Correct content headers
-
----
-
-### Task 2.5: Standard Error Handling (3 points)
+### Task 2.4: TenantRequestDetailServlet (3 points)
 **Priority:** HIGH  
 **Duration:** 1.5 days  
-**Dependencies:** Task 2.1-2.4  
+**Dependencies:** Task 1.6  
 **Assignee:** Backend Developer
 
 **Description:**
-- Implement consistent API error format
-- Map errors to HTTP codes
-- Return spec error codes for validation failures
-- Handle missing/invalid fields and auth errors
-
-**Acceptance Criteria:**
-- ✅ Consistent response schema
-- ✅ REQ_001 / REQ_002 / REQ_003 implemented
-- ✅ 401/403/404/500 handled
-- ✅ Tests cover all error cases
+- Tạo `TenantRequestDetailServlet` mapped với `@WebServlet("/tenant/request-detail")` (GET).
+- Nhận `id` từ query params, validate quyền sở hữu chính chủ.
+- Gọi `RequestService.getRequestDetail()`, gán `request.setAttribute("requestDetail", dto)` và forward sang `/WEB-INF/views/tenant/request-detail.jsp`.
+- Nếu không có quyền hoặc không tìm thấy: Forward tới 403 / 404 Error Page.
 
 ---
 
-## Epic 3: Frontend User Experience (12 points)
+## Epic 3: Frontend & JSP Views Development (12 points)
 
-### Task 3.1: Request Creation Form (4 points)
-**Priority:** HIGH  
-**Duration:** 2 days  
-**Dependencies:** Task 2.2  
-**Assignee:** Frontend Developer
-
-**Description:**
-- Build form fields: category, title, content, attachment upload
-- Client-side validation for required fields
-- File upload validation for JPG/JPEG/PNG and max 5MB
-- Call create API and show success/failure
-- Display created requestId and PENDING status
-
-**Acceptance Criteria:**
-- ✅ Form validates input
-- ✅ File upload restrictions enforced
-- ✅ Success state shown after submission
-- ✅ Error messages displayed clearly
-- ✅ Experience works on desktop and mobile
-
----
-
-### Task 3.2: Request List Page (4 points)
+### Task 3.1: Request List JSP View (4 points)
 **Priority:** HIGH  
 **Duration:** 2 days  
 **Dependencies:** Task 2.1  
 **Assignee:** Frontend Developer
 
 **Description:**
-- Display list with columns: requestId, category, title, status, createdAt
-- Implement pagination, status filter, and search by title
-- Sort by createdAt descending
-- Clicking a request opens detail page
-- Show empty state when no requests
-
-**Acceptance Criteria:**
-- ✅ List data loads correctly
-- ✅ Pagination works
-- ✅ Search and filter work
-- ✅ Click navigates to detail
-- ✅ Loading and empty states present
+- Tạo file JSP `/WEB-INF/views/tenant/request-list.jsp`.
+- Hiển thị danh sách các yêu cầu do Tenant đang đăng nhập tạo ra (Mã, thể loại, tiêu đề, ngày tạo, thẻ trạng thái PENDING/IN_PROGRESS/COMPLETED/REJECTED).
+- Tích hợp thanh tìm kiếm (Search), bộ lọc trạng thái (Filter) và thanh phân trang (Pagination).
+- Hiển thị Empty State khi không có yêu cầu nào.
 
 ---
 
-### Task 3.3: Request Detail Page (3 points)
+### Task 3.2: Request Creation Form JSP View (4 points)
 **Priority:** HIGH  
-**Duration:** 1.5 days  
-**Dependencies:** Task 2.3  
+**Duration:** 2 days  
+**Dependencies:** Task 2.2, 2.3  
 **Assignee:** Frontend Developer
 
 **Description:**
-- Show full request detail and status
-- Show attachments with preview/download links
-- Show status history timeline
-- Display back navigation
-- Handle 403/404 errors gracefully
-
-**Acceptance Criteria:**
-- ✅ Detail view displays all fields
-- ✅ Attachments accessible
-- ✅ Status history shown
-- ✅ Back button works
-- ✅ Error states handled
+- Tạo file JSP `/WEB-INF/views/tenant/request-create.jsp`.
+- Form nhập thể loại (Dropdown select `categories`), tiêu đề, nội dung và đính kèm file ảnh (tối đa 5MB, định dạng JPG/JPEG/PNG).
+- Form action `POST /tenant/request-create` với `enctype="multipart/form-data"`.
+- Thêm validate client-side bằng Javascript.
 
 ---
 
-### Task 3.4: UI Polish & Mobile (1 point)
-**Priority:** MEDIUM  
-**Duration:** 1 day  
-**Dependencies:** Task 3.1-3.3  
+### Task 3.3: Request Detail JSP View (4 points)
+**Priority:** HIGH  
+**Duration:** 2 days  
+**Dependencies:** Task 2.4  
 **Assignee:** Frontend Developer
 
 **Description:**
-- Review UI consistency and spacing
-- Ensure mobile responsiveness
-- Validate color/typography
-- Improve accessibility
-
-**Acceptance Criteria:**
-- ✅ UI consistent across pages
-- ✅ Mobile layout works
-- ✅ Accessible forms and buttons
-- ✅ No major visual issues
+- Tạo file JSP `/WEB-INF/views/tenant/request-detail.jsp`.
+- Hiển thị đầy đủ thông tin yêu cầu, hình ảnh đính kèm minh họa và lịch sử thay đổi trạng thái.
+- Nút "Quay lại" dẫn tới `/tenant/requests`.
 
 ---
 

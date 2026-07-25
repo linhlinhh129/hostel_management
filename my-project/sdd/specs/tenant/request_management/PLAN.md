@@ -137,20 +137,31 @@ Xây dựng tính năng **Request Management** cho phép Tenant:
 - `COMPLETED`
 - `REJECTED`
 
-### API Endpoints
-- `GET /api/v1/tenant/requests`
-- `POST /api/v1/tenant/requests`
-- `GET /api/v1/tenant/requests/{requestId}`
-- `GET /api/v1/tenant/requests/{requestId}/attachments/{attachmentId}`
+### Servlet Endpoints & Controller Contract
+```http
+GET /tenant/requests
+  → TenantRequestListServlet (Forward: /WEB-INF/views/tenant/request-list.jsp)
+
+GET /tenant/request-detail?id={requestId}
+  → TenantRequestDetailServlet (Forward: /WEB-INF/views/tenant/request-detail.jsp)
+
+GET /tenant/request-create
+  → TenantRequestCreateFormServlet (Forward: /WEB-INF/views/tenant/request-create.jsp)
+
+POST /tenant/request-create
+  → TenantRequestCreateServlet (Process Form Submit & Redirect to /tenant/requests)
+```
+
+### View Data Scope Attributes
+- **List Page:** `request.setAttribute("requestList", List<RequestDTO>)`
+- **Detail Page:** `request.setAttribute("requestDetail", RequestDetailDTO)`
+- **Create Form:** `request.setAttribute("categories", List<RequestCategoryDTO>)`
 
 ### Validation Rules
-- `categoryId` must exist
-- `title` required, non-empty
-- `content` required, non-empty
-- Attachment file type JPG/JPEG/PNG
-- Attachment max size 5MB
-- Tenant must own request
-- Soft deleted records excluded
+- `categoryId` phải tồn tại trong CSDL.
+- `title` và `content` bắt buộc nhập, không được để rỗng.
+- File đính kèm: Định dạng JPG/JPEG/PNG, dung lượng tối đa 5MB.
+- Phân quyền: Tenant chỉ có quyền truy cập/thao tác với các yêu cầu do chính mình tạo ra.
 
 ---
 

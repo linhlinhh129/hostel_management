@@ -21,28 +21,34 @@ Thêm các phương thức cần thiết vào `ContractDAO` hiện tại (hoặc
   - Truy vấn SQL: `SELECT c.*, r.room_name, r.address FROM contracts c JOIN rooms r ON c.room_id = r.id WHERE c.id = ? AND c.tenant_id = ?` (Tuỳ chỉnh theo schema thực tế).
   - Trả về `Contract` nếu tìm thấy, hoặc `null` nếu không tìm thấy (giải quyết được đồng thời bài toán chống truy cập trái phép IDOR).
 
-### Bước 2: Xây dựng Controller (`TenantContractServlet`)
-Servlet này sẽ xử lý các GET request từ Tenant.
-- **URL Mapping**: `@WebServlet("/tenant/contracts")`
-- **Xử lý `doGet(HttpServletRequest request, HttpServletResponse response)`**:
-  1. Lấy thông tin người dùng đang đăng nhập từ `request.getSession()`.
-  2. Xác thực role phải là `TENANT`.
-  3. Kiểm tra tham số `id` từ request:
-     - **Nếu không có `id` (Danh sách hợp đồng)**:
-       - Gọi `ContractDAO.getContractsByTenantId(tenantId)`.
-       - Gắn kết quả vào `request.setAttribute("contracts", contracts)`.
-       - Forward tới `tenant/contracts/list.jsp`.
-     - **Nếu có `id` (Chi tiết hợp đồng)**:
-       - Gọi `ContractDAO.getContractByIdAndTenantId(id, tenantId)`.
-       - Nếu kết quả là `null`: Gửi mã lỗi 403/404 hoặc forward tới trang báo lỗi `error.jsp`.
-       - Nếu có kết quả: Gắn `request.setAttribute("contract", contract)` và forward tới `tenant/contracts/detail.jsp`.
+### Bước 2: Xây dựng Controller Servlets
+Chức năng được chia thành 2 Servlet độc lập xử lý GET request từ Tenant:
+
+1. **`TenantContractListServlet`**:
+   - **URL Mapping**: `@WebServlet("/tenant/contracts")`
+   - **Xử lý `doGet(...)`**:
+     1. Lấy thông tin người dùng từ `request.getSession()`.
+     2. Cho phép truy cập nếu có quyền/role `TENANT`.
+     3. Lấy `tenantId` từ session người dùng hiện tại.
+     4. Gọi `ContractDAO.getContractsByTenantId(tenantId)`.
+     5. Gắn kết quả `request.setAttribute("contractList", contractList)`.
+     6. Forward tới `/WEB-INF/views/tenant/contract-list.jsp`.
+
+2. **`TenantContractDetailServlet`**:
+   - **URL Mapping**: `@WebServlet("/tenant/contract-detail")`
+   - **Xử lý `doGet(...)`**:
+     1. Kiểm tra session đăng nhập và role `TENANT`.
+     2. Đọc tham số `id` từ `request.getParameter("id")`.
+     3. Gọi `ContractDAO.getContractByIdAndTenantId(id, tenantId)`.
+     4. Nếu kết quả là `null` (không tồn tại hoặc không thuộc sở hữu): Forward tới trang lỗi 403 / 404 (`FORBIDDEN` / `CONTRACT_NOT_FOUND`).
+     5. Nếu hợp lệ: Gắn `request.setAttribute("contract", contract)` và Forward tới `/WEB-INF/views/tenant/contract-detail.jsp`.
 
 ### Bước 3: Phát triển Giao diện (View)
-- **`list.jsp`**:
-  - Sử dụng JSTL (`<c:forEach>`) để lặp qua biến `contracts`.
-  - Kiểm tra nếu `empty contracts` thì hiển thị thông báo "Bạn chưa có hợp đồng thuê nào."
-  - Ngược lại hiển thị một bảng (Table) các hợp đồng. Mỗi hàng có nút "Xem chi tiết" gọi link `?id=${contract.id}`.
-- **`detail.jsp`**:
+- **`contract-list.jsp`** (`/WEB-INF/views/tenant/contract-list.jsp`):
+  - Sử dụng JSTL (`<c:forEach>`) để lặp qua danh sách `contractList`.
+  - Kiểm tra nếu `empty contractList` thì hiển thị thông báo "Bạn chưa có hợp đồng thuê nào."
+  - Ngược lại hiển thị một bảng (Table) các hợp đồng. Mỗi hàng có nút "Xem chi tiết" dẫn tới `/tenant/contract-detail?id=${contract.id}`.
+- **`contract-detail.jsp`** (`/WEB-INF/views/tenant/contract-detail.jsp`):
   - Sử dụng EL (Expression Language) để hiển thị chi tiết các trường của biến `contract`.
   - Bố cục giao diện mạch lạc, chia thành các nhóm thông tin: Thông tin phòng, Tiền cọc/Tiền thuê, Phí dịch vụ, Thời hạn.
   - Không chèn bất cứ form hay nút submit (Lưu/Chỉnh sửa) nào vào view này.

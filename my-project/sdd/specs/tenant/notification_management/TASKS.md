@@ -140,417 +140,66 @@
 
 ---
 
-## Epic 2: REST APIs (8 points)
+## Epic 2: Controller Servlets (8 points)
 
-### Task 2.1: Get Notifications List Endpoint (2 points)
+### Task 2.1: TenantNotificationListServlet (4 points)
 **Priority:** HIGH  
-**Duration:** 1 day  
+**Duration:** 1.5 days  
 **Dependencies:** Task 1.2, 1.5  
 **Assignee:** Backend Developer
 
 **Description:**
-- Create endpoint: `GET /api/v1/tenant/notifications`
-- Query parameters: `page` (default 1), `pageSize` (default 20, max 100)
-- Call NotificationService.getNotificationsList()
-- Return paginated response with proper HTTP status
-
-**Request:**
-```
-GET /api/v1/tenant/notifications?page=1&pageSize=20
-Authorization: Bearer <token>
-```
-
-**Response (200 OK):**
-```json
-{
-  "page": 1,
-  "pageSize": 20,
-  "totalItems": 42,
-  "items": [
-    {
-      "notificationId": 1,
-      "title": "Thông báo bảo trì hệ thống nước",
-      "createdAt": "2026-06-10T08:00:00"
-    }
-  ]
-}
-```
-
-**Error Responses:**
-- 400: Invalid pagination parameters
-- 401: Unauthorized
-- 403: Forbidden (non-tenant)
-- 500: Server error
+- Tạo `TenantNotificationListServlet` mapped với `@WebServlet("/tenant/notifications")`.
+- Đọc tham số `page` (mặc định 1) và `pageSize` (mặc định 10).
+- Lấy `tenantId` từ Session.
+- Gọi `NotificationService.getNotificationsList()`, gán `request.setAttribute("notificationPage", pageDTO)` và forward sang `/WEB-INF/views/tenant/notification-list.jsp`.
 
 **Acceptance Criteria:**
-- ✅ Valid parameters → 200 with data
-- ✅ Invalid page/pageSize → 400
-- ✅ No auth header → 401
-- ✅ Non-tenant role → 403
-- ✅ Response matches spec format
-- ✅ Tests with multiple scenarios
+- ✅ Servlet điều hướng đúng route.
+- ✅ Phân trang danh sách thông báo theo tenantId.
 
 ---
 
-### Task 2.2: Get Notification Detail Endpoint (2 points)
+### Task 2.2: TenantNotificationDetailServlet (4 points)
 **Priority:** HIGH  
-**Duration:** 1 day  
+**Duration:** 1.5 days  
 **Dependencies:** Task 1.3, 1.4, 1.5  
 **Assignee:** Backend Developer
 
 **Description:**
-- Create endpoint: `GET /api/v1/tenant/notifications/{notificationId}`
-- Path parameter: `notificationId` (must be positive integer)
-- Call NotificationService.getNotificationDetail()
-- Implement permission check
-- Return full notification or error
-
-**Request:**
-```
-GET /api/v1/tenant/notifications/1
-Authorization: Bearer <token>
-```
-
-**Success Response (200 OK):**
-```json
-{
-  "notificationId": 1,
-  "title": "Thông báo bảo trì hệ thống nước",
-  "content": "Hệ thống nước sẽ được bảo trì từ 08:00 đến 12:00 ngày 15/06/2026.",
-  "createdAt": "2026-06-10T08:00:00"
-}
-```
-
-**Error Responses:**
-- 400: Invalid notificationId format
-- 401: Unauthorized
-- 403: Forbidden (non-tenant)
-- 404: Notification not found or no access
-- 500: Server error
-
-**404 Response:**
-```json
-{
-  "error": "Thông báo không tồn tại hoặc bạn không có quyền truy cập."
-}
-```
-
-**Acceptance Criteria:**
-- ✅ Valid notification owned by tenant → 200
-- ✅ Valid notification not owned by tenant → 404
-- ✅ Non-existent notification → 404
-- ✅ Invalid notificationId → 400
-- ✅ No auth → 401
-- ✅ Non-tenant role → 403
-- ✅ Response matches spec format
-- ✅ Comprehensive test coverage
+- Tạo `TenantNotificationDetailServlet` mapped với `@WebServlet("/tenant/notification-detail")`.
+- Nhận tham số `id`, validate quyền sở hữu thông báo (công khai hoặc khớp với tenantId từ Session).
+- Gọi `NotificationService.getNotificationDetail()`, gán `request.setAttribute("notification", dto)` và forward sang `/WEB-INF/views/tenant/notification-detail.jsp`.
+- Nếu không có quyền: Forward tới trang lỗi 403 hoặc 404.
 
 ---
 
-### Task 2.3: Error Response & Exception Handling (2 points)
-**Priority:** MEDIUM  
-**Duration:** 1 day  
-**Dependencies:** Task 2.1, 2.2  
-**Assignee:** Backend Developer
+## Epic 3: Frontend & Views Development (12 points)
 
-**Description:**
-- Create consistent error response format
-- Implement exception handlers for:
-  - NotificationNotFoundException (404)
-  - PermissionDeniedException (403)
-  - ValidationException (400)
-  - InternalException (500)
-- Add logging for errors
-- Return proper HTTP status codes
-
-**Standard Error Format:**
-```json
-{
-  "statusCode": 404,
-  "message": "Thông báo không tồn tại hoặc bạn không có quyền truy cập.",
-  "timestamp": "2026-06-21T10:30:00Z"
-}
-```
-
-**Acceptance Criteria:**
-- ✅ All errors return consistent format
-- ✅ Correct HTTP status codes
-- ✅ Helpful error messages in Vietnamese
-- ✅ No sensitive info exposed
-- ✅ All scenarios tested
-
----
-
-### Task 2.4: API Documentation & Contract (1 point)
-**Priority:** MEDIUM  
-**Duration:** 0.5 days  
-**Dependencies:** Task 2.1, 2.2, 2.3  
-**Assignee:** Tech Lead
-
-**Description:**
-- Generate Swagger/OpenAPI documentation
-- Document both endpoints:
-  - List endpoint with pagination
-  - Detail endpoint with permission check
-- Include request/response examples
-- Document error codes and meanings
-- Create API specification document
-
-**Deliverables:**
-- Swagger YAML/JSON file
-- API spec document (Markdown)
-- Request/response examples
-
-**Acceptance Criteria:**
-- ✅ All endpoints documented
-- ✅ Clear parameter descriptions
-- ✅ Examples match actual responses
-- ✅ Error codes explained
-- ✅ Ready for frontend integration
-
----
-
-## Epic 3: Frontend Development (12 points)
-
-### Task 3.1: Notification List Page - Component Setup (2 points)
+### Task 3.1: Notification List JSP View (6 points)
 **Priority:** HIGH  
-**Duration:** 1.5 days  
-**Dependencies:** Task 2.1, 2.4  
+**Duration:** 2.5 days  
+**Dependencies:** Task 2.1  
 **Assignee:** Frontend Developer
 
 **Description:**
-- Create NotificationList component/page
-- Setup page structure:
-  - Header with page title
-  - Content area for notification list
-  - Pagination controls
-  - Loading/error states
-- Initialize routing to this page
-- Setup API integration skeleton
-
-**UI Layout:**
-```
-┌──────────────────────────────────┐
-│ Quản lý Thông báo                │
-├──────────────────────────────────┤
-│ [Loading State or List]           │
-│                                  │
-│                                  │
-├──────────────────────────────────┤
-│ < 1 | 2 | 3 | ... | 42 >         │
-└──────────────────────────────────┘
-```
-
-**Acceptance Criteria:**
-- ✅ Component renders without errors
-- ✅ Page layout matches design
-- ✅ Pagination controls present
-- ✅ Loading/error state areas prepared
-- ✅ Routing configured
+- Tạo file JSP `/WEB-INF/views/tenant/notification-list.jsp`.
+- Render danh sách thông báo (Tiêu đề, ngày tạo formatted).
+- Tích hợp thanh phân trang (Pagination).
+- Hiển thị Empty State khi không có thông báo ("Hiện chưa có thông báo nào.").
 
 ---
 
-### Task 3.2: Notification List Display (3 points)
+### Task 3.2: Notification Detail JSP View (6 points)
 **Priority:** HIGH  
-**Duration:** 2 days  
-**Dependencies:** Task 3.1, 2.1  
+**Duration:** 2.5 days  
+**Dependencies:** Task 2.2  
 **Assignee:** Frontend Developer
 
 **Description:**
-- Implement notification list table/card display:
-  - Column 1: Title
-  - Column 2: Created Date (formatted)
-  - Row clickable to view detail
-  - Visual feedback on hover
-- Call `/api/v1/tenant/notifications` API
-- Display notifications from response
-- Handle pagination navigation
-- Sort newest first (already done on backend)
-
-**Each Row Shows:**
-- Title (clickable)
-- Date formatted: "21/06/2026 08:00"
-- Hover effect (background color change)
-
-**Requirements:**
-- Responsive design (mobile-friendly)
-- Click → navigate to detail page
-- Support pagination (page numbers)
-- Loading spinner while fetching
-
-**Acceptance Criteria:**
-- ✅ List displays correctly
-- ✅ Date formatted properly (Vietnamese locale)
-- ✅ Clickable rows navigate to detail
-- ✅ Pagination working
-- ✅ Loading indicator shown
-- ✅ Responsive on mobile/tablet/desktop
-
----
-
-### Task 3.3: Empty State & Error States (2 points)
-**Priority:** HIGH  
-**Duration:** 1 day  
-**Dependencies:** Task 3.2  
-**Assignee:** Frontend Developer
-
-**Description:**
-- Implement Empty State:
-  - Show when API returns 0 items
-  - Message: "Hiện chưa có thông báo nào."
-  - Optional icon/illustration
-  - Center aligned
-- Implement Error State:
-  - Show when API fails (4xx/5xx)
-  - Error message displayed
-  - "Retry" button to reload
-  - Connection error handling
-
-**Empty State:**
-```
-┌──────────────────────────────────┐
-│                                  │
-│       [📬 Icon]                   │
-│  Hiện chưa có thông báo nào.    │
-│                                  │
-└──────────────────────────────────┘
-```
-
-**Error State:**
-```
-┌──────────────────────────────────┐
-│       Tải dữ liệu thất bại        │
-│                                  │
-│  [⚠️ Icon]                        │
-│  Vui lòng thử lại sau.           │
-│  [Tải lại]                       │
-└──────────────────────────────────┘
-```
-
-**Acceptance Criteria:**
-- ✅ Empty state shows when no items
-- ✅ Error state shows on API error
-- ✅ Retry button reloads data
-- ✅ Messages clear and helpful
-- ✅ Styling consistent with design
-
----
-
-### Task 3.4: Notification Detail Page (3 points)
-**Priority:** HIGH  
-**Duration:** 2 days  
-**Dependencies:** Task 2.2, 2.4  
-**Assignee:** Frontend Developer
-
-**Description:**
-- Create NotificationDetail component/page
-- Display full notification:
-  - Title (large, bold)
-  - Created date/time
-  - Full content (paragraphs, formatting preserved)
-  - Back button to return to list
-- Call `/api/v1/tenant/notifications/{notificationId}` API
-- Handle loading state while fetching
-- Handle error state (404, 403, 500)
-
-**Detail Page Layout:**
-```
-┌──────────────────────────────────┐
-│ < Quay lại                       │
-├──────────────────────────────────┤
-│ Tiêu đề thông báo                │
-│                                  │
-│ 21/06/2026 08:00                 │
-│                                  │
-├──────────────────────────────────┤
-│ Nội dung đầy đủ của thông báo... │
-│                                  │
-│ Có thể là nhiều dòng, nhiều      │
-│ đoạn văn tùy theo nội dung       │
-│                                  │
-│                                  │
-└──────────────────────────────────┘
-```
-
-**Error Handling:**
-- 401 → Redirect to login
-- 403 → Show "Bạn không có quyền truy cập."
-- 404 → Show "Thông báo không tồn tại hoặc bạn không có quyền truy cập."
-- 500 → Show error + Retry button
-
-**Acceptance Criteria:**
-- ✅ Page displays notification content
-- ✅ Date formatted correctly
-- ✅ Content formatting preserved
-- ✅ Back button works
-- ✅ Loading state shown
-- ✅ Error states handled
-- ✅ 404 message user-friendly
-
----
-
-### Task 3.5: Pagination Component & Navigation (2 points)
-**Priority:** MEDIUM  
-**Duration:** 1 day  
-**Dependencies:** Task 3.2  
-**Assignee:** Frontend Developer
-
-**Description:**
-- Create reusable Pagination component
-- Display page numbers: 1, 2, 3... N
-- Show current page highlighted
-- Previous/Next buttons
-- Jump to page functionality
-- Update URL/state when page changes
-- Re-fetch data when page changes
-
-**Pagination UI:**
-```
-< Previous | 1 | 2 | 3 | ... | 10 | Next >
-           ↑ Current page highlighted
-```
-
-**Features:**
-- Disable Previous on page 1
-- Disable Next on last page
-- Click page number → fetch that page
-- Preserve scroll position
-- URL state (optional: ?page=2)
-
-**Acceptance Criteria:**
-- ✅ Pagination renders correctly
-- ✅ Navigation between pages works
-- ✅ Data re-fetches on page change
-- ✅ Current page highlighted
-- ✅ Next/Previous buttons disable appropriately
-- ✅ Responsive on mobile
-
----
-
-### Task 3.6: UI Polish & Responsive Design (1 point)
-**Priority:** MEDIUM  
-**Duration:** 1 day  
-**Dependencies:** Task 3.1, 3.2, 3.4, 3.5  
-**Assignee:** Frontend Developer
-
-**Description:**
-- Review styling consistency across pages
-- Ensure responsive design:
-  - Mobile (320px - 480px)
-  - Tablet (481px - 1024px)
-  - Desktop (1025px+)
-- Test on various screen sizes
-- Optimize typography & spacing
-- Ensure accessibility (WCAG basics)
-- Cross-browser testing
-
-**Checklist:**
-- ✅ Consistent color scheme
-- ✅ Font sizes readable
-- ✅ Touch targets ≥ 44px on mobile
-- ✅ No horizontal scroll
-- ✅ Tables/content scrollable on small screens
-- ✅ Dark mode compatibility (if applicable)
+- Tạo file JSP `/WEB-INF/views/tenant/notification-detail.jsp`.
+- Render đầy đủ nội dung thông báo, tiêu đề, ngày tạo.
+- Nút "Quay lại" dẫn tới `/tenant/notifications`.
 
 ---
 
