@@ -752,10 +752,8 @@ public class InvoiceDAO extends BaseDAO {
                 "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
                 "LEFT JOIN contracts c ON c.contract_id = (" +
                 "    SELECT TOP 1 contract_id FROM contracts " +
-                "    WHERE room_id = i.room_id " +
-                "    ORDER BY CASE WHEN start_date IS NOT NULL AND end_date IS NOT NULL AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, " +
-                "             CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, " +
-                "             CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+                "    WHERE room_id = i.room_id AND deleted_at IS NULL " +
+                "    ORDER BY CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, created_at DESC" +
                 ") " +
                 "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                 "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
@@ -912,10 +910,13 @@ public class InvoiceDAO extends BaseDAO {
                         }
                     }
 
-                    Timestamp updated = rs.getTimestamp("updated_at");
-                    if (updated != null)
-                        dto.setUpdatedAt(
-                                updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                    try {
+                        Timestamp updated = rs.getTimestamp("updated_at");
+                        if (updated != null) {
+                            dto.setUpdatedAt(
+                                    updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                        }
+                    } catch (Exception ignore) {}
                     dto.setUpdatedByName("");
 
                     return dto;
