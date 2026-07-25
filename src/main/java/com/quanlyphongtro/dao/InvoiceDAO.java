@@ -848,10 +848,10 @@ public class InvoiceDAO extends BaseDAO {
                             LocalDate endDate = LocalDate.now();
                             if (hasColumn(rs, "pending_payment_date")) {
                                 try {
-                                    Date pendingDate = rs.getDate("pending_payment_date");
-                                    if (pendingDate != null)
-                                        endDate = pendingDate.toLocalDate();
-                                } catch (SQLException ignore) {
+                                    Timestamp pendingTimestamp = rs.getTimestamp("pending_payment_date");
+                                    if (pendingTimestamp != null)
+                                        endDate = pendingTimestamp.toLocalDateTime().toLocalDate();
+                                } catch (Exception ignore) {
                                 }
                             }
                             if (endDate.isAfter(dueLocalDate)) {
