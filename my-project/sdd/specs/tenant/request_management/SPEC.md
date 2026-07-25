@@ -183,111 +183,68 @@ THE SYSTEM SHALL chỉ cho phép truy cập các yêu cầu do chính người t
 
 ---
 
-# 4. API Contract
+# 4. Servlet Routes & Page Controller Contract
 
-## Lấy danh sách yêu cầu
+## 4.1 Màn hình Danh sách yêu cầu
 
-Endpoint:
-
-GET /api/v1/tenant/requests
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "requestId": "REQ001",
-      "category": "Bảo trì",
-      "title": "Máy lạnh không hoạt động",
-      "status": "PENDING",
-      "createdAt": "2026-06-10T08:00:00"
-    }
-  ]
-}
+### Servlet Mapping
+```http
+GET /tenant/requests
 ```
+- **Servlet:** `TenantRequestListServlet`
+- **Scope & Attribute Name:** `request.setAttribute("requestList", List<RequestDTO>)`
+- **Forward View:** `/WEB-INF/views/tenant/request-list.jsp`
 
 ---
 
-## Tạo yêu cầu
+## 4.2 Màn hình Chi tiết yêu cầu
 
-Endpoint:
-
-POST /api/v1/tenant/requests
-
-Request
-
-```json
-{
-  "categoryId": 1,
-  "title": "Máy lạnh không hoạt động",
-  "content": "Máy lạnh không thể khởi động",
-  "attachmentUrl": "image.jpg"
-}
+### Servlet Mapping
+```http
+GET /tenant/request-detail?id={requestId}
 ```
-
-Response 201
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": "REQ001",
-    "status": "PENDING"
-  }
-}
-```
-
-Response 400
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "REQ_001",
-    "message": "Title is required"
-  }
-}
-```
-
-Response 401
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Authentication required"
-  }
-}
-```
+- **Servlet:** `TenantRequestDetailServlet`
+- **Parameter:** `id`
+- **Scope & Attribute Name:** `request.setAttribute("requestDetail", RequestDetailDTO)`
+- **Forward View:** `/WEB-INF/views/tenant/request-detail.jsp`
 
 ---
 
-## Xem chi tiết yêu cầu
+## 4.3 Màn hình Tạo mới yêu cầu (Form View)
 
-Endpoint:
-
-GET /api/v1/tenant/requests/{requestId}
-
-Response 200
-
-```json
-{
-  "success": true,
-  "data": {
-    "requestId": "REQ001",
-    "category": "Bảo trì",
-    "title": "Máy lạnh không hoạt động",
-    "content": "Máy lạnh không thể khởi động",
-    "attachmentUrl": "image.jpg",
-    "roomCode": "A101",
-    "status": "PENDING",
-    "createdAt": "2026-06-10T08:00:00"
-  }
-}
+### Servlet Mapping
+```http
+GET /tenant/request-create
 ```
+- **Servlet:** `TenantRequestCreateFormServlet`
+- **Scope & Attribute Name:** `request.setAttribute("categories", List<RequestCategoryDTO>)`
+- **Forward View:** `/WEB-INF/views/tenant/request-create.jsp`
+
+---
+
+## 4.4 Thực thi Tạo yêu cầu (Form Submit Action)
+
+### Servlet Mapping
+```http
+POST /tenant/request-create
+```
+- **Servlet:** `TenantRequestCreateServlet`
+- **Content-Type:** `multipart/form-data` hoặc `application/x-www-form-urlencoded`
+- **Form Parameters:** `categoryId`, `title`, `content`, `attachment` (file upload optional)
+- **Xử lý:**
+  - Nếu thành công: Cập nhật DB và thực hiện `response.sendRedirect(request.getContextPath() + "/tenant/requests?msg=created_success")`.
+  - Nếu thiếu dữ liệu (ví dụ: thiếu `title` hoặc `content`): Gán `request.setAttribute("error", "Title and content are required")` và forward lại trang `request-create.jsp`.
+
+---
+
+# 4.5 Error Handling & Redirection
+
+| Error Code | Status / Action | Description |
+| --- | --- | --- |
+| UNAUTHORIZED | Redirect `/login` | Chưa đăng nhập (Session không tồn tại) |
+| FORBIDDEN | Forward 403 Page | Yêu cầu không thuộc về tài khoản người thuê đang đăng nhập |
+| REQUEST_NOT_FOUND | Forward 404 Page | Không tìm thấy ID yêu cầu |
+| INVALID_INPUT | Forward `/WEB-INF/views/tenant/request-create.jsp` | Nhập thiếu thông tin bắt buộc hoặc file quá 5MB |
 
 ---
 

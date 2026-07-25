@@ -22,33 +22,40 @@ Dựa trên kiến trúc hiện tại, chúng ta cần bổ sung thêm 2 bảng 
 
 *Ghi chú*: Thay vì thêm cột `likeCount` và `commentCount` trực tiếp trong bảng `posts` và phải dùng Trigger/Event để cập nhật liên tục, ta có thể `COUNT()` trực tiếp từ 2 bảng trên qua lệnh `JOIN` khi query danh sách bài viết. Phương án này vừa an toàn dữ liệu, vừa phù hợp với lượng tải của nghiệp vụ.
 
-## 3. Backend (API Services)
-- **GET /api/v1/news-feed**:
-  - Truy vấn lấy danh sách các bài viết có trạng thái `status = 'APPROVED'`.
-  - **Lọc dữ liệu**: Chỉ lấy bài viết được phê duyệt/đăng trong **ngày hiện tại** (như yêu cầu của AC-01).
-  - Sort theo thời gian phê duyệt mới nhất (DESC).
-  - Tính toán và trả về thêm `likeCount` và `commentCount`.
-- **GET /api/v1/news-feed/{id}**:
-  - Trả về chi tiết bài viết kèm mảng hình ảnh. Nếu bài viết không tồn tại hoặc chưa duyệt, trả về `HTTP 404`.
-- **POST /api/v1/posts/{id}/like**:
-  - API xử lý toggle Like.
-  - Kiểm tra xem người dùng (`tenant_id`) đã có trong bảng `post_likes` của bài viết này chưa.
-  - Nếu đã like: thực hiện xóa bản ghi (bỏ thích).
-  - Nếu chưa like: thêm mới bản ghi. Trả về tổng số like mới (`likeCount`).
-- **POST /api/v1/posts/{id}/comments**:
-  - Validate nội dung bình luận (không rỗng, <= 1000 ký tự). Trả về `HTTP 400` kèm mã lỗi `INVALID_COMMENT` nếu sai.
-  - Thêm record vào bảng `post_comments`. Trả về thông tin chi tiết bình luận vừa tạo (`HTTP 201`).
-- **GET /api/v1/posts/{id}/comments**:
-  - Truy xuất toàn bộ bình luận của bài viết.
-  - Sắp xếp thời gian tạo tăng dần (cũ nhất ở trên, mới nhất ở dưới).
+## 3. Backend (Servlet Controllers & Action Endpoints)
+- **`TenantNewsFeedServlet`** (`GET /tenant/news-feed`):
+  - Truy vấn lấy danh sách bài viết có trạng thái `status = 'APPROVED'` được duyệt trong 24 giờ qua và Top 5 bài viết nổi bật.
+  - Sắp xếp theo thời gian phê duyệt mới nhất (DESC).
+  - Tính toán `likeCount` và `commentCount` cho từng bài viết.
+  - Scope Attributes: `request.setAttribute("postList", List<CommunityPostDTO>)` & `request.setAttribute("topPostList", List<CommunityPostDTO>)`.
+  - Forward View: `/WEB-INF/views/tenant/news-feed.jsp`.
 
-## 4. Frontend (Tenant Web/App)
+- **`TenantPostReactionServlet`** (`POST /tenant/post-reaction`):
+  - Nhận `postId` từ form parameters.
+  - Kiểm tra `user_id` hiện tại từ session trong bảng `post_reactions`.
+  - Toggle Like/Unlike: Xóa bản ghi nếu đã thích, hoặc thêm mới nếu chưa thích.
+  - Action Redirect: `response.sendRedirect(request.getContextPath() + "/tenant/news-feed#post-" + postId)`.
+
+- **`TenantPostCommentServlet`** (`POST /tenant/post-comment`):
+  - Validate nội dung bình luận `content` (không rỗng, <= 1000 ký tự).
+  - Lưu bản ghi mới vào `post_comments` với `user_id` hiện tại.
+  - Action Redirect: `response.sendRedirect(request.getContextPath() + "/tenant/news-feed#post-" + postId)`.
+
+- **`TenantCommentDeleteServlet`** (`POST /tenant/comment-delete`):
+  - Nhận `commentId` và `postId`.
+  - Kiểm tra điều kiện bảo mật chính chủ: `comment.user_id == session.user_id`.
+  - Nếu không đúng chính chủ: Forward trang lỗi `403 Forbidden` (*"Bạn không có quyền xóa bình luận này"*).
+  - Nếu đúng chính chủ: Xóa bản ghi trong `post_comments` và Redirect về `news-feed#post-{postId}`.
+
+## 4. Frontend & Views (JSP & Servlet Flow)
+- **View Template**: `/WEB-INF/views/tenant/news-feed.jsp`
 - **UI Components**:
-  - **News Feed Screen**: Giao diện chính liệt kê các thẻ (Cards) bài viết. Hiển thị thumbnail, title, summary, thời gian và số liệu tương tác (Like, Comment).
-  - **Post Detail Screen**: Hiển thị đầy đủ text, hình ảnh bài viết và khối thông tin tác giả. 
-  - **Like Button**: Nút trạng thái toggle, cập nhật UI tức thì khi nhấn (Optimistic UI) trước khi/trong lúc đợi API trả về.
-  - **Comment Section**: Khung hiển thị danh sách các bình luận + Form nhập nội dung bình luận phía dưới (kèm logic đếm ký tự).
-- **Error Handling / Integration**:
-  - Giao diện "Empty State" khi không có bài viết nào trong ngày hôm nay.
-  - Xử lý mã lỗi `HTTP 404` hiển thị màn hình báo lỗi bài viết không tồn tại.
-  - Client-side validation cho comment text box (hiệu ứng khóa nút Submit nếu độ dài sai).
+  - **News Feed Card List**: Hiển thị danh sách các bài viết `APPROVED` trong 24 giờ qua. Render thông tin tác giả, tiêu đề, hình ảnh (modal phóng to), lượt thích và danh sách bình luận.
+  - **Top Highlight Posts Widget**: Widget hiển thị Top 5 bài viết nổi bật bên cột sidebar.
+  - **Like Action Form**: Form submit nút Thích/Bỏ thích gọi `POST /tenant/post-reaction`.
+  - **Comment Action Form**: Form gửi bình luận trực tiếp `POST /tenant/post-comment`.
+  - **Delete Comment Button**: Chỉ hiển thị nút "Xóa" tại các bình luận do chính Tenant đăng nhập sở hữu (`comment.userId == currentUser.id`), gọi `POST /tenant/comment-delete`.
+- **Error Handling & Protection**:
+  - Giao diện "Empty State" khi không có bài viết nào được duyệt trong 24 giờ qua.
+  - Chuyển hướng về `/login` nếu chưa có Session đăng nhập.
+  - Forward tới trang 403 Forbidden nếu gửi request gỡ bình luận của người dùng khác.

@@ -143,13 +143,12 @@ UNPAID → [Click Thanh toán] → PROCESSING → [IPN Success] → PAID
 - ✓ Error handling & retry logic
 - ✓ API documentation (Swagger)
 
-**Key Endpoints:**
-- `GET /api/v1/tenant/invoices` - List
-- `GET /api/v1/tenant/invoices/{id}` - Detail
-- `POST /api/v1/tenant/invoices/{id}/payment/vnpay` - Create payment URL
-- `GET /api/v1/payment/vnpay/return` - Return URL handler
-- `POST /api/v1/payment/vnpay/ipn` - IPN webhook handler
-- `GET /api/v1/tenant/payments/history` - Payment history
+**Key Servlet Mappings:**
+- `GET /tenant/invoices` - `TenantInvoiceListServlet` (`/WEB-INF/views/tenant/invoice-list.jsp`)
+- `GET /tenant/invoice-detail` - `TenantInvoiceDetailServlet` (`/WEB-INF/views/tenant/invoice-detail.jsp`)
+- `GET /tenant/payment-history` - `TenantPaymentHistoryServlet` (`/WEB-INF/views/tenant/payment-history.jsp`)
+- `POST /tenant/vnpay-payment` - `TenantVnPayPaymentServlet` (Tạo URL Sandbox & Redirect VNPAY)
+- `GET /payment/vnpay-return` - `VnPayReturnServlet` (Verify SecureHash, DB Transaction & Callback Response)
 
 ---
 
