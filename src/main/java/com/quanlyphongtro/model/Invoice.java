@@ -15,7 +15,6 @@ public class Invoice {
     private Integer meterId;
     private LocalDate dueDate;
     private String status;
-    private BigDecimal tax;
     private BigDecimal otherFee;
     private BigDecimal roomFee;
     private BigDecimal electricityPrice;
@@ -73,9 +72,6 @@ public class Invoice {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-
-    public BigDecimal getTax() { return tax; }
-    public void setTax(BigDecimal tax) { this.tax = tax; }
 
     public BigDecimal getOtherFee() { return otherFee; }
     public void setOtherFee(BigDecimal otherFee) { this.otherFee = otherFee; }

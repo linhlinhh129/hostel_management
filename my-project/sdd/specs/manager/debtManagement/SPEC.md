@@ -24,9 +24,19 @@ Trong hệ thống quản lý nhà trọ, công nợ là các hóa đơn chưa �
 - Phí chậm nộp tạm tính để tham khảo.
 - Chi tiết hóa đơn đang nợ.
 
-**Phí chậm nộp tạm tính**: Nếu hóa đơn chưa thanh toán và đã quá hạn, hệ thống sẽ tự động tính phí chậm nộp dựa trên số ngày quá hạn (1% tiền phòng mỗi ngày) và cộng dồn vào `Tổng tiền hóa đơn` hiển thị trên danh sách. Khi thanh toán thành công (chuyển sang `PAID`), giá trị `late_fee` này sẽ được chốt và lưu cố định vào cơ sở dữ liệu.
+**Phí chậm nộp tạm tính**: Nếu hóa đơn chưa thanh toán và đã quá hạn, hệ thống sẽ tự động tính phí chậm nộp dựa trên số ngày quá hạn (1% tiền phòng mỗi ngày). Khoản phí này sẽ được **cộng dồn** vào `Tạm tính` và `Tổng tiền phải nộp` để đảm bảo đồng bộ với hiển thị ở bên danh sách hóa đơn. Khi thanh toán thành công (chuyển sang `PAID`), giá trị `late_fee` này sẽ được chốt và lưu cố định vào cơ sở dữ liệu.
 
 Feature này giúp Ban quản lý theo dõi các khoản chưa thu, kiểm tra hóa đơn quá hạn và chủ động xử lý công nợ với người thuê.
+
+## Làm rõ thông tin (Clarifications)
+
+### Phiên làm việc ngày 2026-07-25
+- Hỏi: Phí phạt chậm nộp hiện tại được quy định là 1% tiền phòng mỗi ngày. Mức 1% này nên được gắn cố định (hardcoded) hay có thể cấu hình được? → Đáp: Gắn cố định 1% (Hardcoded constant)
+- Hỏi: Đặc tả đã định nghĩa tính năng lọc và tìm kiếm cho danh sách công nợ, nhưng chưa xác định thứ tự sắp xếp mặc định. Danh sách công nợ nên được sắp xếp mặc định như thế nào? → Đáp: Sắp xếp theo hạn thanh toán (Cũ nhất xếp trước)
+- Hỏi: Phí tạm tính (Phí phạt chậm nộp) có nên cộng dồn vào Tổng tiền không? → Đáp: Có, phải cộng cả phí tạm tính vào "Tạm tính" và "Tổng tiền phải nộp" để đồng bộ với bên hóa đơn.
+
+### Phiên làm việc ngày 2026-07-25 (Tiếp)
+- Q: Hành động "Nhắc nợ" đối với các hóa đơn quá hạn sẽ được thực hiện qua kênh giao tiếp nào? → A: Gửi thông báo trực tiếp trên hệ thống (In-app notification) cho tài khoản của người thuê.
 
 ---
 
@@ -58,7 +68,7 @@ Là Ban quản lý, tôi muốn hệ thống hiển thị phí chậm nộp tạ
 
 ## Story 7: Xem chi tiết hóa đơn nợ
 
-Là Ban quản lý, tôi muốn xem chi tiết hóa đơn đang nợ để kiểm tra tiền phòng, điện, nước, phí dịch vụ, tiền Internet, phí khác, thuế và tổng tiền phải nộp.
+Là Ban quản lý, tôi muốn xem chi tiết hóa đơn đang nợ để kiểm tra tiền phòng, điện, nước, phí dịch vụ, tiền Internet, phí khác và tổng tiền phải nộp.
 
 ## Story 8: Tìm kiếm và lọc công nợ
 
@@ -131,7 +141,7 @@ KHI danh sách công nợ được hiển thị, THE SYSTEM SHALL hiển thị c
 - Mã phòng
 - Tên người thuê
 - Kỳ hóa đơn
-- Tổng tiền hóa đơn
+- Tổng tiền phải nộp
 - Hạn thanh toán
 - Số ngày nợ
 - Phí chậm nộp tạm tính
@@ -146,7 +156,7 @@ Không có công nợ nào
 Không tìm thấy dữ liệu công nợ phù hợp.
 ```
 
-KHI số lượng công nợ lớn hơn kích thước một trang, THE SYSTEM SHALL hiển thị dữ liệu theo phân trang.
+KHI số lượng công nợ lớn hơn kích thước một trang, THE SYSTEM SHALL hiển thị dữ liệu theo phân trang. KHI danh sách công nợ được truy xuất, THE SYSTEM SHALL mặc định sắp xếp danh sách theo hạn thanh toán tăng dần (Hóa đơn quá hạn lâu nhất hiển thị đầu tiên).
 
 ## 3.2 Truy xuất thông tin phòng
 
@@ -171,7 +181,7 @@ KHI hệ thống lấy danh sách công nợ, THE SYSTEM SHALL nối sang bảng
 KHI hệ thống lấy danh sách công nợ, THE SYSTEM SHALL nối sang bảng `payments` để lấy thông tin thanh toán của hóa đơn. KHI hóa đơn có thanh toán thành công, THE SYSTEM SHALL tính tổng số tiền đã thanh toán từ các bản ghi thanh toán hợp lệ. KHI hóa đơn chưa có thanh toán thành công, THE SYSTEM SHALL xem số tiền đã thanh toán là `0`. KHI tính số tiền còn nợ, THE SYSTEM SHALL tính theo công thức:
 
 ```text
-Số tiền còn nợ = MAX(0, Tổng tiền hóa đơn - Tổng tiền đã thanh toán thành công)
+Số tiền còn nợ = MAX(0, Tổng tiền phải nộp - Tổng tiền đã thanh toán thành công)
 ```
 
 *(Lưu ý: Nếu hệ thống không hỗ trợ thanh toán từng phần, Tổng tiền đã thanh toán thành công thường là 0 đối với hóa đơn* `UNPAID` *hoặc* `OVERDUE`*).*
@@ -204,6 +214,8 @@ KHI hóa đơn ở trạng thái `OVERDUE` (đã quá hạn thanh toán), THE SY
 ```text
 Phí chậm nộp tạm tính = Số ngày nợ * (Tiền phòng * 0.01)
 ```
+
+*(Lưu ý: Mức phạt 1% là hằng số được gán cố định (hardcoded) trong hệ thống, không yêu cầu chức năng cấu hình).*
 
 **Quy tắc đóng băng phí phạt:**
 KHI có một giao dịch thanh toán cho hóa đơn đang ở trạng thái chờ duyệt (`PENDING`), THE SYSTEM SHALL tạm thời đóng băng việc tính phí quá hạn. Số ngày nợ sẽ được tính từ ngày đến hạn đến ngày tạo giao dịch thanh toán đó thay vì ngày hiện tại.
@@ -248,10 +260,10 @@ KHI chi tiết hóa đơn nợ được hiển thị, THE SYSTEM SHALL hiển th
 
 - Các nút hành động: Quay lại danh sách, Xem hóa đơn gốc.
 - Thông tin tính tiền chi tiết (Tiền phòng, Tiền điện, Tiền nước, Phí dịch vụ, Tiền Internet, Phí khác) bao gồm chỉ số cũ, chỉ số mới, mức sử dụng và đơn giá đối với điện/nước.
-- Tổng tiền tạm tính, phần trăm thuế, tiền thuế và tổng tiền phải nộp.
+- Tổng tiền tạm tính và tổng tiền phải nộp.
 - Ghi chú hóa đơn (nếu có).
 - Thông tin người thuê (Họ tên, Số điện thoại, Email).
-- Tình trạng công nợ: Kỳ hóa đơn, Hạn thanh toán, Tổng phải thu, Đã thanh toán và số tiền CÒN NỢ.
+- Tình trạng công nợ: Kỳ hóa đơn, Kỳ hợp đồng, Hạn thanh toán, Tổng phải thu, Đã thanh toán và số tiền CÒN NỢ.
 - Cảnh báo: Số ngày quá hạn và phí chậm nộp tạm tính (nếu có).
 
 KHI hóa đơn không tồn tại, hoặc không thuộc quyền quản lý, THE SYSTEM SHALL trả về HTTP 404 (Not Found) kèm thông báo lỗi tương ứng.
@@ -262,7 +274,7 @@ KHI người dùng có vai trò `Management Board`, THE SYSTEM SHALL cho phép t
 
 ## 3.12 Gửi nhắc nhở thanh toán (Nhắc nợ)
 
-KHI Ban quản lý bấm "Nhắc nợ" trên một hóa đơn có trạng thái `OVERDUE` tại danh sách công nợ, THE SYSTEM SHALL điều hướng người dùng tới chức năng gửi thông báo nhắc nhở thanh toán cho hóa đơn đó.
+KHI Ban quản lý bấm "Nhắc nợ" trên một hóa đơn có trạng thái `OVERDUE` tại danh sách công nợ, THE SYSTEM SHALL điều hướng người dùng tới chức năng gửi thông báo nhắc nhở thanh toán cho hóa đơn đó. Hệ thống sẽ gửi thông báo trực tiếp trên ứng dụng (In-app notification) đến tài khoản của người thuê.
 
 # 4. Servlet Contract
 

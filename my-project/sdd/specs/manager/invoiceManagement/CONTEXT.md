@@ -20,10 +20,9 @@
   - `OVERDUE`: Hóa đơn chưa thanh toán và đã vượt quá hạn thanh toán (`due_date`)\[cite: 4\].
 - **Lưu Snapshot giá**: Cơ chế bắt buộc phải sao lưu cứng toàn bộ đơn giá điện, nước, phí dịch vụ, internet và tiền phòng tại đúng thời điểm nhấn nút tạo hóa đơn\[cite: 4\]. Snapshot này đóng vai trò đóng băng dữ liệu của hóa đơn đó, biệt lập hoàn toàn với các thay đổi bảng giá sau này của hệ thống\[cite: 4\].
 - **Công thức tính tiền tự động**:
-  - $\\text{Số tiêu thụ} = \\text{Chỉ số mới} - \\text{Chỉ số cũ}$\[cite: 4\].
-  - $\\text{Tạm tính} = \\text{Tiền phòng} + \\text{Tiền điện} + \\text{Tiền nước} + \\text{Phí dịch vụ} + \\text{Tiền Internet} + \\text{Phí khác}$\[cite: 4\].
-  - $\\text{Tiền thuế} = \\text{Tạm tính} \\times \\text{Thuế (%)} $\[cite: 4\].
-  - $\\text{Tổng tiền phải nộp} = \\text{Tạm tính} + \\text{Tiền thuế}$\[cite: 4\].
+  - $\text{Số tiêu thụ} = \text{Chỉ số mới} - \text{Chỉ số cũ}$\[cite: 4\].
+  - $\text{Tạm tính} = \text{Tiền phòng} + \text{Tiền điện} + \text{Tiền nước} + \text{Phí dịch vụ} + \text{Tiền Internet} + \text{Phí khác}$\[cite: 4\].
+  - $\text{Tổng tiền phải nộp} = \text{Tạm tính}$\[cite: 4\].
 
 ## 3. STAKEHOLDERS
 
@@ -49,4 +48,3 @@
 
 - **Câu hỏi 1**: Chức năng "Xóa hóa đơn" được đặc tả là "sẽ giải phóng chỉ số điện nước nếu có"\[cite: 4\]. Cụ thể việc giải phóng này nghĩa là gì? Hệ thống sẽ xóa bản ghi chỉ số điện nước của kỳ đó, hay chỉ đơn thuần là gỡ liên kết gán với hóa đơn để chỉ số đó có thể được dùng cho một hóa đơn khác?
 - **Câu hỏi 2**: Khi Ban quản lý bấm "Báo cáo sai số" ở màn hình chi tiết hóa đơn\[cite: 4\], hệ thống sẽ xử lý như thế nào? Luồng nghiệp vụ sẽ chuyển trạng thái hóa đơn về một trạng thái chờ xử lý riêng biệt, hay sẽ gửi thông báo đến phân hệ ghi nhận chỉ số điện nước để yêu cầu kiểm tra lại công tơ?
-- **Câu hỏi 3**: Đối với trường nhập "Thuế (%)" khi tạo hóa đơn\[cite: 4\], hệ thống có cần quy định mức trần tối đa (ví dụ: không quá 10%) để tránh trường hợp người dùng gõ nhầm số quá lớn làm sai lệch nghiêm trọng tổng số tiền phải nộp không?

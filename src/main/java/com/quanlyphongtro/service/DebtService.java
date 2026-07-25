@@ -10,4 +10,5 @@ public interface DebtService {
     List<DebtListItemDTO> getDebts(int managerId, String keyword, String status, int page, int pageSize);
     int getTotalPages(int managerId, String keyword, String status, int pageSize);
     Optional<DebtDetailDTO> getDebtDetail(int managerId, int invoiceId);
+    void sendRemindNotification(int managerId, int invoiceId) throws Exception;
 }

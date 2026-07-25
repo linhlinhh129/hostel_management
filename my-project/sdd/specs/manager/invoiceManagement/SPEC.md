@@ -10,7 +10,7 @@
 
 # 1. Business Context
 
-Trong hệ thống quản lý nhà trọ, hóa đơn là tài liệu tài chính được sử dụng để ghi nhận các khoản phí mà người thuê phải thanh toán trong từng kỳ. Mỗi hóa đơn được tạo dựa trên thông tin phòng thuê, kỳ hạn hóa đơn, hạn thanh toán, tiền phòng cố định, chỉ số điện, chỉ số nước, đơn giá điện, đơn giá nước, phí dịch vụ, tiền Internet, phí khác phát sinh trong kỳ, thuế áp dụng theo quy định của hệ thống và ghi chú nếu có. Khi Ban quản lý tạo hóa đơn, người dùng không cần nhập thủ công toàn bộ thông tin tiền điện, tiền nước, phí dịch vụ, tiền Internet. Hệ thống sẽ tự động truy xuất dữ liệu từ các bảng liên quan:
+Trong hệ thống quản lý nhà trọ, hóa đơn là tài liệu tài chính được sử dụng để ghi nhận các khoản phí mà người thuê phải thanh toán trong từng kỳ. Mỗi hóa đơn được tạo dựa trên thông tin phòng thuê, kỳ hạn hóa đơn, hạn thanh toán, tiền phòng cố định, chỉ số điện, chỉ số nước, đơn giá điện, đơn giá nước, phí dịch vụ, tiền Internet, phí khác phát sinh trong kỳ và ghi chú nếu có. Khi Ban quản lý tạo hóa đơn, người dùng không cần nhập thủ công toàn bộ thông tin tiền điện, tiền nước, phí dịch vụ, tiền Internet. Hệ thống sẽ tự động truy xuất dữ liệu từ các bảng liên quan:
 
 - Thông tin phòng từ bảng phòng.
 - Thông tin cơ sở của phòng.
@@ -22,10 +22,15 @@ Trong hệ thống quản lý nhà trọ, hóa đơn là tài liệu tài chính
 - Số nước tiêu thụ và Thành tiền nước.
 - Phí dịch vụ và Tiền Internet.
 - Tạm tính.
-- Tiền thuế.
 - Tổng tiền phải nộp.
 
 Hóa đơn đóng vai trò là căn cứ để người thuê thực hiện thanh toán và để Ban quản lý theo dõi tình trạng thu tiền. Feature Quản lý hóa đơn cho phép Ban quản lý tạo hóa đơn, xem danh sách hóa đơn, tìm kiếm hóa đơn, xem chi tiết hóa đơn, điều chỉnh thông tin hóa đơn trước khi phát hành và xuất hóa đơn dưới dạng tài liệu PDF để lưu trữ hoặc gửi cho các bên liên quan. Feature này giúp chuẩn hóa quy trình quản lý tài chính, đảm bảo tính chính xác của dữ liệu hóa đơn và hỗ trợ kiểm soát công nợ trong hệ thống nhà trọ.
+
+## Clarifications
+
+### Session 2026-07-25
+- Q: Chức năng "Xóa hóa đơn" được yêu cầu là "giải phóng chỉ số điện nước". Việc giải phóng này nên được thực hiện như thế nào? → A: Đã bỏ chức năng xóa hóa đơn khỏi hệ thống.
+- Q: Khi Ban quản lý bấm "Báo cáo sai số" ở màn hình chi tiết hóa đơn, hệ thống nên xử lý luồng nghiệp vụ này ra sao? → A: Chỉ gửi thông báo hệ thống/Email cho nhân viên ghi điện nước mà không làm thay đổi trạng thái hóa đơn.
 
 ---
 
@@ -79,7 +84,6 @@ KHI form tạo hóa đơn được hiển thị, THE SYSTEM SHALL cho phép Ban 
 - Kỳ hạn hóa đơn
 - Hạn thanh toán
 - Phí khác
-- Thuế (%)
 - Note
 
 KHI Ban quản lý chọn mã phòng, THE SYSTEM SHALL kiểm tra phòng tồn tại và hợp lệ.
@@ -87,8 +91,6 @@ KHI Ban quản lý chọn mã phòng, THE SYSTEM SHALL kiểm tra phòng tồn t
 KHI Ban quản lý chọn kỳ hạn hóa đơn, THE SYSTEM SHALL sử dụng kỳ hạn đó để tạo hóa đơn cho phòng được chọn.
 
 KHI Ban quản lý nhập phí khác, THE SYSTEM SHALL kiểm tra phí khác lớn hơn hoặc bằng 0.
-
-KHI Ban quản lý nhập thuế, THE SYSTEM SHALL kiểm tra thuế lớn hơn hoặc bằng 0.
 
 KHI Ban quản lý tạo hóa đơn với dữ liệu hợp lệ, THE SYSTEM SHALL tự động truy xuất các dữ liệu cần thiết từ các bảng liên quan để tính hóa đơn.
 
@@ -99,8 +101,6 @@ KHI hóa đơn được tạo thành công, THE SYSTEM SHALL lưu hóa đơn m�
 KHI mã phòng không tồn tại, THE SYSTEM SHALL trả về HTTP 404 với mã lỗi `ROOM_NOT_FOUND`.
 
 KHI hạn thanh toán nhỏ hơn ngày hiện tại, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_DUE_DATE`.
-
-KHI thuế nhỏ hơn 0, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_TAX_RATE`.
 
 KHI phí khác nhỏ hơn 0, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_OTHER_FEE`.
 
@@ -156,9 +156,7 @@ KHI truy xuất được tiền phòng cố định, THE SYSTEM SHALL đưa ti�
 
 KHI đã có tiền phòng, tiền điện, tiền nước, phí dịch vụ, tiền Internet và phí khác, THE SYSTEM SHALL tính tạm tính.
 
-KHI đã có tạm tính và thuế, THE SYSTEM SHALL tính tiền thuế.
-
-KHI đã có tạm tính và tiền thuế, THE SYSTEM SHALL tính tổng tiền phải nộp.
+KHI đã có tạm tính, THE SYSTEM SHALL tính tổng tiền phải nộp bằng giá trị tạm tính.
 
 KHI không tìm thấy dữ liệu đơn giá điện, đơn giá nước, phí dịch vụ, hoặc tiền Internet của cơ sở, THE SYSTEM SHALL từ chối tạo hóa đơn và trả về HTTP 400 với mã lỗi `FACILITY_PRICE_NOT_FOUND`.
 
@@ -182,8 +180,7 @@ KHI chỉ số nước mới nhỏ hơn chỉ số nước cũ, THE SYSTEM SHALL
 - `Số tiêu thụ` = `Chỉ số mới` - `Chỉ số cũ`
 - `Thành tiền điện/nước` = `Số tiêu thụ` × `Đơn giá tương ứng`
 - `Tạm tính` = `Tiền phòng` + `Tiền điện` + `Tiền nước` + `Phí dịch vụ` + `Tiền Internet` + `Phí khác`
-- `Tiền thuế` = `Tạm tính` × `Thuế (%)`
-- `Tổng tiền phải nộp` = `Tạm tính` + `Tiền thuế`
+- `Tổng tiền phải nộp` = `Tạm tính`
 
 ## 3.3 Xem danh sách hóa đơn
 
@@ -212,11 +209,14 @@ Hiện tại chưa có hóa đơn nào.
 
 KHI Ban quản lý chọn một hóa đơn, THE SYSTEM SHALL hiển thị:
 
-- Các nút chức năng trên header: Xuất PDF/In, Báo cáo sai số, Sửa hóa đơn, Xóa hóa đơn (tùy theo trạng thái thanh toán)
+- Các nút chức năng trên header: Xuất PDF/In, Báo cáo sai số, Sửa hóa đơn (tùy theo trạng thái thanh toán)
 - Thông tin tính tiền (Tiền phòng, điện, nước, phí dịch vụ, Internet, phí khác)
 - Chỉ số cũ, mới, mức sử dụng, đơn giá, và thành tiền chi tiết cho điện nước
-- Tạm tính, Thuế, Tổng tiền phải nộp
-- Phí chậm nộp (Nếu hóa đơn quá hạn. KHI có giao dịch thanh toán chờ duyệt, phí phạt được đóng băng tại thời điểm tạo giao dịch thay vì tính đến hiện tại).
+- Tạm tính, Tổng tiền phải nộp
+- Phí chậm nộp (Nếu hóa đơn quá hạn).
+  - **Quy tắc đóng băng phí phạt:** KHI có một giao dịch thanh toán (trong bảng `payment`) cho hóa đơn đang chờ duyệt (`PENDING`), số tiền phí quá hạn sẽ không được tính thêm nữa mà giữ nguyên lúc tenant vừa tạo payment.
+  - KHI Ban quản lý chấp nhận giao dịch, THE SYSTEM SHALL lưu mức phí phạt đã đóng băng này vào cơ sở dữ liệu.
+  - KHI Ban quản lý từ chối giao dịch, THE SYSTEM SHALL tiếp tục đếm số ngày nợ và tính phí phạt bình thường cho đến khi tenant thanh toán.
 - Ghi chú (Note)
 - Hình ảnh công tơ điện, công tơ nước (nếu có)
 - Thông tin người thuê (Họ tên, SĐT, Email)
@@ -224,13 +224,13 @@ KHI Ban quản lý chọn một hóa đơn, THE SYSTEM SHALL hiển thị:
 
 KHI hóa đơn không tồn tại, THE SYSTEM SHALL trả về HTTP 404 với mã lỗi `INVOICE_NOT_FOUND`.
 
+KHI Ban quản lý bấm "Báo cáo sai số", THE SYSTEM SHALL gửi thông báo hệ thống/Email cho nhân viên ghi điện nước yêu cầu kiểm tra lại công tơ, mà KHÔNG làm thay đổi trạng thái hiện tại của hóa đơn.
+
 ## 3.5 Điều chỉnh hóa đơn
 
 KHI Ban quản lý cập nhật hóa đơn với dữ liệu hợp lệ, THE SYSTEM SHALL lưu thông tin hóa đơn mới.
 
 KHI phí khác thay đổi, THE SYSTEM SHALL cập nhật lại mức tạm tính và tổng tiền phải nộp.
-
-KHI thuế thay đổi, THE SYSTEM SHALL tính lại tiền thuế và cập nhật tổng tiền phải nộp.
 
 KHI Note thay đổi, THE SYSTEM SHALL lưu lại nội dung Note mới.
 
@@ -241,8 +241,6 @@ KHI chỉ số điện mới nhỏ hơn chỉ số điện cũ, THE SYSTEM SHALL
 KHI chỉ số nước mới nhỏ hơn chỉ số nước cũ, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_WATER_READING`.
 
 KHI hạn thanh toán nhỏ hơn ngày hiện tại, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_DUE_DATE`.
-
-KHI thuế nhỏ hơn 0, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_TAX_RATE`.
 
 KHI phí khác nhỏ hơn 0, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_OTHER_FEE`.
 
@@ -290,7 +288,6 @@ KHI người dùng không có vai trò `Management Board`, THE SYSTEM SHALL tr�
 | **URL Pattern** | `GET /manager/invoices/{id}/edit` — form chỉnh sửa hóa đơn |
 | **URL Pattern** | `POST /manager/invoices/{id}/edit` — lưu cập nhật hóa đơn |
 | **URL Pattern** | `POST /manager/invoices/{id}/update-status` — cập nhật trạng thái hóa đơn |
-| **URL Pattern** | `POST /manager/invoices/{id}/delete` — xóa hóa đơn (sẽ giải phóng chỉ số điện nước nếu có) |
 | **Phân quyền** | Role = `MANAGER` hoặc `ADMIN` |
 
 ---
@@ -328,7 +325,7 @@ KHI người dùng không có vai trò `Management Board`, THE SYSTEM SHALL tr�
 | --- | --- | --- |
 | `roomCode` | Không rỗng, phòng tồn tại | Phòng không hợp lệ |
 | `billingPeriod` | Format hợp lệ | Yêu cầu định dạng kỳ hạn |
-| `taxRate`, `otherFee` | Số thực lớn hơn hoặc bằng 0 | Không đúng định dạng số lượng/phí |
+| `otherFee` | Số thực lớn hơn hoặc bằng 0 | Không đúng định dạng số lượng/phí |
 | Logic | Phòng chưa có Hóa đơn trong kỳ | `IllegalArgumentException` (Phòng đã có hóa đơn trong kỳ này) |
 | Liên kết | Lấy tự động chỉ số điện/nước cũ/mới, giá dịch vụ | Báo lỗi nếu chưa nhập điện/nước cho kỳ |
 
@@ -339,7 +336,7 @@ KHI người dùng không có vai trò `Management Board`, THE SYSTEM SHALL tr�
 | Form param | Điều kiện hợp lệ | Lỗi trả về (`errorMessage`) |
 | --- | --- | --- |
 | `dueDate` | Không rỗng, date hợp lệ | Ngày hết hạn không hợp lệ |
-| `taxRate`, `otherFee` | Số hợp lệ | Không thể parse số tiền / phí |
+| `otherFee` | Số hợp lệ | Không thể parse số tiền / phí |
 | Trạng thái | Chỉ cho phép khi hóa đơn chưa thanh toán hoàn tất | Báo lỗi nếu cố cập nhật lúc đã `PAID` |
 
 ---
@@ -352,7 +349,7 @@ KHI người dùng không có vai trò `Management Board`, THE SYSTEM SHALL tr�
 | Role không hợp lệ | `403 Access Denied` |
 | `id` rỗng/sai format | Trả về HTTP 400 Bad Request |
 | Cập nhật, tạo mới thất bại | Bắt `IllegalArgumentException` và Forward lại view JSP kèm `errorMessage` |
-| Xóa, thay đổi trạng thái thất bại | Gán `errorMessage` vào Session (hoặc SetFlashMessage) và Redirect |
+| Thay đổi trạng thái thất bại | Gán `errorMessage` vào Session (hoặc SetFlashMessage) và Redirect |
 
 ---
 

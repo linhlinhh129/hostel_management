@@ -86,11 +86,10 @@ public class InvoiceServlet extends BaseServlet {
                 String roomCode = req.getParameter("roomCode");
                 String billingPeriod = req.getParameter("billingPeriod");
                 String dueDate = req.getParameter("dueDate");
-                String taxRate = req.getParameter("taxRate");
                 String otherFee = req.getParameter("otherFee");
                 String note = req.getParameter("note");
 
-                invoiceService.createInvoice(user.getId(), roomCode, billingPeriod, dueDate, taxRate, otherFee, note, user.getId());
+                invoiceService.createInvoice(user.getId(), roomCode, billingPeriod, dueDate, otherFee, note, user.getId());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices");
             } catch (IllegalArgumentException e) {
                 req.setAttribute("errorMessage", e.getMessage());

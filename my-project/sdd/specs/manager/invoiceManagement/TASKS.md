@@ -1,52 +1,48 @@
-# TASKS: Quản lý hóa đơn
+# Tasks: Quản lý hóa đơn (Loại bỏ Thuế, Thêm Kỳ hợp đồng, Freeze Phí Phạt)
 
-## Phase 1: Setup & Foundational
-- [x] T001 Create `InvoiceListItemDTO` with necessary fields in `src/main/java/com/quanlyphongtro/dto/InvoiceListItemDTO.java`
-- [x] T002 Create `InvoiceDetailDTO` with necessary fields in `src/main/java/com/quanlyphongtro/dto/InvoiceDetailDTO.java`
-- [x] T003 Create `InvoiceService` interface in `src/main/java/com/quanlyphongtro/service/InvoiceService.java`
+**Input**: Design documents from `/my-project/sdd/specs/manager/invoiceManagement/`
 
-## Phase 2: Danh sách và Tìm kiếm Hóa Đơn (US3, US7, US9)
-**Goal:** Hiển thị danh sách hóa đơn với phân trang và lọc.
-**Test Criteria:** 
-- Phân quyền MANAGER thành công.
-- Trả về danh sách chính xác với keyword và bộ lọc.
-**Implementation:**
-- [x] T004 [US3] Add `getInvoices` and `countInvoices` methods to `InvoiceDAO` in `src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java`
-- [x] T005 [US3] Implement `getInvoices` in `InvoiceServiceImpl` in `src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java`
-- [x] T006 [US3] Create `InvoiceServlet` handling GET `/manager/invoices` in `src/main/java/com/quanlyphongtro/controller/manager/InvoiceServlet.java`
-- [x] T007 [US3] Create UI `list.jsp` for displaying table of invoices with search/filters in `src/main/webapp/WEB-INF/views/manager/invoices/list.jsp`
+## Phase 1: Models & DTOs (Data Layer Updates)
 
-## Phase 3: Tạo hóa đơn (US1, US2)
-**Goal:** Cho phép quản lý tạo hóa đơn, tự động snapshot dữ liệu và tính tiền.
-**Test Criteria:**
-- Tự động lấy giá điện, nước từ `facilities`, và lấy chỉ số điện nước chốt trong kỳ từ `meter_readings`.
-- Tính toán chính xác tổng tiền.
-- Từ chối và ném exception nếu phòng chưa chốt số điện nước trong kỳ.
-**Implementation:**
-- [x] T008 [US1] Add `createInvoice` and methods to fetch facility prices and meter readings to `InvoiceDAO` in `src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java`
-- [x] T009 [US1] Implement `createInvoice` logic (snapshot price, calculate amounts) inside a transaction in `InvoiceServiceImpl` in `src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java`
-- [x] T010 [US1] Update `InvoiceServlet` to handle GET and POST for `action=create` in `src/main/java/com/quanlyphongtro/controller/manager/InvoiceServlet.java`
-- [x] T011 [US1] Create UI `create.jsp` in `src/main/webapp/WEB-INF/views/manager/invoices/create.jsp`
+**Purpose**: Cập nhật cấu trúc dữ liệu để phù hợp với nghiệp vụ mới (Bỏ Thuế, Thêm Kỳ Hợp Đồng)
+- [x] T001 [P] [US4] Bổ sung trường `contractPeriod` (String) vào `src/main/java/com/quanlynhatro/dto/InvoiceDetailDTO.java`.
+- [x] T002 [P] [US1] Loại bỏ hoàn toàn trường `taxRate` khỏi Entity `src/main/java/com/quanlynhatro/model/Invoice.java`.
+- [x] T003 [P] [US4] Loại bỏ trường `taxRate` và `taxAmount` (nếu có) khỏi `InvoiceDetailDTO` và các DTO Create/Update liên quan.
 
-## Phase 4: Chi tiết, Điều chỉnh, và In hóa đơn (US4, US5, US6, US8)
-**Goal:** Xem chi tiết, chỉnh sửa thông tin chưa thanh toán, đổi trạng thái, hiển thị Kỳ hợp đồng và in hóa đơn (PDF browser print).
-**Test Criteria:**
-- 404 cho hóa đơn không tồn tại.
-- Hiển thị chính xác Kỳ hợp đồng (`dd/MM/yyyy - dd/MM/yyyy`) từ hợp đồng liên kết với phòng trọ.
-- Bản in ẩn đi topbar và sidebar.
-**Implementation:**
-- [x] T012 [P] [US4] Add `getInvoiceDetail`, `updateInvoice`, `deleteInvoice`, `updateStatus` to `InvoiceDAO` in `src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java`
-- [x] T013 [US4] Implement detail, update, delete logic (recalculate amounts on update) in `InvoiceServiceImpl` in `src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java`
-- [x] T014 [US4] Create `InvoiceDetailServlet` handling detail, edit, delete, update-status in `src/main/java/com/quanlyphongtro/controller/manager/InvoiceDetailServlet.java`
-- [x] T015 [US4] Create UI `detail.jsp` displaying all info and including print styles (`@media print`) in `src/main/webapp/WEB-INF/views/manager/invoices/detail.jsp`
-- [x] T016 [US5] Create UI `edit.jsp` for adjusting unpaid invoices in `src/main/webapp/WEB-INF/views/manager/invoices/edit.jsp`
-- [x] T017 [US4] Add `contractPeriod` field to `InvoiceDetailDTO`, fetch `start_date` & `end_date` in `InvoiceDAO.findById`, and render in `detail.jsp`
+## Phase 2: DAO & Service (Business Logic Updates)
 
-## Dependencies
-- Phase 1 must be completed first.
-- Phase 2, Phase 3, Phase 4 can be developed in parallel for DAO/Service, but Servlets and UIs depend on respective Services.
+**Purpose**: Cập nhật câu truy vấn DB và logic tính toán
+- [x] T004 [US4] Cập nhật phương thức `findById` trong `src/main/java/com/quanlynhatro/dao/InvoiceDAO.java` để `JOIN` bảng `contracts`, lấy `contract_start_date` và `contract_end_date`, sau đó format và gán vào `contractPeriod` của `InvoiceDetailDTO`.
+- [x] T005 [P] [US1] Loại bỏ `tax_rate` khỏi các câu lệnh `INSERT`, `UPDATE` trong `InvoiceDAO.java`.
+- [x] T006 [US1] Xóa bỏ các công thức tính thuế (taxAmount) và tính lại `totalAmount = subtotal + lateFee` trong `src/main/java/com/quanlynhatro/service/impl/InvoiceServiceImpl.java`.
+- [x] T007 [US4] Cập nhật logic "Báo cáo sai số" trong `InvoiceServiceImpl.java` để gửi thông báo (Insert vào bảng `notifications` hoặc ghi log) mà KHÔNG thay đổi trạng thái hóa đơn.
+- [x] T008 [P] [US5] Xóa bỏ hoàn toàn endpoint và logic "Xóa hóa đơn" (Delete) khỏi `InvoiceServlet` và `InvoiceService`.
 
-## Implementation Strategy
-- Hoàn thiện Phase 1 & Phase 2 để hiển thị được danh sách.
-- Tập trung xử lý tính tiền phức tạp ở Phase 3.
-- Hoàn thiện xem chi tiết, hiển thị Kỳ hợp đồng và in ấn ở Phase 4.
+## Phase 3: Views (JSP)
+
+**Purpose**: Cập nhật giao diện người dùng
+- [x] T009 [P] [US4] Hiển thị "Kỳ hợp đồng" trong `src/main/webapp/WEB-INF/views/manager/invoices/detail.jsp`.
+- [x] T010 [P] [US1] Xóa các trường nhập liệu và hiển thị liên quan đến Thuế (Thuế %, Tiền thuế) trong `create.jsp`, `edit.jsp` và `detail.jsp`.
+- [x] T011 [P] [US5] Xóa nút "Xóa hóa đơn" khỏi giao diện của `detail.jsp` và `list.jsp` (nếu có).
+- [x] T012 [P] [US4] Đảm bảo nút "Báo cáo sai số" gọi đúng endpoint mới (chỉ gửi thông báo) và hiển thị thông báo thành công cho người dùng mà không đổi màu trạng thái.
+
+## Phase 4: Đóng băng phí phạt (Late Fee Freeze)
+
+**Purpose**: Implement tính năng ngưng đếm ngày quá hạn khi có giao dịch thanh toán chờ duyệt
+- [x] T015 [US6] Cập nhật truy vấn SQL trong `InvoiceDAO.java` bổ sung cột `pending_payment_date` thông qua subquery tìm payment `PENDING` mới nhất.
+- [x] T016 [US6] Trong hàm tính toán phí phạt của `InvoiceDAO.java`, kiểm tra `pending_payment_date`: nếu có thì dùng ngày đó thay vì `LocalDate.now()` làm mốc kết thúc tính số ngày nợ.
+
+## Phase 5: Polish & Cross-Cutting Concerns
+
+**Purpose**: Xác minh tính toàn vẹn của ứng dụng
+- [x] T013 Biên dịch lại dự án (`mvn clean package`) để đảm bảo không có lỗi compile sau khi xóa trường `taxRate`.
+- [x] T014 Chạy ứng dụng và kiểm tra tạo hóa đơn mới không có thuế, và xem chi tiết hiển thị đúng kỳ hợp đồng.
+- [x] T017 Kiểm thử Scenario Đóng băng phí phạt (như mô tả trong `quickstart.md`).
+
+---
+
+## Dependencies & Execution Order
+- Phase 1 (Models) cần làm trước tiên để tránh lỗi biên dịch.
+- Phase 2 (DAO/Service) phụ thuộc vào Phase 1.
+- Phase 3 (Views) có thể làm độc lập về mặt HTML/CSS, nhưng để chạy được phải chờ Phase 1 & 2 hoàn tất.
+- Phase 4 (Late Fee Freeze) hoàn toàn thuộc phạm vi truy vấn DB và Logic DAO, có thể độc lập triển khai.

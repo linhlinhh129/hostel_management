@@ -91,8 +91,20 @@ public class DebtDAO extends BaseDAO {
                             BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
                                                         .multiply(new BigDecimal(daysLate))
                                                         .setScale(0, RoundingMode.HALF_UP);
-                            if (baseTotal != null) baseTotal = baseTotal.add(lateFee);
+                            if (baseTotal != null) {
+                                baseTotal = baseTotal.add(lateFee);
+                            } else {
+                                baseTotal = lateFee;
+                            }
+                            dto.setLateFeePreview(lateFee);
+                            dto.setOverdueDays((int) daysLate);
+                        } else {
+                            dto.setLateFeePreview(BigDecimal.ZERO);
+                            dto.setOverdueDays(0);
                         }
+                    } else {
+                        dto.setLateFeePreview(BigDecimal.ZERO);
+                        dto.setOverdueDays(0);
                     }
                     dto.setInvoiceTotalAmount(baseTotal);
                     dto.setRoomFee(roomFee);
@@ -158,23 +170,25 @@ public class DebtDAO extends BaseDAO {
     }
 
     public Optional<DebtDetailDTO> findDebtDetail(int managerId, int invoiceId) {
-        String sql = "SELECT i.invoice_id, i.code AS invoice_code, r.code AS room_code, " +
-            "u.user_id AS tenant_id, u.full_name AS tenant_name, u.phone AS tenant_phone, u.email AS tenant_email, " +
+        String sql = "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, " +
+            "COALESCE(u.user_id, c.tenant_id) AS tenant_id, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, u.email AS tenant_email, " +
             "f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
+            "c.start_date AS contract_start_date, c.end_date AS contract_end_date, " +
             "i.room_fee, " +
             "m_new.electric AS new_electric, " +
             "(SELECT TOP 1 m_old.electric FROM meter_readings m_old WHERE m_old.room_id = i.room_id AND m_old.reading_date < m_new.reading_date ORDER BY m_old.reading_date DESC) AS old_electric, " +
             "m_new.water AS new_water, " +
             "(SELECT TOP 1 m_old.water FROM meter_readings m_old WHERE m_old.room_id = i.room_id AND m_old.reading_date < m_new.reading_date ORDER BY m_old.reading_date DESC) AS old_water, " +
             "i.electricity_price, i.water_price, " +
-            "i.service_fee, i.internet_fee, i.other_fee, i.tax AS tax_rate, i.total_amount, " +
+            "i.service_fee, i.internet_fee, i.other_fee, i.total_amount, " +
             "i.due_date, i.status, i.note, i.created_at, i.created_by, i.updated_at, " +
             "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount, " +
             "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "LEFT JOIN meter_readings m_new ON i.meter_id = m_new.meter_id " +
-            "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+            "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = i.room_id ORDER BY CASE WHEN CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC) " +
+            "LEFT JOIN users u ON COALESCE(c.tenant_id, r.tenant_id) = u.user_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
             "WHERE i.deleted_at IS NULL AND i.invoice_id = ? AND f.manager_id = ? AND i.status IN ('UNPAID', 'OVERDUE')";
 
@@ -187,6 +201,7 @@ public class DebtDAO extends BaseDAO {
                     DebtDetailDTO dto = new DebtDetailDTO();
                     dto.setInvoiceId(rs.getInt("invoice_id"));
                     dto.setInvoiceCode(rs.getString("invoice_code"));
+                    dto.setRoomId(rs.getInt("room_id"));
                     dto.setRoomCode(rs.getString("room_code"));
                     
                     dto.setTenantId(rs.getInt("tenant_id"));
@@ -197,6 +212,15 @@ public class DebtDAO extends BaseDAO {
                     dto.setFacilityId(rs.getInt("facility_id"));
                     dto.setFacilityCode(rs.getString("facility_code"));
                     dto.setFacilityName(rs.getString("facility_name"));
+                    
+                    Date cStart = rs.getDate("contract_start_date");
+                    Date cEnd = rs.getDate("contract_end_date");
+                    if (cStart != null && cEnd != null) {
+                        java.text.SimpleDateFormat sdfDate = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                        dto.setContractPeriod(sdfDate.format(cStart) + " - " + sdfDate.format(cEnd));
+                    } else {
+                        dto.setContractPeriod("Chưa có hợp đồng");
+                    }
                     
                     dto.setRoomFee(rs.getBigDecimal("room_fee"));
                     
@@ -262,26 +286,23 @@ public class DebtDAO extends BaseDAO {
                     if (dto.getServiceFee() != null) subtotal = subtotal.add(dto.getServiceFee());
                     if (dto.getInternetFee() != null) subtotal = subtotal.add(dto.getInternetFee());
                     if (dto.getOtherFee() != null) subtotal = subtotal.add(dto.getOtherFee());
-                    subtotal = subtotal.add(lateFee); // cộng phí chậm nộp vào tạm tính riêng
+                    
+                    BigDecimal originalSubtotal = subtotal;
+                    
+                    // Cộng phí chậm nộp vào subtotal theo đặc tả mới
+                    if (lateFee != null && lateFee.compareTo(BigDecimal.ZERO) > 0) {
+                        subtotal = subtotal.add(lateFee);
+                    }
                     dto.setSubtotal(subtotal);
                     
-                    BigDecimal taxRate = rs.getBigDecimal("tax_rate");
-                    dto.setTaxRate(taxRate);
-                    if (taxRate != null && taxRate.compareTo(BigDecimal.ZERO) > 0) {
-                        dto.setTaxAmount(subtotal.multiply(taxRate).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP));
-                    } else {
-                        dto.setTaxAmount(BigDecimal.ZERO);
-                    }
-                    
-                    // invoiceTotalAmount = subtotal + taxAmount (đã bao gồm lateFee)
-                    BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : BigDecimal.ZERO;
-                    BigDecimal totalWithLateFee = subtotal.add(taxAmt);
-                    dto.setInvoiceTotalAmount(totalWithLateFee);
+                    // invoiceTotalAmount = subtotal
+                    BigDecimal totalAmount = subtotal;
+                    dto.setInvoiceTotalAmount(totalAmount);
                     dto.setPaidAmount(rs.getBigDecimal("paid_amount"));
                     
-                    // Số còn nợ = tổng (đã gồm lateFee) - đã thanh toán
+                    // Số còn nợ = tổng - đã thanh toán
                     BigDecimal paid = dto.getPaidAmount() != null ? dto.getPaidAmount() : BigDecimal.ZERO;
-                    dto.setDebtAmount(totalWithLateFee.subtract(paid).max(BigDecimal.ZERO));
+                    dto.setDebtAmount(totalAmount.subtract(paid).max(BigDecimal.ZERO));
                     
                     Date dueDate = rs.getDate("due_date");
                     if (dueDate != null) {

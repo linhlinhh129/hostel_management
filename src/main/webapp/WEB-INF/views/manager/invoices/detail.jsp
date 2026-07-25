@@ -25,7 +25,10 @@
             <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
             <div class="d-flex gap-2 flex-wrap align-items-center">
             <c:if test="${invoice.status ne 'PAID'}">
-              <a href="${ctx}/manager/notifications/send-operator?invoiceId=${invoice.invoiceId}" class="btn text-decoration-none text-white" style="background-color: #f59e0b; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">Báo cáo sai số</a>
+              <form action="${ctx}/manager/invoices/${invoice.invoiceId}/report-error" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn báo cáo sai số hóa đơn này?');">
+                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}" />
+                <button type="submit" class="btn text-white" style="background-color: #f59e0b; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem; border:none;">Báo cáo sai số</button>
+              </form>
               <a href="${ctx}/manager/invoices/${invoice.invoiceId}/edit" class="btn-mintlify-secondary text-decoration-none">Sửa Hóa Đơn</a>
             </c:if>
             <button onclick="window.print()" class="btn-mintlify-primary">Xuất PDF / In</button>
@@ -135,14 +138,6 @@
                     </c:if>
                   </tbody>
                   <tfoot>
-                    <tr>
-                      <td colspan="5" style="text-align:right"><strong>Tạm tính:</strong></td>
-                      <td style="text-align:right"><strong><fmt:formatNumber value="${invoice.subtotal != null ? invoice.subtotal : 0}" pattern="#,##0"/> đ</strong></td>
-                    </tr>
-                    <tr>
-                      <td colspan="5" style="text-align:right"><strong>Thuế (<c:out value="${invoice.taxRate != null ? invoice.taxRate : 0}"/>%):</strong></td>
-                      <td style="text-align:right"><strong><fmt:formatNumber value="${invoice.taxAmount != null ? invoice.taxAmount : 0}" pattern="#,##0"/> đ</strong></td>
-                    </tr>
                     <tr style="background:var(--hms-primary-soft); color:var(--hms-primary-dark);">
                       <td colspan="5" style="text-align:right; font-size:1.1rem"><strong>Tổng tiền phải nộp:</strong></td>
                       <td style="text-align:right; font-size:1.1rem"><strong><fmt:formatNumber value="${invoice.totalAmount != null ? invoice.totalAmount : 0}" pattern="#,##0"/> đ</strong></td>

@@ -132,18 +132,23 @@
                                                                     Xem
                                                                 </a>
                                                                 <c:if test="${debt.status == 'OVERDUE'}">
-                                                                    <a href="${ctx}/manager/notifications/send-debt-reminder?invoiceId=${debt.invoiceId}"
-                                                                        class="btn-mintlify-primary text-decoration-none ms-1"
-                                                                        style="padding:4px 12px;font-size:0.8125rem;background-color:#d97706;border-color:#d97706;color:#ffffff;display:inline-flex;align-items:center;gap:4px;"
-                                                                        onclick="event.stopPropagation();"
-                                                                        title="Gửi nhắc nhở thanh toán">
-                                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                                                                            <line x1="12" y1="9" x2="12" y2="13"/>
-                                                                            <line x1="12" y1="17" x2="12.01" y2="17"/>
-                                                                        </svg>
-                                                                        Nhắc nợ
-                                                                    </a>
+                                                                    <form action="${ctx}/manager/debts" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn nhắc nợ hóa đơn này không?');">
+                                                                        <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}" />
+                                                                        <input type="hidden" name="action" value="remind">
+                                                                        <input type="hidden" name="id" value="${debt.invoiceId}">
+                                                                        <button type="submit"
+                                                                            class="btn-mintlify-primary text-decoration-none ms-1"
+                                                                            style="padding:4px 12px;font-size:0.8125rem;background-color:#d97706;border-color:#d97706;color:#ffffff;display:inline-flex;align-items:center;gap:4px;"
+                                                                            onclick="event.stopPropagation();"
+                                                                            title="Gửi nhắc nhở thanh toán">
+                                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                                                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                                                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                                                            </svg>
+                                                                            Nhắc nợ
+                                                                        </button>
+                                                                    </form>
                                                                 </c:if>
                                                             </td>
                                                         </tr>
