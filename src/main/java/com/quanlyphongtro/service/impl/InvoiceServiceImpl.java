@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service.impl;
+
 import java.math.RoundingMode;
 
 import com.quanlyphongtro.dao.InvoiceDAO;
@@ -42,7 +43,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod, int page, int pageSize) {
+    public List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod,
+            int page, int pageSize) {
         int offset = (page - 1) * pageSize;
         return invoiceDAO.findInvoices(managerId, keyword, status, billingPeriod, offset, pageSize);
     }
@@ -56,13 +58,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceDetailDTO getInvoiceDetail(int managerId, int invoiceId) throws Exception {
         InvoiceDetailDTO dto = invoiceDAO.findById(managerId, invoiceId);
         if (dto == null) {
-            throw new Exception("Không tìm thấy hóa đơn hoặc bạn không có quyền xem.");
+            throw new IllegalArgumentException("Không tìm thấy hóa đơn hoặc bạn không có quyền xem.");
         }
         return dto;
     }
 
     @Override
-    public void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDateStr, String taxRateStr, String otherFeeStr, String note, int createdBy) throws Exception {
+    public void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDateStr,
+            String taxRateStr, String otherFeeStr, String note, int createdBy) throws Exception {
         LocalDate dueDate;
         try {
             dueDate = LocalDate.parse(dueDateStr);
@@ -74,10 +77,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
-        if (taxRate.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
+        if (taxRate.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
 
         BigDecimal manualOtherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
-        if (manualOtherFee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
+        if (manualOtherFee.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
 
         // Cộng tiền nợ cũ (chưa thanh toán) của phòng vào phí khác
         BigDecimal previousDebt = invoiceDAO.getUnpaidDebtByRoomCode(roomCode, managerId);
@@ -93,13 +98,16 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         String year = billingPeriod.substring(0, 4);
         String month = billingPeriod.substring(4, 6);
-        
-        MeterReading currentMeter = meterReadingDAO.getReadingByMonth(roomSnap.roomId, Integer.parseInt(year), Integer.parseInt(month));
+
+        MeterReading currentMeter = meterReadingDAO.getReadingByMonth(roomSnap.roomId, Integer.parseInt(year),
+                Integer.parseInt(month));
         if (currentMeter == null) {
-            throw new IllegalArgumentException("Không tìm thấy chỉ số điện nước của phòng trong kỳ hạn " + billingPeriod);
+            throw new IllegalArgumentException(
+                    "Không tìm thấy chỉ số điện nước của phòng trong kỳ hạn " + billingPeriod);
         }
         if (dueDate.isBefore(currentMeter.getReadingDate())) {
-            throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày chốt số điện nước của kỳ hạn này (" + currentMeter.getReadingDate() + ").");
+            throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày chốt số điện nước của kỳ hạn này ("
+                    + currentMeter.getReadingDate() + ").");
         }
 
         String invoiceCode = "INV-" + roomCode + "-" + billingPeriod;
@@ -107,12 +115,15 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new IllegalArgumentException("Phòng đã có hóa đơn trong kỳ hạn này (" + invoiceCode + ").");
         }
 
-        MeterReading oldMeter = meterReadingDAO.getPreviousReadingByDate(roomSnap.roomId, currentMeter.getReadingDate());
+        MeterReading oldMeter = meterReadingDAO.getPreviousReadingByDate(roomSnap.roomId,
+                currentMeter.getReadingDate());
         int oldElectric = oldMeter != null ? oldMeter.getElectric() : 0;
         int oldWater = oldMeter != null ? oldMeter.getWater() : 0;
 
-        if (currentMeter.getElectric() < oldElectric) throw new IllegalArgumentException("Chỉ số điện mới nhỏ hơn chỉ số điện cũ.");
-        if (currentMeter.getWater() < oldWater) throw new IllegalArgumentException("Chỉ số nước mới nhỏ hơn chỉ số nước cũ.");
+        if (currentMeter.getElectric() < oldElectric)
+            throw new IllegalArgumentException("Chỉ số điện mới nhỏ hơn chỉ số điện cũ.");
+        if (currentMeter.getWater() < oldWater)
+            throw new IllegalArgumentException("Chỉ số nước mới nhỏ hơn chỉ số nước cũ.");
 
         int electricUsage = currentMeter.getElectric() - oldElectric;
         int waterUsage = currentMeter.getWater() - oldWater;
@@ -120,7 +131,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal electricAmount = roomSnap.electricityPrice.multiply(new BigDecimal(electricUsage));
         BigDecimal waterAmount = roomSnap.waterPrice.multiply(new BigDecimal(waterUsage));
 
-        BigDecimal subtotal = roomSnap.roomFee.add(electricAmount).add(waterAmount).add(roomSnap.serviceFee).add(roomSnap.internetFee).add(otherFee);
+        BigDecimal subtotal = roomSnap.roomFee.add(electricAmount).add(waterAmount).add(roomSnap.serviceFee)
+                .add(roomSnap.internetFee).add(otherFee);
         BigDecimal taxAmount = subtotal.multiply(taxRate).divide(new BigDecimal("100"));
         BigDecimal totalAmount = subtotal.add(taxAmount);
 
@@ -144,14 +156,16 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceDAO.insert(invoice);
 
         try {
-            AuditLogHelper.log(auditLogDAO, null, "invoices", invoice.getInvoiceId(), "CREATE", null, invoiceCode, createdBy);
+            AuditLogHelper.log(auditLogDAO, null, "invoices", invoice.getInvoiceId(), "CREATE", null, invoiceCode,
+                    createdBy);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void updateInvoice(int managerId, int invoiceId, String dueDateStr, String taxRateStr, String otherFeeStr, String note) throws Exception {
+    public void updateInvoice(int managerId, int invoiceId, String dueDateStr, String taxRateStr, String otherFeeStr,
+            String note) throws Exception {
         InvoiceDetailDTO dto = getInvoiceDetail(managerId, invoiceId);
         if ("PAID".equalsIgnoreCase(dto.getStatus())) {
             throw new IllegalArgumentException("Không được chỉnh sửa hóa đơn đã thanh toán.");
@@ -165,15 +179,18 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
-        if (taxRate.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
+        if (taxRate.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
 
         BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
-        if (otherFee.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
+        if (otherFee.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
 
         InvoiceDAO.InvoicePriceSnapshot snap = invoiceDAO.getInvoicePriceSnapshot(invoiceId);
         if (snap != null) {
             if (snap.readingDate != null && dueDate.isBefore(snap.readingDate)) {
-                throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày chốt số điện nước (" + snap.readingDate + ").");
+                throw new IllegalArgumentException(
+                        "Hạn thanh toán không thể trước ngày chốt số điện nước (" + snap.readingDate + ").");
             }
             if (snap.dueDate != null) {
                 if (!dueDate.equals(snap.dueDate) && dueDate.isBefore(LocalDate.now())) {
@@ -184,8 +201,11 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
         }
 
-        BigDecimal electricAmount = snap != null ? snap.electricityPrice.multiply(new BigDecimal(dto.getElectricUsage())) : BigDecimal.ZERO;
-        BigDecimal waterAmount = snap != null ? snap.waterPrice.multiply(new BigDecimal(dto.getWaterUsage())) : BigDecimal.ZERO;
+        BigDecimal electricAmount = snap != null
+                ? snap.electricityPrice.multiply(new BigDecimal(dto.getElectricUsage()))
+                : BigDecimal.ZERO;
+        BigDecimal waterAmount = snap != null ? snap.waterPrice.multiply(new BigDecimal(dto.getWaterUsage()))
+                : BigDecimal.ZERO;
 
         BigDecimal snapRoom = snap != null ? snap.roomFee : BigDecimal.ZERO;
         BigDecimal snapInt = snap != null ? snap.internetFee : BigDecimal.ZERO;
@@ -206,7 +226,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceDAO.update(invoiceToUpdate);
 
         try {
-            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "UPDATE", "Old Total: " + dto.getTotalAmount(), "New Total: " + newTotal, managerId);
+            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "UPDATE", "Old Total: " + dto.getTotalAmount(),
+                    "New Total: " + newTotal, managerId);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -243,7 +264,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceDAO.softDeleteInvoiceWithMeter(invoiceId, meterId, meterStatus);
 
         try {
-            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "DELETE", dto.getStatus(), "Soft Deleted", managerId);
+            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "DELETE", dto.getStatus(), "Soft Deleted",
+                    managerId);
         } catch (Exception e) {
             e.printStackTrace();
         }

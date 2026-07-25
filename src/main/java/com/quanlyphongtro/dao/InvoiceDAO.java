@@ -753,7 +753,7 @@ public class InvoiceDAO extends BaseDAO {
                 "LEFT JOIN contracts c ON c.contract_id = (" +
                 "    SELECT TOP 1 contract_id FROM contracts " +
                 "    WHERE room_id = i.room_id " +
-                "    ORDER BY CASE WHEN CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, " +
+                "    ORDER BY CASE WHEN start_date IS NOT NULL AND end_date IS NOT NULL AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, " +
                 "             CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, " +
                 "             CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
                 ") " +
@@ -922,7 +922,7 @@ public class InvoiceDAO extends BaseDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("findById failed for invoiceId={}, managerId={}", invoiceId, managerId, e);
         }
         return null;
     }
