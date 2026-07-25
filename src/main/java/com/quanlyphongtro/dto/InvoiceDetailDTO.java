@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 public class InvoiceDetailDTO {
     private Integer invoiceId;
     private String invoiceCode;
+    private Integer roomId;
     private String roomCode;
     private String tenantName;
     private String tenantPhone;
@@ -38,8 +39,6 @@ public class InvoiceDetailDTO {
     private BigDecimal lateFee; // phí chậm nộp tính tại runtime (không lưu DB)
 
     private BigDecimal subtotal;
-    private BigDecimal taxRate;
-    private BigDecimal taxAmount;
     private BigDecimal totalAmount;
 
     private String dueDate;
@@ -72,11 +71,15 @@ public class InvoiceDetailDTO {
     public String getInvoiceCode() {
         return invoiceCode;
     }
-
     public void setInvoiceCode(String invoiceCode) {
         this.invoiceCode = invoiceCode;
     }
-
+    public Integer getRoomId() {
+        return roomId;
+    }
+    public void setRoomId(Integer roomId) {
+        this.roomId = roomId;
+    }
     public String getRoomCode() {
         return roomCode;
     }
@@ -275,22 +278,6 @@ public class InvoiceDetailDTO {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
-    }
-
-    public BigDecimal getTaxRate() {
-        return taxRate;
-    }
-
-    public void setTaxRate(BigDecimal taxRate) {
-        this.taxRate = taxRate;
-    }
-
-    public BigDecimal getTaxAmount() {
-        return taxAmount;
-    }
-
-    public void setTaxAmount(BigDecimal taxAmount) {
-        this.taxAmount = taxAmount;
     }
 
     public BigDecimal getTotalAmount() {

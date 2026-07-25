@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
@@ -73,11 +73,6 @@
               <div class="col-md-6">
                 <label class="form-label fw-bold">Hạn thanh toán <span class="text-danger">*</span></label>
                 <input type="date" class="form-control" name="dueDate" required>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Thuế (%) <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" name="taxRate" value="0" min="0" step="0.1" required>
               </div>
 
               <div class="col-md-6">

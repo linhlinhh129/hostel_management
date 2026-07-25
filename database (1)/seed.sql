@@ -217,28 +217,28 @@ BEGIN TRY
     -- 6. INVOICES
     -- ============================================================
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-CG0101-202606')
-    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-CG0101-202606', @room_cg0101, @meter_cg0101_0630, '2026-07-05', N'UNPAID', 0, 0, 2500000, 4000, 30000, 100000, 50000, 3052000, N'Hóa đơn tháng 06/2026 phòng CG0101', @manager01_id);
+    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
+    VALUES (N'INV-CG0101-202606', @room_cg0101, @meter_cg0101_0630, '2026-07-05', N'UNPAID', 0, 2500000, 4000, 30000, 100000, 50000, 3052000, N'Hóa đơn tháng 06/2026 phòng CG0101', @manager01_id);
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-CG0102-202606')
-    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-CG0102-202606', @room_cg0102, @meter_cg0102_0630, '2026-07-05', N'PAID', 0, 20000, 2700000, 4000, 30000, 100000, 50000, 5510000, N'Hóa đơn tháng 06/2026 phòng CG0102', @manager01_id);
+    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
+    VALUES (N'INV-CG0102-202606', @room_cg0102, @meter_cg0102_0630, '2026-07-05', N'PAID', 20000, 2700000, 4000, 30000, 100000, 50000, 5510000, N'Hóa đơn tháng 06/2026 phòng CG0102', @manager01_id);
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-MD0201-202606')
-    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-MD0201-202606', @room_md0201, @meter_md0201_0630, '2026-07-05', N'PAID', 0, 0, 2400000, 4200, 32000, 120000, 60000, 4437000, N'Hóa đơn tháng 06/2026 phòng MD0201', @manager01_id);
+    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
+    VALUES (N'INV-MD0201-202606', @room_md0201, @meter_md0201_0630, '2026-07-05', N'PAID', 0, 2400000, 4200, 32000, 120000, 60000, 4437000, N'Hóa đơn tháng 06/2026 phòng MD0201', @manager01_id);
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-MD0202-202606')
-    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-MD0202-202606', @room_md0202, @meter_md0202_0630, '2026-07-05', N'UNPAID', 0, 50000, 2600000, 4200, 32000, 120000, 60000, 5228000, N'Hóa đơn tháng 06/2026 phòng MD0202', @manager01_id);
+    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
+    VALUES (N'INV-MD0202-202606', @room_md0202, @meter_md0202_0630, '2026-07-05', N'UNPAID', 50000, 2600000, 4200, 32000, 120000, 60000, 5228000, N'Hóa đơn tháng 06/2026 phòng MD0202', @manager01_id);
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.invoices WHERE code = N'INV-MD0203-202606')
-    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, tax, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
-    VALUES (N'INV-MD0203-202606', @room_md0203, @meter_md0203_0630, '2026-07-05', N'UNPAID', 0, 0, 2800000, 4200, 32000, 120000, 60000, 5155000, N'Hóa đơn tháng 06/2026 phòng MD0203', @manager01_id);
+    INSERT INTO dbo.invoices (code, room_id, meter_id, due_date, status, other_fee, room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by)
+    VALUES (N'INV-MD0203-202606', @room_md0203, @meter_md0203_0630, '2026-07-05', N'UNPAID', 0, 2800000, 4200, 32000, 120000, 60000, 5155000, N'Hóa đơn tháng 06/2026 phòng MD0203', @manager01_id);
 
 
     -- ============================================================

@@ -23,6 +23,16 @@
                 <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
                     <a href="${ctx}/manager/debts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <c:if test="${debt.status == 'OVERDUE'}">
+                            <form action="${ctx}/manager/debts" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn nhắc nợ hóa đơn này không?');">
+                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}" />
+                                <input type="hidden" name="action" value="remind">
+                                <input type="hidden" name="id" value="${debt.invoiceId}">
+                                <button type="submit" class="btn text-decoration-none text-white" style="background-color: #d97706; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
+                                    Nhắc nợ
+                                </button>
+                            </form>
+                        </c:if>
                         <a href="${ctx}/manager/invoices/${debt.invoiceId}" class="btn-mintlify-primary text-decoration-none">Xem hóa đơn gốc</a>
                         <c:choose>
                             <c:when test="${debt.status == 'UNPAID'}">
@@ -128,10 +138,6 @@
                                         <td colspan="5" style="text-align:right"><strong>Tạm tính:</strong></td>
                                         <td style="text-align:right"><strong><fmt:formatNumber value="${debt.subtotal != null ? debt.subtotal : 0}" pattern="#,##0"/> đ</strong></td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="5" style="text-align:right"><strong>Thuế (<c:out value="${debt.taxRate != null ? debt.taxRate : 0}"/>%):</strong></td>
-                                        <td style="text-align:right"><strong><fmt:formatNumber value="${debt.taxAmount != null ? debt.taxAmount : 0}" pattern="#,##0"/> đ</strong></td>
-                                    </tr>
                                     <tr style="background:var(--hms-primary-soft); color:var(--hms-primary-dark);">
                                         <td colspan="5" style="text-align:right; font-size:1.1rem"><strong>Tổng tiền phải nộp:</strong></td>
                                         <td style="text-align:right; font-size:1.1rem"><strong><fmt:formatNumber value="${debt.invoiceTotalAmount != null ? debt.invoiceTotalAmount : 0}" pattern="#,##0"/> đ</strong></td>
@@ -177,6 +183,10 @@
                                 <span class="fw-bold"><c:out value="${debt.billingPeriod}"/></span>
                             </li>
                             <li class="mb-3">
+                                <span class="text-muted d-block" style="font-size:0.875rem">Kỳ hợp đồng</span>
+                                <span class="fw-bold"><c:out value="${debt.contractPeriod}"/></span>
+                            </li>
+                            <li class="mb-3">
                                 <span class="text-muted d-block" style="font-size:0.875rem">Hạn thanh toán</span>
                                 <span class="fw-bold">
                                     <fmt:parseDate value="${debt.dueDateStr}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
@@ -206,7 +216,7 @@
                             <p class="mb-1"><strong>Số ngày quá hạn:</strong> <c:out value="${debt.overdueDays != null ? debt.overdueDays : 0}"/> ngày</p>
                             <p class="mb-1"><strong>Phí chậm nộp:</strong> <fmt:formatNumber value="${debt.lateFeePreview != null ? debt.lateFeePreview : 0}" pattern="#,##0"/> đ</p>
                             <hr class="my-2" style="border-color: rgba(0,0,0,0.1)">
-                            <small><em>Phí chậm nộp đã được cộng vào tổng tiền phải nộp.</em></small>
+                            <small><em>Phí chậm nộp đã được cộng vào Tổng tiền phải nộp.</em></small>
                         </div>
                     </div>
                 </div>

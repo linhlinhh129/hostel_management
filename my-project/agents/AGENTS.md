@@ -5,9 +5,7 @@
 > **Sprint:** 1
 
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan:
-[plan.md](file:///F:/SU26/New%20folder/hostel_management/specs/001-sync-notification-ui/plan.md)
+> **Current Plan**: [d:\FPT_University\Semester_5\dinh_SWP391\github\hostel_management\my-project\sdd\specs\manager\invoiceManagement\plan.md](d:\FPT_University\Semester_5\dinh_SWP391\github\hostel_management\my-project\sdd\specs\manager\invoiceManagement\plan.md)
 <!-- SPECKIT END -->
 
 ---

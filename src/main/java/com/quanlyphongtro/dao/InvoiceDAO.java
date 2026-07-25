@@ -192,7 +192,6 @@ public class InvoiceDAO extends BaseDAO {
         i.setMeterId(getInteger(rs, "meter_id"));
         i.setDueDate(toLocalDate(rs, "due_date"));
         i.setStatus(rs.getString("status"));
-        i.setTax(rs.getBigDecimal("tax"));
         i.setOtherFee(rs.getBigDecimal("other_fee"));
         i.setRoomFee(rs.getBigDecimal("room_fee"));
         i.setElectricityPrice(rs.getBigDecimal("electricity_price"));
@@ -778,6 +777,7 @@ public class InvoiceDAO extends BaseDAO {
                     if (created != null)
                         dto.setCreatedAt(created.toString());
 
+                    dto.setRoomId(rs.getInt("room_id"));
                     dto.setRoomCode(rs.getString("room_code"));
                     dto.setTenantName(rs.getString("tenant_name"));
                     dto.setTenantPhone(rs.getString("tenant_phone"));
@@ -879,20 +879,11 @@ public class InvoiceDAO extends BaseDAO {
                         subtotal = subtotal.add(dto.getInternetFee());
                     if (dto.getOtherFee() != null)
                         subtotal = subtotal.add(dto.getOtherFee());
-                    subtotal = subtotal.add(lateFee); // cộng phí chậm nộp vào tạm tính riêng
+                    subtotal = subtotal.add(lateFee); // cộng phí chậm nộp vào tạm tính
                     dto.setSubtotal(subtotal);
 
-                    dto.setTaxRate(rs.getBigDecimal("tax"));
-                    if (dto.getTaxRate() != null) {
-                        dto.setTaxAmount(subtotal.multiply(dto.getTaxRate()).divide(new BigDecimal("100"), 2,
-                                RoundingMode.HALF_UP));
-                    } else {
-                        dto.setTaxAmount(BigDecimal.ZERO);
-                    }
-
-                    // Tổng tiền = subtotal (đã gồm lateFee) + thuế
-                    BigDecimal taxAmt = dto.getTaxAmount() != null ? dto.getTaxAmount() : BigDecimal.ZERO;
-                    dto.setTotalAmount(subtotal.add(taxAmt));
+                    // Tổng tiền = subtotal (đã gồm lateFee)
+                    dto.setTotalAmount(subtotal);
                     dto.setNote(rs.getString("note"));
 
                     dto.setCreatedByName(rs.getString("creator_name"));
@@ -929,10 +920,10 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public void insert(Invoice invoice) throws SQLException {
-        String sql = "INSERT INTO invoices (code, room_id, meter_id, due_date, status, tax, other_fee, " +
+        String sql = "INSERT INTO invoices (code, room_id, meter_id, due_date, status, other_fee, " +
                 "room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by) "
                 +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, invoice.getCode());
@@ -940,16 +931,15 @@ public class InvoiceDAO extends BaseDAO {
             ps.setInt(3, invoice.getMeterId());
             ps.setDate(4, Date.valueOf(invoice.getDueDate()));
             ps.setString(5, invoice.getStatus());
-            ps.setBigDecimal(6, invoice.getTax());
-            ps.setBigDecimal(7, invoice.getOtherFee());
-            ps.setBigDecimal(8, invoice.getRoomFee());
-            ps.setBigDecimal(9, invoice.getElectricityPrice());
-            ps.setBigDecimal(10, invoice.getWaterPrice());
-            ps.setBigDecimal(11, invoice.getInternetFee());
-            ps.setBigDecimal(12, invoice.getServiceFee());
-            ps.setBigDecimal(13, invoice.getTotalAmount());
-            ps.setString(14, invoice.getNote());
-            ps.setInt(15, invoice.getCreatedBy());
+            ps.setBigDecimal(6, invoice.getOtherFee());
+            ps.setBigDecimal(7, invoice.getRoomFee());
+            ps.setBigDecimal(8, invoice.getElectricityPrice());
+            ps.setBigDecimal(9, invoice.getWaterPrice());
+            ps.setBigDecimal(10, invoice.getInternetFee());
+            ps.setBigDecimal(11, invoice.getServiceFee());
+            ps.setBigDecimal(12, invoice.getTotalAmount());
+            ps.setString(13, invoice.getNote());
+            ps.setInt(14, invoice.getCreatedBy());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -990,7 +980,7 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public void update(Invoice invoice) throws SQLException {
-        String sql = "UPDATE invoices SET due_date = ?, tax = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() "
+        String sql = "UPDATE invoices SET due_date = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() "
                 +
                 "WHERE invoice_id = ? AND deleted_at IS NULL";
         String updateMeterSql = "UPDATE dbo.meter_readings SET status = 'UPDATED', updated_at = GETDATE() "
@@ -999,11 +989,10 @@ public class InvoiceDAO extends BaseDAO {
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(invoice.getDueDate()));
-            ps.setBigDecimal(2, invoice.getTax());
-            ps.setBigDecimal(3, invoice.getOtherFee());
-            ps.setBigDecimal(4, invoice.getTotalAmount());
-            ps.setString(5, invoice.getNote());
-            ps.setInt(6, invoice.getInvoiceId());
+            ps.setBigDecimal(2, invoice.getOtherFee());
+            ps.setBigDecimal(3, invoice.getTotalAmount());
+            ps.setString(4, invoice.getNote());
+            ps.setInt(5, invoice.getInvoiceId());
             ps.executeUpdate();
 
             try (PreparedStatement psMeter = conn.prepareStatement(updateMeterSql)) {
