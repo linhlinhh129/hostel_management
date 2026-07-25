@@ -751,10 +751,8 @@ public class InvoiceDAO extends BaseDAO {
                 "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
                 "LEFT JOIN contracts c ON c.contract_id = (" +
                 "    SELECT TOP 1 contract_id FROM contracts " +
-                "    WHERE room_id = i.room_id " +
-                "    ORDER BY CASE WHEN CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, " +
-                "             CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, " +
-                "             CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
+                "    WHERE room_id = i.room_id AND deleted_at IS NULL " +
+                "    ORDER BY CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, created_at DESC" +
                 ") " +
                 "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                 "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
@@ -903,17 +901,20 @@ public class InvoiceDAO extends BaseDAO {
                         }
                     }
 
-                    Timestamp updated = rs.getTimestamp("updated_at");
-                    if (updated != null)
-                        dto.setUpdatedAt(
-                                updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                    try {
+                        Timestamp updated = rs.getTimestamp("updated_at");
+                        if (updated != null) {
+                            dto.setUpdatedAt(
+                                    updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                        }
+                    } catch (Exception ignore) {}
                     dto.setUpdatedByName("");
 
                     return dto;
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("findById failed for invoiceId={}, managerId={}", invoiceId, managerId, e);
         }
         return null;
     }
@@ -982,6 +983,9 @@ public class InvoiceDAO extends BaseDAO {
         String sql = "UPDATE invoices SET due_date = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() "
                 +
                 "WHERE invoice_id = ? AND deleted_at IS NULL";
+        String updateMeterSql = "UPDATE dbo.meter_readings SET status = 'UPDATED', updated_at = GETDATE() "
+                +
+                "WHERE meter_id = (SELECT meter_id FROM dbo.invoices WHERE invoice_id = ?) AND status = 'REPORTED'";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(invoice.getDueDate()));
@@ -990,6 +994,13 @@ public class InvoiceDAO extends BaseDAO {
             ps.setString(4, invoice.getNote());
             ps.setInt(5, invoice.getInvoiceId());
             ps.executeUpdate();
+
+            try (PreparedStatement psMeter = conn.prepareStatement(updateMeterSql)) {
+                psMeter.setInt(1, invoice.getInvoiceId());
+                psMeter.executeUpdate();
+            } catch (Exception e) {
+                logger.error("Failed to update meter reading status to UPDATED for invoiceId=" + invoice.getInvoiceId(), e);
+            }
         }
     }
 
