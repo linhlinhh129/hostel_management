@@ -66,12 +66,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-<<<<<<< HEAD
     public void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDateStr, String otherFeeStr, String note, int createdBy) throws Exception {
-=======
-    public void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDateStr,
-            String taxRateStr, String otherFeeStr, String note, int createdBy) throws Exception {
->>>>>>> 96cf79327c6787466b5d663474982f33ee22cb2e
         LocalDate dueDate;
         try {
             dueDate = LocalDate.parse(dueDateStr);
@@ -82,13 +77,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new IllegalArgumentException("Hạn thanh toán không thể trước ngày hiện tại.");
         }
 
-<<<<<<< HEAD
-=======
-        BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
-        if (taxRate.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
-
->>>>>>> 96cf79327c6787466b5d663474982f33ee22cb2e
         BigDecimal manualOtherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
         if (manualOtherFee.compareTo(BigDecimal.ZERO) < 0)
             throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
@@ -140,15 +128,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal electricAmount = roomSnap.electricityPrice.multiply(new BigDecimal(electricUsage));
         BigDecimal waterAmount = roomSnap.waterPrice.multiply(new BigDecimal(waterUsage));
 
-<<<<<<< HEAD
         BigDecimal subtotal = roomSnap.roomFee.add(electricAmount).add(waterAmount).add(roomSnap.serviceFee).add(roomSnap.internetFee).add(otherFee);
         BigDecimal totalAmount = subtotal;
-=======
-        BigDecimal subtotal = roomSnap.roomFee.add(electricAmount).add(waterAmount).add(roomSnap.serviceFee)
-                .add(roomSnap.internetFee).add(otherFee);
-        BigDecimal taxAmount = subtotal.multiply(taxRate).divide(new BigDecimal("100"));
-        BigDecimal totalAmount = subtotal.add(taxAmount);
->>>>>>> 96cf79327c6787466b5d663474982f33ee22cb2e
 
         Invoice invoice = new Invoice();
         invoice.setCode(invoiceCode);
@@ -177,12 +158,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-<<<<<<< HEAD
     public void updateInvoice(int managerId, int invoiceId, String dueDateStr, String otherFeeStr, String note) throws Exception {
-=======
-    public void updateInvoice(int managerId, int invoiceId, String dueDateStr, String taxRateStr, String otherFeeStr,
-            String note) throws Exception {
->>>>>>> 96cf79327c6787466b5d663474982f33ee22cb2e
         InvoiceDetailDTO dto = getInvoiceDetail(managerId, invoiceId);
         if ("PAID".equalsIgnoreCase(dto.getStatus())) {
             throw new IllegalArgumentException("Không được chỉnh sửa hóa đơn đã thanh toán.");
@@ -195,13 +171,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new IllegalArgumentException("Hạn thanh toán không hợp lệ.");
         }
 
-<<<<<<< HEAD
-=======
-        BigDecimal taxRate = new BigDecimal(taxRateStr != null && !taxRateStr.isEmpty() ? taxRateStr : "0");
-        if (taxRate.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Thuế không được nhỏ hơn 0.");
-
->>>>>>> 96cf79327c6787466b5d663474982f33ee22cb2e
         BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
         if (otherFee.compareTo(BigDecimal.ZERO) < 0)
             throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
@@ -283,12 +252,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         int nId = notificationDAO.insertNotificationAndGetId(code, title, content, targetType, null, invoice.getRoomId(), managerId);
         
         try {
-<<<<<<< HEAD
             AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "REPORT_ERROR", "N/A", "Reported error for invoice " + invoice.getInvoiceCode(), managerId);
-=======
-            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "DELETE", dto.getStatus(), "Soft Deleted",
-                    managerId);
->>>>>>> 96cf79327c6787466b5d663474982f33ee22cb2e
         } catch (Exception e) {
             e.printStackTrace();
         }
