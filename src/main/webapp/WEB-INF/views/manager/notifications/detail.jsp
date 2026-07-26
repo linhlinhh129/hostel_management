@@ -44,7 +44,7 @@
           <div class="widget-surface">
             <div class="widget-surface-header"><h3>Nội dung thông báo</h3></div>
             <div class="widget-surface-body">
-              <div style="white-space:pre-line;font-size:0.9375rem;line-height:1.7;color:var(--hms-ink)">
+              <div style="white-space:pre-line;font-size:0.9375rem;line-height:1.7;color:var(--hms-ink);word-break:break-word;overflow-wrap:anywhere;">
                 <c:out value="${notification.content}"/>
               </div>
             </div>

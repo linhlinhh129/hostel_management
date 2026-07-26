@@ -222,7 +222,7 @@
                               <c:out value="${notif.code}"/>
                             </a>
                           </td>
-                          <td style="max-width:280px"><c:out value="${notif.title}"/></td>
+                          <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<c:out value='${notif.title}'/>"><c:out value="${notif.title}"/></td>
                           <td class="d-none d-md-table-cell">
                             <c:choose>
                               <c:when test="${notif.recipientType == 'ROOM'}">
@@ -343,7 +343,7 @@
                                   <c:out value="${notif.code}"/>
                                 </a>
                               </td>
-                              <td style="max-width:320px; font-weight: 500;"><c:out value="${notif.title}"/></td>
+                              <td style="max-width:320px; font-weight: 500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<c:out value='${notif.title}'/>"><c:out value="${notif.title}"/></td>
                               <td class="d-none d-md-table-cell">
                                 <c:out value="${notif.createdByName}"/>
                               </td>
@@ -442,7 +442,7 @@
                                   <c:out value="${notif.code}"/>
                                 </a>
                               </td>
-                              <td style="max-width:280px"><c:out value="${notif.title}"/></td>
+                              <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<c:out value='${notif.title}'/>"><c:out value="${notif.title}"/></td>
                               <td class="d-none d-md-table-cell">
                                 <c:choose>
                                   <c:when test="${notif.recipientType == 'FACILITY'}">
