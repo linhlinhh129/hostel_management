@@ -48,7 +48,7 @@
                             </tr>
                             <tr>
                                 <td style="padding: 1rem 1.5rem; color: var(--hms-stone);">CCCD/CMND</td>
-                                <td style="padding: 1rem 1.5rem; font-weight: 600;"><c:out value="${dependent.maskedIdentityNumber}"/></td>
+                                <td style="padding: 1rem 1.5rem; font-weight: 600;"><c:out value="${dependent.identityNumber}"/></td>
                             </tr>
                             <tr>
                                 <td style="padding: 1rem 1.5rem; color: var(--hms-stone);">Mối quan hệ</td>

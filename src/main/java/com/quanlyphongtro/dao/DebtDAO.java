@@ -33,11 +33,6 @@ public class DebtDAO extends BaseDAO {
             "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
-        if (status != null && !status.trim().isEmpty()) {
-            if (status.equals("UNPAID")) {
-                sql.append("AND i.status = 'UNPAID' AND i.due_date >= CAST(GETDATE() AS DATE) ");
-            }
-        }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
         }
@@ -82,7 +77,7 @@ public class DebtDAO extends BaseDAO {
                         LocalDate dueLocalDate = dueDate.toLocalDate();
                         LocalDate endDate = LocalDate.now();
                         Date pendingDate = rs.getDate("pending_payment_date");
-                        if (pendingDate != null) {
+                        if (pendingDate != null && pendingDate.toLocalDate().isAfter(dueLocalDate)) {
                             endDate = pendingDate.toLocalDate();
                         }
                         if (endDate.isAfter(dueLocalDate)) {
@@ -110,7 +105,17 @@ public class DebtDAO extends BaseDAO {
                     
                     if (dueDate != null) {
                         dto.setDueDate(dueDate.toLocalDate());
-                        dto.setBillingPeriod(new SimpleDateFormat("yyyyMM").format(dueDate));
+                    }
+                    if (dto.getInvoiceCode() != null && dto.getInvoiceCode().contains("-")) {
+                        String[] parts = dto.getInvoiceCode().split("-");
+                        if (parts.length >= 3 && parts[parts.length - 1].length() == 6) {
+                            String p = parts[parts.length - 1];
+                            dto.setBillingPeriod("Tháng " + p.substring(4, 6) + "/" + p.substring(0, 4));
+                        } else if (dueDate != null) {
+                            dto.setBillingPeriod("Tháng " + new SimpleDateFormat("MM/yyyy").format(dueDate));
+                        }
+                    } else if (dueDate != null) {
+                        dto.setBillingPeriod("Tháng " + new SimpleDateFormat("MM/yyyy").format(dueDate));
                     }
                     
                     dto.setStatus(invoiceStatus);
@@ -134,11 +139,6 @@ public class DebtDAO extends BaseDAO {
             "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
-        if (status != null && !status.trim().isEmpty()) {
-            if (status.equals("UNPAID")) {
-                sql.append("AND i.status = 'UNPAID' AND i.due_date >= CAST(GETDATE() AS DATE) ");
-            }
-        }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
         }
@@ -262,7 +262,7 @@ public class DebtDAO extends BaseDAO {
                         LocalDate dueLocalDate = dueDateSql.toLocalDate();
                         LocalDate endDate = LocalDate.now();
                         Date pendingDate = rs.getDate("pending_payment_date");
-                        if (pendingDate != null) {
+                        if (pendingDate != null && pendingDate.toLocalDate().isAfter(dueLocalDate)) {
                             endDate = pendingDate.toLocalDate();
                         }
                         if (endDate.isAfter(dueLocalDate)) {
@@ -287,16 +287,12 @@ public class DebtDAO extends BaseDAO {
                     if (dto.getInternetFee() != null) subtotal = subtotal.add(dto.getInternetFee());
                     if (dto.getOtherFee() != null) subtotal = subtotal.add(dto.getOtherFee());
                     
-                    BigDecimal originalSubtotal = subtotal;
-                    
-                    // Cộng phí chậm nộp vào subtotal theo đặc tả mới
-                    if (lateFee != null && lateFee.compareTo(BigDecimal.ZERO) > 0) {
-                        subtotal = subtotal.add(lateFee);
-                    }
                     dto.setSubtotal(subtotal);
                     
-                    // invoiceTotalAmount = subtotal
                     BigDecimal totalAmount = subtotal;
+                    if (lateFee != null && lateFee.compareTo(BigDecimal.ZERO) > 0) {
+                        totalAmount = totalAmount.add(lateFee);
+                    }
                     dto.setInvoiceTotalAmount(totalAmount);
                     dto.setPaidAmount(rs.getBigDecimal("paid_amount"));
                     
@@ -307,7 +303,17 @@ public class DebtDAO extends BaseDAO {
                     Date dueDate = rs.getDate("due_date");
                     if (dueDate != null) {
                         dto.setDueDate(dueDate.toLocalDate());
-                        dto.setBillingPeriod(new SimpleDateFormat("yyyyMM").format(dueDate));
+                    }
+                    if (dto.getInvoiceCode() != null && dto.getInvoiceCode().contains("-")) {
+                        String[] parts = dto.getInvoiceCode().split("-");
+                        if (parts.length >= 3 && parts[parts.length - 1].length() == 6) {
+                            String p = parts[parts.length - 1];
+                            dto.setBillingPeriod("Tháng " + p.substring(4, 6) + "/" + p.substring(0, 4));
+                        } else if (dueDate != null) {
+                            dto.setBillingPeriod("Tháng " + new SimpleDateFormat("MM/yyyy").format(dueDate));
+                        }
+                    } else if (dueDate != null) {
+                        dto.setBillingPeriod("Tháng " + new SimpleDateFormat("MM/yyyy").format(dueDate));
                     }
                     
                     dto.setStatus(rs.getString("status"));

@@ -130,6 +130,13 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Tiêu đề, nội dung và loại đối tượng nhận không được để trống.");
         }
 
+        if (title.trim().length() > 250) {
+            throw new IllegalArgumentException("Tiêu đề không được vượt quá 250 ký tự.");
+        }
+        if (content.trim().length() > 5000) {
+            throw new IllegalArgumentException("Nội dung không được vượt quá 5000 ký tự.");
+        }
+
         Integer facilityId = null;
         Integer roomId = null;
         String targetType;

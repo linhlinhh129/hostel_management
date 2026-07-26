@@ -54,7 +54,8 @@
                                         <c:otherwise>
                                             <c:set var="finalImg1" value="${ctx}/${img1}" />
                                         </c:otherwise>
-                                                              <img src="${finalImg1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm); cursor: zoom-in;" onclick="showFullImage(this.src)">
+                                    </c:choose>
+                                    <img src="${finalImg1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm); cursor: zoom-in;" onclick="showFullImage(this.src)">
                                 </div>
                             </c:if>
                         </div>

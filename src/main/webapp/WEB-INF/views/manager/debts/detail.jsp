@@ -23,25 +23,11 @@
                 <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
                     <a href="${ctx}/manager/debts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <c:if test="${debt.status == 'OVERDUE'}">
-                            <form action="${ctx}/manager/debts" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn nhắc nợ hóa đơn này không?');">
-                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}" />
-                                <input type="hidden" name="action" value="remind">
-                                <input type="hidden" name="id" value="${debt.invoiceId}">
-                                <button type="submit" class="btn text-decoration-none text-white" style="background-color: #d97706; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
-                                    Nhắc nợ
-                                </button>
-                            </form>
-                        </c:if>
+                        <a href="${ctx}/manager/notifications/send-debt-reminder?invoiceId=${debt.invoiceId}" class="btn text-decoration-none text-white" style="background-color: #d97706; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
+                            Nhắc nợ
+                        </a>
                         <a href="${ctx}/manager/invoices/${debt.invoiceId}" class="btn-mintlify-primary text-decoration-none">Xem hóa đơn gốc</a>
-                        <c:choose>
-                            <c:when test="${debt.status == 'UNPAID'}">
-                                <span class="badge-hms badge-warning" style="font-size:0.9rem;padding:6px 14px">Chưa thanh toán</span>
-                            </c:when>
-                            <c:when test="${debt.status == 'OVERDUE'}">
-                                <span class="badge-hms badge-danger" style="font-size:0.9rem;padding:6px 14px">Quá hạn</span>
-                            </c:when>
-                        </c:choose>
+                        <span class="badge-hms badge-danger" style="font-size:0.9rem;padding:6px 14px">Quá hạn</span>
                     </div>
                 </div>
             </div>
@@ -189,7 +175,7 @@
                             <li class="mb-3">
                                 <span class="text-muted d-block" style="font-size:0.875rem">Hạn thanh toán</span>
                                 <span class="fw-bold">
-                                    <fmt:parseDate value="${debt.dueDateStr}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
+                                    <fmt:parseDate value="${debt.dueDate}" pattern="yyyy-MM-dd" var="parsedDueDate" type="date" />
                                     <fmt:formatDate value="${parsedDueDate}" pattern="dd/MM/yyyy" />
                                 </span>
                             </li>

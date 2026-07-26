@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -20,7 +20,21 @@
           <h1><c:out value="${notification.title}"/></h1>
           <p>Mã: <strong><c:out value="${notification.code}"/></strong></p>
         </div>
-        <a href="${ctx}/manager/notifications" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
+        <c:set var="backTab" value="${param.tab}"/>
+        <c:if test="${empty backTab}">
+          <c:choose>
+            <c:when test="${not empty notification.code and (notification.code.contains('DEBT') or notification.code.contains('REMINDER'))}">
+              <c:set var="backTab" value="payment-reminder"/>
+            </c:when>
+            <c:when test="${not empty notification.title and (notification.title.contains('Nhắc') or notification.title.contains('nợ') or notification.title.contains('tiền'))}">
+              <c:set var="backTab" value="payment-reminder"/>
+            </c:when>
+            <c:otherwise>
+              <c:set var="backTab" value="general"/>
+            </c:otherwise>
+          </c:choose>
+        </c:if>
+        <a href="${ctx}/manager/notifications?tab=${backTab}" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
       </div>
 
       <div class="row g-3">
@@ -30,7 +44,7 @@
           <div class="widget-surface">
             <div class="widget-surface-header"><h3>Nội dung thông báo</h3></div>
             <div class="widget-surface-body">
-              <div style="white-space:pre-line;font-size:0.9375rem;line-height:1.7;color:var(--hms-ink)">
+              <div style="white-space:pre-line;font-size:0.9375rem;line-height:1.7;color:var(--hms-ink);word-break:break-word;overflow-wrap:anywhere;">
                 <c:out value="${notification.content}"/>
               </div>
             </div>

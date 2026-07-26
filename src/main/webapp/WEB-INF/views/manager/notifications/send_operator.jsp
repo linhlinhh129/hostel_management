@@ -15,9 +15,12 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-        <h1>Gửi yêu cầu chỉnh sửa số điện nước</h1>
-        <p>Báo cáo chỉ số sai cho nhân viên vận hành (Operator) để xác minh và cập nhật lại</p>
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+        <div>
+          <h1 class="mb-1">Gửi yêu cầu chỉnh sửa số điện nước</h1>
+          <p class="mb-0">Báo cáo chỉ số sai cho nhân viên vận hành (Operator) để xác minh và cập nhật lại</p>
+        </div>
+        <a href="${ctx}/manager/notifications?tab=incorrect-utility" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
       </div>
 
       <div class="row g-4">
@@ -25,7 +28,7 @@
         <div class="col-lg-7">
           <div class="data-surface" style="padding:2rem">
             <%-- Tiến độ xử lý hiện tại nếu đã gửi --%>
-            <c:if test="${invoice.meterStatus == 'REPORTED' or invoice.meterStatus == 'UPDATED' or not empty invoice.ticketId}">
+            <c:if test="${not empty invoice.ticketId}">
               <div class="card mb-4 border-warning" style="border-radius:var(--hms-radius-md);box-shadow:none;background:#fffdf5">
                 <div class="card-header bg-warning bg-opacity-10 font-semibold" style="border-bottom:1px solid #fde68a">
                   <div class="d-flex justify-content-between align-items-center">
@@ -78,10 +81,10 @@
               </div>
             </c:if>
 
-            <details ${invoice.meterStatus != 'REPORTED' and invoice.meterStatus != 'UPDATED' ? 'open' : ''}>
+            <details ${empty invoice.ticketId ? 'open' : ''}>
               <summary class="fw-bold mb-3" style="cursor:pointer;color:var(--hms-primary)">
                 <c:choose>
-                  <c:when test="${invoice.meterStatus == 'REPORTED' or invoice.meterStatus == 'UPDATED'}">
+                  <c:when test="${not empty invoice.ticketId}">
                     ✏️ Gửi bổ sung / Cập nhật yêu cầu cho Operator
                   </c:when>
                   <c:otherwise>
@@ -150,7 +153,7 @@
             <div class="widget-surface-body p-0">
               <table style="width:100%;font-size:0.875rem;border-collapse:collapse">
                 <tr style="border-bottom:1px solid var(--hms-border)">
-                  <td style="padding:12px 16px;color:var(--hms-text-muted);width:40%">Mã hóa đơn</td>
+                  <td style="padding:12px 16px;color:var(--hms-text-muted);width:38%">Mã hóa đơn</td>
                   <td style="padding:12px 16px;font-weight:600"><c:out value="${invoice.code}"/></td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
@@ -158,23 +161,34 @@
                   <td style="padding:12px 16px"><c:out value="${invoice.facilityName}"/> (<c:out value="${invoice.facilityCode}"/>)</td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
-                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Phòng</td>
-                  <td style="padding:12px 16px;font-weight:700"><c:out value="${invoice.roomCode}"/></td>
+                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Phòng & Khách thuê</td>
+                  <td style="padding:12px 16px">
+                    <strong style="color:var(--hms-primary);font-size:0.9375rem">Phòng <c:out value="${invoice.roomCode}"/></strong>
+                    <div style="font-size:0.8125rem;color:var(--hms-text-secondary);margin-top:2px">
+                      <c:out value="${invoice.tenantName}"/> (<c:out value="${invoice.tenantPhone}"/>)
+                    </div>
+                  </td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
-                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Kỳ hạn</td>
-                  <td style="padding:12px 16px"><c:out value="${invoice.billingPeriod}"/></td>
+                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Kỳ hóa đơn</td>
+                  <td style="padding:12px 16px;font-weight:600">Tháng <c:out value="${invoice.billingPeriod}"/></td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
-                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Số điện chốt</td>
-                  <td style="padding:12px 16px"><strong><c:out value="${invoice.electric}"/></strong> kWh</td>
+                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Chỉ số điện</td>
+                  <td style="padding:12px 16px">
+                    <div>Cũ: <strong><c:out value="${invoice.oldElectric}"/></strong> &rarr; Mới: <strong><c:out value="${invoice.newElectric}"/></strong> kWh</div>
+                    <div style="font-size:0.8rem;color:var(--hms-text-muted);margin-top:2px">Sử dụng: <strong style="color:var(--hms-ink)"><c:out value="${invoice.electricUsage}"/> kWh</strong></div>
+                  </td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--hms-border)">
-                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Số nước chốt</td>
-                  <td style="padding:12px 16px"><strong><c:out value="${invoice.water}"/></strong> m³</td>
+                  <td style="padding:12px 16px;color:var(--hms-text-muted)">Chỉ số nước</td>
+                  <td style="padding:12px 16px">
+                    <div>Cũ: <strong><c:out value="${invoice.oldWater}"/></strong> &rarr; Mới: <strong><c:out value="${invoice.newWater}"/></strong> m³</div>
+                    <div style="font-size:0.8rem;color:var(--hms-text-muted);margin-top:2px">Sử dụng: <strong style="color:var(--hms-ink)"><c:out value="${invoice.waterUsage}"/> m³</strong></div>
+                  </td>
                 </tr>
                 <tr style="background:var(--hms-accent-bg)">
-                  <td style="padding:12px 16px;font-weight:700;color:var(--hms-ink)">Tổng số tiền</td>
+                  <td style="padding:12px 16px;font-weight:700;color:var(--hms-ink)">Tổng số tiền HĐ</td>
                   <td style="padding:12px 16px;font-weight:800;color:var(--hms-accent-deep)">
                     <fmt:formatNumber value="${invoice.totalAmount}" pattern="#,##0"/> đ
                   </td>
