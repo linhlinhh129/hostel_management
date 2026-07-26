@@ -62,6 +62,8 @@
                         <a href="${ctx}/forgot-password" class="auth-link-accent">Quên mật khẩu?</a>
                     </div>
 
+                    <!-- BƯỚC 1: Người dùng điền thông tin và nhấn nút Đăng nhập.
+                         Form này sẽ gửi request HTTP POST tới url '/login' (LoginServlet) -->
                     <div class="text-center auth-stagger-4 mb-3">
                         <button type="submit" class="btn btn-mintlify-primary py-2 px-5 auth-submit-btn">
                             Đăng nhập

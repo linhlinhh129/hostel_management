@@ -23,7 +23,6 @@ Hệ thống quản lý nhà trọ bao gồm:
 | Authentication | Session-Based Authentication + BCrypt |
 | Server         | Apache Tomcat 10.1                    |
 
-### Async Processing
 
 #### ExecutorService
 

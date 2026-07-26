@@ -32,7 +32,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    //hàm này gọi xuống dao, nếu mà không tìm thấy, nó sẽ fallback gọi thêm findByEmail(username) để hỗ trợ đăng nhập
+    // BƯỚC 4: Service thực hiện validate và gọi xuống DAO để lấy user từ DB
+    // Hàm này gọi xuống dao, nếu mà không tìm thấy, nó sẽ fallback gọi thêm findByEmail(username) để hỗ trợ đăng nhập
     public Optional<UserSessionDTO> login(String username, String password) {
         if (username == null || password == null || username.isBlank() || password.length() < 7) {
             logger.warn("LOGIN FAIL [{}]: input validation failed — username blank or password length < 7 (len={})",
@@ -77,6 +78,7 @@ public class UserServiceImpl implements UserService {
             return Optional.empty();
         }
 
+        // BƯỚC 5: Gọi hàm verify để so sánh mật khẩu nhập vào (đã được băm) với mật khẩu lưu trong DB
         boolean passwordMatch = PasswordUtil.verify(password, user.getPasswordHash());
         logger.info("LOGIN [{}]: password verify result = {}", normalizedUsername, passwordMatch);
 
@@ -94,6 +96,7 @@ public class UserServiceImpl implements UserService {
         LoginAttemptTracker.reset(normalizedUsername);
         logger.info("LOGIN SUCCESS [{}]: role={}", normalizedUsername, user.getRole());
 
+        // BƯỚC 6: Đăng nhập hợp lệ -> Trả về UserSessionDTO đóng gói các thông tin cần thiết
         return Optional.of(buildSessionDTO(user));
     }
 

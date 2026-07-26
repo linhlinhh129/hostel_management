@@ -38,7 +38,8 @@ public class LoginServlet extends BaseServlet {
     }
 
     @Override
-    //lấy username và password từ request 
+    // BƯỚC 2: Servlet nhận POST request từ trang login.jsp
+    // Lấy thông tin tài khoản và mật khẩu từ tham số của request
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
@@ -60,9 +61,11 @@ public class LoginServlet extends BaseServlet {
         }
 
         try {
+            // BƯỚC 3: Gọi tầng Service để xử lý logic xác thực người dùng và kết nối DB
             Optional<UserSessionDTO> userOpt = userService.login(username, password);
 
             if (userOpt.isPresent()) {
+                // BƯỚC 7: Trả về thành công -> Lưu DTO của user vào HTTP Session
                 UserSessionDTO user = userOpt.get();
                 HttpSession session = req.getSession(true);
                 session.setAttribute("currentUser", user);
@@ -71,6 +74,7 @@ public class LoginServlet extends BaseServlet {
                 if (user.isFirstLogin()) {
                     resp.sendRedirect(req.getContextPath() + "/first-login");
                 } else {
+                    // BƯỚC 8: Dựa theo phân quyền (Role) để chuyển hướng về Dashboard tương ứng
                     redirectToDashboard(user, req, resp);
                 }
             } else {
