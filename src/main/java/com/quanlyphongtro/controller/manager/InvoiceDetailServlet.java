@@ -102,17 +102,8 @@ public class InvoiceDetailServlet extends BaseServlet {
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1]);
             }
         } else if (parts.length == 3 && "report-error".equals(parts[2])) {
-            try {
-                int invoiceId = Integer.parseInt(parts[1]);
-                UserSessionDTO user = getCurrentUser(req);
-                invoiceService.reportError(user.getId(), invoiceId);
-                setFlashMessage(req, "success", "Đã báo cáo sai số và gửi thông báo thành công!");
-                resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + invoiceId);
-            } catch (Exception e) {
-                e.printStackTrace();
-                setFlashMessage(req, "danger", "Đã xảy ra lỗi: " + e.getMessage());
-                resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1]);
-            }
+            int invoiceId = Integer.parseInt(parts[1]);
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications/send-operator?invoiceId=" + invoiceId);
         } else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }

@@ -24,6 +24,8 @@ public class Invoice {
     private BigDecimal totalAmount;
     private String note;
     private Integer createdBy;
+    private Integer contractId;
+    private Integer tenantId;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -42,6 +44,14 @@ public class Invoice {
     private String roomCodeCache;
     private boolean hasPendingPayment;
     private String meterReadingStatus;
+    private String electricImg;
+    private String waterImg;
+
+    public String getElectricImg() { return electricImg; }
+    public void setElectricImg(String electricImg) { this.electricImg = electricImg; }
+
+    public String getWaterImg() { return waterImg; }
+    public void setWaterImg(String waterImg) { this.waterImg = waterImg; }
 
     public String getMeterReadingStatus() { return meterReadingStatus; }
     public void setMeterReadingStatus(String meterReadingStatus) { this.meterReadingStatus = meterReadingStatus; }
@@ -99,6 +109,12 @@ public class Invoice {
 
     public Integer getCreatedBy() { return createdBy; }
     public void setCreatedBy(Integer createdBy) { this.createdBy = createdBy; }
+
+    public Integer getContractId() { return contractId; }
+    public void setContractId(Integer contractId) { this.contractId = contractId; }
+
+    public Integer getTenantId() { return tenantId; }
+    public void setTenantId(Integer tenantId) { this.tenantId = tenantId; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

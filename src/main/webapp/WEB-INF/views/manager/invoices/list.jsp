@@ -77,6 +77,7 @@
                                 <tr>
                                   <th>Mã Hóa Đơn</th>
                                   <th>Phòng</th>
+                                  <th class="d-none d-md-table-cell">Người thuê</th>
                                   <th class="d-none d-md-table-cell">Kỳ HĐ</th>
                                   <th class="d-none d-md-table-cell" style="text-align:right">Tổng tiền</th>
                                   <th class="d-none d-md-table-cell">Hạn TT</th>
@@ -96,6 +97,9 @@
                                     <td><span class="badge-hms badge-neutral">
                                         <c:out value="${invoice.roomCode}" />
                                       </span></td>
+                                    <td class="d-none d-md-table-cell">
+                                      <c:out value="${invoice.tenantName}" default="—" />
+                                    </td>
                                     <td class="d-none d-md-table-cell">
                                       <c:out value="${invoice.billingPeriod}" />
                                     </td>

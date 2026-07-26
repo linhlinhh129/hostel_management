@@ -3,16 +3,18 @@
 Dựa trên tài liệu `CONTEXT.md` và `SPEC.md`, đây là kế hoạch chi tiết để triển khai module Quản lý Thanh toán mà không làm ảnh hưởng đến các module khác. Kế hoạch này áp dụng cấu trúc Java Servlet kết hợp JSP truyền thống đang dùng (tương tự module Hóa đơn).
 
 ## 1. Cấu trúc Database và DAO
-Bảng dữ liệu `payments` đã tồn tại trong `schema.sql` (chứa các trường `payment_id`, `code`, `invoice_id`, `room_id`, `status`, `payment_date`, `payment_method`, `payment_amount`, `created_by`, v.v.). Do đó:
-- **KHÔNG SỬA ĐỔI DATABASE**.
+Bảng dữ liệu `payments` đã tồn tại trong `schema.sql` (chứa các trường `payment_id`, `code`, `invoice_id`, `room_id`, `status`, `payment_date`, `payment_method`, `payment_amount`, `created_by`, v.v.).
 - Khởi tạo Data Access Object: `PaymentDAO.java` kế thừa `BaseDAO.java`.
-- Trong `PaymentDAO`, sẽ viết các truy vấn SQL thuần sử dụng `PreparedStatement` thay vi dùng ORM để bám sát kiến trúc cũ.
+- Trong `PaymentDAO`, sẽ viết các truy vấn SQL thuần sử dụng `PreparedStatement` thay vì dùng ORM để bám sát kiến trúc cũ.
+- **Ràng buộc Định danh Cố định Người nộp tiền (Snapshot Binding)**:
+  - Cập nhật các câu SQL trong `findPayments`, `countPayments`, `findById` thay thế logic `COALESCE(r.tenant_id, ...)` bằng SQL JOIN cố định qua Hóa đơn và Hợp đồng (`LEFT JOIN invoices i ON p.invoice_id = i.invoice_id` và `LEFT JOIN users u ON COALESCE(p.created_by, i.tenant_id, (SELECT tenant_id FROM contracts WHERE contract_id = i.contract_id)) = u.user_id`).
+  - Đảm bảo thông tin người nộp tiền trong lịch sử giao dịch thanh toán không bị trống hoặc nhảy tên khi cư dân cũ thanh lý hợp đồng hoặc phòng có cư dân mới vào ở.
 - Các hàm SQL cần viết:
   - Lấy danh sách giao dịch có phân trang: `findPayments(keyword, status, offset, limit)`.
   - Đếm tổng số giao dịch để phân trang: `countPayments(keyword, status)`.
   - Lấy chi tiết một giao dịch: `findById(paymentId)`.
   - Cập nhật trạng thái `payments`: `updatePaymentStatus(status)`. Hàm này được dùng cho cả thao tác Duyệt (chuyển sang `SUCCESS`) và Từ chối (chuyển sang `REJECTED`).
-  - Thiết lập hàm phụ cập nhật trạng thái hóa đơn `invoices` liên quan sang 'PAID' thông qua một câu Query UPDATE an toàn, bảo đảm gọi kèm Audit Log theo quy định của SPEC. (Note: Không thay đổi `InvoiceDAO.java` để tránh đứt gãy hệ thống cũ).
+  - Thiết lập hàm phụ cập nhật trạng thái hóa đơn `invoices` liên quan sang 'PAID' thông qua một câu Query UPDATE an toàn, bảo đảm gọi kèm Audit Log theo quy định của SPEC.
 
 ## 2. API & Servlets Controller
 Tuân thủ Servlet API Contract đã lên trong SPEC, nhưng ánh xạ vào Controller hiện hành `BaseServlet`.

@@ -22,6 +22,13 @@ Feature này hỗ trợ mục tiêu quản lý dòng tiền, theo dõi tình tr�
 
 ---
 
+## **Clarifications**
+
+### **Session 2026-07-26**
+- Q: Khi Giao dịch thanh toán phát sinh, thông tin người nộp tiền được liên kết như thế nào? → A: Mỗi Giao dịch thanh toán (`payments`) khi khởi tạo BẮT BUỘC phải liên kết Snapshot cố định với Hóa đơn (`invoice_id`) và Hợp đồng (`contract_id`) / Người nộp tiền (`created_by` / `tenant_id`). Kể cả khi cư dân đó chuyển đi, trả phòng, thanh lý hợp đồng (`INACTIVE` / soft-deleted) hoặc có cư dân mới dời vào phòng, lịch sử giao dịch thanh toán trong quá khứ BẮT BUỘC phải giữ nguyên 100% thông tin người thuê ban đầu, KHÔNG BỊ TRỐNG RỖNG và KHÔNG BỊ NHẢY TÊN sang người mới.
+
+---
+
 ## **2. User Stories**
 
 ### **Story 1 (Happy Path)**
@@ -62,7 +69,7 @@ WHEN payment transaction list is displayed THE SYSTEM SHALL show:
 
 - Transaction ID
 - Transaction Code
-- Tenant Name
+- Tenant Name (Cố định theo Snapshot Hóa đơn & Người nộp tiền)
 - Room Code
 - Payment Amount
 - Payment Date
@@ -78,6 +85,8 @@ WHEN Management Board selects a transaction THE SYSTEM SHALL display transaction
 WHEN transaction details are displayed THE SYSTEM SHALL show tenant info, payment amount, payment method, date, and status.
 
 WHEN transaction has an associated invoice THE SYSTEM SHALL display invoice details (code, due date, total, note).
+
+WHEN transaction details or transaction list is displayed THE SYSTEM SHALL retrieve tenant information through invoice contract binding (`i.contract_id`) and payment creator (`p.created_by`), ensuring historical transaction tenant info MUST NOT change or become blank when room contracts expire, terminate, or change.
 
 ### **Duyệt thanh toán thành công**
 

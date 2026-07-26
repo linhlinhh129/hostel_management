@@ -774,6 +774,28 @@ Authorization: Bearer <jwt_token>
 
 ---
 
+### Task 5.2b: Tenant Utility Meter Photos Display (UI Parity với Manager) (2 points) - Completed
+**Priority:** HIGH  
+**Duration:** 1 day  
+**Dependencies:** Task 4.2, 5.2  
+**Assignee:** Frontend & Backend Developer  
+
+**Description:**
+- [x] Bổ sung truyền trường `electric_img` và `water_img` trong `Invoice.java`, `InvoiceDetailDTO` và SQL DAO (`InvoiceDAO.java`).
+- [x] Thiết kế hiển thị thẻ Card xem ảnh chỉ số điện nước trong `src/main/webapp/WEB-INF/views/tenant/invoices/detail.jsp`:
+  - [x] Cấu trúc giao diện tái sử dụng 100% chuẩn Mintlify Card của Manager (`background: #fafafa; border-radius: 8px; header: #f1f5f9; font-weight: 600`).
+  - [x] Hiển thị 2 cột responsive (`col-md-6`) cho **Ảnh công tơ điện** (`electric_img`) và **Ảnh công tơ nước** (`water_img`).
+  - [x] Hỗ trợ di chuột phóng to nhẹ (`transform: scale(1.02)`) và click mở ảnh gốc `target="_blank"`.
+  - [x] Tự động ẩn hoặc hiển thị "Không có ảnh minh chứng" nếu kỳ hóa đơn chốt thủ công.
+
+**Acceptance Criteria:**
+- ✅ Tenant xem được ảnh chỉ số điện và nước thực tế do Operator tải lên.
+- ✅ Giao diện giống 100% form Card của Manager, không khác biệt.
+- ✅ Click vào ảnh mở tab ảnh gốc chất lượng cao.
+- ✅ Responsive trên di động và máy tính.
+
+---
+
 ### Task 5.3: VNPAY Payment Flow (5 points)
 **Priority:** CRITICAL  
 **Duration:** 2-3 days  

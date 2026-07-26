@@ -111,6 +111,42 @@
                         </div>
                     </div>
 
+                    <c:if test="${not empty invoice.electricImg or not empty invoice.waterImg}">
+                        <div class="widget-surface mb-3">
+                            <div class="widget-surface-header"><h3>Ảnh chỉ số điện nước</h3></div>
+                            <div class="widget-surface-body">
+                                <div class="row g-3">
+                                    <c:if test="${not empty invoice.electricImg}">
+                                        <div class="col-md-6">
+                                            <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                                                <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                                                    Ảnh công tơ điện
+                                                </div>
+                                                <div class="p-2 text-center">
+                                                    <c:url value="${invoice.electricImg}" var="electricImgUrl"/>
+                                                    <img src="${electricImgUrl}" alt="Ảnh chỉ số điện" title="Click để phóng to ảnh" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: zoom-in; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';" onclick="showFullImage(this.src)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                    <c:if test="${not empty invoice.waterImg}">
+                                        <div class="col-md-6">
+                                            <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                                                <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                                                    Ảnh công tơ nước
+                                                </div>
+                                                <div class="p-2 text-center">
+                                                    <c:url value="${invoice.waterImg}" var="waterImgUrl"/>
+                                                    <img src="${waterImgUrl}" alt="Ảnh chỉ số nước" title="Click để phóng to ảnh" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: zoom-in; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';" onclick="showFullImage(this.src)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
+
                     <c:if test="${not empty invoice.note}">
                         <div class="widget-surface mb-3">
                             <div class="widget-surface-header"><h3>Ghi chú</h3></div>
@@ -208,4 +244,25 @@
             </div>
         </main>
     </div></div>
+    <script>
+        function showFullImage(imageSrc) {
+            document.getElementById('modalImagePreview').src = imageSrc;
+            var imgModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+            imgModal.show();
+        }
+    </script>
+
+    <!-- Modal xem ảnh lớn -->
+    <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 justify-content-end p-2">
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <img id="modalImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain;" alt="Ảnh phóng to">
+                </div>
+            </div>
+        </div>
+    </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

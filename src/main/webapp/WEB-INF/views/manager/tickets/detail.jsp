@@ -113,8 +113,8 @@
                                             <c:choose>
                                               <c:when test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
                                                 <img src="${trimmedUrl}" class="img-thumbnail rounded"
-                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
-                                                  onclick="window.open(this.src)" />
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:zoom-in"
+                                                  onclick="showFullImage(this.src)" />
                                               </c:when>
                                               <c:otherwise>
                                                 <c:set var="finalImg">
@@ -124,8 +124,8 @@
                                                   </c:choose>
                                                 </c:set>
                                                 <img src="${finalImg}" class="img-thumbnail rounded"
-                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
-                                                  onclick="window.open(this.src)" />
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:zoom-in"
+                                                  onclick="showFullImage(this.src)" />
                                               </c:otherwise>
                                             </c:choose>
                                           </c:if>
@@ -150,8 +150,8 @@
                                             <c:choose>
                                               <c:when test="${fn:startsWith(trimmedUrl, 'http://') or fn:startsWith(trimmedUrl, 'https://')}">
                                                 <img src="${trimmedUrl}" class="img-thumbnail rounded"
-                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
-                                                  onclick="window.open(this.src)" />
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:zoom-in"
+                                                  onclick="showFullImage(this.src)" />
                                               </c:when>
                                               <c:otherwise>
                                                 <c:set var="finalImg2">
@@ -161,8 +161,8 @@
                                                   </c:choose>
                                                 </c:set>
                                                 <img src="${finalImg2}" class="img-thumbnail rounded"
-                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:pointer"
-                                                  onclick="window.open(this.src)" />
+                                                  style="max-height:160px;max-width:100%;object-fit:cover;cursor:zoom-in"
+                                                  onclick="showFullImage(this.src)" />
                                               </c:otherwise>
                                             </c:choose>
                                           </c:if>
@@ -313,84 +313,55 @@
                             </div>
                             <div class="widget-surface-body">
                               <c:choose>
-                                <%-- THÊM ĐIỀU KIỆN CHO OPERATOR TICKET (MANAGER CHỈ CÓ NHIỆM VỤ DUYỆT) --%>
+                                <%-- CHO OPERATOR TICKET: MANAGER CHỈ XEM VÀ THEO DÕI (READ-ONLY) --%>
                                 <c:when test="${ticket.senderRole == 'OPERATOR'}">
+                                  <div class="mb-3 text-center">
+                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2 rounded-pill mb-2" style="font-size:0.8125rem">
+                                      ℹ️ Báo cáo sự cố từ Vận hành viên
+                                    </span>
+                                    <p class="text-muted" style="font-size:0.8125rem;margin-top:6px;margin-bottom:14px">
+                                      Yêu cầu này do Nhân viên Vận hành gửi báo cáo. Quản lý ở chế độ xem và theo dõi tiến độ.
+                                    </p>
+                                  </div>
                                   <c:choose>
-                                    <%-- Nếu trạng thái là CHỜ DUYỆT --%>
+                                    <%-- Mới tạo / Chờ xử lý --%>
                                     <c:when test="${ticket.status == 'PENDING' or ticket.status == 'NEW'}">
-                                      <p class="text-muted" style="font-size:0.8125rem;margin-bottom:12px">
-                                        Phê duyệt báo cáo sự cố này để giao cho nhân viên vận hành tiến hành sửa chữa.
-                                      </p>
-                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/receive" class="mb-3">
-                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                        <button type="submit" class="quick-action-btn primary w-100" style="background-color: var(--hms-success, #10b981); border-color: var(--hms-success, #10b981);"
-                                          onclick="return confirm('Phê duyệt báo cáo sự cố này?')">
-                                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" style="margin-right:4px">
-                                            <polyline points="20 6 9 17 4 12" />
-                                          </svg>
-                                          Phê duyệt yêu cầu
-                                        </button>
-                                      </form>
-                                      <hr style="border-color:var(--hms-border)">
-                                      <%-- Từ chối --%>
-                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reject"
-                                        onsubmit="return confirm('Xác nhận từ chối yêu cầu này?')">
-                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                                        <div class="mb-2">
-                                          <label for="rejectReason" class="form-label"
-                                            style="font-size:0.8125rem;font-weight:600">Lý do từ chối <span class="text-danger">*</span></label>
-                                          <textarea class="form-control form-control-sm" id="rejectReason"
-                                            name="reason" rows="2" maxlength="500" required
-                                            placeholder="Nhập lý do từ chối..."></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                          Từ chối yêu cầu
-                                        </button>
-                                      </form>
+                                      <div class="text-center p-3 rounded" style="background-color: #fff8e1; border: 1px solid #ffe082; color: #b78103;">
+                                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">MỚI GỬI BÁO CÁO</span>
+                                        <p class="mb-0" style="font-size:0.8125rem">Vận hành viên vừa khởi tạo báo cáo sự cố. Đang trong tiến trình theo dõi.</p>
+                                      </div>
                                     </c:when>
 
-                                    <%-- Nếu trạng thái là ĐÃ PHÊ DUYỆT --%>
-                                    <c:when test="${ticket.status == 'RECEIVED'}">
+                                    <%-- Đang xử lý / Đã tiếp nhận / Có lịch hẹn --%>
+                                    <c:when test="${ticket.status == 'RECEIVED' or ticket.status == 'ASSIGNED' or ticket.status == 'IN_PROGRESS'}">
                                       <div class="text-center p-3 rounded" style="background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;">
-                                        <span class="badge bg-info text-white px-3 py-2 rounded-pill mb-2">ĐÃ PHÊ DUYỆT</span>
-                                        <p class="mb-0" style="font-size:0.8125rem">Sự cố đã được duyệt. Đang chờ nhân viên vận hành sửa chữa và báo cáo hoàn thành.</p>
+                                        <span class="badge bg-info text-white px-3 py-2 rounded-pill mb-2">ĐANG XỬ LÝ SỰ CỐ</span>
+                                        <p class="mb-0" style="font-size:0.8125rem">Sự cố đang được Nhân viên Vận hành tiến hành khắc phục và sửa chữa.</p>
                                       </div>
                                     </c:when>
 
                                     <%-- Đã hoàn thành --%>
                                     <c:when test="${ticket.status == 'DONE' or ticket.status == 'RESOLVED'}">
-                                      <div style="background:#f0fdf4;border:1px solid #bbf7d0;
-                                        border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
-                                        <span class="badge-hms badge-success"
-                                          style="display:inline-block;margin-bottom:6px">Đã hoàn thành</span>
-                                        <p style="font-size:0.8125rem;color:#166534;margin:0">
-                                          Sự cố đã được sửa chữa hoàn tất.
-                                        </p>
+                                      <div class="text-center p-3 rounded" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;">
+                                        <span class="badge bg-success text-white px-3 py-2 rounded-pill mb-2">ĐÃ HOÀN THÀNH</span>
+                                        <p class="mb-0" style="font-size:0.8125rem">Sự cố đã được Nhân viên Vận hành khắc phục hoàn tất.</p>
                                       </div>
                                     </c:when>
 
-                                    <%-- Từ chối --%>
+                                    <%-- Từ chối / Hủy --%>
                                     <c:when test="${ticket.status == 'REJECTED'}">
-                                      <div style="background:#fef2f2;border:1px solid #fecaca;
-                                        border-radius:var(--hms-radius);padding:0.75rem 1rem">
-                                        <span class="badge-hms badge-danger"
-                                          style="display:inline-block;margin-bottom:6px">Đã từ chối</span>
+                                      <div class="text-center p-3 rounded" style="background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b;">
+                                        <span class="badge bg-danger text-white px-3 py-2 rounded-pill mb-2">ĐÃ TỪ CHỐI / HỦY</span>
                                         <c:if test="${not empty ticket.rejectionReason}">
-                                          <p style="font-size:0.8125rem;color:#7f1d1d;margin:0">
-                                            <strong>Lý do:</strong>
-                                            <c:out value="${ticket.rejectionReason}" />
-                                          </p>
+                                          <p class="mb-0" style="font-size:0.8125rem"><strong>Lý do:</strong> <c:out value="${ticket.rejectionReason}" /></p>
                                         </c:if>
                                       </div>
                                     </c:when>
 
-                                    <%-- Đã hủy --%>
+                                    <%-- Mặc định --%>
                                     <c:otherwise>
-                                      <div style="background:var(--hms-bg-surface);border:1px solid var(--hms-border);
-                                        border-radius:var(--hms-radius);padding:0.75rem 1rem;text-align:center">
-                                        <span class="badge-hms badge-neutral"
-                                          style="display:inline-block;margin-bottom:6px">Đã hủy</span>
+                                      <div class="text-center p-3 rounded" style="background-color: #f3f4f6; border: 1px solid #e5e7eb; color: #374151;">
+                                        <span class="badge bg-secondary text-white px-3 py-2 rounded-pill mb-2">ĐÃ ĐÓNG</span>
                                       </div>
                                     </c:otherwise>
                                   </c:choose>
@@ -561,7 +532,27 @@
             </main>
           </div>
           </div>
-          <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
-        </body>
+  <script>
+    function showFullImage(imageSrc) {
+      document.getElementById('modalImagePreview').src = imageSrc;
+      var imgModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+      imgModal.show();
+    }
+  </script>
 
-        </html>
+  <!-- Modal xem ảnh lớn -->
+  <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-header border-0 justify-content-end p-2">
+          <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center p-0">
+          <img id="modalImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain;" alt="Ảnh phóng to">
+        </div>
+      </div>
+    </div>
+  </div>
+  <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
+</body>
+</html>

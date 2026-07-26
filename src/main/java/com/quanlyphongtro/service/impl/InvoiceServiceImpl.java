@@ -84,9 +84,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         if (manualOtherFee.compareTo(BigDecimal.ZERO) < 0)
             throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
 
-        // Cộng tiền nợ cũ (chưa thanh toán) của phòng vào phí khác
-        BigDecimal previousDebt = invoiceDAO.getUnpaidDebtByRoomCode(roomCode, managerId);
-        BigDecimal otherFee = manualOtherFee.add(previousDebt != null ? previousDebt : BigDecimal.ZERO);
+        BigDecimal otherFee = manualOtherFee;
 
         InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
         if (roomSnap == null) {
@@ -137,6 +135,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice invoice = new Invoice();
         invoice.setCode(invoiceCode);
         invoice.setRoomId(roomSnap.roomId);
+        invoice.setContractId(roomSnap.contractId);
+        invoice.setTenantId(roomSnap.tenantId);
         invoice.setMeterId(currentMeter.getMeterId());
         invoice.setDueDate(dueDate);
         invoice.setStatus("UNPAID");
@@ -236,29 +236,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         try {
             AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "UPDATE", dto.getStatus(), status, managerId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void reportError(int managerId, int invoiceId) throws Exception {
-        InvoiceDetailDTO invoice = getInvoiceDetail(managerId, invoiceId);
-        if (invoice == null) {
-            throw new IllegalArgumentException("Không tìm thấy hóa đơn hoặc không thuộc quyền quản lý.");
-        }
-        
-        String targetType = "ROOM";
-        String code = notificationDAO.generateCode(targetType);
-        String title = "Báo cáo sai số hóa đơn";
-        String content = "Hóa đơn " + invoice.getInvoiceCode() + " của phòng " + invoice.getRoomCode() + " đã được báo cáo sai số. Vui lòng kiểm tra lại số liệu điện nước hoặc các chi phí khác.";
-        
-        // Notify the operator or just log into notifications table
-        // We will insert notification for the room
-        int nId = notificationDAO.insertNotificationAndGetId(code, title, content, targetType, null, invoice.getRoomId(), managerId);
-        
-        try {
-            AuditLogHelper.log(auditLogDAO, null, "invoices", invoiceId, "REPORT_ERROR", "N/A", "Reported error for invoice " + invoice.getInvoiceCode(), managerId);
         } catch (Exception e) {
             e.printStackTrace();
         }

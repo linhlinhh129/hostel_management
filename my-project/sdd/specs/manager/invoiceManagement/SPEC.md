@@ -32,6 +32,10 @@ Hóa đơn đóng vai trò là căn cứ để người thuê thực hiện than
 - Q: Chức năng "Xóa hóa đơn" được yêu cầu là "giải phóng chỉ số điện nước". Việc giải phóng này nên được thực hiện như thế nào? → A: Đã bỏ chức năng xóa hóa đơn khỏi hệ thống.
 - Q: Khi Ban quản lý bấm "Báo cáo sai số" ở màn hình chi tiết hóa đơn, hệ thống nên xử lý luồng nghiệp vụ này ra sao? → A: Chỉ gửi thông báo hệ thống/Email cho nhân viên ghi điện nước mà không làm thay đổi trạng thái hóa đơn.
 
+### Session 2026-07-26
+- Q: Khi Hóa đơn và Giao dịch thanh toán phát sinh, thông tin người thuê được liên kết như thế nào? → A: Mỗi Hóa đơn (`invoices`) và Giao dịch thanh toán (`payments`) khi khởi tạo BẮT BUỘC phải ghi nhận Snapshot cố định `contract_id` và `tenant_id` trực tiếp vào cơ sở dữ liệu. Kể cả khi cư dân đó chuyển đi, trả phòng, thanh lý hợp đồng (`INACTIVE` / soft-deleted) hoặc có cư dân mới dời vào phòng, hóa đơn và lịch sử giao dịch trong quá khứ BẮT BUỘC phải giữ nguyên 100% thông tin người thuê ban đầu, KHÔNG BỊ TRỐNG RỖNG và KHÔNG BỊ NHẢY TÊN sang người mới.
+- Q: Xử lý thế nào đối với các hàm/luồng cũ không còn sử dụng khi viết hàm mới? → A: Khi thêm hàm mới/luồng mới thay thế, toàn bộ các hàm cũ thừa không dùng nữa (`reportError`, `reportIncorrectInvoice`, `handleReportIncorrect`...) BẮT BUỘC phải được xóa bỏ khỏi codebase để mã nguồn luôn sạch sẽ.
+
 ---
 
 # 2. User Stories
@@ -273,6 +277,14 @@ KHI người dùng có vai trò `Management Board`, THE SYSTEM SHALL cho phép t
 KHI người dùng chưa đăng nhập, THE SYSTEM SHALL trả về HTTP 401.
 
 KHI người dùng không có vai trò `Management Board`, THE SYSTEM SHALL trả về HTTP 403.
+
+## 3.9 Ràng buộc Snapshot Định danh Cố định Người thuê & Hợp đồng cho Hóa đơn và Giao dịch
+
+KHI Ban quản lý tạo Hóa đơn mới, THE SYSTEM SHALL truy xuất Hợp đồng (`contract_id`) và Người thuê (`tenant_id`) có hiệu lực tại kỳ chốt số và lưu cố định vào bảng `dbo.invoices`.
+
+KHI Hóa đơn hoặc Giao dịch thanh toán đã được khởi tạo, THE SYSTEM SHALL duy trì liên kết 100% cố định với Hợp đồng (`contract_id`) và Người thuê (`tenant_id`) ban đầu. Kể cả khi Hợp đồng chuyển sang `INACTIVE`, bị soft-delete, hay phòng có Hợp đồng mới/cư dân mới vào ở, thông tin Người thuê trên Hóa đơn và Giao dịch cũ MUST NOT bị trống rỗng và MUST NOT bị thay đổi hay "nhảy tên" sang người khác.
+
+KHI hệ thống triển khai hàm hoặc luồng mới thay thế cho các hàm cũ không còn sử dụng (như `reportError`, `reportIncorrectInvoice`, `handleReportIncorrect`...), THE SYSTEM SHALL xóa bỏ hoàn toàn các hàm cũ thừa khỏi mã nguồn để giữ hệ thống sạch sẽ.
 
 # 4. Servlet Contract
 

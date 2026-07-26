@@ -162,41 +162,54 @@ Sắp xếp theo kỳ hóa đơn giảm dần.
 
 Hiển thị:
 
-\- Mã hóa đơn
+- Mã hóa đơn
 
-\- Phòng
+- Phòng
 
-\- Tiền phòng
+- Tiền phòng
 
-\- Chỉ số điện cũ
+- Chỉ số điện cũ
 
-\- Chỉ số điện mới
+- Chỉ số điện mới
 
-\- Đơn giá điện
+- Đơn giá điện
 
-\- Thành tiền điện
+- Thành tiền điện
 
-\- Chỉ số nước cũ
+- **Ảnh chụp chỉ số điện thực tế (từ Operator)**
 
-\- Chỉ số nước mới
+- Chỉ số nước cũ
 
-\- Đơn giá nước
+- Chỉ số nước mới
 
-\- Thành tiền nước
+- Đơn giá nước
 
-\- Internet
+- Thành tiền nước
 
-\- Phí dịch vụ
+- **Ảnh chụp chỉ số nước thực tế (từ Operator)**
 
-\- Thuế
+- Internet
 
-\- Phụ phí
+- Phí dịch vụ
 
-\- Tổng tiền
+- Thuế
 
-\- Hạn thanh toán
+- Phụ phí
 
-\- Trạng thái
+- Tổng tiền
+
+- Hạn thanh toán
+
+- Trạng thái
+
+---
+
+### FR04.4 - Xem & Phóng to ảnh minh chứng điện nước do Operator tải lên
+**WHEN** Tenant xem chi tiết hóa đơn
+**THE SYSTEM SHALL**
+- Hiển thị hình ảnh chụp đồng hồ điện (`electric_img`) và đồng hồ nước (`water_img`) được ghi nhận trong bảng `meter_readings` do Nhân viên Vận hành (Operator) chụp lại khi chốt chỉ số.
+- Cho phép Tenant nhấp vào ảnh minh chứng để xem kích thước lớn (Lightbox/Modal image view) nhằm kiểm tra, đối chiếu chỉ số thực tế trên đồng hồ phòng mình.
+- Nếu kỳ hóa đơn không có ảnh minh chứng (chốt thủ công), hệ thống hiển thị thông báo "Không có ảnh minh chứng".
 
 ---
 

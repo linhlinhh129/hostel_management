@@ -32,10 +32,15 @@ public class DebtServiceImpl implements DebtService {
             }
             dto.setDebtAmount(debtAmount);
             
-            // Status might need to be updated to OVERDUE if it's UNPAID and overdueDays > 0
-            if (dto.getDueDate() != null && today.isAfter(dto.getDueDate())) {
-                if ("UNPAID".equals(dto.getStatus())) {
-                    dto.setStatus("OVERDUE");
+            if (dto.getDueDate() != null) {
+                if (today.isAfter(dto.getDueDate())) {
+                    if ("UNPAID".equals(dto.getStatus())) {
+                        dto.setStatus("OVERDUE");
+                    }
+                } else if (!today.isAfter(dto.getDueDate())) {
+                    if ("OVERDUE".equals(dto.getStatus())) {
+                        dto.setStatus("UNPAID");
+                    }
                 }
             }
         }
@@ -65,10 +70,15 @@ public class DebtServiceImpl implements DebtService {
             }
             dto.setDebtAmount(debtAmount);
             
-            // Status might need to be updated to OVERDUE if it's UNPAID and overdueDays > 0
-            if (dto.getDueDate() != null && today.isAfter(dto.getDueDate())) {
-                if ("UNPAID".equals(dto.getStatus())) {
-                    dto.setStatus("OVERDUE");
+            if (dto.getDueDate() != null) {
+                if (today.isAfter(dto.getDueDate())) {
+                    if ("UNPAID".equals(dto.getStatus())) {
+                        dto.setStatus("OVERDUE");
+                    }
+                } else if (!today.isAfter(dto.getDueDate())) {
+                    if ("OVERDUE".equals(dto.getStatus())) {
+                        dto.setStatus("UNPAID");
+                    }
                 }
             }
         }

@@ -72,16 +72,6 @@ public interface NotificationService {
     Map<String, Object> getNotificationDetail(int notificationId, Integer managerId)
             throws AccessDeniedException;
 
-    /**
-     * Báo cáo hóa đơn bị sai chỉ số điện nước (đổi meter_reading.status = REPORTED).
-     *
-     * @throws AccessDeniedException  nếu manager không phụ trách cơ sở chứa hóa đơn
-     * @throws IllegalStateException  nếu hóa đơn đã ở trạng thái không thể báo cáo
-     * @throws IllegalArgumentException nếu invoiceId không tồn tại
-     */
-    boolean reportIncorrectInvoice(int invoiceId, Integer managerId)
-            throws AccessDeniedException;
-
     /** Lấy thông tin hóa đơn để chuẩn bị form gửi yêu cầu sửa cho Operator. */
     Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId, Integer managerId)
             throws AccessDeniedException;

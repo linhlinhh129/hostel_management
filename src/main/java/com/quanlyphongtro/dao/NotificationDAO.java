@@ -4,9 +4,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.sql.Types;
 import java.time.temporal.ChronoUnit;
-
+import java.math.BigDecimal;
 import com.quanlyphongtro.model.Notification;
 import com.quanlyphongtro.util.DatabaseUtil;
 
@@ -892,12 +891,13 @@ public class NotificationDAO extends BaseDAO {
         Map<String, Object> invoice = null;
         String sql = "SELECT i.invoice_id, i.code AS invoice_code, i.total_amount, i.room_fee, i.due_date, " +
                 "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, " +
-                "u.full_name AS tenant_name, u.phone AS tenant_phone, " +
+                "COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
                 "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                "LEFT JOIN dbo.users u ON r.tenant_id = u.user_id " +
+                "LEFT JOIN dbo.contracts c ON c.contract_id = COALESCE(i.contract_id, (SELECT TOP 1 contract_id FROM contracts WHERE room_id = i.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) " +
+                "LEFT JOIN dbo.users u ON COALESCE(i.tenant_id, c.tenant_id, r.tenant_id) = u.user_id " +
                 "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -907,8 +907,8 @@ public class NotificationDAO extends BaseDAO {
                     invoice = new HashMap<>();
                     invoice.put("id", rs.getInt("invoice_id"));
                     invoice.put("code", rs.getString("invoice_code"));
-                    double baseTotal = rs.getDouble("total_amount");
-                    double roomFee = rs.getDouble("room_fee");
+                    BigDecimal baseTotal = rs.getBigDecimal("total_amount") != null ? rs.getBigDecimal("total_amount") : BigDecimal.ZERO;
+                    BigDecimal roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee") : BigDecimal.ZERO;
                     invoice.put("roomCode", rs.getString("room_code"));
                     invoice.put("roomId", rs.getInt("room_id"));
                     invoice.put("facilityId", rs.getInt("facility_id"));
@@ -933,9 +933,14 @@ public class NotificationDAO extends BaseDAO {
                         long overdueDays = days > 0 ? days : 0;
                         invoice.put("overdueDays", overdueDays);
 
-                        // Tính phí chậm nộp: 1%/ngày × tiền phòng × số ngày quá hạn
-                        double lateFee = overdueDays > 0 ? roomFee * 0.01 * overdueDays : 0.0;
-                        double totalWithLateFee = baseTotal + lateFee;
+                        // Tính phí chậm nộp chuẩn BigDecimal: 1%/ngày × tiền phòng × số ngày quá hạn
+                        BigDecimal lateFee = BigDecimal.ZERO;
+                        if (overdueDays > 0 && roomFee.compareTo(BigDecimal.ZERO) > 0) {
+                            lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                                             .multiply(new BigDecimal(overdueDays))
+                                             .setScale(0, java.math.RoundingMode.HALF_UP);
+                        }
+                        BigDecimal totalWithLateFee = baseTotal.add(lateFee);
 
                         invoice.put("baseAmount", baseTotal);
                         invoice.put("lateFee", lateFee);
@@ -945,7 +950,7 @@ public class NotificationDAO extends BaseDAO {
                         invoice.put("billingPeriod", "—");
                         invoice.put("overdueDays", 0);
                         invoice.put("baseAmount", baseTotal);
-                        invoice.put("lateFee", 0.0);
+                        invoice.put("lateFee", BigDecimal.ZERO);
                         invoice.put("totalAmount", baseTotal);
                     }
                 }
