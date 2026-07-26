@@ -577,13 +577,13 @@ public class InvoiceDAO extends BaseDAO {
                         "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                         "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
                         "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                        "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (" +
+                        "LEFT JOIN contracts c ON c.contract_id = (" +
                         "    SELECT TOP 1 contract_id FROM contracts " +
                         "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date "
                         +
                         "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
-                        ")) " +
-                        "LEFT JOIN users u ON COALESCE(i.tenant_id, pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                        ") " +
+                        "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                         "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
 
         if (status != null && !status.trim().isEmpty()) {
@@ -703,13 +703,13 @@ public class InvoiceDAO extends BaseDAO {
                         "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                         "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
                         "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                        "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (" +
+                        "LEFT JOIN contracts c ON c.contract_id = (" +
                         "    SELECT TOP 1 contract_id FROM contracts " +
                         "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date "
                         +
                         "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
-                        ")) " +
-                        "LEFT JOIN users u ON COALESCE(i.tenant_id, pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                        ") " +
+                        "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                         "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
 
         if (status != null && !status.trim().isEmpty()) {
@@ -779,12 +779,12 @@ public class InvoiceDAO extends BaseDAO {
                 "INNER JOIN rooms r ON i.room_id = r.room_id " +
                 "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                 "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (" +
+                "LEFT JOIN contracts c ON c.contract_id = (" +
                 "    SELECT TOP 1 contract_id FROM contracts " +
                 "    WHERE room_id = i.room_id AND deleted_at IS NULL " +
                 "    ORDER BY CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, created_at DESC" +
-                ")) " +
-                "LEFT JOIN users u ON COALESCE(i.tenant_id, pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                ") " +
+                "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                 "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
                 "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND f.manager_id = ?";
 

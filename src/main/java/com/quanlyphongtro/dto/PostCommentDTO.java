@@ -1,27 +1,26 @@
-package com.quanlyphongtro.model;
+package com.quanlyphongtro.dto;
 
 import java.time.LocalDateTime;
 
-public class PostComment {
+public class PostCommentDTO {
     private Integer commentId;
     private Integer postId;
     private Integer userId;
+    private String authorName;
     private String content;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
+    private Boolean isAuthor;
 
-    public PostComment() {
-    }
+    public PostCommentDTO() {}
 
-    public PostComment(Integer commentId, Integer postId, Integer userId, String content, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
+    public PostCommentDTO(Integer commentId, Integer postId, Integer userId, String authorName, String content, LocalDateTime createdAt, Boolean isAuthor) {
         this.commentId = commentId;
         this.postId = postId;
         this.userId = userId;
+        this.authorName = authorName;
         this.content = content;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.deletedAt = deletedAt;
+        this.isAuthor = isAuthor;
     }
 
     public Integer getCommentId() {
@@ -48,6 +47,14 @@ public class PostComment {
         this.userId = userId;
     }
 
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
     public String getContent() {
         return content;
     }
@@ -63,20 +70,17 @@ public class PostComment {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    
+    public java.util.Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return java.sql.Timestamp.valueOf(createdAt);
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public Boolean getIsAuthor() {
+        return isAuthor;
     }
 
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
-    }
-
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
+    public void setIsAuthor(Boolean isAuthor) {
+        this.isAuthor = isAuthor;
     }
 }

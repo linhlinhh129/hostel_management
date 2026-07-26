@@ -159,7 +159,51 @@
                                             <img src="${ctx}${post.imageUrl}" class="post-image" alt="Bài viết" style="cursor: zoom-in;" onclick="showFullImage(this.src)" />
                                         </c:if>
 
+                                        <div class="post-interactions mt-4 pt-3 border-top d-flex align-items-center justify-content-between">
+                                            <div class="d-flex gap-3 text-muted">
+                                                <span><i class="fa-solid fa-heart text-danger me-1" id="likeCountIcon"></i> <span id="likeCount">${post.totalLikes}</span> Lượt thích</span>
+                                                <span><i class="fa-solid fa-comment text-primary me-1"></i> <span id="commentCount">${post.totalComments}</span> Bình luận</span>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-outline-danger rounded-pill d-inline-flex align-items-center gap-2" id="likeBtn" onclick="toggleLike('${post.id}')">
+                                                    <c:choose>
+                                                        <c:when test="${post.likedByCurrentUser}">
+                                                            <i class="fa-solid fa-heart"></i> <span id="likeBtnText">Đã thích</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <i class="fa-regular fa-heart"></i> <span id="likeBtnText">Thích</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </button>
+                                            </div>
+                                        </div>
 
+                                        <div class="post-comments mt-4 border-top pt-4">
+                                            <h5 class="mb-3" style="font-weight: 600;">Bình luận</h5>
+                                            <div class="comment-input-area d-flex gap-2 mb-4">
+                                                <input type="text" class="form-control rounded-pill px-4" id="commentInput" placeholder="Viết bình luận..." onkeypress="handleCommentKey(event, '${post.id}')">
+                                                <button class="btn btn-primary rounded-pill px-4" onclick="submitComment('${post.id}')">Gửi</button>
+                                            </div>
+                                            <div class="comments-list d-flex flex-column gap-3" id="commentsList">
+                                                <c:forEach var="comment" items="${comments}">
+                                                    <div class="comment-item d-flex gap-2" id="comment-${comment.commentId}">
+                                                        <div class="post-avatar" style="width: 36px; height: 36px; font-size: 0.9rem; margin:0; flex-shrink: 0;">
+                                                            <c:out value="${not empty comment.authorName ? comment.authorName.substring(0,1).toUpperCase() : 'U'}" />
+                                                        </div>
+                                                        <div class="comment-content bg-light p-3 flex-grow-1" style="position:relative; border-radius: 4px 16px 16px 16px;">
+                                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                                <strong class="d-block text-dark"><c:out value="${comment.authorName}" /></strong>
+                                                                <small class="text-muted"><fmt:formatDate value="${comment.createdAtAsDate}" pattern="HH:mm dd/MM" /></small>
+                                                            </div>
+                                                            <p class="mb-0 text-dark"><c:out value="${comment.content}" /></p>
+                                                            <c:if test="${comment.isAuthor || pageRole == 'MANAGER'}">
+                                                                <button class="btn btn-link text-danger p-0 position-absolute" style="top: 10px; right: 10px; font-size: 0.8rem; text-decoration: none;" onclick="deleteComment('${comment.commentId}')">Xóa</button>
+                                                            </c:if>
+                                                        </div>
+                                                    </div>
+                                                </c:forEach>
+                                            </div>
+                                        </div>
 
                                         <div class="d-flex gap-3 justify-content-end mt-4">
                                             <c:if test="${post.status == 'PENDING'}">
@@ -200,7 +244,99 @@
                         return time + ' • ' + day;
                     }
 
+                    function toggleLike(postId) {
+                        fetch('${ctx}/manager/articles/reaction', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Accept': 'application/json',
+                                'X-CSRF-Token': '${csrfToken}'
+                            },
+                            body: 'postId=' + postId
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                // data.data contains boolean hasLiked
+                                let countElem = document.getElementById('likeCount');
+                                let count = parseInt(countElem.innerText);
+                                let btnText = document.getElementById('likeBtnText');
+                                let btnIcon = document.querySelector('#likeBtn i');
+                                if (data.data) {
+                                    countElem.innerText = count + 1;
+                                    btnText.innerText = 'Đã thích';
+                                    btnIcon.className = 'fa-solid fa-heart';
+                                } else {
+                                    countElem.innerText = Math.max(0, count - 1);
+                                    btnText.innerText = 'Thích';
+                                    btnIcon.className = 'fa-regular fa-heart';
+                                }
+                            } else {
+                                alert(data.error || "Lỗi xử lý");
+                            }
+                        });
+                    }
 
+                    function handleCommentKey(e, postId) {
+                        if (e.key === 'Enter') {
+                            submitComment(postId);
+                        }
+                    }
+
+                    function submitComment(postId) {
+                        const input = document.getElementById('commentInput');
+                        const content = input.value.trim();
+                        if (!content) return;
+                        
+                        input.disabled = true;
+                        fetch('${ctx}/manager/articles/comment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Accept': 'application/json',
+                                'X-CSRF-Token': '${csrfToken}'
+                            },
+                            body: 'postId=' + postId + '&content=' + encodeURIComponent(content)
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload(); // Simple reload to show comment for MVP
+                            } else {
+                                alert(data.error || "Lỗi xử lý");
+                                input.disabled = false;
+                            }
+                        })
+                        .catch(e => {
+                            alert("Lỗi kết nối.");
+                            input.disabled = false;
+                        });
+                    }
+
+                    function deleteComment(commentId) {
+                        if (!confirm('Bạn có chắc chắn muốn xóa bình luận này?')) return;
+                        
+                        fetch('${ctx}/manager/articles/comment', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Accept': 'application/json',
+                                'X-CSRF-Token': '${csrfToken}'
+                            },
+                            body: 'commentId=' + commentId
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                let el = document.getElementById('comment-' + commentId);
+                                if(el) el.remove();
+                                let countElem = document.getElementById('commentCount');
+                                countElem.innerText = Math.max(0, parseInt(countElem.innerText) - 1);
+                            } else {
+                                alert(data.error || "Lỗi xóa bình luận");
+                            }
+                        });
+                    }
 
                     function approvePost(postId) {
                         fetch('${ctx}/manager/articles/approve', {

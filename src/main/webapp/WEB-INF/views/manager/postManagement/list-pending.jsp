@@ -43,6 +43,7 @@
                                                             <th>Tiêu đề</th>
                                                             <th>Tác giả</th>
                                                             <th>Thời gian đăng</th>
+                                                            <th>Tương tác</th>
                                                             <th>Trạng thái</th>
                                                             <th>Thao tác</th>
                                                         </tr>
@@ -61,6 +62,12 @@
                                                                 <td>
                                                                     <fmt:formatDate value="${post.createdAtAsDate}"
                                                                         pattern="dd/MM/yyyy HH:mm" />
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex gap-3 text-muted" style="font-size: 0.875rem;">
+                                                                        <span title="Lượt thích"><i class="fa-regular fa-heart me-1"></i> <c:out value="${post.totalLikes}" /></span>
+                                                                        <span title="Bình luận"><i class="fa-regular fa-comment me-1"></i> <c:out value="${post.totalComments}" /></span>
+                                                                    </div>
                                                                 </td>
                                                                 <td>
                                                                     <c:choose>

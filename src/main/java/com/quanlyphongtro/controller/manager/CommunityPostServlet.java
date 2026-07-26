@@ -7,7 +7,9 @@ import com.quanlyphongtro.dto.CommunityPostDTO;
 import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.exception.ValidationException;
 import com.quanlyphongtro.service.CommunityPostService;
+import com.quanlyphongtro.service.PostInteractionService;
 import com.quanlyphongtro.service.impl.CommunityPostServiceImpl;
+import com.quanlyphongtro.service.impl.PostInteractionServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -31,12 +33,14 @@ import java.util.Map;
 public class CommunityPostServlet extends BaseServlet {
     private static final Logger logger = LoggerFactory.getLogger(CommunityPostServlet.class);
     private CommunityPostService communityPostService;
+    private PostInteractionService postInteractionService;
     private final Gson gson = new Gson();
 
     @Override
     public void init() throws ServletException {
         super.init();
         this.communityPostService = new CommunityPostServiceImpl();
+        this.postInteractionService = new PostInteractionServiceImpl();
     }
 
     @Override
@@ -62,6 +66,7 @@ public class CommunityPostServlet extends BaseServlet {
                 CommunityPostDTO post = communityPostService.getPostById(postId, currentUser.getId());
                 if (post != null) {
                     request.setAttribute("post", post);
+                    request.setAttribute("comments", postInteractionService.getCommentsByPostId(postId, currentUser.getId()));
                     request.getRequestDispatcher("/WEB-INF/views/manager/postManagement/detail.jsp").forward(request, response);
                 } else {
                     response.sendRedirect(request.getContextPath() + "/manager/articles?error=notfound");

@@ -5,7 +5,7 @@
 > **Sprint:** 1
 
 <!-- SPECKIT START -->
-> **Current Plan**: [specs/008-invoice-note-validation/plan.md](specs/008-invoice-note-validation/plan.md)
+> **Current Plan**: [my-project/sdd/specs/manager/postManagement/plan.md](my-project/sdd/specs/manager/postManagement/plan.md)
 <!-- SPECKIT END -->
 
 ---

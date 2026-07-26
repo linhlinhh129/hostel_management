@@ -1,16 +1,15 @@
-package com.quanlyphongtro.model;
+package com.quanlyphongtro.dto;
 
 import java.time.LocalDateTime;
 
-public class PostReaction {
+public class PostReactionDTO {
     private Integer postId;
     private Integer userId;
     private LocalDateTime createdAt;
-
-    public PostReaction() {
-    }
-
-    public PostReaction(Integer postId, Integer userId, LocalDateTime createdAt) {
+    
+    public PostReactionDTO() {}
+    
+    public PostReactionDTO(Integer postId, Integer userId, LocalDateTime createdAt) {
         this.postId = postId;
         this.userId = userId;
         this.createdAt = createdAt;
