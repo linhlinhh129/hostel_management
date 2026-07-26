@@ -1,6 +1,6 @@
 package com.quanlyphongtro.dao;
 
-import com.quanlyphongtro.util.DBConnectionUtil;
+import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ public class PostReactionDAO extends BaseDAO {
 
     public boolean addReaction(int postId, int userId) {
         String sql = "INSERT INTO post_reactions (post_id, user_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)";
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, postId);
@@ -33,7 +33,7 @@ public class PostReactionDAO extends BaseDAO {
 
     public boolean removeReaction(int postId, int userId) {
         String sql = "DELETE FROM post_reactions WHERE post_id = ? AND user_id = ?";
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, postId);
@@ -50,7 +50,7 @@ public class PostReactionDAO extends BaseDAO {
 
     public boolean hasReacted(int postId, int userId) {
         String sql = "SELECT 1 FROM post_reactions WHERE post_id = ? AND user_id = ?";
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, postId);

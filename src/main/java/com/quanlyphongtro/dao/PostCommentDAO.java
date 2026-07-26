@@ -1,7 +1,7 @@
 package com.quanlyphongtro.dao;
 
 import com.quanlyphongtro.dto.PostCommentDTO;
-import com.quanlyphongtro.util.DBConnectionUtil;
+import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +14,7 @@ public class PostCommentDAO extends BaseDAO {
 
     public boolean addComment(int postId, int userId, String content) {
         String sql = "INSERT INTO post_comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, postId);
@@ -39,7 +39,7 @@ public class PostCommentDAO extends BaseDAO {
                      "WHERE c.post_id = ? AND c.deleted_at IS NULL " +
                      "ORDER BY c.created_at ASC";
                      
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, postId);
@@ -70,7 +70,7 @@ public class PostCommentDAO extends BaseDAO {
     public boolean deleteComment(int commentId) {
         // Soft delete
         String sql = "UPDATE post_comments SET deleted_at = CURRENT_TIMESTAMP WHERE comment_id = ?";
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, commentId);
@@ -86,7 +86,7 @@ public class PostCommentDAO extends BaseDAO {
     
     public Integer getCommentAuthorId(int commentId) {
         String sql = "SELECT user_id FROM post_comments WHERE comment_id = ? AND deleted_at IS NULL";
-        try (Connection conn = DBConnectionUtil.getConnection();
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, commentId);
