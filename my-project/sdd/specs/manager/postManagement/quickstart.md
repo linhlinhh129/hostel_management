@@ -37,3 +37,11 @@
 2. Click the "Delete" icon/button next to it.
 3. Confirm the deletion prompt (if any).
 4. **Expected Outcome**: The comment should disappear from the thread, and the total comment count should decrease.
+
+### Scenario 5: Validating Post Creation Constraints
+
+1. Navigate to the create post page (e.g., `/manager/articles?action=create`).
+2. Enter a title that is longer than 50 characters.
+3. Enter content that is longer than 1000 characters.
+4. Click "Submit" to save the post.
+5. **Expected Outcome**: The system should prevent submission and display validation errors for both fields. The database should not create a new record.

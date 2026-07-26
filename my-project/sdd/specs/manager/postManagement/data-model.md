@@ -24,6 +24,12 @@ Represents a text comment made by a user on a community post.
 
 **Database Table**: `post_comments`
 
+### CommunityPost (Existing)
+Represents a community post. This feature adds validation constraints to existing fields.
+
+- `title` (String): The title of the post (Max 50 chars).
+- `content` (String): The text content of the post (Max 1000 chars).
+
 ## DTOs
 
 ### PostReactionDTO

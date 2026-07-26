@@ -54,9 +54,9 @@ public class ServicePriceServiceImpl implements ServicePriceService {
     }
 
     @Override
-    public boolean updatePrice(int managerId, String priceType, BigDecimal newPrice, String note) {
-        if (newPrice == null || newPrice.compareTo(BigDecimal.ZERO) < 0) {
-            return false;
+    public boolean updatePrice(int managerId, String priceType, BigDecimal newPrice) throws IllegalArgumentException {
+        if (newPrice == null || newPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Giá mới phải lớn hơn 0");
         }
 
         Optional<Facility> facilityOpt = facilityDAO.findByManagerId(managerId);
@@ -87,7 +87,7 @@ public class ServicePriceServiceImpl implements ServicePriceService {
         }
 
         if (oldPrice != null && oldPrice.compareTo(newPrice) == 0) {
-            return true; // Trả về true nhưng không ghi đè DB hay log lịch sử mới nếu giá trị không đổi
+            throw new IllegalArgumentException("Giá mới phải khác giá hiện tại");
         }
         
         boolean updated = facilityDAO.update(facility);
@@ -102,9 +102,9 @@ public class ServicePriceServiceImpl implements ServicePriceService {
                 action, 
                 oldValueStr, 
                 newValueStr, 
-                "", // ipAddress could be passed from servlet if needed, ignoring for now or could pass from controller
+                "", // ipAddress
                 managerId, 
-                note
+                "" // note removed
             );
         }
         

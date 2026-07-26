@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add comment and like functionality to the community posts page. This includes allowing authenticated users to like/unlike posts, add text comments, and displaying aggregated counts for likes and comments. The database schema already has `post_reactions` and `post_comments` tables, so the focus will be on backend APIs and frontend UI integration.
+Add comment and like functionality to the community posts page. This includes allowing authenticated users to like/unlike posts, add text comments, and displaying aggregated counts for likes and comments. The database schema already has `post_reactions` and `post_comments` tables, so the focus will be on backend APIs and frontend UI integration. Additionally, implement character limit validation for creating and editing posts (Title: max 50 chars, Content: max 1000 chars) to prevent UI layout breaking.
 
 ## Technical Context
 
@@ -24,7 +24,7 @@ Add comment and like functionality to the community posts page. This includes al
 
 **Performance Goals**: UI updates under 500ms for likes, 1s for comments
 
-**Constraints**: Role-based access control (must be logged in), no nested comments, plain text only for comments.
+**Constraints**: Role-based access control (must be logged in), no nested comments, plain text only for comments. Strict character limits on post creation/editing (title: 50, content: 1000).
 
 **Scale/Scope**: Extension of existing Community Post feature.
 

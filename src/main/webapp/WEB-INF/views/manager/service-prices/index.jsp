@@ -30,7 +30,6 @@
                             <th class="text-center">Loại phí</th>
                             <th class="text-center">Giá hiện tại</th>
                             <th class="text-center">Đơn vị</th>
-                            <th class="text-center">Cập nhật lần cuối</th>
                             <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
@@ -44,7 +43,6 @@
                                             <fmt:formatNumber value="${price.currentPrice}" groupingUsed="true"/>
                                         </td>
                                         <td class="text-center align-middle"><c:out value="${price.unit}"/></td>
-                                        <td class="text-center align-middle"><c:out value="${price.updatedAt}"/></td>
                                         <td class="text-center align-middle">
                                             <div class="d-flex gap-2 justify-content-center">
                                                 <button type="button" class="btn-mintlify-secondary" style="padding:4px 12px;font-size:0.8125rem" onclick="openUpdateModal('${price.priceType}', '${price.priceName}', '${price.currentPrice}', '${price.unit}')">
@@ -60,7 +58,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">Chưa có dữ liệu giá dịch vụ</td>
+                                    <td colspan="4" class="text-center text-muted">Chưa có dữ liệu giá dịch vụ</td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>
@@ -96,13 +94,9 @@
                                 <div class="mb-3">
                                     <label class="form-label required">Giá mới</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="newPrice" name="newPrice" min="0" step="0.01" required>
+                                        <input type="text" class="form-control" id="newPrice" name="newPrice" pattern="^\d+$" title="Yêu cầu nhập số nguyên dương, ví dụ: 40000" required>
                                         <span class="input-group-text" id="newUnitDisplay"></span>
                                     </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label required">Ghi chú / Lý do thay đổi</label>
-                                    <textarea class="form-control" id="note" name="note" rows="2" required></textarea>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -135,7 +129,6 @@
         document.getElementById('currentUnitDisplay').textContent = unit;
         document.getElementById('newUnitDisplay').textContent = unit;
         document.getElementById('newPrice').value = '';
-        document.getElementById('note').value = '';
         
         if(updateModal) updateModal.show();
     }

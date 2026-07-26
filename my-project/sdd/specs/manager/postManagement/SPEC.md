@@ -70,6 +70,19 @@ Users have the ability to remove their own comments if they made a mistake or ch
 1. **Given** a user views a comment they authored, **When** they click delete and confirm, **Then** the comment is removed from the post.
 2. **Given** a user views a comment authored by someone else, **When** they view the options, **Then** the delete option is not available (unless they are a Manager/Admin).
 
+### User Story 5 - Post Content Constraints (Priority: P1)
+
+Managers creating or editing a post must adhere to character limits to maintain a clean and consistent UI.
+
+**Why this priority**: Prevents layout breaking and ensures content is concise and readable.
+
+**Independent Test**: Attempting to save a post with a title longer than 50 characters or content longer than 1000 characters should display validation errors and prevent saving.
+
+**Acceptance Scenarios**:
+
+1. **Given** a manager is creating/editing a post, **When** they enter a title exceeding 50 characters, **Then** the system prevents submission and shows a validation error.
+2. **Given** a manager is creating/editing a post, **When** they enter content exceeding 1000 characters, **Then** the system prevents submission and shows a validation error.
+
 ### Edge Cases
 
 - What happens when a user tries to like a post that has just been deleted by a manager? (System should return a friendly error and refresh the view).
@@ -89,6 +102,8 @@ Users have the ability to remove their own comments if they made a mistake or ch
 - **FR-007**: System MUST display a list of comments for a post, including the author's name, timestamp, and content.
 - **FR-008**: System MUST allow users to delete their own comments.
 - **FR-009**: System MUST allow users with the MANAGER or ADMIN role to delete any comment for moderation purposes.
+- **FR-010**: System MUST validate that the Post Title does not exceed 50 characters upon creation or editing.
+- **FR-011**: System MUST validate that the Post Content does not exceed 1000 characters upon creation or editing.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -103,6 +118,7 @@ Users have the ability to remove their own comments if they made a mistake or ch
 - **SC-002**: Users can successfully submit a comment, with the new comment appearing in the thread in under 1 second.
 - **SC-003**: Total interaction counts (likes, comments) displayed on the UI are 100% accurate based on the underlying data.
 - **SC-004**: 0% of unauthorized deletions occur (users cannot delete comments they did not author, excluding managers).
+- **SC-005**: 100% of posts created or updated successfully adhere to the maximum character limits for title (50) and content (1000).
 
 ## Assumptions
 

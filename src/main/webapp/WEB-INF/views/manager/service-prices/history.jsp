@@ -43,7 +43,6 @@
                             <th class="text-center">Giá cũ</th>
                             <th class="text-center">Giá mới</th>
                             <th class="text-center">Người thay đổi</th>
-                            <th class="text-center">Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,13 +63,12 @@
                                             <fmt:formatNumber value="${item.newPrice}" groupingUsed="true"/>
                                         </td>
                                         <td class="text-center align-middle"><c:out value="${item.changedByName}"/></td>
-                                        <td class="text-center align-middle"><c:out value="${item.note}"/></td>
                                     </tr>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">Chưa có lịch sử thay đổi nào</td>
+                                    <td colspan="4" class="text-center text-muted">Chưa có lịch sử thay đổi nào</td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>

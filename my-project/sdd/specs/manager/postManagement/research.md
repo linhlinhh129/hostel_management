@@ -20,3 +20,8 @@ None. The technology stack and requirements are well understood and align with e
   - **Decision**: Not required for v1. We will load all comments or a fixed limit (e.g., 50 latest comments) when viewing a post detail.
   - **Rationale**: Keeps implementation simple for the first version.
   - **Alternatives considered**: Cursor-based pagination for comments (deferred to future enhancements).
+
+- **Data Validation for Posts**:
+  - **Decision**: Implement server-side validation in the Servlet/Service layer and client-side validation using HTML5 attributes (`maxlength`) and JavaScript.
+  - **Rationale**: Prevents users from bypassing UI restrictions and ensures data integrity before it reaches the database. HTML5 `maxlength` provides immediate feedback.
+  - **Alternatives considered**: Only client-side validation (insecure) or database-level constraints only (poor UX).

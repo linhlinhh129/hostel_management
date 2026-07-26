@@ -89,11 +89,11 @@
                         <input type="hidden" name="csrfToken" value="${csrfToken}"/>
                         <div class="mb-4">
                             <label for="title" class="form-label fw-bold" style="color: #0a0a0a;">Tiêu đề <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-custom w-100" id="title" name="title" required placeholder="Nhập tiêu đề bài viết..." maxlength="250">
+                            <input type="text" class="form-control form-control-custom w-100" id="title" name="title" required placeholder="Nhập tiêu đề bài viết..." maxlength="50">
                         </div>
                         <div class="mb-4">
                             <label for="content" class="form-label fw-bold" style="color: #0a0a0a;">Nội dung <span class="text-danger">*</span></label>
-                            <textarea class="form-control form-control-custom w-100" id="content" name="content" rows="6" required placeholder="Bạn muốn chia sẻ điều gì?"></textarea>
+                            <textarea class="form-control form-control-custom w-100" id="content" name="content" rows="6" required placeholder="Bạn muốn chia sẻ điều gì?" maxlength="1000"></textarea>
                         </div>
 
                         <div class="mb-4">
