@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import com.quanlyphongtro.dto.InvoiceListItemDTO;
 import com.quanlyphongtro.dto.InvoiceDetailDTO;
+import com.quanlyphongtro.dto.RoomDTO;
 import com.quanlyphongtro.model.Invoice;
 import com.quanlyphongtro.util.DatabaseUtil;
 import java.math.BigDecimal;
@@ -86,6 +87,46 @@ public class InvoiceDAO extends BaseDAO {
             }
         }
         return null;
+    }
+
+    public List<RoomDTO> getAvailableRoomsForInvoice(int managerId, String billingPeriod) throws SQLException {
+        List<RoomDTO> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT r.room_id, r.code, r.room_number, r.floor, u.full_name AS tenant_name " +
+                     "FROM rooms r " +
+                     "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                     "INNER JOIN contracts c ON r.room_id = c.room_id AND c.status = 'ACTIVE' AND c.deleted_at IS NULL " +
+                     "LEFT JOIN users u ON c.tenant_id = u.user_id " +
+                     "WHERE f.manager_id = ? " +
+                     "  AND r.status = 'OCCUPIED' " +
+                     "  AND r.deleted_at IS NULL " +
+                     "  AND f.deleted_at IS NULL " +
+                     "  AND EXISTS ( " +
+                     "      SELECT 1 FROM meter_readings mr " +
+                     "      WHERE mr.room_id = r.room_id AND mr.period = ? AND mr.deleted_at IS NULL " +
+                     "  ) " +
+                     "  AND NOT EXISTS ( " +
+                     "      SELECT 1 FROM invoices i " +
+                     "      WHERE i.room_id = r.room_id AND i.billing_period = ? AND i.deleted_at IS NULL " +
+                     "  ) " +
+                     "ORDER BY r.code ASC";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, managerId);
+            ps.setString(2, billingPeriod != null ? billingPeriod.trim() : "");
+            ps.setString(3, billingPeriod != null ? billingPeriod.trim() : "");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    RoomDTO dto = new RoomDTO();
+                    dto.setId(rs.getInt("room_id"));
+                    dto.setCode(rs.getString("code"));
+                    dto.setRoomNumber(rs.getString("room_number"));
+                    dto.setFloor(rs.getString("floor"));
+                    dto.setTenantName(rs.getString("tenant_name"));
+                    list.add(dto);
+                }
+            }
+        }
+        return list;
     }
 
     public boolean checkInvoiceCodeExists(String invoiceCode) throws SQLException {
