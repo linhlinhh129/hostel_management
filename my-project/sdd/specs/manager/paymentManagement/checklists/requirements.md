@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Quản lý Hóa đơn & Giao dịch (Snapshot Định danh Người thuê & Dọn dẹp Code thừa)
+# Specification Quality Checklist: Quản lý Thanh toán (Payment Management)
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-07-26
@@ -18,7 +18,7 @@
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic
 - [x] All acceptance scenarios are defined
-- [x] Edge cases identified (hợp đồng thanh lý, đổi người thuê mới, phòng trống)
+- [x] Edge cases identified (hợp đồng thanh lý, đổi người thuê mới, phòng trống, duyệt/từ chối giao dịch)
 - [x] Scope is clearly bounded
 - [x] Dependencies and assumptions identified
 
@@ -26,5 +26,5 @@
 
 - [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
-- [x] Snapshot định danh cố định người thuê & hợp đồng cho Hóa đơn & Giao dịch được quy định rõ ràng (Section 3.9)
-- [x] Quy tắc xóa bỏ hàm/luồng cũ dư thừa được quy định rõ ràng
+- [x] Snapshot định danh cố định người nộp tiền cho Giao dịch thanh toán được quy định rõ ràng trong EARS criteria & Clarifications
+- [x] Quy tắc đóng băng phí phạt muộn (Late Fee Freeze) khi có giao dịch chờ duyệt được quy định rõ ràng

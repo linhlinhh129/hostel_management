@@ -56,11 +56,13 @@ public class PaymentDAO extends BaseDAO {
         List<PaymentListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, " +
-            "r.code AS room_code, u.full_name AS tenant_name " +
+            "r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name " +
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
+            "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
+            "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (SELECT TOP 1 contract_id FROM contracts WHERE room_id = p.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) " +
+            "LEFT JOIN users u ON COALESCE(p.created_by, i.tenant_id, c.tenant_id, r.tenant_id) = u.user_id " +
             "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -68,7 +70,7 @@ public class PaymentDAO extends BaseDAO {
             sql.append("AND p.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
         
         // Lọc theo khoảng thời gian (fromDate - toDate)
@@ -158,7 +160,9 @@ public class PaymentDAO extends BaseDAO {
             "FROM payments p " +
             "INNER JOIN rooms r ON p.room_id = r.room_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
+            "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
+            "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (SELECT TOP 1 contract_id FROM contracts WHERE room_id = p.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) " +
+            "LEFT JOIN users u ON COALESCE(p.created_by, i.tenant_id, c.tenant_id, r.tenant_id) = u.user_id " +
             "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
         );
         
@@ -166,7 +170,7 @@ public class PaymentDAO extends BaseDAO {
             sql.append("AND p.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
         
         // Lọc theo khoảng thời gian (fromDate - toDate)
@@ -227,14 +231,15 @@ public class PaymentDAO extends BaseDAO {
 
     public PaymentDetailDTO findById(int managerId, int paymentId) {
         String sql = "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, " +
-                     "r.code AS room_code, u.full_name AS tenant_name, u.phone AS tenant_phone, u.email AS tenant_email, " +
+                     "r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, u.email AS tenant_email, " +
                      "f.name AS facility_name, f.address AS facility_address, " +
                      "i.code AS invoice_code, i.due_date, i.total_amount AS invoice_total, i.note AS invoice_note " +
                      "FROM payments p " +
                      "INNER JOIN rooms r ON p.room_id = r.room_id " +
                      "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
                      "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
+                     "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (SELECT TOP 1 contract_id FROM contracts WHERE room_id = p.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) " +
+                     "LEFT JOIN users u ON COALESCE(p.created_by, i.tenant_id, c.tenant_id, r.tenant_id) = u.user_id " +
                      "WHERE p.payment_id = ? AND p.deleted_at IS NULL AND f.manager_id = ?";
         
         try (Connection conn = DatabaseUtil.getConnection();

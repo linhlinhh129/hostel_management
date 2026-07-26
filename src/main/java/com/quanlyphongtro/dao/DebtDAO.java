@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.math.RoundingMode;
+// Filter debts strictly by OVERDUE status
 
 import com.quanlyphongtro.dto.DebtListItemDTO;
 import com.quanlyphongtro.dto.DebtDetailDTO;
@@ -29,14 +30,12 @@ public class DebtDAO extends BaseDAO {
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "LEFT JOIN users u ON r.tenant_id = u.user_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND i.status IN ('UNPAID', 'OVERDUE') "
+            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
         if (status != null && !status.trim().isEmpty()) {
             if (status.equals("UNPAID")) {
                 sql.append("AND i.status = 'UNPAID' AND i.due_date >= CAST(GETDATE() AS DATE) ");
-            } else if (status.equals("OVERDUE")) {
-                sql.append("AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) ");
             }
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -132,14 +131,12 @@ public class DebtDAO extends BaseDAO {
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "LEFT JOIN users u ON r.tenant_id = u.user_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND i.status IN ('UNPAID', 'OVERDUE') "
+            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
         if (status != null && !status.trim().isEmpty()) {
             if (status.equals("UNPAID")) {
                 sql.append("AND i.status = 'UNPAID' AND i.due_date >= CAST(GETDATE() AS DATE) ");
-            } else if (status.equals("OVERDUE")) {
-                sql.append("AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) ");
             }
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -190,7 +187,7 @@ public class DebtDAO extends BaseDAO {
             "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = i.room_id ORDER BY CASE WHEN CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC) " +
             "LEFT JOIN users u ON COALESCE(c.tenant_id, r.tenant_id) = u.user_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "WHERE i.deleted_at IS NULL AND i.invoice_id = ? AND f.manager_id = ? AND i.status IN ('UNPAID', 'OVERDUE')";
+            "WHERE i.deleted_at IS NULL AND i.invoice_id = ? AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE)))";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -274,6 +271,9 @@ public class DebtDAO extends BaseDAO {
                                         .multiply(new BigDecimal("0.01"))
                                         .multiply(new BigDecimal(daysLate))
                                         .setScale(0, RoundingMode.HALF_UP);
+                            dto.setOverdueDays((int) daysLate);
+                        } else {
+                            dto.setOverdueDays(0);
                         }
                     }
                     dto.setLateFeePreview(lateFee);

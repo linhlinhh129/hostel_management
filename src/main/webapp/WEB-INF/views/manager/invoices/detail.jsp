@@ -25,10 +25,7 @@
             <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
             <div class="d-flex gap-2 flex-wrap align-items-center">
             <c:if test="${invoice.status ne 'PAID'}">
-              <form action="${ctx}/manager/invoices/${invoice.invoiceId}/report-error" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn báo cáo sai số hóa đơn này?');">
-                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}" />
-                <button type="submit" class="btn text-white" style="background-color: #f59e0b; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem; border:none;">Báo cáo sai số</button>
-              </form>
+              <a href="${ctx}/manager/notifications/send-operator?invoiceId=${invoice.invoiceId}" class="btn text-white" style="background-color: #f59e0b; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem; border:none; text-decoration:none;">Báo cáo sai số</a>
               <a href="${ctx}/manager/invoices/${invoice.invoiceId}/edit" class="btn-mintlify-secondary text-decoration-none">Sửa Hóa Đơn</a>
             </c:if>
             <button onclick="window.print()" class="btn-mintlify-primary">Xuất PDF / In</button>
@@ -162,9 +159,8 @@
                             Ảnh công tơ điện
                           </div>
                           <div class="p-2 text-center">
-                            <a href="${invoice.electricImg}" target="_blank" title="Click để phóng to ảnh">
-                              <img src="${invoice.electricImg}" alt="Ảnh chỉ số điện" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';">
-                            </a>
+                            <c:url value="${invoice.electricImg}" var="electricImgUrl"/>
+                            <img src="${electricImgUrl}" alt="Ảnh chỉ số điện" title="Click để phóng to ảnh" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: zoom-in; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';" onclick="showFullImage(this.src)">
                           </div>
                         </div>
                       </div>
@@ -176,9 +172,8 @@
                             Ảnh công tơ nước
                           </div>
                           <div class="p-2 text-center">
-                            <a href="${invoice.waterImg}" target="_blank" title="Click để phóng to ảnh">
-                              <img src="${invoice.waterImg}" alt="Ảnh chỉ số nước" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';">
-                            </a>
+                            <c:url value="${invoice.waterImg}" var="waterImgUrl"/>
+                            <img src="${waterImgUrl}" alt="Ảnh chỉ số nước" title="Click để phóng to ảnh" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: zoom-in; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';" onclick="showFullImage(this.src)">
                           </div>
                         </div>
                       </div>
@@ -195,15 +190,15 @@
               <ul class="list-unstyled">
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Họ tên</span>
-                  <span class="fw-bold"><c:out value="${invoice.tenantName}"/></span>
+                  <span class="fw-bold"><c:out value="${invoice.tenantName}" default="Phòng trống (Chưa có người thuê)"/></span>
                 </li>
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Số điện thoại</span>
-                  <span class="fw-bold"><c:out value="${invoice.tenantPhone}"/></span>
+                  <span class="fw-bold"><c:out value="${invoice.tenantPhone}" default="-"/></span>
                 </li>
                 <li class="mb-0">
                   <span class="text-muted d-block" style="font-size:0.875rem">Email</span>
-                  <span class="fw-bold"><c:out value="${invoice.tenantEmail}"/></span>
+                  <span class="fw-bold"><c:out value="${invoice.tenantEmail}" default="-"/></span>
                 </li>
               </ul>
             </div>
@@ -226,6 +221,9 @@
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Kỳ hợp đồng</span>
                   <span class="fw-bold"><c:out value="${invoice.contractPeriod}" default="Chưa có hợp đồng"/></span>
+                  <c:if test="${not empty invoice.contractCode}">
+                    <span class="text-muted" style="font-size:0.8rem"> (Mã: <c:out value="${invoice.contractCode}"/>)</span>
+                  </c:if>
                 </li>
                 <li class="mb-3">
                   <span class="text-muted d-block" style="font-size:0.875rem">Hạn thanh toán</span>
@@ -245,6 +243,27 @@
         </div>
 
       </main>
+    </div>
+  </div>
+  <script>
+    function showFullImage(imageSrc) {
+      document.getElementById('modalImagePreview').src = imageSrc;
+      var imgModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+      imgModal.show();
+    }
+  </script>
+
+  <!-- Modal xem ảnh lớn -->
+  <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-header border-0 justify-content-end p-2">
+          <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center p-0">
+          <img id="modalImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain;" alt="Ảnh phóng to">
+        </div>
+      </div>
     </div>
   </div>
   <jsp:include page="/WEB-INF/views/layout/footer.jsp" />

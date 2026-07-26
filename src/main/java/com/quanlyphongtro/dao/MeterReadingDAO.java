@@ -328,14 +328,38 @@ public class MeterReadingDAO extends BaseDAO {
     public boolean updateMeterReading(int meterId, int electric, int water, String electricImg, String waterImg) {
         String sql = "UPDATE meter_readings SET electric = ?, water = ?, electric_img = ?, water_img = ?, status = 'UPDATED', updated_at = GETDATE() " +
                      "WHERE meter_id = ?";
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, electric);
-            ps.setInt(2, water);
-            ps.setString(3, electricImg);
-            ps.setString(4, waterImg);
-            ps.setInt(5, meterId);
-            return ps.executeUpdate() > 0;
+        String updateInvoiceSql = 
+            "UPDATE i SET " +
+            "  i.total_amount = i.room_fee + " +
+            "    ((? - COALESCE((SELECT TOP 1 mr2.electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0)) * i.electricity_price) + " +
+            "    ((? - COALESCE((SELECT TOP 1 mr2.water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0)) * i.water_price) + " +
+            "    COALESCE(i.service_fee, 0) + COALESCE(i.internet_fee, 0) + COALESCE(i.other_fee, 0), " +
+            "  i.updated_at = GETDATE() " +
+            "FROM invoices i " +
+            "INNER JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
+            "WHERE i.meter_id = ? AND i.status != 'PAID' AND i.deleted_at IS NULL";
+
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            boolean updated = false;
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, electric);
+                ps.setInt(2, water);
+                ps.setString(3, electricImg);
+                ps.setString(4, waterImg);
+                ps.setInt(5, meterId);
+                updated = ps.executeUpdate() > 0;
+            }
+            if (updated) {
+                try (PreparedStatement psInv = conn.prepareStatement(updateInvoiceSql)) {
+                    psInv.setInt(1, electric);
+                    psInv.setInt(2, water);
+                    psInv.setInt(3, meterId);
+                    psInv.executeUpdate();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            return updated;
         } catch (SQLException e) {
             e.printStackTrace();
         }

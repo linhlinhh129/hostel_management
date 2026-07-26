@@ -18,6 +18,7 @@ public class InvoiceDetailDTO {
     private String facilityAddress;
     private String billingPeriod;
     private String contractPeriod;
+    private String contractCode;
     private BigDecimal roomFee;
 
     private Integer meterId;
@@ -150,6 +151,14 @@ public class InvoiceDetailDTO {
 
     public void setContractPeriod(String contractPeriod) {
         this.contractPeriod = contractPeriod;
+    }
+
+    public String getContractCode() {
+        return contractCode;
+    }
+
+    public void setContractCode(String contractCode) {
+        this.contractCode = contractCode;
     }
 
     public Integer getMeterId() {

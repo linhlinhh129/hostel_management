@@ -202,24 +202,7 @@ public class NotificationServiceImpl implements NotificationService {
         return notification;
     }
 
-    @Override
-    public boolean reportIncorrectInvoice(int invoiceId, Integer managerId)
-            throws AccessDeniedException {
-        Map<String, Object> invoice = notificationDAO.getInvoiceVerifyDetails(invoiceId);
-        if (invoice == null)
-            throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
-        Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
-            throw new AccessDeniedException("Bạn không có quyền báo cáo hóa đơn này.");
-
-        String status = (String) invoice.get("status");
-        if ("PAID".equals(status))
-            throw new IllegalStateException("Không thể báo cáo hóa đơn đã thanh toán.");
-
-        int meterId = (int) invoice.get("meterId");
-        return notificationDAO.updateMeterReadingStatus(meterId, "REPORTED");
-    }
 
     @Override
     public Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId, Integer managerId)

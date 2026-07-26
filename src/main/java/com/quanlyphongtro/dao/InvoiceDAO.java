@@ -25,6 +25,8 @@ public class InvoiceDAO extends BaseDAO {
 
     public static class InvoiceRoomSnapshot {
         public int roomId;
+        public Integer contractId;
+        public Integer tenantId;
         public String status;
         public boolean hasTenant;
         public BigDecimal roomFee;
@@ -45,9 +47,10 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public InvoiceRoomSnapshot getRoomSnapshotForInvoice(String roomCode, int managerId) throws SQLException {
-        String sql = "SELECT r.room_id, r.status, r.tenant_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee "
+        String sql = "SELECT r.room_id, r.status, COALESCE(r.tenant_id, c.tenant_id) AS tenant_id, c.contract_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee "
                 +
                 "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = r.room_id AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY created_at DESC) " +
                 "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -57,8 +60,15 @@ public class InvoiceDAO extends BaseDAO {
                 if (rs.next()) {
                     InvoiceRoomSnapshot snapshot = new InvoiceRoomSnapshot();
                     snapshot.status = rs.getString("status");
-                    rs.getInt("tenant_id");
-                    snapshot.hasTenant = !rs.wasNull();
+                    int tenantIdVal = rs.getInt("tenant_id");
+                    snapshot.hasTenant = !rs.wasNull() && tenantIdVal > 0;
+                    if (snapshot.hasTenant) {
+                        snapshot.tenantId = tenantIdVal;
+                    }
+                    int contractIdVal = rs.getInt("contract_id");
+                    if (!rs.wasNull() && contractIdVal > 0) {
+                        snapshot.contractId = contractIdVal;
+                    }
                     snapshot.roomId = rs.getInt("room_id");
                     snapshot.roomFee = rs.getBigDecimal("room_fee") != null ? rs.getBigDecimal("room_fee")
                             : BigDecimal.ZERO;
@@ -251,6 +261,19 @@ public class InvoiceDAO extends BaseDAO {
             i.setOldWaterReading(getInteger(rs, "old_water"));
             i.setNewWaterReading(getInteger(rs, "new_water"));
 
+            if (hasColumn(rs, "electric_img")) {
+                try {
+                    i.setElectricImg(rs.getString("electric_img"));
+                } catch (SQLException ignore) {
+                }
+            }
+            if (hasColumn(rs, "water_img")) {
+                try {
+                    i.setWaterImg(rs.getString("water_img"));
+                } catch (SQLException ignore) {
+                }
+            }
+
             if (i.getNewElectricReading() != null && i.getOldElectricReading() != null
                     && i.getElectricityPrice() != null) {
                 int used = i.getNewElectricReading() - i.getOldElectricReading();
@@ -320,7 +343,7 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> findByIdAndRoomId(int id, int roomId) {
         String sql = "SELECT i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, mr.electric_img, mr.water_img, " +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -554,13 +577,13 @@ public class InvoiceDAO extends BaseDAO {
                         "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                         "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
                         "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                        "LEFT JOIN contracts c ON c.contract_id = (" +
+                        "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (" +
                         "    SELECT TOP 1 contract_id FROM contracts " +
                         "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date "
                         +
                         "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
-                        ") " +
-                        "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                        ")) " +
+                        "LEFT JOIN users u ON COALESCE(i.tenant_id, pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                         "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
 
         if (status != null && !status.trim().isEmpty()) {
@@ -607,7 +630,9 @@ public class InvoiceDAO extends BaseDAO {
                     InvoiceListItemDTO dto = new InvoiceListItemDTO();
                     dto.setInvoiceId(rs.getInt("invoice_id"));
                     dto.setInvoiceCode(rs.getString("code"));
-                    BigDecimal baseTotal = rs.getBigDecimal("total_amount");
+                    BigDecimal rawBaseTotal = rs.getBigDecimal("total_amount");
+                    BigDecimal baseTotal = rawBaseTotal;
+                    BigDecimal lateFee = BigDecimal.ZERO;
                     String invoiceStatus = rs.getString("status");
                     Date d = rs.getDate("due_date");
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
@@ -621,18 +646,23 @@ public class InvoiceDAO extends BaseDAO {
                         }
                         if (endDate.isAfter(dueLocalDate)) {
                             long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
-                            BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                            lateFee = roomFee.multiply(new BigDecimal("0.01"))
                                     .multiply(new BigDecimal(daysLate))
                                     .setScale(0, RoundingMode.HALF_UP);
                             if (baseTotal != null)
                                 baseTotal = baseTotal.add(lateFee);
+                            if ("UNPAID".equals(invoiceStatus)) {
+                                invoiceStatus = "OVERDUE";
+                            }
                         }
                     }
 
+                    dto.setBaseAmount(rawBaseTotal);
+                    dto.setLateFee(lateFee);
                     dto.setTotalAmount(baseTotal);
                     if (d != null)
                         dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(d));
-                    dto.setStatus(rs.getString("status"));
+                    dto.setStatus(invoiceStatus);
                     dto.setRoomCode(rs.getString("room_code"));
                     dto.setTenantName(rs.getString("tenant_name"));
 
@@ -673,13 +703,13 @@ public class InvoiceDAO extends BaseDAO {
                         "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                         "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
                         "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                        "LEFT JOIN contracts c ON c.contract_id = (" +
+                        "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (" +
                         "    SELECT TOP 1 contract_id FROM contracts " +
                         "    WHERE room_id = i.room_id AND CAST(i.created_at AS DATE) BETWEEN start_date AND end_date "
                         +
                         "    ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC" +
-                        ") " +
-                        "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                        ")) " +
+                        "LEFT JOIN users u ON COALESCE(i.tenant_id, pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                         "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
 
         if (status != null && !status.trim().isEmpty()) {
@@ -734,7 +764,7 @@ public class InvoiceDAO extends BaseDAO {
                 "COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
                 "u.email AS tenant_email, " +
                 "f.name AS facility_name, f.address AS facility_address, " +
-                "c.start_date AS contract_start_date, c.end_date AS contract_end_date, " +
+                "c.start_date AS contract_start_date, c.end_date AS contract_end_date, c.code AS contract_code, " +
                 "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_img, mr_curr.water_img, "
                 +
                 "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, "
@@ -749,12 +779,12 @@ public class InvoiceDAO extends BaseDAO {
                 "INNER JOIN rooms r ON i.room_id = r.room_id " +
                 "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
                 "LEFT JOIN payments pay ON i.invoice_id = pay.invoice_id AND pay.deleted_at IS NULL " +
-                "LEFT JOIN contracts c ON c.contract_id = (" +
+                "LEFT JOIN contracts c ON c.contract_id = COALESCE(i.contract_id, (" +
                 "    SELECT TOP 1 contract_id FROM contracts " +
                 "    WHERE room_id = i.room_id AND deleted_at IS NULL " +
                 "    ORDER BY CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, created_at DESC" +
-                ") " +
-                "LEFT JOIN users u ON COALESCE(pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                ")) " +
+                "LEFT JOIN users u ON COALESCE(i.tenant_id, pay.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
                 "LEFT JOIN meter_readings mr_curr ON i.meter_id = mr_curr.meter_id " +
                 "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND f.manager_id = ?";
 
@@ -788,11 +818,12 @@ public class InvoiceDAO extends BaseDAO {
                     Date cStart = rs.getDate("contract_start_date");
                     Date cEnd = rs.getDate("contract_end_date");
                     if (cStart != null && cEnd != null) {
-                        SimpleDateFormat sdfDate = new SimpleDateFormat("dd/MM/yyyy");
-                        dto.setContractPeriod(sdfDate.format(cStart) + " - " + sdfDate.format(cEnd));
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                        dto.setContractPeriod(sdf.format(cStart) + " - " + sdf.format(cEnd));
                     } else {
                         dto.setContractPeriod("Chưa có hợp đồng");
                     }
+                    dto.setContractCode(rs.getString("contract_code"));
 
                     dto.setRoomFee(rs.getBigDecimal("room_fee"));
                     dto.setElectricImg(rs.getString("electric_img"));
@@ -860,6 +891,9 @@ public class InvoiceDAO extends BaseDAO {
                                         .multiply(new BigDecimal("0.01"))
                                         .multiply(new BigDecimal(daysLate))
                                         .setScale(0, RoundingMode.HALF_UP);
+                                if ("UNPAID".equals(dto.getStatus())) {
+                                    dto.setStatus("OVERDUE");
+                                }
                             }
                         }
                     }
@@ -921,9 +955,9 @@ public class InvoiceDAO extends BaseDAO {
 
     public void insert(Invoice invoice) throws SQLException {
         String sql = "INSERT INTO invoices (code, room_id, meter_id, due_date, status, other_fee, " +
-                "room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by) "
+                "room_fee, electricity_price, water_price, internet_fee, service_fee, total_amount, note, created_by, contract_id, tenant_id) "
                 +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, invoice.getCode());
@@ -940,6 +974,16 @@ public class InvoiceDAO extends BaseDAO {
             ps.setBigDecimal(12, invoice.getTotalAmount());
             ps.setString(13, invoice.getNote());
             ps.setInt(14, invoice.getCreatedBy());
+            if (invoice.getContractId() != null) {
+                ps.setInt(15, invoice.getContractId());
+            } else {
+                ps.setNull(15, java.sql.Types.INTEGER);
+            }
+            if (invoice.getTenantId() != null) {
+                ps.setInt(16, invoice.getTenantId());
+            } else {
+                ps.setNull(16, java.sql.Types.INTEGER);
+            }
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {

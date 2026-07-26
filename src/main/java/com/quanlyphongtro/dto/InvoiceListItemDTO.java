@@ -12,6 +12,9 @@ public class InvoiceListItemDTO {
     private String dueDate;
     private String status;
     
+    private BigDecimal baseAmount;
+    private BigDecimal lateFee;
+    
     // UI Helpers
     private String statusBadgeClass;
     private String statusLabel;
@@ -53,6 +56,12 @@ public class InvoiceListItemDTO {
             this.statusLabel = "Chưa thanh toán";
         }
     }
+
+    public BigDecimal getBaseAmount() { return baseAmount; }
+    public void setBaseAmount(BigDecimal baseAmount) { this.baseAmount = baseAmount; }
+
+    public BigDecimal getLateFee() { return lateFee; }
+    public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
 
     public String getStatusBadgeClass() { return statusBadgeClass; }
     public String getStatusLabel() { return statusLabel; }
