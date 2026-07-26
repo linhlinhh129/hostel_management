@@ -5,7 +5,7 @@
 > **Sprint:** 1
 
 <!-- SPECKIT START -->
-> **Current Plan**: [d:\FPT_University\Semester_5\dinh_SWP391\github\hostel_management\my-project\sdd\specs\manager\invoiceManagement\plan.md](d:\FPT_University\Semester_5\dinh_SWP391\github\hostel_management\my-project\sdd\specs\manager\invoiceManagement\plan.md)
+> **Current Plan**: [specs/008-invoice-note-validation/plan.md](specs/008-invoice-note-validation/plan.md)
 <!-- SPECKIT END -->
 
 ---

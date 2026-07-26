@@ -67,6 +67,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDateStr, String otherFeeStr, String note, int createdBy) throws Exception {
+        if (note != null && note.length() > 1000) {
+            throw new IllegalArgumentException("Ghi chú không được vượt quá 1000 ký tự.");
+        }
         LocalDate dueDate;
         try {
             dueDate = LocalDate.parse(dueDateStr);
@@ -159,6 +162,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void updateInvoice(int managerId, int invoiceId, String dueDateStr, String otherFeeStr, String note) throws Exception {
+        if (note != null && note.length() > 1000) {
+            throw new IllegalArgumentException("Ghi chú không được vượt quá 1000 ký tự.");
+        }
         InvoiceDetailDTO dto = getInvoiceDetail(managerId, invoiceId);
         if ("PAID".equalsIgnoreCase(dto.getStatus())) {
             throw new IllegalArgumentException("Không được chỉnh sửa hóa đơn đã thanh toán.");

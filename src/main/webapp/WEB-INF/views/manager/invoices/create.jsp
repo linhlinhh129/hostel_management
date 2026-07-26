@@ -90,7 +90,8 @@
 
               <div class="col-12">
                 <label class="form-label fw-bold">Ghi chú</label>
-                <textarea class="form-control" name="note" rows="3" placeholder="Ghi chú thêm nếu có..."></textarea>
+                <textarea class="form-control" name="note" rows="3" maxlength="1000" placeholder="Ghi chú thêm nếu có..."></textarea>
+                <div class="form-text text-muted">Tối đa 1000 ký tự.</div>
               </div>
             </div>
 
