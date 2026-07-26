@@ -9,6 +9,7 @@ import com.quanlyphongtro.model.Facility;
 import com.quanlyphongtro.model.Room;
 import com.quanlyphongtro.model.User;
 import com.quanlyphongtro.service.TenantService;
+import com.quanlyphongtro.util.ValidationUtil;
 
 import java.util.Optional;
 import java.util.List;
@@ -75,8 +76,8 @@ public class TenantServiceImpl implements TenantService {
             throw new AccessDeniedException("Bạn không có quyền chỉnh sửa thông tin người thuê này.");
         }
 
-        if (dob != null && dob.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Ngày sinh của người thuê không thể ở tương lai.");
+        if (dob != null && !ValidationUtil.isAtLeast18YearsOld(dob)) {
+            throw new IllegalArgumentException("Người thuê phải từ 18 tuổi trở lên.");
         }
 
         // 2. Check for duplicate username/email

@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.quanlyphongtro.dto.RoomDTO;
+
 public interface InvoiceService {
     // Methods for Tenant/Room
     List<Invoice> getInvoicesByRoomId(int roomId);
@@ -16,6 +18,7 @@ public interface InvoiceService {
     Optional<Invoice> getCurrentInvoice(int roomId);
     
     // Methods for Manager
+    List<RoomDTO> getAvailableRoomsForInvoice(int managerId, String billingPeriod) throws Exception;
     List<InvoiceListItemDTO> getInvoices(int managerId, String keyword, String status, String billingPeriod, int page, int pageSize);
     int countInvoices(int managerId, String keyword, String status, String billingPeriod);
     InvoiceDetailDTO getInvoiceDetail(int managerId, int invoiceId) throws Exception;

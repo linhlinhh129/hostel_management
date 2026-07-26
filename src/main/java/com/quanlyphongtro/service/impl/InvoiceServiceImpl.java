@@ -18,11 +18,22 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.quanlyphongtro.dto.RoomDTO;
+import java.time.format.DateTimeFormatter;
+
 public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceDAO invoiceDAO = new InvoiceDAO();
     private final MeterReadingDAO meterReadingDAO = new MeterReadingDAO();
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
     private final NotificationDAO notificationDAO = new NotificationDAO();
+
+    @Override
+    public List<RoomDTO> getAvailableRoomsForInvoice(int managerId, String billingPeriod) throws Exception {
+        if (billingPeriod == null || billingPeriod.trim().isEmpty()) {
+            billingPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+        }
+        return invoiceDAO.getAvailableRoomsForInvoice(managerId, billingPeriod.trim());
+    }
 
     @Override
     public List<Invoice> getInvoicesByRoomId(int roomId) {

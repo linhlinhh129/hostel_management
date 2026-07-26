@@ -394,9 +394,9 @@
                     <input type="tel" class="form-control" id="dep_phone" name="phone" maxlength="20">
                   </div>
                   <div class="mb-3">
-                    <label for="dep_identityNumber" class="form-label">Số CCCD/CMND</label>
-                    <input type="text" class="form-control" id="dep_identityNumber" name="identityNumber" maxlength="50"
-                      placeholder="Nhập số CCCD/CMND (tùy chọn)">
+                    <label for="dep_identityNumber" class="form-label">Số CCCD</label>
+                    <input type="text" class="form-control" id="dep_identityNumber" name="identityNumber" maxlength="12" pattern="[0-9]{12}" title="Số CCCD phải gồm đúng 12 chữ số"
+                      placeholder="Nhập 12 số CCCD (tùy chọn)">
                   </div>
                   <div class="row g-3">
                     <div class="col-sm-6">
@@ -452,10 +452,10 @@
                       value="<c:out value='${tenant.phone}'/>">
                   </div>
                   <div class="mb-3">
-                    <label for="tenant_identityNumber" class="form-label">CCCD/CMND <span
+                    <label for="tenant_identityNumber" class="form-label">CCCD <span
                         class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="tenant_identityNumber" name="identityNumber" required
-                      maxlength="50" value="<c:out value='${tenant.identityNumber}'/>">
+                      maxlength="12" pattern="[0-9]{12}" title="Số CCCD phải gồm đúng 12 chữ số" placeholder="Nhập 12 số CCCD" value="<c:out value='${tenant.identityNumber}'/>">
                   </div>
                   <div class="row g-3 mb-3">
                     <div class="col-sm-6">

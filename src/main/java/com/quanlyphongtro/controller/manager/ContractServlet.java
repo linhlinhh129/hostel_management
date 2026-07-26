@@ -204,8 +204,8 @@ public class ContractServlet extends BaseServlet {
                 if (contract.getStartDate().isBefore(contract.getSignedDate())) {
                     throw new IllegalArgumentException("Ngày bắt đầu hợp đồng phải bằng hoặc sau ngày ký hợp đồng.");
                 }
-                if (contract.getTenantDob() != null && contract.getTenantDob().isAfter(LocalDate.now())) {
-                    throw new IllegalArgumentException("Ngày sinh của người thuê không thể ở tương lai.");
+                if (contract.getTenantDob() != null && !ValidationUtil.isAtLeast18YearsOld(contract.getTenantDob())) {
+                    throw new IllegalArgumentException("Người thuê phải từ 18 tuổi trở lên.");
                 }
                 if (contract.getTenantIdentityIssueDate() != null) {
                     if (contract.getTenantIdentityIssueDate().isAfter(LocalDate.now())) {
@@ -221,7 +221,7 @@ public class ContractServlet extends BaseServlet {
                             "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
                 }
                 if (!ValidationUtil.isValidVnIdentity(contract.getTenantIdentityNumber())) {
-                    throw new IllegalArgumentException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+                    throw new IllegalArgumentException("Số CCCD không hợp lệ (phải gồm 12 chữ số).");
                 }
 
                 contractService.createContract(contract, user.getId());
