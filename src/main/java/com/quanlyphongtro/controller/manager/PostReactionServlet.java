@@ -1,7 +1,7 @@
 package com.quanlyphongtro.controller.manager;
 
 import com.quanlyphongtro.controller.BaseServlet;
-import com.quanlyphongtro.model.User;
+import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.service.PostInteractionService;
 import com.quanlyphongtro.service.impl.PostInteractionServiceImpl;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class PostReactionServlet extends BaseServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
             sendJsonError(response, "Vui lòng đăng nhập để thực hiện", HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -35,8 +35,8 @@ public class PostReactionServlet extends BaseServlet {
         try {
             int postId = Integer.parseInt(request.getParameter("postId"));
             
-            boolean success = interactionService.toggleLike(postId, currentUser.getUserId());
-            boolean hasLiked = interactionService.hasLiked(postId, currentUser.getUserId());
+            boolean success = interactionService.toggleLike(postId, currentUser.getId());
+            boolean hasLiked = interactionService.hasLiked(postId, currentUser.getId());
             
             if (success) {
                 // Determine if it was liked or unliked based on current state
@@ -51,5 +51,19 @@ public class PostReactionServlet extends BaseServlet {
             logger.error("Error in PostReactionServlet", e);
             sendJsonError(response, "Lỗi hệ thống", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private void sendJsonSuccess(HttpServletResponse response, String message, Object data) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(String.format("{\"success\": true, \"message\": \"%s\", \"data\": %s}", 
+            message, data != null ? data.toString() : "null"));
+    }
+
+    private void sendJsonError(HttpServletResponse response, String error, int status) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(String.format("{\"success\": false, \"error\": \"%s\"}", error));
     }
 }

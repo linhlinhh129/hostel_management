@@ -1,7 +1,7 @@
 package com.quanlyphongtro.controller.manager;
 
 import com.quanlyphongtro.controller.BaseServlet;
-import com.quanlyphongtro.model.User;
+import com.quanlyphongtro.dto.UserSessionDTO;
 import com.quanlyphongtro.service.PostInteractionService;
 import com.quanlyphongtro.service.impl.PostInteractionServiceImpl;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class PostCommentServlet extends BaseServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
             sendJsonError(response, "Vui lòng đăng nhập để thực hiện", HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -41,7 +41,7 @@ public class PostCommentServlet extends BaseServlet {
                 return;
             }
 
-            boolean success = interactionService.addComment(postId, currentUser.getUserId(), content);
+            boolean success = interactionService.addComment(postId, currentUser.getId(), content);
             
             if (success) {
                 sendJsonSuccess(response, "Đã thêm bình luận", null);
@@ -58,7 +58,7 @@ public class PostCommentServlet extends BaseServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
             sendJsonError(response, "Vui lòng đăng nhập để thực hiện", HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -67,7 +67,7 @@ public class PostCommentServlet extends BaseServlet {
         try {
             int commentId = Integer.parseInt(request.getParameter("commentId"));
             
-            boolean success = interactionService.deleteComment(commentId, currentUser.getUserId(), currentUser.getRole());
+            boolean success = interactionService.deleteComment(commentId, currentUser.getId(), currentUser.getRole());
             
             if (success) {
                 sendJsonSuccess(response, "Đã xóa bình luận", null);
@@ -80,5 +80,19 @@ public class PostCommentServlet extends BaseServlet {
             logger.error("Error in PostCommentServlet doDelete", e);
             sendJsonError(response, "Lỗi hệ thống", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private void sendJsonSuccess(HttpServletResponse response, String message, Object data) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(String.format("{\"success\": true, \"message\": \"%s\", \"data\": %s}", 
+            message, data != null ? data.toString() : "null"));
+    }
+
+    private void sendJsonError(HttpServletResponse response, String error, int status) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(String.format("{\"success\": false, \"error\": \"%s\"}", error));
     }
 }
