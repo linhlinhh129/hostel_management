@@ -100,8 +100,12 @@ public class TenantPaymentServlet extends BaseServlet {
             params.put("vnp_OrderType", "other");
             params.put("vnp_Locale", "vn");
             
-            String returnUrl = VNPayConfig.getVnp_ReturnUrl();
-            if (returnUrl == null || returnUrl.trim().isEmpty()) {
+            String configuredReturnUrl = VNPayConfig.getVnp_ReturnUrl();
+            String returnUrl;
+            if (configuredReturnUrl != null && !configuredReturnUrl.trim().isEmpty() 
+                    && !configuredReturnUrl.contains("localhost") && configuredReturnUrl.contains(request.getServerName())) {
+                returnUrl = configuredReturnUrl.trim();
+            } else {
                 String scheme = request.getScheme();
                 String serverName = request.getServerName();
                 int serverPort = request.getServerPort();
@@ -122,19 +126,20 @@ public class TenantPaymentServlet extends BaseServlet {
 
             StringBuilder hashData = new StringBuilder();
             StringBuilder query = new StringBuilder();
+            boolean isFirst = true;
 
-            for (int i = 0; i < keys.size(); i++) {
-                String k = keys.get(i);
+            for (String k : keys) {
                 String v = params.get(k);
-                if (v != null && !v.isEmpty()) {
+                if (v != null && !v.trim().isEmpty()) {
+                    if (!isFirst) {
+                        hashData.append('&');
+                        query.append('&');
+                    }
                     String encodedKey = URLEncoder.encode(k, StandardCharsets.US_ASCII);
                     String encodedVal = URLEncoder.encode(v, StandardCharsets.US_ASCII);
                     hashData.append(k).append('=').append(encodedVal);
                     query.append(encodedKey).append('=').append(encodedVal);
-                    if (i < keys.size() - 1) {
-                        hashData.append('&');
-                        query.append('&');
-                    }
+                    isFirst = false;
                 }
             }
 
