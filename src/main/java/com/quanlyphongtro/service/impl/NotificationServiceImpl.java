@@ -219,7 +219,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền truy cập hóa đơn này.");
 
         return invoice;
@@ -238,7 +238,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền gửi yêu cầu cho hóa đơn này.");
 
         // Lấy meterId từ bảng invoices qua verify details
@@ -262,7 +262,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền truy cập hóa đơn này.");
 
         return invoice;
@@ -276,7 +276,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền gửi nhắc nợ cho hóa đơn này.");
 
         Integer roomId = (Integer) invoice.get("roomId");

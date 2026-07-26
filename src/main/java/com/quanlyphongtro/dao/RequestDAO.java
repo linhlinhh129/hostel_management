@@ -410,7 +410,7 @@ public class RequestDAO extends BaseDAO {
                 : "GEN";
         if (tag.length() > 6) tag = tag.substring(0, 6);
         String prefix = "REQ-" + tag + "-";
-        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 1, 10) AS INT)), 0) " +
+        String sql = "SELECT ISNULL(MAX(TRY_CAST(SUBSTRING(code, LEN(?) + 1, 10) AS INT)), 0) " +
                      "FROM dbo.requests " +
                      "WHERE code LIKE ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
