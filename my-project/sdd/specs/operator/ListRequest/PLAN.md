@@ -17,8 +17,8 @@ Thiết kế trang Danh sách yêu cầu sửa chữa cho nhân viên Vận hàn
 - **File:** `list.jsp` trong thư mục `/WEB-INF/views/operator/requests/`
 - **Layout:** Sử dụng `.app-shell` và `.main-wrapper`.
 - **Thành phần giao diện:**
-  - **Header & Filter Bar:** Khối tiêu đề có thanh công cụ lọc dữ liệu. Form lọc GET trực tiếp lên `/operator/requests`.
-  - **Table:** Bảng danh sách hiển thị các cột: Mã YC, Tiêu đề, Phòng, Thể loại, Ngày tạo, Trạng thái, Hành động. Sử dụng class `custom-table` và `table-hover` đồng bộ với trang Điên nước.
+  - **Header & Filter Bar:** Khối tiêu đề có thanh công cụ lọc dữ liệu. Form lọc GET trực tiếp lên `/operator/requests`. Dropdown lọc thể loại và trạng thái phải hiển thị bằng tiếng Việt.
+  - **Table:** Bảng danh sách hiển thị các cột: Mã YC, Tiêu đề, Thể loại (Dịch sang tiếng Việt: Sự cố điện, Sự cố nước...), Số phòng, Ngày tạo, Trạng thái (Dịch sang tiếng Việt), Hành động. Sử dụng class `table-mintlify` và `table-hover` đồng bộ với hệ thống. Việc dịch sang tiếng Việt có thể thực hiện bằng thẻ `<c:choose>` trong JSP.
   - **Pagination:** Khối phân trang bên dưới bảng.
   - **Empty State:** Hiển thị thông báo "Không có yêu cầu nào phù hợp" nếu danh sách rỗng.
 
@@ -43,3 +43,27 @@ Sửa lại thẻ hiển thị ảnh ở màn hình Manager tương tự như Op
 </c:choose>
 ```
 *Việc này sẽ xử lý dứt điểm lỗi hiển thị ảnh mà KHÔNG tác động tới cấu trúc hay dữ liệu trong Database như lệnh cấm đã đưa ra.*
+
+## 5. Kế hoạch Validate Lịch Hẹn (AC04)
+Theo yêu cầu mới (AC04), việc xác nhận lịch hẹn phải nằm trong giờ hành chính (08:00 sáng đến 18:00 chiều) và không được chọn ngày trong quá khứ. Các thay đổi bao gồm:
+
+### Frontend (JSP)
+Cập nhật 2 file:
+- **`operator/requests/detail.jsp`**
+- **`manager/tickets/detail.jsp`**
+
+**Thay đổi:**
+1. Thêm thuộc tính `min` cho thẻ `<input type="datetime-local">` (sử dụng ngày giờ hiện tại) để block trình duyệt không cho chọn ngày trong quá khứ.
+2. Viết thêm 1 hàm JavaScript nhỏ gắn vào sự kiện `change` hoặc `submit` để kiểm tra `getHours()`: nếu `hour < 8 || hour >= 18` thì gọi `alert` và ngăn chặn submit (`preventDefault()`).
+
+### Backend (Servlet)
+Cập nhật 2 Controller:
+- **`DetailRequestServlet.java`** (Operator)
+- **`ManagerTicketsServlet.java`** (Manager)
+
+**Thay đổi:**
+- Trước khi gọi DAO lưu lịch hẹn (`updateAppointmentSchedule` / `scheduleTicket` / `rescheduleTicket`), parse `appointmentDate` sang `LocalDateTime`.
+- Kiểm tra:
+  - Nếu `date.toLocalDate().isBefore(LocalDate.now())`: Gửi lỗi "Không được chọn ngày trong quá khứ".
+  - Nếu `date.getHour() < 8 || date.getHour() >= 18`: Gửi lỗi "Giờ làm việc chỉ từ 08:00 đến 18:00".
+- Nếu có lỗi, `req.getSession().setAttribute("errorMsg", ...)` và `redirect` lại trang chi tiết.

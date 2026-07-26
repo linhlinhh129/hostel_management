@@ -64,10 +64,12 @@ Việc báo cáo thủ công qua các ứng dụng tin nhắn (Zalo, Messenger) 
 
 **THE SYSTEM SHALL** hiển thị một biểu mẫu nhập liệu bao gồm:
 
+* **Tiêu đề:** (Input text)
 * **Cơ sở/Tòa nhà:** (Dropdown chọn tòa nhà)
 * **Vị trí:** (Radio button: `Khu vực chung` / `Phòng`).
 * Nếu chọn `Khu vực chung`: Hiển thị Dropdown (Hành lang, cầu thang bộ, thang máy, sân thượng, cổng chính).
 * Nếu chọn `Phòng`: Hiển thị Dropdown chọn Mã phòng (`room_id`).
+* **Chi tiết vị trí:** (Input text, tuỳ chọn ghi rõ khu vực cụ thể)
 
 
 * **Phân loại:** (Dropdown: Điện; Nước; An ninh & Kiểm soát ra vào; Cơ sở vật chất & PCCC; Vệ sinh & Môi trường).
@@ -79,9 +81,14 @@ Việc báo cáo thủ công qua các ứng dụng tin nhắn (Zalo, Messenger) 
 
 **WHEN** user nhấn nút `[Gửi báo cáo]`
 
-**AND** các trường thông tin bắt buộc (Cơ sở, Vị trí, Phân loại, Mô tả) bị bỏ trống
+**AND** các trường thông tin bắt buộc (Tiêu đề, Cơ sở, Vị trí, Phân loại, Mô tả) bị bỏ trống hoặc vượt quá số ký tự quy định.
 
-**THE SYSTEM SHALL** ngăn chặn hành động gửi và hiển thị text cảnh báo màu đỏ bên dưới các trường bị thiếu: "Vui lòng nhập thông tin này".
+**THE SYSTEM SHALL** ngăn chặn hành động gửi và hiển thị text cảnh báo màu đỏ tương ứng:
+- Nếu bỏ trống: "Vui lòng nhập thông tin này"
+- Nếu vượt quá số ký tự:
+  - **Tiêu đề**: Tối đa 50 ký tự.
+  - **Chi tiết vị trí**: Tối đa 50 ký tự.
+  - **Mô tả chi tiết**: Tối đa 1000 ký tự.
 
 ### AC03 – Tối ưu hóa Media (Tải và nén hình ảnh)
 

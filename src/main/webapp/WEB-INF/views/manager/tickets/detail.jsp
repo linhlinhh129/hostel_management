@@ -406,7 +406,7 @@
 
                                     <%-- RECEIVED / ASSIGNED: Bắt đầu xử lý hoặc Từ chối --%>
                                     <c:when test="${ticket.status == 'RECEIVED' or ticket.status == 'ASSIGNED'}">
-                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/schedule" class="mb-3">
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/schedule" class="mb-3" onsubmit="return validateManagerAppointment(this, 'appointmentDate')">
                                         <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                         <div class="mb-3">
                                           <label for="appointmentDate" class="form-label"
@@ -465,7 +465,7 @@
                                       </form>
                                       <hr style="border-color:var(--hms-border)">
                                       <%-- Form dời lịch hẹn --%>
-                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reschedule">
+                                      <form method="post" action="${ctx}/manager/tickets/${ticket.id}/reschedule" onsubmit="return validateManagerAppointment(this, 'newAppointmentDate')">
                                         <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                         <div class="mb-3">
                                           <label for="newAppointmentDate" class="form-label"
@@ -537,6 +537,33 @@
       document.getElementById('modalImagePreview').src = imageSrc;
       var imgModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
       imgModal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var appt1 = document.getElementById('appointmentDate');
+      var appt2 = document.getElementById('newAppointmentDate');
+      var now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      var minStr = now.toISOString().slice(0, 16);
+      if (appt1) appt1.min = minStr;
+      if (appt2) appt2.min = minStr;
+    });
+
+    function validateManagerAppointment(form, inputId) {
+      var appt = document.getElementById(inputId);
+      if (appt && appt.value) {
+        var dateObj = new Date(appt.value);
+        if (dateObj < new Date()) {
+          alert('Không thể chọn lịch hẹn trong quá khứ. Vui lòng chọn thời gian từ hiện tại trở đi.');
+          return false;
+        }
+        var hour = dateObj.getHours();
+        if (hour < 8 || hour >= 18) {
+          alert('Giờ làm việc chỉ từ 08:00 đến 18:00. Vui lòng chọn lại.');
+          return false;
+        }
+      }
+      return true;
     }
   </script>
 

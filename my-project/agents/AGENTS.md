@@ -5,7 +5,7 @@
 > **Sprint:** 1
 
 <!-- SPECKIT START -->
-> **Current Plan**: [my-project/sdd/specs/manager/postManagement/plan.md](my-project/sdd/specs/manager/postManagement/plan.md)
+> **Current Plan**: [my-project/sdd/specs/operator/DetailRequest/PLAN.md](my-project/sdd/specs/operator/DetailRequest/PLAN.md)
 <!-- SPECKIT END -->
 
 ---

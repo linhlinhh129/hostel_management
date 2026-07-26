@@ -95,6 +95,25 @@ public class IncidentReportServlet extends HttpServlet {
             doGet(request, response);
             return;
         }
+        
+        // Validate lengths
+        if (incidentName.trim().length() > 50) {
+            request.setAttribute("error", "Tiêu đề không được vượt quá 50 ký tự.");
+            doGet(request, response);
+            return;
+        }
+        
+        if (locationDetail != null && locationDetail.trim().length() > 50) {
+            request.setAttribute("error", "Chi tiết vị trí không được vượt quá 50 ký tự.");
+            doGet(request, response);
+            return;
+        }
+        
+        if (content.trim().length() > 1000) {
+            request.setAttribute("error", "Mô tả chi tiết không được vượt quá 1000 ký tự.");
+            doGet(request, response);
+            return;
+        }
 
         try {
             // Handle file upload

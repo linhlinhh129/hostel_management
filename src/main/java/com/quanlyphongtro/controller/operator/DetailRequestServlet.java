@@ -104,6 +104,17 @@ public class DetailRequestServlet extends HttpServlet {
                         cleanDateStr += ":00";
                     }
                     LocalDateTime appointSchedule = LocalDateTime.parse(cleanDateStr);
+                    if (appointSchedule.toLocalDate().isBefore(java.time.LocalDate.now())) {
+                        request.setAttribute("error", "Không được chọn ngày trong quá khứ.");
+                        doGet(request, response);
+                        return;
+                    }
+                    int hour = appointSchedule.getHour();
+                    if (hour < 8 || hour >= 18) {
+                        request.setAttribute("error", "Giờ làm việc chỉ từ 08:00 đến 18:00.");
+                        doGet(request, response);
+                        return;
+                    }
                     success = requestService.scheduleAppointment(requestId, appointSchedule, operatorId);
                 } catch (Exception e) {
                     request.setAttribute("error", "Định dạng ngày hẹn không hợp lệ.");
@@ -117,6 +128,11 @@ public class DetailRequestServlet extends HttpServlet {
                 
                 if (notes == null || notes.trim().isEmpty()) {
                     request.setAttribute("error", "Ghi chú hoàn thành không được để trống.");
+                    doGet(request, response);
+                    return;
+                }
+                if (notes.length() > 1000) {
+                    request.setAttribute("error", "Ghi chú hoàn thành không được vượt quá 1000 ký tự.");
                     doGet(request, response);
                     return;
                 }

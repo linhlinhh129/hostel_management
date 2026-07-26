@@ -73,8 +73,8 @@
                       <label class="hms-form-label hms-form-label-required">Chi tiết vị trí</label>
                       
                       <!-- Khu vực chung -->
-                      <input type="text" class="mintlify-text-input" id="locationDetailCommon" placeholder="VD: Hành lang tầng 2, Cổng chính..." required>
-                      <div class="invalid-feedback hms-invalid-feedback" id="feedbackCommon">Vui lòng nhập vị trí cụ thể.</div>
+                      <input type="text" class="mintlify-text-input" id="locationDetailCommon" placeholder="VD: Hành lang tầng 2, Cổng chính..." required maxlength="50">
+                      <div class="invalid-feedback hms-invalid-feedback" id="feedbackCommon">Vui lòng nhập vị trí cụ thể (tối đa 50 ký tự).</div>
                       
                       <!-- Phòng cụ thể -->
                       <select class="form-select mintlify-text-input" id="locationDetailRoom" style="display: none;">
@@ -88,8 +88,8 @@
 
               <div class="mb-4">
                   <label for="incidentName" class="hms-form-label hms-form-label-required">Tiêu đề ngắn gọn</label>
-                  <input type="text" class="mintlify-text-input" id="incidentName" name="incidentName" placeholder="VD: Cháy bóng đèn, Rò rỉ ống nước..." required>
-                  <div class="invalid-feedback hms-invalid-feedback">Vui lòng nhập tiêu đề sự cố.</div>
+                  <input type="text" class="mintlify-text-input" id="incidentName" name="incidentName" placeholder="VD: Cháy bóng đèn, Rò rỉ ống nước..." required maxlength="50">
+                  <div class="invalid-feedback hms-invalid-feedback" id="feedbackIncidentName">Vui lòng nhập tiêu đề sự cố (tối đa 50 ký tự).</div>
               </div>
 
               <div class="mb-4">
@@ -102,8 +102,8 @@
 
               <div class="mb-4">
                   <label for="content" class="hms-form-label hms-form-label-required">Mô tả chi tiết</label>
-                  <textarea class="mintlify-text-input" id="content" name="content" rows="4" placeholder="Mô tả cụ thể tình trạng sự cố đang diễn ra..." required></textarea>
-                  <div class="invalid-feedback hms-invalid-feedback">Vui lòng nhập mô tả chi tiết.</div>
+                  <textarea class="mintlify-text-input" id="content" name="content" rows="4" placeholder="Mô tả cụ thể tình trạng sự cố đang diễn ra..." required maxlength="1000"></textarea>
+                  <div class="invalid-feedback hms-invalid-feedback" id="feedbackContent">Vui lòng nhập mô tả chi tiết (tối đa 1000 ký tự).</div>
               </div>
 
               <div class="mb-4">
@@ -279,10 +279,18 @@
     form.addEventListener('submit', function(e) {
         let isValid = true;
         
-        // Kiểm tra các trường có thuộc tính required
-        const requiredElements = form.querySelectorAll('[required]');
-        requiredElements.forEach(el => {
-            if (!el.value || el.value.trim() === '') {
+        // Kiểm tra các trường có thuộc tính required và maxlength
+        const elementsToValidate = form.querySelectorAll('input, select, textarea');
+        elementsToValidate.forEach(el => {
+            let invalid = false;
+            if (el.hasAttribute('required') && (!el.value || el.value.trim() === '')) {
+                invalid = true;
+            }
+            if (el.hasAttribute('maxlength') && el.value && el.value.length > parseInt(el.getAttribute('maxlength'))) {
+                invalid = true;
+            }
+            
+            if (invalid) {
                 isValid = false;
                 el.classList.add('is-invalid');
                 if (el.id === 'locationDetailCommon') {
@@ -301,7 +309,7 @@
         });
         
         // Xóa style viền đỏ khi người dùng bắt đầu nhập/chọn
-        requiredElements.forEach(el => {
+        elementsToValidate.forEach(el => {
             el.addEventListener('input', function() {
                 this.classList.remove('is-invalid');
                 if (this.id === 'locationDetailCommon') {

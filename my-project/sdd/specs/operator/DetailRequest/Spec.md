@@ -40,7 +40,7 @@ Tính năng này cung cấp toàn bộ thông tin chi tiết về một sự c�
 ### AC03 – Xác nhận hoàn thành công việc
 **WHEN** yêu cầu ở trạng thái `IN_PROGRESS` và Operator nhấn "Xác nhận hoàn thành"
 **THE SYSTEM SHALL**
-- Chấp nhận submit form kể cả khi trường Ghi chú hoàn thành bị bỏ trống (Optional).
+- Chấp nhận submit form kể cả khi trường Ghi chú hoàn thành bị bỏ trống (Optional), nhưng nếu có nhập thì tối đa 1000 ký tự (có validation trên giao diện và backend).
 - Cập nhật trạng thái yêu cầu sang `COMPLETED`.
 - Cập nhật chỉ số điện nước liên quan sang `CORRECTED` (hoặc `NORMAL`).
 - Redirect về lại trang danh sách hoặc chi tiết yêu cầu kèm thông báo thành công.
