@@ -328,13 +328,17 @@ public class ManagerNotificationsServlet extends BaseServlet {
             Map<String, Object> invoice = notificationService.getInvoiceDetailsForSendOperator(invoiceId, currentUser.getId());
             List<Map<String, Object>> operators = notificationService.getActiveOperatorsForFacility((Integer) invoice.get("facilityId"));
 
+            BigDecimal totalAmt = invoice.get("totalAmount") instanceof BigDecimal ? (BigDecimal) invoice.get("totalAmount") : BigDecimal.ZERO;
+            java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+
             String defaultTitle = "Báo cáo sai số điện nước - Phòng " + invoice.get("roomCode");
             String defaultContent = "Kính gửi nhân viên vận hành,\n\nHóa đơn kỳ " + invoice.get("billingPeriod") + 
-                    " của phòng " + invoice.get("roomCode") + " thuộc cơ sở " + invoice.get("facilityName") + 
-                    " được phát hiện bị nhập sai chỉ số điện nước.\n\nThông tin hiện tại:\n" +
-                    "- Chỉ số điện: " + invoice.get("electric") + " kWh\n" +
-                    "- Chỉ số nước: " + invoice.get("water") + " m3\n\n" +
-                    "Vui lòng kiểm tra thực tế, xác minh lại hình ảnh và cập nhật chỉ số chính xác.";
+                    " của phòng " + invoice.get("roomCode") + " (Mã HĐ: " + invoice.get("code") + ") thuộc cơ sở " + invoice.get("facilityName") + 
+                    " được phát hiện bị nhập sai chỉ số điện nước.\n\nThông tin chỉ số ghi nhận hiện tại:\n" +
+                    "- Chỉ số điện: Cũ " + invoice.get("oldElectric") + " kWh → Mới " + invoice.get("newElectric") + " kWh (Sử dụng: " + invoice.get("electricUsage") + " kWh)\n" +
+                    "- Chỉ số nước: Cũ " + invoice.get("oldWater") + " m³ → Mới " + invoice.get("newWater") + " m³ (Sử dụng: " + invoice.get("waterUsage") + " m³)\n" +
+                    "- Tổng tiền hóa đơn: " + fmt.format(totalAmt) + " đ\n\n" +
+                    "Vui lòng kiểm tra thực tế, xác minh hình ảnh chốt chỉ số và cập nhật số liệu chính xác.";
 
             req.setAttribute("invoice", invoice);
             req.setAttribute("operators", operators);
