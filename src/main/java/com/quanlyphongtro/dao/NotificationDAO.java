@@ -753,19 +753,24 @@ public class NotificationDAO extends BaseDAO {
     public Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId) {
         Map<String, Object> invoice = null;
         String sql = "SELECT i.*, r.code AS room_code, f.facility_id, f.code AS facility_code, f.name AS facility_name, f.manager_id, " +
-                "mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, " +
-                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
-                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
-                "(SELECT TOP 1 req.title FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_title, " +
-                "(SELECT TOP 1 req.content FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_content, " +
-                "(SELECT TOP 1 req.rejection_reason FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_notes, " +
-                "(SELECT TOP 1 req.created_at FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_created_at, " +
-                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(i.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
+                "COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
+                "mr.electric AS new_electric, mr.water AS new_water, mr.reading_date, mr.status AS meter_status, mr.electric_img, mr.water_img, " +
+                "(SELECT TOP 1 m_old.electric FROM dbo.meter_readings m_old WHERE m_old.room_id = i.room_id AND m_old.reading_date < mr.reading_date ORDER BY m_old.reading_date DESC) AS old_electric, " +
+                "(SELECT TOP 1 m_old.water FROM dbo.meter_readings m_old WHERE m_old.room_id = i.room_id AND m_old.reading_date < mr.reading_date ORDER BY m_old.reading_date DESC) AS old_water, " +
+                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, " +
+                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, " +
+                "(SELECT TOP 1 req.title FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_title, " +
+                "(SELECT TOP 1 req.content FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_content, " +
+                "(SELECT TOP 1 req.rejection_reason FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_notes, " +
+                "(SELECT TOP 1 req.created_at FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_created_at, " +
+                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name " +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                "JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
-                "WHERE i.invoice_id = ? AND i.deleted_at IS NULL AND mr.deleted_at IS NULL";
+                "LEFT JOIN dbo.meter_readings mr ON i.meter_id = mr.meter_id " +
+                "LEFT JOIN dbo.contracts c ON c.contract_id = COALESCE(i.contract_id, (SELECT TOP 1 contract_id FROM dbo.contracts WHERE room_id = i.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) " +
+                "LEFT JOIN dbo.users u ON COALESCE(i.tenant_id, c.tenant_id, r.tenant_id) = u.user_id " +
+                "WHERE i.invoice_id = ? AND i.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
@@ -777,9 +782,27 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("roomCode", rs.getString("room_code"));
                     invoice.put("facilityName", rs.getString("facility_name"));
                     invoice.put("facilityCode", rs.getString("facility_code"));
-                    invoice.put("electric", rs.getInt("electric"));
-                    invoice.put("water", rs.getInt("water"));
-                    invoice.put("totalAmount", rs.getDouble("total_amount"));
+                    invoice.put("tenantName", rs.getString("tenant_name") != null ? rs.getString("tenant_name") : "Chưa có");
+                    invoice.put("tenantPhone", rs.getString("tenant_phone") != null ? rs.getString("tenant_phone") : "—");
+
+                    int newElec = rs.getObject("new_electric") != null ? rs.getInt("new_electric") : 0;
+                    int oldElec = rs.getObject("old_electric") != null ? rs.getInt("old_electric") : 0;
+                    int newWater = rs.getObject("new_water") != null ? rs.getInt("new_water") : 0;
+                    int oldWater = rs.getObject("old_water") != null ? rs.getInt("old_water") : 0;
+
+                    invoice.put("electric", newElec);
+                    invoice.put("newElectric", newElec);
+                    invoice.put("oldElectric", oldElec);
+                    invoice.put("electricUsage", Math.max(0, newElec - oldElec));
+
+                    invoice.put("water", newWater);
+                    invoice.put("newWater", newWater);
+                    invoice.put("oldWater", oldWater);
+                    invoice.put("waterUsage", Math.max(0, newWater - oldWater));
+
+                    invoice.put("electricImg", rs.getString("electric_img"));
+                    invoice.put("waterImg", rs.getString("water_img"));
+                    invoice.put("totalAmount", rs.getBigDecimal("total_amount"));
                     invoice.put("meterStatus", rs.getString("meter_status"));
                     invoice.put("ticketStatus", rs.getString("ticket_status"));
                     invoice.put("ticketId", rs.getObject("ticket_id") != null ? rs.getInt("ticket_id") : null);
@@ -789,8 +812,18 @@ public class NotificationDAO extends BaseDAO {
                     invoice.put("ticketCreatedAt", rs.getTimestamp("ticket_created_at"));
                     invoice.put("operatorName", rs.getString("operator_name"));
 
+                    String invCode = rs.getString("code");
                     Date rDate = rs.getDate("reading_date");
-                    if (rDate != null) {
+                    if (invCode != null && invCode.contains("-")) {
+                        String[] parts = invCode.split("-");
+                        if (parts.length >= 3 && parts[parts.length - 1].length() == 6) {
+                            String p = parts[parts.length - 1];
+                            invoice.put("billingPeriod", p.substring(4, 6) + "/" + p.substring(0, 4));
+                        } else if (rDate != null) {
+                            LocalDate localDate = rDate.toLocalDate();
+                            invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                        }
+                    } else if (rDate != null) {
                         LocalDate localDate = rDate.toLocalDate();
                         invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
                     } else {
@@ -921,11 +954,23 @@ public class NotificationDAO extends BaseDAO {
                     if (dDate != null) {
                         LocalDate localDate = dDate.toLocalDate();
                         invoice.put("dueDateLabel", String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear()));
-                        invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+
+                        String invCode = rs.getString("invoice_code");
+                        if (invCode != null && invCode.contains("-")) {
+                            String[] parts = invCode.split("-");
+                            if (parts.length >= 3 && parts[parts.length - 1].length() == 6) {
+                                String p = parts[parts.length - 1];
+                                invoice.put("billingPeriod", p.substring(4, 6) + "/" + p.substring(0, 4));
+                            } else {
+                                invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                            }
+                        } else {
+                            invoice.put("billingPeriod", String.format("%02d/%d", localDate.getMonthValue(), localDate.getYear()));
+                        }
 
                         LocalDate endDate = LocalDate.now();
                         Date pendingDate = rs.getDate("pending_payment_date");
-                        if (pendingDate != null) {
+                        if (pendingDate != null && pendingDate.toLocalDate().isAfter(localDate)) {
                             endDate = pendingDate.toLocalDate();
                         }
 

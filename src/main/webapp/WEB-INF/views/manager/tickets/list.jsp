@@ -45,29 +45,37 @@
                   <input type="hidden" name="type" value="${filterType}" />
                   <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
                     <div style="flex:2; min-width:200px;">
-                      <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
+                      <label
+                        style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm
+                        kiếm</label>
                       <input type="text" class="form-control" name="keyword" placeholder="Tiêu đề / mã yêu cầu..."
                         value="<c:out value='${keyword}'/>" style="width:100%">
                     </div>
                     <div style="flex:1; min-width:150px;">
-                      <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
+                      <label
+                        style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng
+                        thái</label>
                       <select class="form-select" name="status" style="width:100%">
                         <option value="">Tất cả</option>
                         <option value="PENDING" ${filterStatus=='PENDING' ? 'selected' : '' }>Mới</option>
                         <option value="RECEIVED" ${filterStatus=='RECEIVED' ? 'selected' : '' }>Đã tiếp nhận</option>
                         <c:if test="${filterType == 'TENANT'}">
-                          <option value="IN_PROGRESS" ${filterStatus=='IN_PROGRESS' ? 'selected' : '' }>Đang xử lý</option>
+                          <option value="IN_PROGRESS" ${filterStatus=='IN_PROGRESS' ? 'selected' : '' }>Đang xử lý
+                          </option>
                         </c:if>
                         <option value="DONE" ${filterStatus=='DONE' ? 'selected' : '' }>Hoàn thành</option>
                         <option value="REJECTED" ${filterStatus=='REJECTED' ? 'selected' : '' }>Từ chối</option>
                       </select>
                     </div>
                   </div>
-                  <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
+                  <div
+                    style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
                     <a href="${ctx}/manager/tickets?type=${filterType}"
-                       style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa bộ lọc</a>
+                      style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); text-decoration:none; font-size:14px; font-weight:500;">Xóa
+                      bộ lọc</a>
                     <button type="submit"
-                            style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm kiếm</button>
+                      style="display:inline-flex; align-items:center; background:#fff; border:1px solid var(--hms-border); border-radius:20px; padding:6px 20px; color:var(--hms-text); font-size:14px; font-weight:500; cursor:pointer;">Tìm
+                      kiếm</button>
                   </div>
                 </form>
 
@@ -138,7 +146,8 @@
                                   <c:when test="${ticket.status == 'PENDING'}">
                                     <span class="badge-hms badge-info">Mới</span>
                                   </c:when>
-                                  <c:when test="${ticket.status == 'RECEIVED' or (ticket.senderRole == 'OPERATOR' and (ticket.status == 'ASSIGNED' or ticket.status == 'IN_PROGRESS'))}">
+                                  <c:when
+                                    test="${ticket.status == 'RECEIVED' or (ticket.senderRole == 'OPERATOR' and (ticket.status == 'ASSIGNED' or ticket.status == 'IN_PROGRESS'))}">
                                     <span class="badge-hms badge-warning">Đã tiếp nhận</span>
                                   </c:when>
                                   <c:when test="${ticket.status == 'ASSIGNED'}">
