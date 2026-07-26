@@ -100,11 +100,18 @@ public class TenantPaymentServlet extends BaseServlet {
             params.put("vnp_OrderType", "other");
             params.put("vnp_Locale", "vn");
             
-            String returnUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath() + "/tenant/payment/return";
+            String returnUrl = VNPayConfig.getVnp_ReturnUrl();
+            if (returnUrl == null || returnUrl.trim().isEmpty()) {
+                String scheme = request.getScheme();
+                String serverName = request.getServerName();
+                int serverPort = request.getServerPort();
+                String portStr = ((scheme.equals("http") && serverPort == 80) || (scheme.equals("https") && serverPort == 443)) ? "" : (":" + serverPort);
+                returnUrl = scheme + "://" + serverName + portStr + request.getContextPath() + "/tenant/payment/return";
+            }
             params.put("vnp_ReturnUrl", returnUrl);
             params.put("vnp_IpAddr", VNPayConfig.getIpAddress(request));
 
-            Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+            Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
             params.put("vnp_CreateDate", sdf.format(cld.getTime()));
             cld.add(Calendar.MINUTE, 15);

@@ -98,18 +98,21 @@
                 <input type="hidden" name="csrfToken" value="${csrfToken}"/>
                 <input type="hidden" name="invoiceId" value="${invoice.id}"/>
 
-                <%-- Chọn Nhân viên vận hành --%>
+                <%-- Nhân viên vận hành phụ trách cơ sở (Tự động nạp) --%>
                 <div class="mb-3">
-                  <label for="operatorId" class="form-label">Chọn nhân viên vận hành <span class="text-danger">*</span></label>
-                  <select class="form-select" id="operatorId" name="operatorId" required>
-                    <option value="">-- Chọn nhân viên vận hành --</option>
-                    <c:forEach var="op" items="${operators}">
-                      <option value="${op.id}">
-                        <c:out value="${op.fullName}"/>
-                      </option>
-                    </c:forEach>
-                  </select>
-                  <div class="form-text">Nhân viên sẽ nhận được yêu cầu xử lý lỗi trong trang tác vụ của họ.</div>
+                  <label for="operatorIdDisplay" class="form-label">Nhân viên vận hành phụ trách cơ sở <span class="text-danger">*</span></label>
+                  <c:choose>
+                    <c:when test="${not empty operators}">
+                      <input type="hidden" name="operatorId" value="${operators[0].id}"/>
+                      <input type="text" class="form-control fw-bold text-dark" id="operatorIdDisplay" value="<c:out value='${operators[0].fullName}'/>" readonly style="background-color: #f1f5f9; cursor: not-allowed;">
+                    </c:when>
+                    <c:otherwise>
+                      <select class="form-select" id="operatorId" name="operatorId" required>
+                        <option value="">-- Chưa gán Operator cho cơ sở này --</option>
+                      </select>
+                    </c:otherwise>
+                  </c:choose>
+                  <div class="form-text">Yêu cầu sẽ được gửi thẳng tới Nhân viên vận hành đang phụ trách cơ sở này.</div>
                 </div>
 
                 <%-- Tiêu đề yêu cầu --%>
