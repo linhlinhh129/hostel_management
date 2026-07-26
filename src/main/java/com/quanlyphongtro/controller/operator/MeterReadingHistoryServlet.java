@@ -39,6 +39,7 @@ public class MeterReadingHistoryServlet extends HttpServlet {
         String facility = request.getParameter("facility");
         String roomCode = request.getParameter("roomCode");
 
+        // 1. Lọc ra danh sách cơ sở mà Operator này đang quản lý để đưa vào Dropdown bộ lọc
         FacilityDAO facilityDAO = new FacilityDAO();
         List<Facility> allFacilities = facilityDAO.findActiveList();
         List<Facility> myFacilities = new ArrayList<>();
@@ -49,6 +50,7 @@ public class MeterReadingHistoryServlet extends HttpServlet {
         }
         request.setAttribute("facilities", myFacilities);
 
+        // 2. Lọc tháng/năm theo yêu cầu của Operator
         LocalDate now = LocalDate.now();
         int filterMonth = now.getMonthValue();
         int filterYear = now.getYear();
@@ -60,7 +62,7 @@ public class MeterReadingHistoryServlet extends HttpServlet {
             try {
                 filterMonth = Integer.parseInt(monthParam);
             } catch (NumberFormatException e) {
-                // Ignore
+                // Ignore, dùng tháng hiện tại
             }
         }
         
@@ -68,10 +70,11 @@ public class MeterReadingHistoryServlet extends HttpServlet {
             try {
                 filterYear = Integer.parseInt(yearParam);
             } catch (NumberFormatException e) {
-                // Ignore
+                // Ignore, dùng năm hiện tại
             }
         }
 
+        // 3. Lấy dữ liệu Lịch sử ghi chỉ số của các phòng dựa trên tháng/năm và các tiêu chí lọc khác
         List<MeterStatusDTO> meterList = meterReadingService.getMeterStatusList(filterMonth, filterYear, facility, roomCode, currentUser.getId());
         
         request.setAttribute("currentMonth", now.getMonthValue());

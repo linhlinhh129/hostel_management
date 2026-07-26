@@ -23,12 +23,14 @@ public class ListRequestServlet extends BaseServlet {
     }
 
     @Override
+    // Xử lý lấy danh sách Yêu cầu (Support Requests) hiển thị cho Operator
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
         UserSessionDTO currentUser = getCurrentUser(req);
         Integer assigneeId = currentUser != null ? currentUser.getId() : null;
 
+        // Nhận tham số phân trang và lọc từ URL (ví dụ: ?status=PENDING&category=ELECTRIC)
         String status = req.getParameter("status");
         String category = req.getParameter("category");
         
@@ -50,10 +52,14 @@ public class ListRequestServlet extends BaseServlet {
 
         int offset = (page - 1) * limit;
 
+        // Truy vấn danh sách Yêu cầu từ Database dựa trên filter và phân trang
         List<Request> requests = requestDAO.getRequests(assigneeId, status, category, offset, limit);
+        
+        // Đếm tổng số lượng Yêu cầu để tính toán tổng số trang
         int totalRecords = requestDAO.countRequests(assigneeId, status, category);
         int totalPages = (int) Math.ceil((double) totalRecords / limit);
 
+        // Đẩy toàn bộ dữ liệu (List data + Thông tin phân trang + Trạng thái filter) qua JSP
         req.setAttribute("requestList", requests);
         req.setAttribute("requestListSize", requests.size());
         req.setAttribute("currentPage", page);
@@ -61,6 +67,8 @@ public class ListRequestServlet extends BaseServlet {
         req.setAttribute("totalRecords", totalRecords);
         req.setAttribute("paramStatus", status != null ? status : "");
         req.setAttribute("paramCategory", category != null ? category : "");
+        
+        // Lấy danh sách các danh mục (category) tồn tại để hiển thị trên Dropdown bộ lọc
         req.setAttribute("availableCategories", requestDAO.getDistinctCategories());
 
         req.getRequestDispatcher("/WEB-INF/views/operator/requests/list.jsp").forward(req, resp);

@@ -38,6 +38,7 @@ public class MyIncidentListServlet extends BaseServlet {
         String status = request.getParameter("status");
         String category = request.getParameter("category");
 
+        // Lấy danh sách các báo cáo sự cố DO CHÍNH OPERATOR NÀY TẠO RA (Lịch sử báo cáo của tôi)
         RequestDAO dao = new RequestDAO();
         int total = dao.countIncidentsBySender(currentUser.getId(), status, category);
         List<Request> items = dao.getIncidentsBySender(currentUser.getId(), status, category, offset, limit);

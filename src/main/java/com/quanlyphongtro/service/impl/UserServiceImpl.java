@@ -32,8 +32,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    //hàm này gọi xuống dao, nếu mà không tìm thấy, nó sẽ fallback gọi thêm findByEmail(username) để hỗ trợ đăng nhập
+    // Bước 5.1: Xử lý logic Đăng nhập chính thức (từ tầng Controller gọi xuống)
     public Optional<UserSessionDTO> login(String username, String password) {
+        // Validation bổ sung ở tầng Service
         if (username == null || password == null || username.isBlank() || password.length() < 7) {
             logger.warn("LOGIN FAIL [{}]: input validation failed — username blank or password length < 7 (len={})",
                     username, password == null ? "null" : password.length());
@@ -42,15 +43,17 @@ public class UserServiceImpl implements UserService {
 
         String normalizedUsername = username.trim();
 
+        // Bước 5.2: Kiểm tra Brute-force lần 2 (để an toàn nếu có bypass Controller)
         if (LoginAttemptTracker.isLocked(normalizedUsername)) {
             logger.warn("LOGIN FAIL [{}]: account temporarily locked", normalizedUsername);
             return Optional.empty();
         }
 
-        //chỗ này là findbyUserName để hỗ trợ đăng nhập
+        // Bước 5.3: Truy vấn DB. Đầu tiên tìm bằng Username
         Optional<User> userOpt = userDAO.findByUsername(normalizedUsername);
         if (userOpt.isEmpty()) {
-            // Fallback: thử tìm theo email (tenant và nhân sự mới dùng email làm username)
+            // Fallback: Nếu không tìm thấy, thử tìm bằng Email 
+            // (Thường dùng cho Tenant và Nhân sự mới khi chưa cấp username chính thức)
             userOpt = userDAO.findByEmail(normalizedUsername);
         }
         if (userOpt.isEmpty()) {
@@ -63,26 +66,33 @@ public class UserServiceImpl implements UserService {
                 normalizedUsername, user.getId(), user.getStatus(), user.isDeleted(),
                 user.getPasswordHash() == null ? "null" : user.getPasswordHash().substring(0, Math.min(20, user.getPasswordHash().length())));
 
+        // Bước 5.4: Kiểm tra trạng thái tài khoản
         if (user.isDeleted()) {
             logger.warn("LOGIN FAIL [{}]: account is soft-deleted", normalizedUsername);
             return Optional.empty();
         }
 
+        // Bị Admin khóa thủ công
         if (user.isLocked()) {
             throw new ForbiddenException("LOCKED");
         }
 
+        // Trạng thái không ACTIVE (ví dụ đang pending)
         if (!user.isActive()) {
             logger.warn("LOGIN FAIL [{}]: account status is '{}' (not ACTIVE)", normalizedUsername, user.getStatus());
             return Optional.empty();
         }
 
+        // Bước 5.5: So sánh mật khẩu bằng hàm Hash (Bcrypt/PBKDF2...)
         boolean passwordMatch = PasswordUtil.verify(password, user.getPasswordHash());
         logger.info("LOGIN [{}]: password verify result = {}", normalizedUsername, passwordMatch);
 
+        // Nếu mật khẩu sai
         if (!passwordMatch) {
+            // Tăng biến đếm số lần sai
             int attempts = LoginAttemptTracker.recordFailure(normalizedUsername);
             if (attempts >= RoleConstant.MAX_LOGIN_ATTEMPTS) {
+                // Nếu sai quá MAX_LOGIN_ATTEMPTS, khóa tài khoản vĩnh viễn trong DB
                 userDAO.updateStatus(user.getId(), StatusConstant.LOCKED);
                 logger.warn("LOGIN FAIL [{}]: account locked after {} failed attempts", normalizedUsername, attempts);
             } else {
@@ -91,9 +101,11 @@ public class UserServiceImpl implements UserService {
             return Optional.empty();
         }
 
+        // Bước 5.6: Nếu Mật khẩu đúng -> Xóa bộ đếm nhập sai
         LoginAttemptTracker.reset(normalizedUsername);
         logger.info("LOGIN SUCCESS [{}]: role={}", normalizedUsername, user.getRole());
 
+        // Khởi tạo và trả về đối tượng Session DTO để Controller lưu cookie
         return Optional.of(buildSessionDTO(user));
     }
 

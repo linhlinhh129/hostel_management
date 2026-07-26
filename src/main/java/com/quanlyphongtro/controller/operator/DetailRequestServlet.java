@@ -34,8 +34,10 @@ public class DetailRequestServlet extends HttpServlet {
     }
 
     @Override
+    // Bước 1: Hiển thị chi tiết một yêu cầu khi Operator bấm vào xem
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String idParam = request.getParameter("id");
+        // Nếu không có ID yêu cầu, đẩy về trang danh sách
         if (idParam == null || idParam.isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/operator/requests");
             return;
@@ -43,14 +45,17 @@ public class DetailRequestServlet extends HttpServlet {
 
         try {
             int requestId = Integer.parseInt(idParam);
+            // Lấy dữ liệu chi tiết của yêu cầu từ Service (DB)
             Request reqDetail = requestService.getRequestDetail(requestId);
 
+            // Kiểm tra yêu cầu có tồn tại không
             if (reqDetail == null) {
                 request.setAttribute("error", "Yêu cầu không tồn tại.");
                 request.getRequestDispatcher("/WEB-INF/views/error/404.jsp").forward(request, response);
                 return;
             }
 
+            // Truyền dữ liệu sang giao diện JSP để render
             request.setAttribute("reqDetail", reqDetail);
             request.getRequestDispatcher("/WEB-INF/views/operator/requests/detail.jsp").forward(request, response);
         } catch (NumberFormatException e) {
@@ -59,6 +64,7 @@ public class DetailRequestServlet extends HttpServlet {
     }
 
     @Override
+    // Bước 2: Xử lý các thao tác của Operator (Tiếp nhận, Từ chối, Lên lịch, Hoàn thành)
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         // Fallback user ID to 1 if not fully configured with session, but generally should fetch from session
@@ -80,17 +86,22 @@ public class DetailRequestServlet extends HttpServlet {
             int requestId = Integer.parseInt(idParam);
             boolean success = false;
 
+            // Xử lý 1: Operator bấm "Tiếp nhận" yêu cầu
             if ("accept".equals(action)) {
                 success = requestService.acceptRequest(requestId, operatorId);
-            } else if ("reject".equals(action)) {
+            } 
+            // Xử lý 2: Operator bấm "Từ chối" yêu cầu
+            else if ("reject".equals(action)) {
                 String reason = request.getParameter("rejectReason");
                 if (reason == null || reason.trim().isEmpty()) {
                     request.setAttribute("error", "Lý do từ chối không được để trống.");
-                    doGet(request, response);
+                    doGet(request, response); // Quay lại trang chi tiết hiện lỗi
                     return;
                 }
                 success = requestService.rejectRequest(requestId, operatorId, reason.trim());
-            } else if ("schedule".equals(action)) {
+            } 
+            // Xử lý 3: Operator "Lên lịch hẹn" sửa chữa
+            else if ("schedule".equals(action)) {
                 String appointmentDateStr = request.getParameter("appointmentDate");
                 if (appointmentDateStr == null || appointmentDateStr.trim().isEmpty()) {
                     request.setAttribute("error", "Ngày hẹn không được để trống.");
@@ -110,17 +121,18 @@ public class DetailRequestServlet extends HttpServlet {
                     doGet(request, response);
                     return;
                 }
-            } else if ("complete".equals(action)) {
+            } 
+            // Xử lý 4: Operator báo cáo "Hoàn thành" yêu cầu kèm hình ảnh minh chứng
+            else if ("complete".equals(action)) {
                 String notes = request.getParameter("notes");
                 String noImageCheckbox = request.getParameter("no_image_checkbox");
                 boolean isNoImage = "on".equals(noImageCheckbox);
                 
-                if (notes == null || notes.trim().isEmpty()) {
-                    request.setAttribute("error", "Ghi chú hoàn thành không được để trống.");
-                    doGet(request, response);
-                    return;
+                if (notes == null) {
+                    notes = "";
                 }
                 
+                // Xử lý upload file hình ảnh (nếu có)
                 List<String> fileNames = new ArrayList<>();
                 String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads" + File.separator + "requests";
                 File uploadDir = new File(uploadPath);
@@ -134,6 +146,7 @@ public class DetailRequestServlet extends HttpServlet {
                     }
                 }
                 
+                // Validate bắt buộc phải có ảnh trừ khi đánh dấu "Lỗi đơn giản không cần ảnh"
                 if (!isNoImage && fileNames.isEmpty()) {
                     request.setAttribute("error", "Vui lòng đính kèm ít nhất 1 ảnh minh chứng, hoặc tích chọn Lỗi đơn giản.");
                     doGet(request, response);
@@ -144,6 +157,7 @@ public class DetailRequestServlet extends HttpServlet {
                 success = requestService.completeRequest(requestId, notes.trim(), attachmentUrls2);
             }
 
+            // Bước 3: Ghi nhận lịch sử (Audit Log) sau khi thao tác thành công
             if (success) {
                 try {
                     String auditAction = action.toUpperCase();
@@ -155,10 +169,10 @@ public class DetailRequestServlet extends HttpServlet {
                     AuditLogHelper.log(auditLogDAO, request, "requests", requestId,
                         auditAction, "PENDING", auditNew, operatorId);
                 } catch (Exception ex) { /* ignore audit failure */ }
-                // Redirect on success to prevent form resubmission
+                // Redirect on success to prevent form resubmission (Pattern PRG)
                 response.sendRedirect(request.getContextPath() + "/operator/requests/detail?id=" + requestId);
             } else {
-                // Optimistic locking failure
+                // Optimistic locking failure (Tránh lỗi tranh chấp khi 2 Operator cùng lúc bấm tiếp nhận)
                 request.setAttribute("error", "Thao tác không thành công! Yêu cầu này đã được tiếp nhận bởi người khác hoặc trạng thái đã thay đổi.");
                 doGet(request, response);
             }

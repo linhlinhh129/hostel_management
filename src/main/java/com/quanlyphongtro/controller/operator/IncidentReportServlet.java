@@ -41,6 +41,7 @@ public class IncidentReportServlet extends HttpServlet {
     }
 
     @Override
+    // Bước 1: Hiển thị Form báo cáo sự cố (Incident Report)
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
@@ -49,6 +50,7 @@ public class IncidentReportServlet extends HttpServlet {
         }
         UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
 
+        // Lấy danh sách Cơ sở (Facility) mà Operator này đang được phân công quản lý
         FacilityDAO facilityDAO = new FacilityDAO();
         List<Facility> allFacilities = facilityDAO.findActiveList();
         List<Facility> myFacilities = new ArrayList<>();
@@ -58,6 +60,7 @@ public class IncidentReportServlet extends HttpServlet {
             }
         }
         
+        // Lấy danh sách Phòng thuộc về các Cơ sở trên để đưa vào Dropdown chọn vị trí
         Map<Integer, List<Room>> facilityRoomsMap = new HashMap<>();
         for (Facility f : myFacilities) {
             facilityRoomsMap.put(f.getId(), facilityDAO.findRoomsByFacilityId(f.getId()));
@@ -70,6 +73,7 @@ public class IncidentReportServlet extends HttpServlet {
     }
 
     @Override
+    // Bước 2: Xử lý submit Form báo cáo sự cố
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
@@ -85,7 +89,7 @@ public class IncidentReportServlet extends HttpServlet {
         String incidentName = request.getParameter("incidentName");
         String content = request.getParameter("content");
 
-        // Validate basic fields
+        // Validate basic fields: Bắt buộc phải có Cơ sở, Tên sự cố, Danh mục, Nội dung chi tiết
         if (facility == null || facility.trim().isEmpty() ||
             incidentName == null || incidentName.trim().isEmpty() ||
             category == null || category.trim().isEmpty() ||
@@ -97,7 +101,7 @@ public class IncidentReportServlet extends HttpServlet {
         }
 
         try {
-            // Handle file upload
+            // Bước 3: Handle file upload (Tải lên ảnh minh chứng sự cố)
             StringBuilder attachmentUrls = new StringBuilder();
             String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
             File uploadDir = new File(uploadPath);
@@ -108,7 +112,7 @@ public class IncidentReportServlet extends HttpServlet {
             for (Part part : request.getParts()) {
                 if (part.getName().equals("images") && part.getSize() > 0) {
                     String fileName = extractFileName(part);
-                    // Ensure unique filename
+                    // Ensure unique filename để tránh bị ghi đè file trùng tên
                     String uniqueFileName = UUID.randomUUID().toString() + "_" + fileName;
                     String filePath = uploadPath + File.separator + uniqueFileName;
                     part.write(filePath);
@@ -120,7 +124,7 @@ public class IncidentReportServlet extends HttpServlet {
                 }
             }
 
-            // Xây dựng title để tương thích với hàm parse trong Request.java
+            // Bước 4: Xây dựng title để tương thích với hàm parse trong Request.java
             // Ví dụ format mong đợi: [Khẩn cấp] Vỡ ống nước tại Phòng 102 (Cơ sở A)
             String locationStr = "Phòng".equalsIgnoreCase(locationType) ? "Phòng " + locationDetail : locationDetail;
             if (locationStr == null || locationStr.trim().isEmpty()) {
@@ -132,17 +136,19 @@ public class IncidentReportServlet extends HttpServlet {
             // Tạo mã yêu cầu theo format REQ-INC-{SEQ} đồng bộ với các mã khác
             String code = requestDAO.generateCode("INC");
 
+            // Khởi tạo Object Request để lưu xuống DB
             Request req = new Request();
             req.setCode(code);
-            req.setSenderId(currentUser.getId());
+            req.setSenderId(currentUser.getId()); // Người gửi là Operator hiện tại
             req.setCategory(category);
             req.setTitle(formattedTitle);
             
             // Định dạng nội dung chi tiết kèm theo vị trí để tương thích với phần EditIncidentServlet
             String formattedContent = String.format("Vị trí: %s\nNội dung chi tiết: %s", locationStr, content);
             req.setContent(formattedContent);
-            req.setAttachmentUrls1(attachmentUrls.toString());
+            req.setAttachmentUrls1(attachmentUrls.toString()); // Lưu danh sách các URL ảnh
 
+            // Bước 5: Lưu vào Database
             boolean success = requestDAO.insertIncidentReport(req);
             
             if (success) {

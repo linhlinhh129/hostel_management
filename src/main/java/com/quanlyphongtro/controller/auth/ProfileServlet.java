@@ -78,7 +78,7 @@ public class ProfileServlet extends BaseServlet {
 
             // ── update_profile ───────────────────────────────────────────
             if ("update_profile".equals(action)) {
-
+                // Xử lý Cập nhật Thông tin cá nhân
                 String fullName        = request.getParameter("fullName");
                 String phone           = request.getParameter("phone");
                 String identityNumber  = request.getParameter("identityNumber");
@@ -86,6 +86,7 @@ public class ProfileServlet extends BaseServlet {
                 String gender          = request.getParameter("gender");
                 String permanentAddress = request.getParameter("permanentAddress");
 
+                // Validation Số điện thoại
                 if (phone != null && !phone.trim().isEmpty()) {
                     if (!ValidationUtil.isValidVnPhone(phone)) {
                         setFlashMessage(request, "error",
@@ -94,6 +95,8 @@ public class ProfileServlet extends BaseServlet {
                         return;
                     }
                 }
+                
+                // Validation CMND/CCCD
                 if (identityNumber != null && !identityNumber.trim().isEmpty()) {
                     if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
                         setFlashMessage(request, "error",
@@ -112,9 +115,10 @@ public class ProfileServlet extends BaseServlet {
                 user.setGender(gender);
                 user.setPermanentAddress(permanentAddress);
 
-                // Avatar upload
+                // Upload Avatar (nếu người dùng có đính kèm file)
                 Part filePart = request.getPart("avatar");
                 if (filePart != null && filePart.getSize() > 0) {
+                    // Lưu file vào thư mục uploads/avatars trên server
                     String uploadPath = getServletContext().getRealPath("")
                             + File.separator + "uploads" + File.separator + "avatars";
                     File uploadDir = new File(uploadPath);
@@ -125,9 +129,10 @@ public class ProfileServlet extends BaseServlet {
                     user.setAvatarUrl("/uploads/avatars/" + fileName);
                 }
 
+                // Lưu thay đổi vào Database
                 userDAO.updateProfile(user);
 
-                // Sync session
+                // Đồng bộ thay đổi mới vào Session để Header hiện đúng Tên/Avatar
                 currentUser.setFullName(user.getFullName());
                 currentUser.setAvatarUrl(user.getAvatarUrl());
                 currentUser.setInitials(UserSessionDTO.extractInitials(user.getFullName()));
@@ -139,35 +144,41 @@ public class ProfileServlet extends BaseServlet {
 
             // ── change_password ──────────────────────────────────────────
             } else if ("change_password".equals(action)) {
-
+                // Xử lý Thay đổi Mật khẩu từ trang Profile
                 String currentPassword = request.getParameter("currentPassword");
                 String newPassword     = request.getParameter("newPassword");
                 String confirmPassword = request.getParameter("confirmPassword");
 
+                // Validation độ phức tạp
                 if (!PasswordValidator.isValid(newPassword)) {
                     setFlashMessage(request, "error",
                         "Mật khẩu mới không đạt chuẩn bảo mật (cần ít nhất 8 ký tự, có chữ hoa, chữ số và ký tự đặc biệt).");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
+                // Xác minh mật khẩu mới khớp
                 if (!newPassword.equals(confirmPassword)) {
                     setFlashMessage(request, "error", "Xác nhận mật khẩu mới không khớp!");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
+                // Tránh đổi lại mật khẩu cũ
                 if (newPassword.equals(currentPassword)) {
                     setFlashMessage(request, "error", "Mật khẩu mới không được trùng với mật khẩu cũ.");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
+                // Xác minh mật khẩu hiện tại (tránh việc người khác mượn máy đổi pass)
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
                     setFlashMessage(request, "error", "Mật khẩu hiện tại không chính xác!");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
 
+                // Cập nhật pass mới vào DB
                 userDAO.updatePassword(user.getId(), PasswordUtil.hash(newPassword));
 
+                // Nếu user từng chưa đổi pass mà giờ đổi thì set lại trạng thái FirstLogin thành false
                 if (currentUser.isFirstLogin()) {
                     currentUser.setFirstLogin(false);
                     HttpSession session = request.getSession(false);

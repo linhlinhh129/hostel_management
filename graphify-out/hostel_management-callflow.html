@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hostel_management — Complete Call Flow &amp; Architecture Documentation</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0f172a; --surface: #1e293b; --border: #334155;
+  --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+  --warn: #fbbf24; --err: #f87171; --ok: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 2.4rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+h2 { font-size: 1.7rem; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 1.25rem; margin: 32px 0 12px; color: var(--accent); }
+h4 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--warn); }
+p { margin: 8px 0; color: var(--muted); }
+.subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; }
+.mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; overflow-x: auto; position: relative; }
+.mermaid.is-enhanced { padding: 0; overflow: hidden; min-height: 260px; }
+.mermaid-viewport { padding: 54px 24px 24px; overflow: hidden; cursor: grab; touch-action: none; min-height: 260px; }
+.mermaid-viewport.is-dragging { cursor: grabbing; }
+.mermaid-viewport svg { max-width: none !important; height: auto; transform-origin: 0 0; transition: transform 120ms ease; }
+.mermaid-toolbar { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; background: rgba(15,23,42,0.92); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.mermaid-toolbar button, .mermaid-toolbar .zoom-level { height: 28px; min-width: 32px; border: 1px solid var(--border); border-radius: 6px; background: #1e293b; color: var(--text); font: 600 0.78rem system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; }
+.mermaid-toolbar button { cursor: pointer; }
+.mermaid-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+.mermaid-toolbar .zoom-level { min-width: 52px; color: var(--muted); background: transparent; }
+.call-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+.call-table th { background: #1a2744; color: var(--accent); text-align: left; padding: 10px 14px; border: 1px solid var(--border); }
+.call-table td { padding: 8px 14px; border: 1px solid var(--border); vertical-align: top; }
+.call-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+.tag-async { background: #7c3aed33; color: #a78bfa; }
+.tag-class { background: #05966933; color: var(--ok); }
+.tag-func { background: #2563eb33; color: var(--accent); }
+.tag-cmd { background: #d9770633; color: var(--warn); }
+.tag-endpoint { background: #dc262633; color: var(--err); }
+.tag-hook { background: #db277733; color: #f472b6; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin: 16px 0; }
+.arrow-chain { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--accent); padding: 10px; background: rgba(56,189,248,0.06); border-radius: 6px; }
+code { font-family: 'Fira Code', 'Cascadia Code', monospace; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; font-size: 0.88em; }
+ul, ol { margin: 8px 0 8px 24px; color: var(--muted); }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.nav { position: sticky; top: 0; background: var(--bg); z-index: 10; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9rem; }
+.nav a { text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+@media (max-width: 768px) { .container { padding: 16px; } h1 { font-size: 1.8rem; } }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>hostel_management — Complete Call Flow &amp; Architecture Documentation</h1>
+<p class="subtitle">Generated from graphify knowledge graph: 2784 nodes, 6993 edges, 127 communities. Commit: c882ac5</p>
+
+<div class="nav">
+    <a href="#overview">Architecture Overview</a>
+    <a href="#extract-pipeline">Extraction Pipeline</a>
+    <a href="#build-graph">Graph Build</a>
+    <a href="#cli-skills">CLI &amp; Skill Installers</a>
+    <a href="#tests-fixtures">Tests &amp; Fixtures</a>
+    <a href="#module-specify-scripts-powershell-create-new-fea">Module specify_scripts_powershell_create_new_feature</a>
+    <a href="#seed-sql">seed.sql</a>
+    <a href="#module-specify-scripts-powershell-check-prerequi">Module specify_scripts_powershell_check_prerequisites</a>
+    <a href="#module-specify-scripts-powershell-setup-plan">Module specify_scripts_powershell_setup_plan</a>
+    <a href="#module-specify-scripts-powershell-setup-tasks">Module specify_scripts_powershell_setup_tasks</a>
+</div>
+
+<!-- ====== Architecture Overview ====== -->
+<h2 id="overview">1. Architecture Overview</h2>
+
+<div class="mermaid">
+
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    EXTRACT_PIPELINE_5F350230("Extraction Pipeline<br/><small>2748 nodes</small>")
+    class EXTRACT_PIPELINE_5F350230 module;
+    BUILD_GRAPH_321CBB04("Graph Build<br/><small>2 nodes</small>")
+    class BUILD_GRAPH_321CBB04 module;
+    CLI_SKILLS_9964CBB8("CLI &amp; Skill Installers<br/><small>12 nodes</small>")
+    class CLI_SKILLS_9964CBB8 module;
+    TESTS_FIXTURES_B84B1DCC("Tests &amp; Fixtures<br/><small>14 nodes</small>")
+    class TESTS_FIXTURES_B84B1DCC module;
+    MODULE_SPECIFY_SCRIPTS_POWERSHELL_CREATE_NEW_FEA_B952BA75("Module specify_scripts_powershell_create_new_feature<br/><small>4 nodes</small>")
+    class MODULE_SPECIFY_SCRIPTS_POWERSHELL_CREATE_NEW_FEA_B952BA75 module;
+    SEED_SQL_F6F21296("seed.sql<br/><small>1 nodes</small>")
+    class SEED_SQL_F6F21296 module;
+    MODULE_SPECIFY_SCRIPTS_POWERSHELL_CHECK_PREREQUI_3017B7DE("Module specify_scripts_powershell_check_prerequisites<br/><small>1 nodes</small>")
+    class MODULE_SPECIFY_SCRIPTS_POWERSHELL_CHECK_PREREQUI_3017B7DE module;
+    MODULE_SPECIFY_SCRIPTS_POWERSHELL_SETUP_PLAN_98FD8250("Module specify_scripts_powershell_setup_plan<br/><small>1 nodes</small>")
+    class MODULE_SPECIFY_SCRIPTS_POWERSHELL_SETUP_PLAN_98FD8250 module;
+    MODULE_SPECIFY_SCRIPTS_POWERSHELL_SETUP_TASKS_5333F6D0("Module specify_scripts_powershell_setup_tasks<br/><small>1 nodes</small>")
+    class MODULE_SPECIFY_SCRIPTS_POWERSHELL_SETUP_TASKS_5333F6D0 module;
+    EXTRACT_PIPELINE_5F350230 -.-> BUILD_GRAPH_321CBB04
+    BUILD_GRAPH_321CBB04 -.-> CLI_SKILLS_9964CBB8
+    CLI_SKILLS_9964CBB8 -.-> TESTS_FIXTURES_B84B1DCC
+    TESTS_FIXTURES_B84B1DCC -.-> MODULE_SPECIFY_SCRIPTS_POWERSHELL_CREATE_NEW_FEA_B952BA75
+    MODULE_SPECIFY_SCRIPTS_POWERSHELL_CREATE_NEW_FEA_B952BA75 -.-> SEED_SQL_F6F21296
+    SEED_SQL_F6F21296 -.-> MODULE_SPECIFY_SCRIPTS_POWERSHELL_CHECK_PREREQUI_3017B7DE
+    MODULE_SPECIFY_SCRIPTS_POWERSHELL_CHECK_PREREQUI_3017B7DE -.-> MODULE_SPECIFY_SCRIPTS_POWERSHELL_SETUP_PLAN_98FD8250
+    MODULE_SPECIFY_SCRIPTS_POWERSHELL_SETUP_PLAN_98FD8250 -.-> MODULE_SPECIFY_SCRIPTS_POWERSHELL_SETUP_TASKS_5333F6D0
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Architecture Layers</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>Layer</th><th>Nodes</th><th>Communities</th></tr>
+      <tr><td>Extraction Pipeline</td><td>2748</td><td><code>20, 1, 24, 40, 3, 7, 4, 48, 62, 8, 114, 15, 5, 13, 10, 2, 0, 131, 14, 27, 17, 18, 11, 23, 21, 37, 46, 12, 39, 22, 32, 9, 28, 104, 19, 25, 29, 33, 30, 35, 82, 90, 16, 42, 76, 52, 112, 81, 31, 68, 88, 106, 56, 98, 26, 36, 47, 53, 92, 44, 57, 59, 83, 86, 49, 58, 80, 97, 51, 66, 99, 111, 116, 6, 67, 69, 74, 96, 103, 115, 34, 41, 45, 84, 89, 93, 108, 43, 72, 95, 100, 55, 60, 102, 118, 119, 121, 65, 73, 109, 117, 122, 123, 38, 50, 120, 61, 63, 64, 70, 94, 54, 71, 127, 75, 79, 77</code></td></tr><tr><td>Graph Build</td><td>2</td><td><code>130</code></td></tr><tr><td>CLI &amp; Skill Installers</td><td>12</td><td><code>129, 134, 137</code></td></tr><tr><td>Tests &amp; Fixtures</td><td>14</td><td><code>78</code></td></tr><tr><td>Module specify_scripts_powershell_create_new_feature</td><td>4</td><td><code>135</code></td></tr><tr><td>seed.sql</td><td>1</td><td><code>132</code></td></tr><tr><td>Module specify_scripts_powershell_check_prerequisites</td><td>1</td><td><code>138</code></td></tr><tr><td>Module specify_scripts_powershell_setup_plan</td><td>1</td><td><code>139</code></td></tr><tr><td>Module specify_scripts_powershell_setup_tasks</td><td>1</td><td><code>140</code></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Core Flow</h4>
+    <div class="arrow-chain">Extraction Pipeline -&gt; Graph Build -&gt; CLI &amp; Skill Installers -&gt; Tests &amp; Fixtures -&gt; Module specify_scripts_powershell_create_new_feature -&gt; seed.sql -&gt; Module specify_scripts_powershell_check_prerequisites</div>
+  </div>
+</div>
+<div class="grid">
+  <div class="card">
+    <h4>Graph Report Highlights</h4>
+    <ul>
+      <li>2784 nodes · 6993 edges · 127 communities (79 shown, 48 thin omitted)</li>
+      <li>Extraction: 71% EXTRACTED · 29% INFERRED · 0% AMBIGUOUS · INFERRED: 2038 edges (avg confidence: 0.8)</li>
+      <li>Token cost: 0 input · 0 output</li>
+      <li>1. `BaseServlet` - 95 edges</li>
+      <li>2. `InvoiceDetailDTO` - 89 edges</li>
+      <li>3. `DebtDetailDTO` - 88 edges</li>
+    </ul>
+  </div>
+</div>
+<hr>
+<!-- ====== 2. Extraction Pipeline ====== -->
+<h2 id="extract-pipeline">2. Extraction Pipeline</h2>
+<p>Extraction Pipeline groups implementation around com, quanlyphongtro, dto, model, mostly in quanlyphongtro/dto/InvoiceDetailDTO.java, quanlyphongtro/dto/DebtDetailDTO.java, quanlyphongtro/model/Invoice.java. This section covers 2748 nodes and 6958 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Extraction Pipeline (2748 nodes, 6958 edges)
+    subgraph extract_pipeline_quanlyphongtro_controller_BaseS_cb62b3cc["quanlyphongtro/controller/BaseServlet.java"]
+        src_main_java_com_quanlyphongtro_controller_base_522402b7("BaseServlet<br/><small>quanlyphongtro/controller/BaseServlet.java</small>")
+        src_main_java_com_quanlyphongtro_controller_base_7e92bf09("forwardError()<br/><small>quanlyphongtro/controller/BaseServlet.java</small>")
+        src_main_java_com_quanlyphongtro_controller_base_bdcf7c62("getCurrentUser()<br/><small>quanlyphongtro/controller/BaseServlet.java</small>")
+        src_main_java_com_quanlyphongtro_controller_base_c2ba068d("handleException()<br/><small>quanlyphongtro/controller/BaseServlet.java</small>")
+        src_main_java_com_quanlyphongtro_controller_base_8e444ebd("setFlashMessage()<br/><small>quanlyphongtro/controller/BaseServlet.java</small>")
+    end
+    subgraph extract_pipeline_quanlyphongtro_constant_ErrorMe_d7238dc2["quanlyphongtro/constant/ErrorMessageConstant.java"]
+        src_main_java_com_quanlyphongtro_constant_errorm_3bd93d52("ErrorMessageConstant<br/><small>quanlyphongtro/constant/ErrorMessageConstant.java</small>")
+        src_main_java_com_quanlyphongtro_constant_errorm_ab6ccfb4("ErrorMessageConstant()<br/><small>quanlyphongtro/constant/ErrorMessageConstant.java</small>")
+    end
+    subgraph extract_pipeline_quanlyphongtro_constant_RoleCon_af06866a["quanlyphongtro/constant/RoleConstant.java"]
+        src_main_java_com_quanlyphongtro_constant_roleco_410abc00("RoleConstant<br/><small>quanlyphongtro/constant/RoleConstant.java</small>")
+        src_main_java_com_quanlyphongtro_constant_roleco_b7a65467("RoleConstant()<br/><small>quanlyphongtro/constant/RoleConstant.java</small>")
+    end
+    subgraph extract_pipeline_quanlyphongtro_constant_StatusC_200323b7["quanlyphongtro/constant/StatusConstant.java"]
+        src_main_java_com_quanlyphongtro_constant_status_1ca82c60("StatusConstant<br/><small>quanlyphongtro/constant/StatusConstant.java</small>")
+        src_main_java_com_quanlyphongtro_constant_status_366bf570("StatusConstant()<br/><small>quanlyphongtro/constant/StatusConstant.java</small>")
+    end
+    src_main_java_com_quanlyphongtro_controller_admi_3afdd9d3("AdminAuditLogServlet<br/><small>controller/admin/AdminAuditLogServlet.java</small>")
+    src_main_java_com_quanlyphongtro_dto_debtdetaild_9c1942b2("DebtDetailDTO<br/><small>quanlyphongtro/dto/DebtDetailDTO.java</small>")
+    src_main_java_com_quanlyphongtro_dto_invoicedeta_bf8c649d("InvoiceDetailDTO<br/><small>quanlyphongtro/dto/InvoiceDetailDTO.java</small>")
+    src_main_java_com_quanlyphongtro_model_contract_9a5cdad4("Contract<br/><small>quanlyphongtro/model/Contract.java</small>")
+    src_main_java_com_quanlyphongtro_model_facility_c57b8cbb("Facility<br/><small>quanlyphongtro/model/Facility.java</small>")
+    src_main_java_com_quanlyphongtro_model_invoice_i_0ae27b59("Invoice<br/><small>quanlyphongtro/model/Invoice.java</small>")
+    src_main_java_com_quanlyphongtro_model_request_r_a7443b4b("Request<br/><small>quanlyphongtro/model/Request.java</small>")
+    src_main_java_com_quanlyphongtro_constant_errorm_3bd93d52 -->|method| src_main_java_com_quanlyphongtro_constant_errorm_ab6ccfb4
+    src_main_java_com_quanlyphongtro_constant_roleco_410abc00 -->|method| src_main_java_com_quanlyphongtro_constant_roleco_b7a65467
+    src_main_java_com_quanlyphongtro_constant_status_1ca82c60 -->|method| src_main_java_com_quanlyphongtro_constant_status_366bf570
+    src_main_java_com_quanlyphongtro_controller_base_522402b7 -->|method| src_main_java_com_quanlyphongtro_controller_base_7e92bf09
+    src_main_java_com_quanlyphongtro_controller_base_522402b7 -->|method| src_main_java_com_quanlyphongtro_controller_base_bdcf7c62
+    src_main_java_com_quanlyphongtro_controller_base_522402b7 -->|method| src_main_java_com_quanlyphongtro_controller_base_c2ba068d
+    src_main_java_com_quanlyphongtro_controller_base_522402b7 -->|method| src_main_java_com_quanlyphongtro_controller_base_8e444ebd
+    %% Omitted for readability: 2730 nodes, 0 edges
+    class src_main_java_com_quanlyphongtro_controller_base_522402b7 klass;
+    class src_main_java_com_quanlyphongtro_controller_base_7e92bf09 function;
+    class src_main_java_com_quanlyphongtro_controller_base_bdcf7c62 function;
+    class src_main_java_com_quanlyphongtro_controller_base_c2ba068d function;
+    class src_main_java_com_quanlyphongtro_controller_base_8e444ebd function;
+    class src_main_java_com_quanlyphongtro_constant_errorm_3bd93d52 klass;
+    class src_main_java_com_quanlyphongtro_constant_errorm_ab6ccfb4 function;
+    class src_main_java_com_quanlyphongtro_constant_roleco_410abc00 klass;
+    class src_main_java_com_quanlyphongtro_constant_roleco_b7a65467 function;
+    class src_main_java_com_quanlyphongtro_constant_status_1ca82c60 klass;
+    class src_main_java_com_quanlyphongtro_constant_status_366bf570 function;
+    class src_main_java_com_quanlyphongtro_controller_admi_3afdd9d3 klass;
+    class src_main_java_com_quanlyphongtro_dto_debtdetaild_9c1942b2 klass;
+    class src_main_java_com_quanlyphongtro_dto_invoicedeta_bf8c649d klass;
+    class src_main_java_com_quanlyphongtro_model_contract_9a5cdad4 klass;
+    class src_main_java_com_quanlyphongtro_model_facility_c57b8cbb klass;
+    class src_main_java_com_quanlyphongtro_model_invoice_i_0ae27b59 klass;
+    class src_main_java_com_quanlyphongtro_model_request_r_a7443b4b klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>AuditLogDAO.java</code><br><small style="color:var(--muted)">quanlyphongtro/dao/AuditLogDAO.java</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AuditLog</code><br><small style="color:var(--muted)">quanlyphongtro/model/AuditLog.java</small><br><code>DatabaseUtil.java</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>AuditLogDAO.java node in quanlyphongtro/dao/AuditLogDAO.java.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>.getInteger()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>BaseDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small><br><code>mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/AuditLogDAO.java</small></td>
+  <td><code>findDebtDetail()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/DebtDAO.java</small><br><code>findFacilitiesForManager()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/PersonnelDAO.java</small><br><code>findFacilitiesForOperator()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/PersonnelDAO.java</small><br>+10 more</td>
+  <td>.getInteger() node in quanlyphongtro/dao/BaseDAO.java.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>.findByIdAndTenantId()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/ContractDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ContractDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/ContractDAO.java</small><br><code>mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/ContractDAO.java</small><br><code>toLocalDate()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small></td>
+  <td><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>getContractDetailForTenant()</code><br><small style="color:var(--muted)">service/impl/ContractServiceImpl.java</small><br><code>Room</code><br><small style="color:var(--muted)">quanlyphongtro/model/Room.java</small><br>+15 more</td>
+  <td>.findByIdAndTenantId() node in quanlyphongtro/dao/ContractDAO.java.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>FacilityDAO.java</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>DatabaseUtil.java</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>Facility</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br><code>Room</code><br><small style="color:var(--muted)">quanlyphongtro/model/Room.java</small></td>
+  <td>FacilityDAO.java node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>doGet()</code><br><small style="color:var(--muted)">controller/operator/ListElectricServlet.java</small><br><code>doGet()</code><br><small style="color:var(--muted)">controller/operator/IncidentReportServlet.java</small><br><code>doGet()</code><br><small style="color:var(--muted)">controller/operator/OperatorDashboardServlet.java</small><br>+1 more</td>
+  <td><code>AdminDashboardServiceImpl.java</code><br><small style="color:var(--muted)">service/impl/AdminDashboardServiceImpl.java</small><br><code>buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>buildSessionDTO()</code><br><small style="color:var(--muted)">service/impl/UserServiceImpl.java</small><br>+21 more</td>
+  <td>FacilityDAO node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>.mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>getInteger()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small><br><code>getIntOrZero()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small><br>+1 more</td>
+  <td><code>findActiveList()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>findAll()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>findByCode()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br>+21 more</td>
+  <td>.mapRow() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>ResultSet</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ResultSet node in project.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>.buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>findActiveList()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>findAll()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>findByCode()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br>+3 more</td>
+  <td>.buildBaseSelect() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>.findAll()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>list()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small></td>
+  <td>.findAll() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>.count()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>list()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>refreshCacheIfNeeded()</code><br><small style="color:var(--muted)">service/impl/AdminDashboardServiceImpl.java</small></td>
+  <td>.count() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>.findById()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>activate()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>deactivate()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getById()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br>+3 more</td>
+  <td>.findById() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>.findByCode()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>.findByCode() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>.findByManagerId()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>buildSessionDTO()</code><br><small style="color:var(--muted)">service/impl/UserServiceImpl.java</small><br><code>findByManagerId()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br>+3 more</td>
+  <td>.findByManagerId() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>.findByOperatorId()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>mapRow()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>buildSessionDTO()</code><br><small style="color:var(--muted)">service/impl/UserServiceImpl.java</small><br><code>findByOperatorId()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>.findByOperatorId() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>.findActiveList()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>buildBaseSelect()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small><br><code>doGet()</code><br><small style="color:var(--muted)">controller/operator/OperatorDashboardServlet.java</small><br><code>doGet()</code><br><small style="color:var(--muted)">controller/operator/MeterReadingHistoryServlet.java</small><br>+4 more</td>
+  <td><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>.findActiveList() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>.insert()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>create()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getAddress()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br><code>getCode()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br>+11 more</td>
+  <td>.insert() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>.update()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>getAddress()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br><code>getCode()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br>+13 more</td>
+  <td>.update() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>.updateStatus()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>activate()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>deactivate()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>Connection</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Connection node in project.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>.generateRooms()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>activate()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small></td>
+  <td>.generateRooms() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>.countByCode()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>create()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>update()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small></td>
+  <td>.countByCode() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>.countOccupiedRooms()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>deactivate()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>.countOccupiedRooms() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>.deactivateAllRooms()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>FacilityDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/FacilityDAO.java</small></td>
+  <td><code>deactivate()</code><br><small style="color:var(--muted)">service/impl/FacilityServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>.deactivateAllRooms() node in quanlyphongtro/dao/FacilityDAO.java.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>NotificationDAO.java</code><br><small style="color:var(--muted)">quanlyphongtro/dao/NotificationDAO.java</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>DatabaseUtil.java</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>Notification</code><br><small style="color:var(--muted)">quanlyphongtro/model/Notification.java</small></td>
+  <td>NotificationDAO.java node in quanlyphongtro/dao/NotificationDAO.java.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>.findFacilitiesForManager()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/PersonnelDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>getInteger()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small><br><code>PersonnelDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/PersonnelDAO.java</small></td>
+  <td><code>findFacilitiesForManager()</code><br><small style="color:var(--muted)">service/impl/PersonnelServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>setCode()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br>+5 more</td>
+  <td>.findFacilitiesForManager() node in quanlyphongtro/dao/PersonnelDAO.java.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>.findFacilitiesForOperator()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/PersonnelDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>getInteger()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small><br><code>PersonnelDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/PersonnelDAO.java</small></td>
+  <td><code>findFacilitiesForOperator()</code><br><small style="color:var(--muted)">service/impl/PersonnelServiceImpl.java</small><br><code>getConnection()</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>setCode()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br>+5 more</td>
+  <td>.findFacilitiesForOperator() node in quanlyphongtro/dao/PersonnelDAO.java.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>PostReactionDAO.java</code><br><small style="color:var(--muted)">quanlyphongtro/dao/PostReactionDAO.java</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>DatabaseUtil.java</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small></td>
+  <td>PostReactionDAO.java node in quanlyphongtro/dao/PostReactionDAO.java.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>RoomDAO.java</code><br><small style="color:var(--muted)">quanlyphongtro/dao/RoomDAO.java</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>DatabaseUtil.java</code><br><small style="color:var(--muted)">quanlyphongtro/util/DatabaseUtil.java</small><br><code>Facility</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br><code>ResultSet</code><br>+2 more</td>
+  <td>RoomDAO.java node in quanlyphongtro/dao/RoomDAO.java.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>ResultSet</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>RoomDAO.java</code><br><small style="color:var(--muted)">quanlyphongtro/dao/RoomDAO.java</small></td>
+  <td>No direct outbound edge</td>
+  <td>ResultSet node in project.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>.mapFacility()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/RoomDAO.java</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>getInteger()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/BaseDAO.java</small><br><code>RoomDAO</code><br><small style="color:var(--muted)">quanlyphongtro/dao/RoomDAO.java</small></td>
+  <td><code>findFacilityByRoomId()</code><br><small style="color:var(--muted)">quanlyphongtro/dao/RoomDAO.java</small><br><code>setAddress()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br><code>setCode()</code><br><small style="color:var(--muted)">quanlyphongtro/model/Facility.java</small><br>+10 more</td>
+  <td>.mapFacility() node in quanlyphongtro/dao/RoomDAO.java.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>quanlyphongtro/dto/InvoiceDetailDTO.java</code></td><td>84 nodes</td></tr>
+<tr><td><code>quanlyphongtro/dto/DebtDetailDTO.java</code></td><td>83 nodes</td></tr>
+<tr><td><code>quanlyphongtro/model/Invoice.java</code></td><td>71 nodes</td></tr>
+<tr><td><code>quanlyphongtro/model/Contract.java</code></td><td>55 nodes</td></tr>
+<tr><td><code>quanlyphongtro/model/Request.java</code></td><td>53 nodes</td></tr>
+<tr><td><code>quanlyphongtro/model/Notification.java</code></td><td>47 nodes</td></tr>
+<tr><td><code>quanlyphongtro/model/Facility.java</code></td><td>45 nodes</td></tr>
+<tr><td><code>quanlyphongtro/model/User.java</code></td><td>44 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: method x2020, references x1148, imports x834, calls x621. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 3. Graph Build ====== -->
+<h2 id="build-graph">3. Graph Build</h2>
+<p>Graph Build groups implementation around schemasql, database, dbosystem, config, mostly in database (1)/schema.sql. This section covers 2 nodes and 1 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Graph Build (2 nodes, 1 edges)
+    database_1_schema_ee350492("schema.sql")
+    database_1_schema_dbo_system_config_e04b83a8("dbo.system_config<br/><small>database (1)/schema.sql</small>")
+    database_1_schema_ee350492 -->|contains| database_1_schema_dbo_system_config_e04b83a8
+    class database_1_schema_ee350492 function;
+    class database_1_schema_dbo_system_config_e04b83a8 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>schema.sql</code><br><small style="color:var(--muted)">database (1)/schema.sql</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>schema.sql node in database (1)/schema.sql.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>dbo.system_config</code><br><small style="color:var(--muted)">database (1)/schema.sql</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>database (1)/schema.sql</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 4. CLI & Skill Installers ====== -->
+<h2 id="cli-skills">4. CLI &amp; Skill Installers</h2>
+<p>CLI &amp; Skill Installers groups implementation around agent, update, specify, extensions, mostly in scripts/powershell/update-agent-context.ps1, main/webapp/sw.js, scripts/bash/update-agent-context.sh. This section covers 12 nodes and 10 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: CLI &amp; Skill Installers (12 nodes, 10 edges)
+    subgraph cli_skills_main_webapp_sw_js_9f9eaced["main/webapp/sw.js"]
+        src_main_webapp_sw_networkfirst_b0371564("networkFirst()<br/><small>main/webapp/sw.js</small>")
+        src_main_webapp_sw_offlinefallback_4e7624e3("offlineFallback()<br/><small>main/webapp/sw.js</small>")
+        src_main_webapp_sw_static_assets_58972199("STATIC_ASSETS<br/><small>main/webapp/sw.js</small>")
+        src_main_webapp_sw_cachefirst_602d4913("cacheFirst()<br/><small>main/webapp/sw.js</small>")
+        src_main_webapp_sw_bf7dffe0("sw.js")
+    end
+    subgraph cli_skills_scripts_powershell_update_agent_conte_596bd889["scripts/powershell/update-agent-context.ps1"]
+        specify_extensions_agent_context_scripts_powersh_5831dbc8("Get-ConfigValue()<br/><small>scripts/powershell/update-agent-context.ps1</small>")
+        specify_extensions_agent_context_scripts_powersh_48bca781("Resolve-ContextPath()<br/><small>scripts/powershell/update-agent-context.ps1</small>")
+        specify_extensions_agent_context_scripts_powersh_92b70415("Test-ConfigObject()<br/><small>scripts/powershell/update-agent-context.ps1</small>")
+        specify_extensions_agent_context_scripts_powersh_5b46747a("Test-IsSubPath()<br/><small>scripts/powershell/update-agent-context.ps1</small>")
+        specify_extensions_agent_context_scripts_powersh_143a6008("update-agent-context.ps1")
+    end
+    subgraph cli_skills_scripts_bash_update_agent_context_sh_9656f393["scripts/bash/update-agent-context.sh"]
+        specify_extensions_agent_context_scripts_bash_up_72cc5d74("update-agent-context.sh")
+        specify_extensions_agent_context_scripts_bash_up_cdd1971e("update-agent-context.sh script<br/><small>scripts/bash/update-agent-context.sh</small>")
+    end
+    src_main_webapp_sw_networkfirst_b0371564 -->|calls| src_main_webapp_sw_offlinefallback_4e7624e3
+    class src_main_webapp_sw_networkfirst_b0371564 function;
+    class src_main_webapp_sw_offlinefallback_4e7624e3 function;
+    class src_main_webapp_sw_static_assets_58972199 async;
+    class src_main_webapp_sw_cachefirst_602d4913 function;
+    class src_main_webapp_sw_bf7dffe0 module;
+    class specify_extensions_agent_context_scripts_powersh_5831dbc8 test;
+    class specify_extensions_agent_context_scripts_powersh_48bca781 test;
+    class specify_extensions_agent_context_scripts_powersh_92b70415 test;
+    class specify_extensions_agent_context_scripts_powersh_5b46747a test;
+    class specify_extensions_agent_context_scripts_powersh_143a6008 test;
+    class specify_extensions_agent_context_scripts_bash_up_72cc5d74 test;
+    class specify_extensions_agent_context_scripts_bash_up_cdd1971e test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>update-agent-context.ps1</code><br><small style="color:var(--muted)">scripts/powershell/update-agent-context.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>update-agent-context.ps1 node in scripts/powershell/update-agent-context.ps1.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Get-ConfigValue()</code><br><small style="color:var(--muted)">scripts/powershell/update-agent-context.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Test-ConfigObject()</code><br><small style="color:var(--muted)">scripts/powershell/update-agent-context.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Resolve-ContextPath()</code><br><small style="color:var(--muted)">scripts/powershell/update-agent-context.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Resolve-ContextPath() node in scripts/powershell/update-agent-context.ps1.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>Test-IsSubPath()</code><br><small style="color:var(--muted)">scripts/powershell/update-agent-context.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>sw.js</code><br><small style="color:var(--muted)">main/webapp/sw.js</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>sw.js node in main/webapp/sw.js.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>STATIC_ASSETS</code><br><small style="color:var(--muted)">main/webapp/sw.js</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>STATIC_ASSETS node in main/webapp/sw.js.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>cacheFirst()</code><br><small style="color:var(--muted)">main/webapp/sw.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Caches analysis results or computes cache keys.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>networkFirst()</code><br><small style="color:var(--muted)">main/webapp/sw.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>offlineFallback()</code><br><small style="color:var(--muted)">main/webapp/sw.js</small></td>
+  <td>networkFirst() node in main/webapp/sw.js.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>offlineFallback()</code><br><small style="color:var(--muted)">main/webapp/sw.js</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>networkFirst()</code><br><small style="color:var(--muted)">main/webapp/sw.js</small></td>
+  <td>No direct outbound edge</td>
+  <td>offlineFallback() node in main/webapp/sw.js.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>update-agent-context.sh</code><br><small style="color:var(--muted)">scripts/bash/update-agent-context.sh</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>update-agent-context.sh node in scripts/bash/update-agent-context.sh.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>update-agent-context.sh script</code><br><small style="color:var(--muted)">scripts/bash/update-agent-context.sh</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>update-agent-context.sh script node in scripts/bash/update-agent-context.sh.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/powershell/update-agent-context.ps1</code></td><td>5 nodes</td></tr>
+<tr><td><code>main/webapp/sw.js</code></td><td>5 nodes</td></tr>
+<tr><td><code>scripts/bash/update-agent-context.sh</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x9, calls x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 5. Tests & Fixtures ====== -->
+<h2 id="tests-fixtures">5. Tests &amp; Fixtures</h2>
+<p>Tests &amp; Fixtures groups implementation around commonps1, specify, scripts, powershell, mostly in scripts/powershell/common.ps1. This section covers 14 nodes and 20 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Tests &amp; Fixtures (14 nodes, 20 edges)
+    specify_scripts_powershell_common_find_specifyro_8b026d03("Find-SpecifyRoot()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_get_currentbra_531eae24("Get-CurrentBranch()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_get_invokesepa_543d5e41("Get-InvokeSeparator()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_get_python3com_a8bd3651("Get-Python3Command()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_resolve_specif_e942d740("Resolve-SpecifyInitDir()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_save_featurejs_12f05d5d("Save-FeatureJson()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_get_reporoot_a1e9fd1c("Get-RepoRoot()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_get_featurepat_4b9772f3("Get-FeaturePathsEnv()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_format_speckit_bd667f47("Format-SpecKitCommand()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_resolve_templa_150f06a4("Resolve-TemplateContent()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_resolve_templa_d68b1a05("Resolve-Template()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_test_dirhasfil_849e25ca("Test-DirHasFiles()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_test_fileexist_21558dbc("Test-FileExists()<br/><small>scripts/powershell/common.ps1</small>")
+    specify_scripts_powershell_common_59ec551c("common.ps1")
+    specify_scripts_powershell_common_find_specifyro_8b026d03 -->|calls| specify_scripts_powershell_common_get_reporoot_a1e9fd1c
+    specify_scripts_powershell_common_resolve_specif_e942d740 -->|calls| specify_scripts_powershell_common_get_reporoot_a1e9fd1c
+    specify_scripts_powershell_common_get_reporoot_a1e9fd1c -->|calls| specify_scripts_powershell_common_get_featurepat_4b9772f3
+    specify_scripts_powershell_common_get_currentbra_531eae24 -->|calls| specify_scripts_powershell_common_get_featurepat_4b9772f3
+    specify_scripts_powershell_common_save_featurejs_12f05d5d -->|calls| specify_scripts_powershell_common_get_featurepat_4b9772f3
+    specify_scripts_powershell_common_get_invokesepa_543d5e41 -->|calls| specify_scripts_powershell_common_format_speckit_bd667f47
+    specify_scripts_powershell_common_get_python3com_a8bd3651 -->|calls| specify_scripts_powershell_common_resolve_templa_150f06a4
+    class specify_scripts_powershell_common_find_specifyro_8b026d03 test;
+    class specify_scripts_powershell_common_get_currentbra_531eae24 test;
+    class specify_scripts_powershell_common_get_invokesepa_543d5e41 test;
+    class specify_scripts_powershell_common_get_python3com_a8bd3651 test;
+    class specify_scripts_powershell_common_resolve_specif_e942d740 test;
+    class specify_scripts_powershell_common_save_featurejs_12f05d5d test;
+    class specify_scripts_powershell_common_get_reporoot_a1e9fd1c test;
+    class specify_scripts_powershell_common_get_featurepat_4b9772f3 test;
+    class specify_scripts_powershell_common_format_speckit_bd667f47 test;
+    class specify_scripts_powershell_common_resolve_templa_150f06a4 test;
+    class specify_scripts_powershell_common_resolve_templa_d68b1a05 test;
+    class specify_scripts_powershell_common_test_dirhasfil_849e25ca test;
+    class specify_scripts_powershell_common_test_fileexist_21558dbc test;
+    class specify_scripts_powershell_common_59ec551c test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>common.ps1</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>common.ps1 node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Find-SpecifyRoot()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Get-RepoRoot()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>Find-SpecifyRoot() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Resolve-SpecifyInitDir()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Get-RepoRoot()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>Resolve-SpecifyInitDir() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Get-RepoRoot()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>Find-SpecifyRoot()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small><br><code>Resolve-SpecifyInitDir()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><code>Get-FeaturePathsEnv()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>Get-RepoRoot() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>Get-CurrentBranch()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Get-FeaturePathsEnv()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>Get-CurrentBranch() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Save-FeatureJson()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Get-FeaturePathsEnv()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>Save-FeatureJson() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Get-FeaturePathsEnv()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>Get-CurrentBranch()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small><br><code>Get-RepoRoot()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small><br><code>Save-FeatureJson()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>No direct outbound edge</td>
+  <td>Get-FeaturePathsEnv() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Test-FileExists()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Test-DirHasFiles()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Get-InvokeSeparator()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Format-SpecKitCommand()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>Get-InvokeSeparator() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>Format-SpecKitCommand()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>Get-InvokeSeparator()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>No direct outbound edge</td>
+  <td>Format-SpecKitCommand() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>Get-Python3Command()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Resolve-TemplateContent()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>Get-Python3Command() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>Resolve-Template()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Resolve-Template() node in scripts/powershell/common.ps1.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>Resolve-TemplateContent()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>Get-Python3Command()</code><br><small style="color:var(--muted)">scripts/powershell/common.ps1</small></td>
+  <td>No direct outbound edge</td>
+  <td>Resolve-TemplateContent() node in scripts/powershell/common.ps1.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/powershell/common.ps1</code></td><td>14 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x13, calls x7. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 6. Module specify_scripts_powershell_create_new_feature ====== -->
+<h2 id="module-specify-scripts-powershell-create-new-fea">6. Module specify_scripts_powershell_create_new_feature</h2>
+<p>Module specify_scripts_powershell_create_new_feature groups implementation around create, new, featureps1, specify, mostly in scripts/powershell/create-new-feature.ps1. This section covers 4 nodes and 4 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Module specify_scripts_powershell_create_new_feature (4 nodes, 4 edges)
+    specify_scripts_powershell_create_new_feature_co_f5359253("ConvertTo-CleanBranchName()<br/><small>scripts/powershell/create-new-feature.ps1</small>")
+    specify_scripts_powershell_create_new_feature_ge_f52bcbbd("Get-BranchName()<br/><small>scripts/powershell/create-new-feature.ps1</small>")
+    specify_scripts_powershell_create_new_feature_ge_f29bd9d3("Get-HighestNumberFromSpecs()<br/><small>scripts/powershell/create-new-feature.ps1</small>")
+    specify_scripts_powershell_create_new_feature_00851c46("create-new-feature.ps1")
+    specify_scripts_powershell_create_new_feature_co_f5359253 -->|calls| specify_scripts_powershell_create_new_feature_ge_f52bcbbd
+    class specify_scripts_powershell_create_new_feature_co_f5359253 test;
+    class specify_scripts_powershell_create_new_feature_ge_f52bcbbd test;
+    class specify_scripts_powershell_create_new_feature_ge_f29bd9d3 test;
+    class specify_scripts_powershell_create_new_feature_00851c46 test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>create-new-feature.ps1</code><br><small style="color:var(--muted)">scripts/powershell/create-new-feature.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>create-new-feature.ps1 node in scripts/powershell/create-new-feature.ps1.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Get-HighestNumberFromSpecs()</code><br><small style="color:var(--muted)">scripts/powershell/create-new-feature.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Get-HighestNumberFromSpecs() node in scripts/powershell/create-new-feature.ps1.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>ConvertTo-CleanBranchName()</code><br><small style="color:var(--muted)">scripts/powershell/create-new-feature.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Get-BranchName()</code><br><small style="color:var(--muted)">scripts/powershell/create-new-feature.ps1</small></td>
+  <td>ConvertTo-CleanBranchName() node in scripts/powershell/create-new-feature.ps1.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Get-BranchName()</code><br><small style="color:var(--muted)">scripts/powershell/create-new-feature.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>ConvertTo-CleanBranchName()</code><br><small style="color:var(--muted)">scripts/powershell/create-new-feature.ps1</small></td>
+  <td>No direct outbound edge</td>
+  <td>Get-BranchName() node in scripts/powershell/create-new-feature.ps1.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/powershell/create-new-feature.ps1</code></td><td>4 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x3, calls x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 7. seed.sql ====== -->
+<h2 id="seed-sql">7. seed.sql</h2>
+<p>seed.sql groups implementation around seedsql, database, mostly in database (1)/seed.sql. This section covers 1 nodes and 0 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: seed.sql (1 nodes, 0 edges)
+    database_1_seed_eedbdb7e("seed.sql")
+    class database_1_seed_eedbdb7e function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>seed.sql</code><br><small style="color:var(--muted)">database (1)/seed.sql</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>seed.sql node in database (1)/seed.sql.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>database (1)/seed.sql</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: No high-confidence call edges detected. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 8. Module specify_scripts_powershell_check_prerequisites ====== -->
+<h2 id="module-specify-scripts-powershell-check-prerequi">8. Module specify_scripts_powershell_check_prerequisites</h2>
+<p>Module specify_scripts_powershell_check_prerequisites groups implementation around check, prerequisitesps1, specify, scripts, mostly in scripts/powershell/check-prerequisites.ps1. This section covers 1 nodes and 0 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Module specify_scripts_powershell_check_prerequisites (1 nodes, 0 edges)
+    specify_scripts_powershell_check_prerequisites_e8edd48b("check-prerequisites.ps1")
+    class specify_scripts_powershell_check_prerequisites_e8edd48b test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>check-prerequisites.ps1</code><br><small style="color:var(--muted)">scripts/powershell/check-prerequisites.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>check-prerequisites.ps1 node in scripts/powershell/check-prerequisites.ps1.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/powershell/check-prerequisites.ps1</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: No high-confidence call edges detected. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 9. Module specify_scripts_powershell_setup_plan ====== -->
+<h2 id="module-specify-scripts-powershell-setup-plan">9. Module specify_scripts_powershell_setup_plan</h2>
+<p>Module specify_scripts_powershell_setup_plan groups implementation around setup, planps1, specify, scripts, mostly in scripts/powershell/setup-plan.ps1. This section covers 1 nodes and 0 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Module specify_scripts_powershell_setup_plan (1 nodes, 0 edges)
+    specify_scripts_powershell_setup_plan_b3c194e1("setup-plan.ps1")
+    class specify_scripts_powershell_setup_plan_b3c194e1 test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>setup-plan.ps1</code><br><small style="color:var(--muted)">scripts/powershell/setup-plan.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup-plan.ps1 node in scripts/powershell/setup-plan.ps1.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/powershell/setup-plan.ps1</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: No high-confidence call edges detected. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 10. Module specify_scripts_powershell_setup_tasks ====== -->
+<h2 id="module-specify-scripts-powershell-setup-tasks">10. Module specify_scripts_powershell_setup_tasks</h2>
+<p>Module specify_scripts_powershell_setup_tasks groups implementation around setup, tasksps1, specify, scripts, mostly in scripts/powershell/setup-tasks.ps1. This section covers 1 nodes and 0 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Module specify_scripts_powershell_setup_tasks (1 nodes, 0 edges)
+    specify_scripts_powershell_setup_tasks_c02beb42("setup-tasks.ps1")
+    class specify_scripts_powershell_setup_tasks_c02beb42 test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>setup-tasks.ps1</code><br><small style="color:var(--muted)">scripts/powershell/setup-tasks.ps1</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>setup-tasks.ps1 node in scripts/powershell/setup-tasks.ps1.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>scripts/powershell/setup-tasks.ps1</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: No high-confidence call edges detected. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<h2 id="stats">Project Statistics</h2>
+
+<div class="grid">
+  <div class="card">
+    <h4>Graph</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>Nodes</td><td>2784</td></tr>
+      <tr><td>Edges</td><td>6993</td></tr>
+      <tr><td>Hyperedges</td><td>0</td></tr>
+      <tr><td>Communities</td><td>127</td></tr>
+      <tr><td>Documented Sections</td><td>9</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Edge Confidence</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>EXTRACTED</td><td>4955</td></tr>
+      <tr><td>INFERRED</td><td>2038</td></tr>
+      <tr><td>AMBIGUOUS</td><td>0</td></tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center; padding:40px 0; color: var(--muted); font-size:0.9rem;">
+  <p>hostel_management — Architecture Documentation</p>
+  <p>Generated: 2026-07-25 11:37 UTC · graphify callflow-html</p>
+</div>
+
+</div><!-- .container -->
+
+<script>
+(function () {
+  const mermaidConfig = {
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, useMaxWidth: true },
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#334155',
+      lineColor: '#64748b',
+      textColor: '#e2e8f0',
+    }
+  };
+
+  mermaid.initialize(mermaidConfig);
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function enhanceMermaidDiagrams() {
+    document.querySelectorAll('.mermaid').forEach((container) => {
+      if (container.dataset.zoomReady === 'true') return;
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      container.dataset.zoomReady = 'true';
+      container.classList.add('is-enhanced');
+
+      const viewport = document.createElement('div');
+      viewport.className = 'mermaid-viewport';
+      svg.parentNode.insertBefore(viewport, svg);
+      viewport.appendChild(svg);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'mermaid-toolbar';
+      toolbar.innerHTML = [
+        '<button type="button" data-action="zoom-out" title="Zoom out">-</button>',
+        '<span class="zoom-level" data-role="level">100%</span>',
+        '<button type="button" data-action="zoom-in" title="Zoom in">+</button>',
+        '<button type="button" data-action="fit" title="Fit width">Fit</button>',
+        '<button type="button" data-action="reset" title="Reset view">Reset</button>'
+      ].join('');
+      container.insertBefore(toolbar, viewport);
+
+      const state = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+      const level = toolbar.querySelector('[data-role="level"]');
+
+      function applyTransform() {
+        svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        level.textContent = `${Math.round(state.scale * 100)}%`;
+      }
+
+      function zoomBy(delta) {
+        state.scale = clamp(state.scale + delta, 0.25, 3);
+        applyTransform();
+      }
+
+      function reset() {
+        state.scale = 1;
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      function fitWidth() {
+        const rawWidth = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width
+          ? svg.viewBox.baseVal.width
+          : svg.getBoundingClientRect().width / state.scale;
+        if (!rawWidth) {
+          reset();
+          return;
+        }
+        state.scale = clamp((viewport.clientWidth - 48) / rawWidth, 0.25, 1.4);
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      toolbar.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'zoom-in') zoomBy(0.15);
+        if (action === 'zoom-out') zoomBy(-0.15);
+        if (action === 'fit') fitWidth();
+        if (action === 'reset') reset();
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 0.1 : -0.1);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        state.dragging = true;
+        state.startX = event.clientX;
+        state.startY = event.clientY;
+        state.originX = state.x;
+        state.originY = state.y;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+
+      viewport.addEventListener('pointermove', (event) => {
+        if (!state.dragging) return;
+        state.x = state.originX + event.clientX - state.startX;
+        state.y = state.originY + event.clientY - state.startY;
+        applyTransform();
+      });
+
+      function endDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (viewport.hasPointerCapture(event.pointerId)) {
+          viewport.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      applyTransform();
+    });
+  }
+
+  function renderMermaid() {
+    const result = mermaid.run
+      ? mermaid.run({ querySelector: '.mermaid' })
+      : Promise.resolve();
+    Promise.resolve(result)
+      .then(enhanceMermaidDiagrams)
+      .catch((error) => {
+        console.error('Mermaid render failed:', error);
+        enhanceMermaidDiagrams();
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+  } else {
+    renderMermaid();
+  }
+})();
+</script>
+
+</body>
+</html>

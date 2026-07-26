@@ -62,6 +62,7 @@ public class OperatorDashboardServlet extends BaseServlet {
         req.setAttribute("facilityName", facilityNames);
 
         // 1. Lấy dữ liệu Điện nước (Meters)
+        // Hiển thị tiến độ ghi chỉ số điện nước trong tháng hiện tại
         List<MeterStatusDTO> allMeterStatus = meterReadingService.getMeterStatusForCurrentMonth(null, null, operatorId);
         int totalRooms = allMeterStatus.size();
         
@@ -86,7 +87,8 @@ public class OperatorDashboardServlet extends BaseServlet {
 
 
 
-        // 2. Lấy dữ liệu Yêu cầu (Tickets)
+        // 2. Lấy dữ liệu Yêu cầu (Tickets/Requests)
+        // Lấy thống kê số lượng yêu cầu theo từng trạng thái (Mới, Đang xử lý, Đã hoàn thành)
         Map<String, Integer> ticketStats = dashboardDAO.getTicketStats(operatorId);
         int ticketCountNew = ticketStats.getOrDefault("PENDING", 0);
         int ticketCountInProgress = ticketStats.getOrDefault("IN_PROGRESS", 0);
@@ -99,6 +101,7 @@ public class OperatorDashboardServlet extends BaseServlet {
         req.setAttribute("ticketCountDone", ticketCountDone);
 
         // 3. Lấy Lịch hẹn sắp tới
+        // Truy vấn danh sách các yêu cầu có lịch hẹn sửa chữa trong tương lai gần
         List<Request> upcomingAppointments = dashboardDAO.getUpcomingAppointments(operatorId);
         req.setAttribute("upcomingAppointments", upcomingAppointments);
 

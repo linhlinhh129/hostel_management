@@ -44,6 +44,7 @@ public class FirstLoginServlet extends BaseServlet {
     }
 
     @Override
+    // Bước Đổi mật khẩu bắt buộc cho người dùng đăng nhập lần đầu
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
@@ -51,7 +52,7 @@ public class FirstLoginServlet extends BaseServlet {
             return;
         }
 
-        // If not first login, redirect to dashboard
+        // Nếu không phải lần đầu đăng nhập thì đẩy về Dashboard (ngăn chặn truy cập trái phép)
         if (!currentUser.isFirstLogin()) {
             redirectToDashboard(currentUser, request, response);
             return;
@@ -60,11 +61,14 @@ public class FirstLoginServlet extends BaseServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
+        // Xác minh policy của mật khẩu (độ dài, chữ hoa, số, ký tự đặc biệt)
         if (!PasswordValidator.isValid(newPassword)) {
             request.setAttribute("errorMessage", PasswordValidator.POLICY_MESSAGE);
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
             return;
         }
+        
+        // Kiểm tra mật khẩu xác nhận có khớp không
         if (!newPassword.equals(confirmPassword)) {
             request.setAttribute("errorMessage", "M\u1EADt kh\u1EA9u x\u00E1c nh\u1EADn kh\u00F4ng kh\u1EDBp.");
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
@@ -72,6 +76,7 @@ public class FirstLoginServlet extends BaseServlet {
         }
 
         Optional<User> userOpt = userDAO.findById(currentUser.getId());
+        // Kiểm tra xem mật khẩu mới có bị trùng với mật khẩu cũ không
         if (userOpt.isPresent() && PasswordUtil.verify(newPassword, userOpt.get().getPasswordHash())) {
             request.setAttribute("errorMessage", "Mật khẩu mới không được trùng với mật khẩu cũ.");
             request.getRequestDispatcher("/WEB-INF/views/auth/first_login.jsp").forward(request, response);
@@ -79,18 +84,18 @@ public class FirstLoginServlet extends BaseServlet {
         }
 
         try {
-            // Update password
+            // Update password trong Database (mã hóa hash trước khi lưu)
             String hashedNewPassword = PasswordUtil.hash(newPassword);
             userDAO.updatePassword(currentUser.getId(), hashedNewPassword);
 
-            // Update session status
+            // Cập nhật trạng thái session để user không bị điều hướng vào trang này nữa
             currentUser.setFirstLogin(false);
             HttpSession session = request.getSession(false);
             if (session != null) {
                 session.setAttribute("currentUser", currentUser);
             }
 
-            // Redirect to dashboard
+            // Đổi pass thành công, cho phép truy cập vào Dashboard tương ứng với role
             redirectToDashboard(currentUser, request, response);
         } catch (Exception e) {
             request.setAttribute("errorMessage", "Có lỗi xảy ra, vui lòng thử lại sau.");

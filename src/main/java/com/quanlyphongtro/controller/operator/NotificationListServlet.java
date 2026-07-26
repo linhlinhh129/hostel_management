@@ -36,10 +36,11 @@ public class NotificationListServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) {
+            // Danh sách Thông báo
             // Chỉ lấy thông báo của Hệ thống (target_type = 'ALL'), không lấy của riêng khu trọ
             int facilityId = 0;
 
-            // Pagination
+            // Pagination (Phân trang)
             int page = 1;
             int limit = 10;
             try {
@@ -50,6 +51,7 @@ public class NotificationListServlet extends HttpServlet {
                 }
             } catch (NumberFormatException ignored) {}
 
+            // Truy vấn lấy danh sách thông báo và tổng số
             List<Notification> notifications = notificationDAO.findNotificationsForOperator(facilityId, page, limit);
             int totalRecords = notificationDAO.countNotificationsForOperator(facilityId);
             int totalPages = (int) Math.ceil((double) totalRecords / limit);
@@ -62,7 +64,7 @@ public class NotificationListServlet extends HttpServlet {
 
             req.getRequestDispatcher("/WEB-INF/views/operator/notifications.jsp").forward(req, resp);
         } else {
-            // Detail
+            // Chi tiết thông báo khi user click vào đọc 1 thông báo cụ thể (VD: /operator/notifications/5)
             String idStr = pathInfo.substring(1);
             try {
                 int id = Integer.parseInt(idStr);

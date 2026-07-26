@@ -31,9 +31,11 @@ public class ForgotPasswordServlet extends BaseServlet {
     }
 
     @Override
+    // Bước 2: Xử lý khi user submit form Quên mật khẩu
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String email = req.getParameter("email");
 
+        // Kiểm tra xem email có rỗng hoặc quá dài không
         if (email == null || email.isBlank() || email.length() > 100) {
             req.setAttribute("errorMessage", "Vui lòng nhập địa chỉ email hợp lệ.");
             req.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp").forward(req, resp);
@@ -42,24 +44,26 @@ public class ForgotPasswordServlet extends BaseServlet {
 
         email = email.trim();
 
+        // Kiểm tra giới hạn (Rate limit) để tránh bị spam email gửi liên tục
         if (!RateLimitManager.isAllowed(email)) {
             req.setAttribute("errorMessage", "Bạn đã vượt quá số lần yêu cầu (tối đa 3 lần/giờ). Vui lòng thử lại sau.");
             req.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp").forward(req, resp);
             return;
         }
 
+        // Truy vấn DB xem email này có tồn tại không
         Optional<User> userOpt = userDAO.findByEmail(email);
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // Sinh token
+            // Sinh token bảo mật (có thời hạn) dựa trên userId
             String token = ResetTokenManager.generateToken(user.getId());
             
-            // Xây dựng link
+            // Xây dựng đường link khôi phục mật khẩu để gửi qua email
             String resetLink = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() 
                              + req.getContextPath() + "/reset-password?token=" + token;
 
-            // Gửi email
+            // Gửi email cho user
             EmailService.sendResetLink(email, resetLink);
         }
 

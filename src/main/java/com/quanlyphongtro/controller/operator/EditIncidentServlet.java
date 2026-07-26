@@ -26,6 +26,7 @@ import java.util.UUID;
 public class EditIncidentServlet extends BaseServlet {
 
     @Override
+    // Bước 1: Hiển thị form chỉnh sửa sự cố (chỉ cho phép sửa khi trạng thái là PENDING)
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String idParam = request.getParameter("id");
         String source = request.getParameter("source");
@@ -39,6 +40,7 @@ public class EditIncidentServlet extends BaseServlet {
         RequestDAO dao = new RequestDAO();
         Request reqObj = dao.getRequestById(Integer.parseInt(idParam));
 
+        // Nếu không tìm thấy hoặc trạng thái đã chuyển (không phải PENDING) thì không cho phép sửa
         if (reqObj == null || !"PENDING".equals(reqObj.getStatus())) {
             response.sendRedirect(request.getContextPath() + ("requests".equals(source) ? "/operator/requests?error=invalid_status" : "/operator/incidents/my-reports?error=invalid_status"));
             return;
@@ -81,6 +83,7 @@ public class EditIncidentServlet extends BaseServlet {
     }
 
     @Override
+    // Bước 2: Xử lý submit form chỉnh sửa
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             UserSessionDTO currentUser = getCurrentUser(request);
@@ -108,11 +111,13 @@ public class EditIncidentServlet extends BaseServlet {
             RequestDAO dao = new RequestDAO();
             Request existingReq = dao.getRequestById(requestId);
             
+            // Check bảo mật: Trạng thái phải là PENDING, và người sửa phải là người đã tạo ra yêu cầu đó
             if (existingReq == null || !"PENDING".equals(existingReq.getStatus()) || existingReq.getSenderId() != currentUser.getId()) {
                 response.sendRedirect(request.getContextPath() + ("requests".equals(source) ? "/operator/requests?error=unauthorized" : "/operator/incidents/my-reports?error=unauthorized"));
                 return;
             }
 
+            // Bước 3: Re-format lại cấu trúc Title và Content
             String locationStr = "Khu vực chung";
             if (existingReq.getContent() != null && existingReq.getContent().startsWith("Vị trí: ")) {
                 int endIdx = existingReq.getContent().indexOf("\n");
@@ -124,6 +129,7 @@ public class EditIncidentServlet extends BaseServlet {
             String formattedTitle = String.format("[%s] Sự cố %s tại %s (%s)", priority, category, locationStr, facilityName);
             String formattedContent = String.format("Vị trí: %s\nNội dung chi tiết: %s", locationStr, description);
 
+            // Bước 4: Xử lý đính kèm thêm ảnh minh chứng mới (nếu có)
             String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) uploadDir.mkdirs();
@@ -143,6 +149,7 @@ public class EditIncidentServlet extends BaseServlet {
             existingReq.setContent(formattedContent);
             existingReq.setAttachmentUrls1(attachmentUrls.toString());
 
+            // Bước 5: Cập nhật dữ liệu vào cơ sở dữ liệu
             boolean success = dao.updateIncidentReport(existingReq);
 
             if (success) {

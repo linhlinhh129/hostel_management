@@ -51,6 +51,7 @@ public class UpdateMeterReadingServlet extends HttpServlet {
         }
 
         try {
+            // Bước 1: Nhận Mã phòng từ form
             String roomCode = request.getParameter("roomCode");
             if (roomCode == null || roomCode.trim().isEmpty()) {
                 session.setAttribute("flashMessage", "Vui lòng nhập Mã phòng.");
@@ -89,11 +90,11 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             int prevElectric = previousReading.getPreviousElectricReading() != null ? previousReading.getPreviousElectricReading() : 0;
             int prevWater = previousReading.getPreviousWaterReading() != null ? previousReading.getPreviousWaterReading() : 0;
 
-            // Get new readings
+            // Bước 3: Nhận chỉ số điện/nước mới từ form
             int newElectric = Integer.parseInt(request.getParameter("newElectric"));
             int newWater = Integer.parseInt(request.getParameter("newWater"));
 
-            // Validation AC02, AC03
+            // Bước 4: Validation AC02, AC03 (Chỉ số mới không được nhỏ hơn chỉ số cũ)
             if (newElectric < prevElectric) {
                 session.setAttribute("flashMessage", "Chỉ số điện không hợp lệ. Số mới (" + newElectric + ") không được nhỏ hơn số cũ (" + prevElectric + ").");
                 session.setAttribute("flashType", "error");
@@ -107,7 +108,7 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                 return;
             }
 
-            // Handle file uploads (AC04, AC05)
+            // Bước 5: Handle file uploads (AC04, AC05) - Bắt buộc phải có ảnh công tơ điện và nước
             Part electricPart = request.getPart("electricMeterImage");
             Part waterPart = request.getPart("waterMeterImage");
 
@@ -136,7 +137,7 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             waterPart.write(uploadPath + File.separator + waterFileName);
             String waterImgUrl = "/uploads/meter_readings/" + waterFileName;
 
-            // Check if current month reading exists
+            // Bước 6: Kiểm tra xem tháng này đã có dữ liệu chưa (nếu có thì UPDATE, nếu chưa thì INSERT)
             Integer existingMeterId = meterReadingService.checkCurrentMonthReadingExists(roomId, now.getMonthValue(), now.getYear());
 
             boolean success;

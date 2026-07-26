@@ -27,7 +27,12 @@ public class ListElectricServlet extends HttpServlet {
         this.meterReadingService = new MeterReadingService();
     }
 
+    protected FacilityDAO getFacilityDAO() {
+        return new FacilityDAO();
+    }
+
     @Override
+    // Bước Lấy danh sách trạng thái Điện Nước của các phòng trong tháng hiện tại
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
@@ -39,7 +44,8 @@ public class ListElectricServlet extends HttpServlet {
         String facility = request.getParameter("facility");
         String roomCode = request.getParameter("roomCode");
 
-        FacilityDAO facilityDAO = new FacilityDAO();
+        // 1. Lọc ra danh sách cơ sở mà Operator này đang quản lý để đưa vào Dropdown
+        FacilityDAO facilityDAO = getFacilityDAO();
         List<Facility> allFacilities = facilityDAO.findActiveList();
         List<Facility> myFacilities = new ArrayList<>();
         for (Facility f : allFacilities) {
@@ -49,6 +55,7 @@ public class ListElectricServlet extends HttpServlet {
         }
         request.setAttribute("facilities", myFacilities);
 
+        // 2. Lấy danh sách phòng và trạng thái ghi chỉ số của các phòng đó
         List<MeterStatusDTO> meterList = meterReadingService.getMeterStatusForCurrentMonth(facility, roomCode, currentUser.getId());
         
         LocalDate now = LocalDate.now();
@@ -60,6 +67,7 @@ public class ListElectricServlet extends HttpServlet {
         request.setAttribute("selectedFacility", facility);
         request.setAttribute("searchRoomCode", roomCode);
         
+        // Render ra file JSP
         request.getRequestDispatcher("/WEB-INF/views/operator/meter_readings/list.jsp").forward(request, response);
     }
 }
