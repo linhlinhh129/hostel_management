@@ -74,7 +74,7 @@ public class Notification {
     
     public Date getSentAtAsDate() {
         if (sentAt == null) return null;
-        return Date.from(sentAt.atZone(ZoneId.systemDefault()).toInstant());
+        return Date.from(sentAt.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant());
     }
 
     public LocalDateTime getDeletedAt() { return deletedAt; }

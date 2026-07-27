@@ -22,9 +22,6 @@
                     <h1>Xin chào, <c:out value="${sessionScope.currentUser.fullName}"/></h1>
                     <p>Dashboard Vận hành · Theo dõi tiến độ điện nước và xử lý yêu cầu</p>
                 </div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1">
-                    <a href="${ctx}/operator/meter-readings/update" class="btn-accent">Cập nhật Điện Nước</a>
-                </div>
             </div>
 
             <%-- ── Quick Actions ─────────────────────────────────── --%>

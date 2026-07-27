@@ -40,7 +40,7 @@
                       <c:when test="${invoice.ticketStatus == 'IN_PROGRESS'}">
                         <span class="badge bg-info text-white px-3 py-2" style="font-size:0.875rem">🔵 Operator đang xử lý</span>
                       </c:when>
-                      <c:when test="${invoice.ticketStatus == 'COMPLETED'}">
+                      <c:when test="${invoice.ticketStatus == 'COMPLETED' or invoice.ticketStatus == 'DONE' or invoice.meterStatus == 'UPDATED'}">
                         <span class="badge bg-success text-white px-3 py-2" style="font-size:0.875rem">🟢 Operator đã xử lý xong</span>
                       </c:when>
                       <c:otherwise>

@@ -41,10 +41,10 @@
               </h4>
               <div class="mb-3">
                 <label class="form-label">Chọn Phòng (đang trống) <span class="text-danger">*</span></label>
-                <select name="roomId" class="form-select" required>
+                <select name="roomId" id="roomIdSelect" class="form-select" required>
                   <option value="">-- Click để chọn phòng --</option>
                   <c:forEach var="r" items="${availableRooms}">
-                    <option value="${r.id}" ${(not empty preselectedRoomId and r.id == preselectedRoomId) or (not empty contract.roomId and r.id == contract.roomId) ? 'selected' : ''}>Phòng ${r.code}</option>
+                    <option value="${r.id}" data-fee="${r.roomFee}" ${(not empty preselectedRoomId and r.id == preselectedRoomId) or (not empty contract.roomId and r.id == contract.roomId) ? 'selected' : ''}>Phòng ${r.code}</option>
                   </c:forEach>
                 </select>
                 <small class="form-text text-muted mt-1 d-block">Lưu ý: Chỉ những phòng đang ở trạng thái <strong>Trống</strong> mới có thể được tạo hợp đồng.</small>
@@ -105,8 +105,16 @@
               </h4>
 
               <div class="mb-3">
+                <label class="form-label">Giá thuê (bằng số)</label>
+                <div class="input-group">
+                  <input type="text" id="roomFeeDisplay" class="form-control fw-bold text-dark" placeholder="Tự động nạp theo phòng chọn" readonly style="background-color: #f8fafc;" />
+                  <span class="input-group-text">đ / tháng</span>
+                </div>
+              </div>
+
+              <div class="mb-3">
                 <label class="form-label">Giá thuê (bằng chữ)</label>
-                <input type="text" name="amountInWords" value="<c:out value="${contract.amountInWords}"/>" class="form-control" placeholder="VD: Ba triệu năm trăm nghìn đồng chẵn"/>
+                <input type="text" id="amountInWordsInput" name="amountInWords" value="<c:out value="${contract.amountInWords}"/>" class="form-control" placeholder="VD: Ba triệu năm trăm nghìn đồng chẵn"/>
               </div>
 
               <div class="row g-3">
@@ -163,7 +171,6 @@
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
-  // Tự động gán ngày hiện tại cho "Ngày ký" và "Ngày bắt đầu" chỉ khi chúng trống
   document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
     const signedDateInput = document.querySelector('input[name="signedDate"]');
@@ -174,7 +181,97 @@
     if (startDateInput && !startDateInput.value) {
       startDateInput.value = today;
     }
+
+    const roomSelect = document.getElementById('roomIdSelect');
+    const roomFeeDisplay = document.getElementById('roomFeeDisplay');
+    const amountInWordsInput = document.getElementById('amountInWordsInput');
+
+    function updateRoomFee() {
+      if (!roomSelect) return;
+      const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+      if (selectedOption && selectedOption.dataset.fee) {
+        const rawFee = parseFloat(selectedOption.dataset.fee);
+        if (!isNaN(rawFee) && rawFee > 0) {
+          roomFeeDisplay.value = new Intl.NumberFormat('vi-VN').format(rawFee);
+          if (!amountInWordsInput.value || amountInWordsInput.dataset.autoFilled === 'true') {
+            amountInWordsInput.value = docSoTiengViet(rawFee);
+            amountInWordsInput.dataset.autoFilled = 'true';
+          }
+        } else {
+          roomFeeDisplay.value = '';
+        }
+      } else {
+        roomFeeDisplay.value = '';
+      }
+    }
+
+    if (roomSelect) {
+      roomSelect.addEventListener('change', function() {
+        if (amountInWordsInput) amountInWordsInput.dataset.autoFilled = 'true';
+        updateRoomFee();
+      });
+      updateRoomFee();
+    }
+
+    if (amountInWordsInput) {
+      amountInWordsInput.addEventListener('input', function() {
+        amountInWordsInput.dataset.autoFilled = 'false';
+      });
+    }
   });
+
+  function docSoTiengViet(number) {
+    if (!number || isNaN(number) || number <= 0) return '';
+    number = Math.floor(number);
+    const dv = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+    
+    function docLop3Number(n) {
+      let tram = Math.floor(n / 100);
+      let chuc = Math.floor((n % 100) / 10);
+      let donvi = n % 10;
+      let str = '';
+      if (tram > 0) {
+        str += dv[tram] + ' trăm ';
+      } else if (n >= 100) {
+        str += 'không trăm ';
+      }
+      if (chuc > 1) {
+        str += dv[chuc] + ' mươi ';
+        if (donvi === 1) str += 'mốt ';
+        else if (donvi === 5) str += 'lăm ';
+        else if (donvi > 0) str += dv[donvi] + ' ';
+      } else if (chuc === 1) {
+        str += 'mười ';
+        if (donvi === 5) str += 'lăm ';
+        else if (donvi > 0) str += dv[donvi] + ' ';
+      } else {
+        if (tram > 0 && donvi > 0) str += 'lẻ ';
+        if (donvi > 0) str += dv[donvi] + ' ';
+      }
+      return str;
+    }
+
+    const donViTien = ['', 'nghìn', 'triệu', 'tỷ', 'nghìn tỷ', 'triệu tỷ'];
+    let strRes = '';
+    let i = 0;
+    let tempNum = number;
+
+    while (tempNum > 0) {
+      let sub = tempNum % 1000;
+      if (sub > 0) {
+        let s = docLop3Number(sub);
+        strRes = s.trim() + ' ' + donViTien[i] + ' ' + strRes;
+      }
+      tempNum = Math.floor(tempNum / 1000);
+      i++;
+    }
+
+    strRes = strRes.trim();
+    if (strRes) {
+      strRes = strRes.charAt(0).toUpperCase() + strRes.slice(1) + ' đồng';
+    }
+    return strRes;
+  }
 </script>
 </body>
 </html>

@@ -107,18 +107,14 @@
                           </td>
                           <td>
                             <c:choose>
-                              <c:when test="${item.meterStatus == 'INCORRECT'}">
+                              <c:when test="${item.meterStatus == 'INCORRECT' and (empty item.ticketStatus or item.ticketStatus == 'PENDING')}">
                                 <span class="badge-hms badge-danger">Chờ xử lý</span>
                               </c:when>
-                              <c:when test="${item.meterStatus == 'REPORTED' or item.meterStatus == 'UPDATED'}">
-                                <c:choose>
-                                  <c:when test="${item.ticketStatus == 'DONE'}">
-                                    <span class="badge-hms badge-success">Hoàn thành</span>
-                                  </c:when>
-                                  <c:otherwise>
-                                    <span class="badge-hms badge-info">Đang xử lý</span>
-                                  </c:otherwise>
-                                </c:choose>
+                              <c:when test="${item.ticketStatus == 'DONE' or item.ticketStatus == 'COMPLETED' or item.meterStatus == 'UPDATED'}">
+                                <span class="badge-hms badge-success">Hoàn thành</span>
+                              </c:when>
+                              <c:when test="${item.meterStatus == 'REPORTED' or not empty item.ticketStatus}">
+                                <span class="badge-hms badge-info">Đang xử lý</span>
                               </c:when>
                               <c:otherwise>
                                 <span class="badge-hms badge-neutral"><c:out value="${item.meterStatus}"/></span>

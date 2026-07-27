@@ -3132,11 +3132,14 @@ textarea.form-control {
 
 .info-label {
   color: var(--hms-text-muted);
-  width: 48%;
+  width: 160px;
+  min-width: 140px;
+  white-space: nowrap;
 }
 
 .info-value {
   font-size: 0.875rem;
+  text-align: left;
 }
 
 .info-value--bold {
@@ -4674,12 +4677,12 @@ textarea.form-control {
   min-width: 120px;
 }
 
-.audit-detail-value {
+.audit-detail-row .audit-detail-value {
   color: var(--hms-text);
   text-align: right;
 }
 
-.audit-detail-value--id {
+.audit-detail-row .audit-detail-value--id {
   font-family: var(--hms-font-mono);
   font-size: 0.75rem;
   font-weight: 700;
@@ -4687,12 +4690,12 @@ textarea.form-control {
   text-align: right;
 }
 
-.audit-detail-value--name {
+.audit-detail-row .audit-detail-value--name {
   font-weight: 500;
   text-align: right;
 }
 
-.audit-detail-value--mono {
+.audit-detail-row .audit-detail-value--mono {
   font-family: var(--hms-font-mono);
   font-size: 0.75rem;
   color: var(--hms-slate);

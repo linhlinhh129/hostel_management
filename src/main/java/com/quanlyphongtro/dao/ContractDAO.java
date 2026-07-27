@@ -92,6 +92,7 @@ public class ContractDAO extends BaseDAO {
                     Room room = new Room();
                     room.setId(rs.getInt("room_id"));
                     room.setCode(rs.getString("code"));
+                    room.setRoomFee(rs.getBigDecimal("room_fee"));
                     rooms.add(room);
                 }
             }

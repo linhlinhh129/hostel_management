@@ -511,6 +511,7 @@ public class NotificationDAO extends BaseDAO {
                     String dateLabel = "";
                     if (cAt != null) {
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                        sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
                         dateLabel = sdf.format(cAt);
                     }
                     notif.put("createdAt", cAt != null ? cAt.toLocalDateTime().toString().replace("T", " ") : "");
@@ -553,11 +554,11 @@ public class NotificationDAO extends BaseDAO {
                         +
                         "mr.meter_id, mr.electric, mr.water, mr.reading_date, mr.status AS meter_status, i.total_amount, "
                         +
-                        "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, "
+                        "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, "
                         +
-                        "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, "
+                        "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, "
                         +
-                        "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name "
+                        "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND req.title LIKE N'%' + RTRIM(r.code) AND req.content LIKE N'%Hóa đơn kỳ ' + FORMAT(mr.reading_date, 'MM/yyyy') + '%' AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name "
                         +
                         "FROM dbo.invoices i " +
                         "JOIN dbo.rooms r ON i.room_id = r.room_id " +
@@ -829,19 +830,19 @@ public class NotificationDAO extends BaseDAO {
                 +
                 "(SELECT TOP 1 m_old.water FROM dbo.meter_readings m_old WHERE m_old.room_id = i.room_id AND m_old.reading_date < mr.reading_date ORDER BY m_old.reading_date DESC) AS old_water, "
                 +
-                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, "
+                "(SELECT TOP 1 req.status FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_status, "
                 +
-                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, "
+                "(SELECT TOP 1 req.request_id FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_id, "
                 +
-                "(SELECT TOP 1 req.title FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_title, "
+                "(SELECT TOP 1 req.title FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_title, "
                 +
-                "(SELECT TOP 1 req.content FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_content, "
+                "(SELECT TOP 1 req.content FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_content, "
                 +
-                "(SELECT TOP 1 req.rejection_reason FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_notes, "
+                "(SELECT TOP 1 req.rejection_reason FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_notes, "
                 +
-                "(SELECT TOP 1 req.created_at FROM dbo.requests req WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_created_at, "
+                "(SELECT TOP 1 req.created_at FROM dbo.requests req WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS ticket_created_at, "
                 +
-                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category = 'UTILITY' AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name "
+                "(SELECT TOP 1 uop.full_name FROM dbo.requests req JOIN dbo.users uop ON req.assigned_staff_id = uop.user_id WHERE req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND (req.content LIKE N'%' + RTRIM(i.code) + '%' OR req.title LIKE N'%' + RTRIM(r.code) + '%') AND req.deleted_at IS NULL ORDER BY req.request_id DESC) AS operator_name "
                 +
                 "FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
@@ -967,15 +968,7 @@ public class NotificationDAO extends BaseDAO {
 
     public boolean sendOperatorRequestTransaction(String reqCode, int managerId, String title, String content,
             int operatorId, int meterId) {
-        String cat = "MAINTENANCE";
-        String text = (title != null ? title.toLowerCase() : "") + " " + (content != null ? content.toLowerCase() : "");
-        if (text.contains("nước") || text.contains("water")) {
-            cat = "WATER";
-        } else if (text.contains("điện") || text.contains("electric")) {
-            cat = "ELECTRIC";
-        } else if (text.contains("cơ sở") || text.contains("hạ tầng") || text.contains("thiết bị")) {
-            cat = "INFRASTRUCTURE";
-        }
+        String cat = "UTILITY";
 
         String insertReqSql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, status, assigned_staff_id, created_at, updated_at) "
                 +

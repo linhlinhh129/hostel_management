@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c"   uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx"        value="${pageContext.request.contextPath}"/>
@@ -86,7 +86,7 @@
                                 </tr>
                                 <tr>
                                     <td class="info-label">CCCD</td>
-                                    <td class="info-value audit-detail-value--mono">
+                                    <td class="info-value">
                                         <c:choose>
                                             <c:when test="${not empty user.identityNumber}"><c:out value="${user.identityNumber}"/></c:when>
                                             <c:otherwise><em class="text-muted">—</em></c:otherwise>
@@ -134,7 +134,7 @@
                             <table class="info-table">
                                 <tr>
                                     <td class="info-label">Tên đăng nhập</td>
-                                    <td class="info-value audit-detail-value--mono">
+                                    <td class="info-value">
                                         <c:out value="${user.username}"/>
                                     </td>
                                 </tr>

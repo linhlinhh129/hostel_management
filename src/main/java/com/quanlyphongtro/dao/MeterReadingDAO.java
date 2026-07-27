@@ -367,6 +367,13 @@ public class MeterReadingDAO extends BaseDAO {
             "INNER JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
             "WHERE i.meter_id = ? AND i.status != 'PAID' AND i.deleted_at IS NULL";
 
+        String updateReqSql =
+            "UPDATE req SET req.status = 'DONE', req.updated_at = GETDATE() " +
+            "FROM dbo.requests req " +
+            "JOIN dbo.rooms r ON (req.title LIKE N'%' + RTRIM(r.code) OR req.content LIKE N'%' + RTRIM(r.code)) " +
+            "JOIN dbo.meter_readings mr ON mr.room_id = r.room_id " +
+            "WHERE mr.meter_id = ? AND req.category IN ('UTILITY', 'WATER', 'ELECTRIC') AND req.status != 'DONE' AND req.deleted_at IS NULL";
+
         try (Connection conn = DatabaseUtil.getConnection()) {
             boolean updated = false;
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -383,6 +390,12 @@ public class MeterReadingDAO extends BaseDAO {
                     psInv.setInt(2, water);
                     psInv.setInt(3, meterId);
                     psInv.executeUpdate();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                try (PreparedStatement psReq = conn.prepareStatement(updateReqSql)) {
+                    psReq.setInt(1, meterId);
+                    psReq.executeUpdate();
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
