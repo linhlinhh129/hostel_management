@@ -2,7 +2,6 @@ package com.quanlyphongtro.dto;
 
 public class VNPayConfigDTO {
     private String payUrl;
-    private String returnUrl;
     private String tmnCode;
     private String apiUrl;
     private String updatedAt;
@@ -10,9 +9,8 @@ public class VNPayConfigDTO {
 
     public VNPayConfigDTO() {}
 
-    public VNPayConfigDTO(String payUrl, String returnUrl, String tmnCode, String apiUrl, String updatedAt, String updatedBy) {
+    public VNPayConfigDTO(String payUrl, String tmnCode, String apiUrl, String updatedAt, String updatedBy) {
         this.payUrl = payUrl;
-        this.returnUrl = returnUrl;
         this.tmnCode = tmnCode;
         this.apiUrl = apiUrl;
         this.updatedAt = updatedAt;
@@ -25,14 +23,6 @@ public class VNPayConfigDTO {
 
     public void setPayUrl(String payUrl) {
         this.payUrl = payUrl;
-    }
-
-    public String getReturnUrl() {
-        return returnUrl;
-    }
-
-    public void setReturnUrl(String returnUrl) {
-        this.returnUrl = returnUrl;
     }
 
     public String getTmnCode() {

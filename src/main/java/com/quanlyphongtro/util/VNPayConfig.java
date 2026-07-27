@@ -15,8 +15,28 @@ public class VNPayConfig {
         return configDAO.getConfigValue("vnpay.payUrl");
     }
 
-    public static String getVnp_ReturnUrl() {
-        return configDAO.getConfigValue("vnpay.returnUrl");
+    public static String getReturnUrl(HttpServletRequest request) {
+        String scheme = request.getHeader("X-Forwarded-Proto");
+        if (scheme == null || scheme.trim().isEmpty()) {
+            scheme = request.getScheme();
+        }
+
+        String hostHeader = request.getHeader("X-Forwarded-Host");
+        if (hostHeader == null || hostHeader.trim().isEmpty()) {
+            hostHeader = request.getHeader("Host");
+        }
+
+        if (hostHeader != null && !hostHeader.trim().isEmpty()) {
+            if (hostHeader.contains(",")) {
+                hostHeader = hostHeader.split(",")[0].trim();
+            }
+            return scheme + "://" + hostHeader + request.getContextPath() + "/tenant/payment/return";
+        }
+
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        String portStr = ((scheme.equalsIgnoreCase("http") && serverPort == 80) || (scheme.equalsIgnoreCase("https") && serverPort == 443)) ? "" : (":" + serverPort);
+        return scheme + "://" + serverName + portStr + request.getContextPath() + "/tenant/payment/return";
     }
 
     public static String getVnp_TmnCode() {

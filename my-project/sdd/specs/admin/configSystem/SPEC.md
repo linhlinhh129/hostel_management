@@ -50,8 +50,11 @@ Tính năng này giúp hệ thống dễ dàng bảo trì, đảm bảo các ch�
 - **WHEN** Quản trị viên gửi biểu mẫu cấu hình VNPay với dữ liệu hợp lệ  
   **THE SYSTEM SHALL** lưu cấu hình mới và sử dụng cho các giao dịch thanh toán tiếp theo.
 
-- **WHEN** Quản trị viên để trống bất kỳ trường bắt buộc nào (`payUrl`, `returnUrl`, `tmnCode`, `apiUrl`)  
+- **WHEN** Quản trị viên để trống bất kỳ trường bắt buộc nào (`payUrl`, `tmnCode`, `apiUrl`)  
   **THE SYSTEM SHALL** hiển thị thông báo lỗi và không lưu cấu hình. (Lưu ý: `secretKey` có thể để trống để giữ nguyên key cũ).
+
+- **WHEN** Khách thuê thực hiện thanh toán VNPay  
+  **THE SYSTEM SHALL** tự động tính toán `vnp_ReturnUrl` động dựa trên thông tin HTTP Request (`X-Forwarded-Proto`, `X-Forwarded-Host`, `serverName`, `port`, `contextPath`) hỗ trợ cho cả localhost và domain thực tế trên web mà không fix cứng URL.
 
 ### Phân quyền
 
@@ -89,7 +92,6 @@ Tính năng này giúp hệ thống dễ dàng bảo trì, đảm bảo các ch�
 | Tham số | Kiểu | Bắt buộc | Mô tả |
 |---|---|:---:|---|
 | `payUrl` | `String` | ✔ | URL cổng thanh toán VNPay |
-| `returnUrl` | `String` | ✔ | URL nhận kết quả sau thanh toán |
 | `tmnCode` | `String` | ✔ | Mã Merchant (Terminal ID) |
 | `secretKey` | `String` | ✘ (Optional) | Khóa bí mật ký giao dịch. Nếu để trống sẽ giữ nguyên key cũ. |
 | `apiUrl` | `String` | ✔ | URL API truy vấn giao dịch |

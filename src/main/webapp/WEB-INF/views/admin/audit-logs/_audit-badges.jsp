@@ -41,7 +41,9 @@
                             or param.actionValue == 'UPDATE_ELECTRICITY' or param.actionValue == 'UPDATE_WATER'
                             or param.actionValue == 'SERVICE_PRICE' or param.actionValue == 'UPDATE_PRICE'
                             or param.actionValue == 'SYSTEM_CONFIG' or param.actionValue == 'UPDATE_CONFIG'
-                            or param.actionValue == 'UPDATE_DEPENDENT' or param.actionValue == 'EXTEND_CONTRACT'}">
+                            or param.actionValue == 'SYSTEM_EMAIL' or param.actionValue == 'SYSTEM_VNPAY'
+                            or param.actionValue == 'UPDATE_DEPENDENT' or param.actionValue == 'EXTEND_CONTRACT'
+                            or param.actionValue == 'UPDATE_PROFILE'}">
                 <span class="badge-hms badge-info">
                     <c:choose>
                         <c:when test="${param.actionValue == 'UPDATE'}">Cập nhật</c:when>
@@ -51,9 +53,12 @@
                         <c:when test="${param.actionValue == 'UPDATE_WATER'}">Cập nhật số nước</c:when>
                         <c:when test="${param.actionValue == 'SERVICE_PRICE' or param.actionValue == 'UPDATE_PRICE'}">Cập nhật giá dịch vụ</c:when>
                         <c:when test="${param.actionValue == 'SYSTEM_CONFIG' or param.actionValue == 'UPDATE_CONFIG'}">Cấu hình hệ thống</c:when>
+                        <c:when test="${param.actionValue == 'SYSTEM_EMAIL'}">Cấu hình Email</c:when>
+                        <c:when test="${param.actionValue == 'SYSTEM_VNPAY'}">Cấu hình VNPay</c:when>
                         <c:when test="${param.actionValue == 'EXTEND_CONTRACT'}">Gia hạn hợp đồng</c:when>
                         <c:when test="${param.actionValue == 'UPDATE_DEPENDENT'}">Sửa người ở cùng</c:when>
-                        <c:otherwise>Sửa nhân sự</c:otherwise>
+                        <c:when test="${param.actionValue == 'UPDATE_PROFILE'}">Cập nhật hồ sơ</c:when>
+                        <c:otherwise>Cập nhật thông tin</c:otherwise>
                     </c:choose>
                 </span>
             </c:when>
@@ -108,11 +113,14 @@
             <c:when test="${param.entityTypeValue == 'facilities'}">Cơ sở</c:when>
             <c:when test="${param.entityTypeValue == 'rooms'}">Phòng</c:when>
             <c:when test="${param.entityTypeValue == 'users'}">Nhân sự</c:when>
+            <c:when test="${param.entityTypeValue == 'tenants'}">Khách thuê</c:when>
             <c:when test="${param.entityTypeValue == 'notifications'}">Thông báo</c:when>
             <c:when test="${param.entityTypeValue == 'invoices'}">Hóa đơn</c:when>
             <c:when test="${param.entityTypeValue == 'payments'}">Thanh toán</c:when>
             <c:when test="${param.entityTypeValue == 'requests'}">Yêu cầu</c:when>
             <c:when test="${param.entityTypeValue == 'meter_readings'}">Số điện nước</c:when>
+            <c:when test="${param.entityTypeValue == 'contracts'}">Hợp đồng</c:when>
+            <c:when test="${param.entityTypeValue == 'system_config' or param.entityTypeValue == 'system'}">Cấu hình hệ thống</c:when>
             <c:otherwise>Hệ thống</c:otherwise>
         </c:choose>
     </c:when>

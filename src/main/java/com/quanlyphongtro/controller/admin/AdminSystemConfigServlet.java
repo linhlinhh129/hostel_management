@@ -78,12 +78,11 @@ public class AdminSystemConfigServlet extends BaseServlet {
 
             } else if ("/admin/system-config/vnpay".equals(path)) {
                 String payUrl = request.getParameter("payUrl");
-                String returnUrl = request.getParameter("returnUrl");
                 String tmnCode = request.getParameter("tmnCode");
                 String secretKey = request.getParameter("secretKey");
                 String apiUrl = request.getParameter("apiUrl");
 
-                configService.updateVNPayConfig(payUrl, returnUrl, tmnCode, secretKey, apiUrl, currentUser.getId());
+                configService.updateVNPayConfig(payUrl, tmnCode, secretKey, apiUrl, currentUser.getId());
                 response.sendRedirect(request.getContextPath() + "/admin/system-config?success=vnpay_updated");
                 return;
             }

@@ -9,5 +9,5 @@ public interface SystemConfigService {
     VNPayConfigDTO getUIVNPayConfig();
     
     void updateEmailConfig(String host, String portStr, String username, String password, int updatedBy) throws ValidationException;
-    void updateVNPayConfig(String payUrl, String returnUrl, String tmnCode, String secretKey, String apiUrl, int updatedBy) throws ValidationException;
+    void updateVNPayConfig(String payUrl, String tmnCode, String secretKey, String apiUrl, int updatedBy) throws ValidationException;
 }

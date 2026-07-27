@@ -100,18 +100,7 @@ public class TenantPaymentServlet extends BaseServlet {
             params.put("vnp_OrderType", "other");
             params.put("vnp_Locale", "vn");
             
-            String configuredReturnUrl = VNPayConfig.getVnp_ReturnUrl();
-            String returnUrl;
-            if (configuredReturnUrl != null && !configuredReturnUrl.trim().isEmpty() 
-                    && !configuredReturnUrl.contains("localhost") && configuredReturnUrl.contains(request.getServerName())) {
-                returnUrl = configuredReturnUrl.trim();
-            } else {
-                String scheme = request.getScheme();
-                String serverName = request.getServerName();
-                int serverPort = request.getServerPort();
-                String portStr = ((scheme.equals("http") && serverPort == 80) || (scheme.equals("https") && serverPort == 443)) ? "" : (":" + serverPort);
-                returnUrl = scheme + "://" + serverName + portStr + request.getContextPath() + "/tenant/payment/return";
-            }
+            String returnUrl = VNPayConfig.getReturnUrl(request);
             params.put("vnp_ReturnUrl", returnUrl);
             params.put("vnp_IpAddr", VNPayConfig.getIpAddress(request));
 

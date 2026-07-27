@@ -30,7 +30,6 @@
 | `email.password` | `email.properties` → `email.password` |
 | `email.from` | `email.properties` → `email.from` |
 | `vnpay.payUrl` | `vnpay.properties` → `vnpay.payUrl` |
-| `vnpay.returnUrl` | `vnpay.properties` → `vnpay.returnUrl` |
 | `vnpay.tmnCode` | `vnpay.properties` → `vnpay.tmnCode` |
 | `vnpay.secretKey` | `vnpay.properties` → `vnpay.secretKey` |
 | `vnpay.apiUrl` | `vnpay.properties` → `vnpay.apiUrl` |
@@ -53,7 +52,7 @@
   - `String getValue(String key)` — trả null nếu không tìm thấy key.
   - `void setValue(String key, String value, Integer updatedBy)` — upsert (INSERT nếu chưa có, UPDATE nếu đã có).
   - `Map<String, String> getEmailConfig()` — trả Map chứa 5 key email.
-  - `Map<String, String> getVNPayConfig()` — trả Map chứa 5 key vnpay.
+  - `Map<String, String> getVNPayConfig()` — trả Map chứa 4 key vnpay (`payUrl`, `tmnCode`, `secretKey`, `apiUrl`).
 - Dùng `PreparedStatement` + try-with-resources.
 - Kế thừa hoặc dùng `DatabaseUtil.getConnection()`.
 
@@ -123,7 +122,7 @@
   - Validate: `port` phải là số nguyên dương.
   - Gọi `SystemConfigDAO.setValue()` cho từng key.
 - Implement `updateVNPayConfig(Map<String, String> params, Integer userId)`:
-  - Validate: `payUrl`, `returnUrl`, `tmnCode`, `apiUrl` không được rỗng. (Lưu ý `secretKey` có thể rỗng).
+  - Validate: `payUrl`, `tmnCode`, `apiUrl` không được rỗng. (Lưu ý `secretKey` có thể rỗng).
   - Gọi `SystemConfigDAO.setValue()` cho từng key.
 - Throw `ValidationException` khi validate thất bại.
 
@@ -193,7 +192,7 @@
   - Các field: `host` (String), `port` (String), `username` (String), `from` (String), `updatedAt` (String), `updatedBy` (String).
   - **Không có field `password`** — UI luôn hiển thị placeholder `••••••••`, không pre-fill giá trị thật.
 - Tạo `VNPayConfigDTO.java` trong `com.quanlyphongtro.dto`.
-  - Các field: `payUrl` (String), `returnUrl` (String), `tmnCode` (String), `apiUrl` (String), `updatedAt` (String), `updatedBy` (String).
+  - Các field: `payUrl` (String), `tmnCode` (String), `apiUrl` (String), `updatedAt` (String), `updatedBy` (String).
   - **Không có field `secretKey`** — UI luôn hiển thị placeholder `••••••••`, không pre-fill giá trị thật.
 
 **Acceptance Criteria:**
@@ -220,7 +219,7 @@
   - Button "Lưu cấu hình Email".
 - **Section VNPay:**
   - Form `POST /admin/system-config/vnpay`.
-  - 5 input: payUrl (text), returnUrl (text), tmnCode (text), secretKey (**type="password"**, placeholder `••••••••`), apiUrl (text).
+  - 4 input: payUrl (text), tmnCode (text), secretKey (**type="password"**, placeholder `••••••••`), apiUrl (text). `returnUrl` được tự động tạo động qua `VNPayConfig.getReturnUrl(request)`.
   - Pre-fill từ `${vnpayConfig}` (secretKey luôn hiện placeholder, không pre-fill).
   - Button "Lưu cấu hình VNPay".
 - Alert thành công khi `${successMessage}` không rỗng (Bootstrap `alert-success`).

@@ -32,12 +32,24 @@
     _fldLbl.put("serviceFee","Phí dịch vụ"); _fldLbl.put("internetFee","Phí Internet");
     _fldLbl.put("totalAmount","Tổng tiền"); _fldLbl.put("address","Địa chỉ");
     _fldLbl.put("description","Mô tả"); _fldLbl.put("password","Mật khẩu");
-    _fldLbl.put("secretKey","Khóa bí mật"); _fldLbl.put("payUrl","Pay URL");
-    _fldLbl.put("apiUrl","API URL"); _fldLbl.put("tmnCode","Mã Merchant");
+    _fldLbl.put("secretKey","Khóa bí mật"); _fldLbl.put("payUrl","URL Thanh toán (Pay URL)");
+    _fldLbl.put("apiUrl","API URL"); _fldLbl.put("tmnCode","Mã Merchant (TmnCode)");
+    _fldLbl.put("host","Máy chủ SMTP"); _fldLbl.put("port","Cổng SMTP");
+    _fldLbl.put("username","Tài khoản Email"); _fldLbl.put("from","Email gửi");
+    _fldLbl.put("returnUrl","URL Trả về (Return URL)"); _fldLbl.put("invoiceId","Mã hóa đơn");
+    _fldLbl.put("contractId","Mã hợp đồng"); _fldLbl.put("tenantId","Mã khách thuê");
+    _fldLbl.put("roomId","Mã phòng"); _fldLbl.put("issueDate","Ngày lập");
+    _fldLbl.put("dueDate","Hạn thanh toán"); _fldLbl.put("amount","Số tiền");
+    _fldLbl.put("note","Ghi chú"); _fldLbl.put("notes","Ghi chú");
+    _fldLbl.put("gender","Giới tính"); _fldLbl.put("dob","Ngày sinh");
+    _fldLbl.put("dateOfBirth","Ngày sinh"); _fldLbl.put("identityCard","CCCD/CMND");
+    _fldLbl.put("idCard","CCCD/CMND"); _fldLbl.put("cccd","CCCD/CMND");
+    _fldLbl.put("createdAt","Ngày tạo"); _fldLbl.put("updatedAt","Ngày cập nhật");
 
     /* ── Bảng dịch giá trị ────────────────────────────────────── */
     Map<String,String> _valLbl = new LinkedHashMap<>();
     _valLbl.put("MANAGER","Ban Quản lý"); _valLbl.put("OPERATOR","Nhân viên vận hành");
+    _valLbl.put("ADMIN","Quản trị viên"); _valLbl.put("TENANT","Khách thuê");
     _valLbl.put("ACTIVE","Hoạt động"); _valLbl.put("INACTIVE","Không hoạt động");
     _valLbl.put("LOCKED","Bị khóa"); _valLbl.put("DRAFT","Nháp");
     _valLbl.put("SENT","Đã gửi"); _valLbl.put("PENDING","Chờ xử lý");
@@ -57,6 +69,7 @@
     _valLbl.put("Soft Delete","Xóa");
     _valLbl.put("Soft Deleted","Đã xóa");
     _valLbl.put("End Rental","Thanh lý hợp đồng");
+    _valLbl.put("MALE","Nam"); _valLbl.put("FEMALE","Nữ"); _valLbl.put("OTHER","Khác");
 
     /* ── Helper: dịch giá trị ─────────────────────────────────── */
     // (dùng inner interface pattern thông qua anonymous class)

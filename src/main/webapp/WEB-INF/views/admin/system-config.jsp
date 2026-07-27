@@ -136,11 +136,6 @@
                                             <c:out value="${vnpayConfig.payUrl}"/>
                                         </dd>
 
-                                        <dt class="col-sm-4">Return URL</dt>
-                                        <dd class="col-sm-8 config-dl__url">
-                                            <c:out value="${vnpayConfig.returnUrl}"/>
-                                        </dd>
-
                                         <dt class="col-sm-4">Mã Merchant</dt>
                                         <dd class="col-sm-8"><c:out value="${vnpayConfig.tmnCode}"/></dd>
 
@@ -249,7 +244,16 @@
                                        autocomplete="new-password">
                                 <button type="button" class="btn btn-outline-secondary btn-toggle-password"
                                         onclick="togglePassword('emailPassword', this)"
-                                        title="Ẩn / Hiện mật khẩu">👁</button>
+                                        title="Ẩn / Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">
+                                    <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-off-icon d-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="form-text">
                                 Để trống nếu không muốn đổi mật khẩu. Nếu nhập mới, hãy dùng App Password của Gmail — không phải mật khẩu đăng nhập thông thường.
@@ -295,15 +299,6 @@
                                    value="<c:out value='${vnpayConfig.payUrl}'/>"
                                    placeholder="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html" required>
                         </div>
-                        <div class="col-12">
-                            <label for="vnpayReturnUrl" class="form-label">
-                                Return URL <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control" id="vnpayReturnUrl" name="returnUrl"
-                                   value="<c:out value='${vnpayConfig.returnUrl}'/>"
-                                   placeholder="http://localhost:8080/hostel-management/tenant/invoices/vnpay-return"
-                                   required>
-                        </div>
                         <div class="col-md-6">
                             <label for="vnpayTmnCode" class="form-label">
                                 Mã Merchant (TmnCode) <span class="text-danger">*</span>
@@ -321,7 +316,16 @@
                                        autocomplete="new-password">
                                 <button type="button" class="btn btn-outline-secondary btn-toggle-password"
                                         onclick="togglePassword('vnpaySecretKey', this)"
-                                        title="Ẩn / Hiện khóa bí mật">👁</button>
+                                        title="Ẩn / Hiện khóa bí mật" aria-label="Ẩn/Hiện khóa bí mật">
+                                    <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="eye-off-icon d-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="form-text">
                                 Để trống nếu không muốn đổi Secret Key. Hệ thống sẽ giữ nguyên giá trị cũ.
@@ -356,9 +360,13 @@ function togglePassword(inputId, btn) {
     var input = document.getElementById(inputId);
     if (!input) return;
     var isHidden = input.type === 'password';
-    input.type      = isHidden ? 'text'    : 'password';
-    btn.textContent = isHidden ? '🙈'     : '👁';
-    btn.title       = isHidden ? 'Ẩn'     : 'Hiện';
+    input.type = isHidden ? 'text' : 'password';
+    var eyeOn  = btn.querySelector('.eye-icon');
+    var eyeOff = btn.querySelector('.eye-off-icon');
+    if (eyeOn && eyeOff) {
+        eyeOn.classList.toggle('d-none', isHidden);
+        eyeOff.classList.toggle('d-none', !isHidden);
+    }
 }
 
 (function () {

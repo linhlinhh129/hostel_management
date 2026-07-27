@@ -54,10 +54,10 @@
                                                             <label class="filter-label">Vai trò</label>
                                                             <select class="form-select" name="role" style="width:100%">
                                                                 <option value="">Tất cả</option>
-                                                                <option value="MANAGER" ${filterRole=='MANAGER'
-                                                                    ? 'selected' : '' }>Manager</option>
-                                                                <option value="OPERATOR" ${filterRole=='OPERATOR'
-                                                                    ? 'selected' : '' }>Operator</option>
+                                                                <option value="MANAGER" ${filterRole=='MANAGER' ? 'selected' : '' }>Ban Quản lý</option>
+                                                                <option value="OPERATOR" ${filterRole=='OPERATOR' ? 'selected' : '' }>Nhân viên vận hành</option>
+                                                                <option value="ADMIN" ${filterRole=='ADMIN' ? 'selected' : '' }>Quản trị viên</option>
+                                                                <option value="TENANT" ${filterRole=='TENANT' ? 'selected' : '' }>Khách thuê</option>
                                                             </select>
                                                         </div>
 
@@ -67,26 +67,19 @@
                                                                 <select class="form-select" name="entityType"
                                                                     style="width:100%">
                                                                     <option value="">Tất cả</option>
-                                                                    <option value="facilities"
-                                                                        ${filterEntityType=='facilities' ? 'selected'
-                                                                        : '' }>Cơ sở</option>
-                                                                    <option value="rooms" ${filterEntityType=='rooms'
-                                                                        ? 'selected' : '' }>Phòng</option>
-                                                                    <option value="users" ${filterEntityType=='users'
-                                                                        ? 'selected' : '' }>Nhân sự</option>
-                                                                    <option value="notifications"
-                                                                        ${filterEntityType=='notifications' ? 'selected'
-                                                                        : '' }>Thông báo</option>
-                                                                    <option value="invoices"
-                                                                        ${filterEntityType=='invoices' ? 'selected' : ''
-                                                                        }>Hóa đơn</option>
-                                                                    <option value="payments"
-                                                                        ${filterEntityType=='payments' ? 'selected' : ''
-                                                                        }>Thanh toán</option>
+                                                                    <option value="facilities" ${filterEntityType=='facilities' ? 'selected' : '' }>Cơ sở</option>
+                                                                    <option value="rooms" ${filterEntityType=='rooms' ? 'selected' : '' }>Phòng</option>
+                                                                    <option value="users" ${filterEntityType=='users' ? 'selected' : '' }>Nhân sự</option>
+                                                                    <option value="tenants" ${filterEntityType=='tenants' ? 'selected' : '' }>Khách thuê</option>
+                                                                    <option value="notifications" ${filterEntityType=='notifications' ? 'selected' : '' }>Thông báo</option>
+                                                                    <option value="invoices" ${filterEntityType=='invoices' ? 'selected' : '' }>Hóa đơn</option>
+                                                                    <option value="payments" ${filterEntityType=='payments' ? 'selected' : '' }>Thanh toán</option>
+                                                                    <option value="requests" ${filterEntityType=='requests' ? 'selected' : '' }>Yêu cầu</option>
+                                                                    <option value="system_config" ${filterEntityType=='system_config' ? 'selected' : '' }>Cấu hình hệ thống</option>
                                                                 </select>
                                                             </div>
 
-                                                            <%-- Hành động --%>
+                                                                <%-- Hành động --%>
                                                                 <div style="flex:1;min-width:150px">
                                                                     <label class="filter-label">Hành động</label>
                                                                     <select class="form-select" name="action"

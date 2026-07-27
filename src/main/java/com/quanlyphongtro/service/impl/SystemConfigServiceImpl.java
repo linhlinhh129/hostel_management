@@ -45,7 +45,6 @@ public class SystemConfigServiceImpl implements SystemConfigService {
         Map<String, String> configMap = configDAO.getVNPayConfig();
         
         dto.setPayUrl(configMap.get("vnpay.payUrl"));
-        dto.setReturnUrl(configMap.get("vnpay.returnUrl"));
         dto.setTmnCode(configMap.get("vnpay.tmnCode"));
         dto.setApiUrl(configMap.get("vnpay.apiUrl"));
         
@@ -102,9 +101,8 @@ public class SystemConfigServiceImpl implements SystemConfigService {
     }
 
     @Override
-    public void updateVNPayConfig(String payUrl, String returnUrl, String tmnCode, String secretKey, String apiUrl, int updatedBy) throws ValidationException {
+    public void updateVNPayConfig(String payUrl, String tmnCode, String secretKey, String apiUrl, int updatedBy) throws ValidationException {
         if (payUrl == null || payUrl.trim().isEmpty() ||
-            returnUrl == null || returnUrl.trim().isEmpty() ||
             tmnCode == null || tmnCode.trim().isEmpty() ||
             apiUrl == null || apiUrl.trim().isEmpty()) {
             throw new ValidationException("Vui lòng nhập đầy đủ các trường bắt buộc.");
@@ -114,7 +112,6 @@ public class SystemConfigServiceImpl implements SystemConfigService {
             conn.setAutoCommit(false);
             try {
                 configDAO.updateConfigValue("vnpay.payUrl", payUrl.trim(), updatedBy, conn);
-                configDAO.updateConfigValue("vnpay.returnUrl", returnUrl.trim(), updatedBy, conn);
                 configDAO.updateConfigValue("vnpay.tmnCode", tmnCode.trim(), updatedBy, conn);
                 configDAO.updateConfigValue("vnpay.apiUrl", apiUrl.trim(), updatedBy, conn);
                 

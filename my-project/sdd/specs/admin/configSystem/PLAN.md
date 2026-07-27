@@ -53,14 +53,14 @@ Hiện tại `EmailService` và `VNPayConfig` load cấu hình một lần duy n
 **Công việc:**
 - Implement `SystemConfigService` / `SystemConfigServiceImpl`:
   - `getEmailConfig()` — đọc 5 key Email, mask password.
-  - `getVNPayConfig()` — đọc 5 key VNPay, mask secretKey.
+  - `getVNPayConfig()` — đọc 4 key VNPay, mask secretKey (`payUrl`, `tmnCode`, `secretKey`, `apiUrl`).
   - `updateEmailConfig(params, userId)` — validate, lưu DB.
   - `updateVNPayConfig(params, userId)` — validate, lưu DB.
 - Implement `AdminSystemConfigServlet`:
   - `doGet()` — load cả hai config, set attribute, forward JSP.
   - `doPost()` — phân nhánh theo action (`email` / `vnpay`), gọi service, redirect hoặc forward.
 - Refactor `EmailService`: bỏ `static` block, đọc config từ `SystemConfigDAO` mỗi lần `getEmailSession()`.
-- Refactor `VNPayConfig`: bỏ `static final`, cung cấp static method `getConfig(key)` đọc từ `SystemConfigDAO`.
+- Refactor `VNPayConfig`: bỏ `static final`, bổ sung static method `getReturnUrl(HttpServletRequest request)` tự động tính toán URL trả về linh hoạt cho cả localhost và web production.
 - Đăng ký URL mapping trong `web.xml`.
 
 **Deliverables:**
@@ -81,7 +81,7 @@ Hiện tại `EmailService` và `VNPayConfig` load cấu hình một lần duy n
 **Công việc:**
 - Tạo `system-config.jsp` trong `/WEB-INF/views/admin/`.
 - Form Email: 5 trường input (host, port, username, password, from) — password field, mask placeholder.
-- Form VNPay: 5 trường input (payUrl, returnUrl, tmnCode, secretKey, apiUrl) — secretKey field, mask placeholder.
+- Form VNPay: 4 trường input (payUrl, tmnCode, secretKey, apiUrl) — secretKey field, mask placeholder.
 - Hiển thị `successMessage` / `errorMessage` dạng Bootstrap alert.
 - Thêm link điều hướng vào sidebar Admin.
 - Client-side validation cơ bản (required, port là số).
