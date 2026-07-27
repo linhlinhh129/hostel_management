@@ -967,9 +967,19 @@ public class NotificationDAO extends BaseDAO {
 
     public boolean sendOperatorRequestTransaction(String reqCode, int managerId, String title, String content,
             int operatorId, int meterId) {
+        String cat = "MAINTENANCE";
+        String text = (title != null ? title.toLowerCase() : "") + " " + (content != null ? content.toLowerCase() : "");
+        if (text.contains("nước") || text.contains("water")) {
+            cat = "WATER";
+        } else if (text.contains("điện") || text.contains("electric")) {
+            cat = "ELECTRIC";
+        } else if (text.contains("cơ sở") || text.contains("hạ tầng") || text.contains("thiết bị")) {
+            cat = "INFRASTRUCTURE";
+        }
+
         String insertReqSql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, status, assigned_staff_id, created_at, updated_at) "
                 +
-                "VALUES (?, ?, 'UTILITY', ?, ?, 'PENDING', ?, GETDATE(), GETDATE())";
+                "VALUES (?, ?, ?, ?, ?, 'PENDING', ?, GETDATE(), GETDATE())";
         String updateMeterSql = "UPDATE dbo.meter_readings SET status = 'REPORTED', updated_at = GETDATE() WHERE meter_id = ?";
 
         Connection conn = null;
@@ -980,9 +990,10 @@ public class NotificationDAO extends BaseDAO {
             try (PreparedStatement psReq = conn.prepareStatement(insertReqSql)) {
                 psReq.setString(1, reqCode);
                 psReq.setInt(2, managerId);
-                psReq.setString(3, title.trim());
-                psReq.setString(4, content.trim());
-                psReq.setInt(5, operatorId);
+                psReq.setString(3, cat);
+                psReq.setString(4, title.trim());
+                psReq.setString(5, content.trim());
+                psReq.setInt(6, operatorId);
                 psReq.executeUpdate();
             }
 

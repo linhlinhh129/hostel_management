@@ -55,11 +55,19 @@ public class RequestDAO extends BaseDAO {
     // ==================== HEAD (OPERATOR) METHODS ====================
 
     public Request getRequestById(int requestId) {
-        String sql = "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
+        String sql = "SELECT rq.*, u.full_name AS sender_name, " +
+                "COALESCE(r_tenant.code, r_title.code) AS room_code, " +
+                "COALESCE(f_tenant.name, f_title.name) AS facility_name " +
                 "FROM requests rq " +
                 "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN rooms r_tenant ON (u.role = 'TENANT' AND u.user_id = r_tenant.tenant_id AND r_tenant.deleted_at IS NULL) " +
+                "LEFT JOIN facilities f_tenant ON r_tenant.facility_id = f_tenant.facility_id " +
+                "LEFT JOIN rooms r_title ON (r_title.deleted_at IS NULL AND ( " +
+                "    rq.title LIKE '%' + r_title.code + '%' OR " +
+                "    rq.content LIKE '%' + r_title.code + '%' OR " +
+                "    rq.code LIKE '%' + r_title.code + '%' " +
+                ")) " +
+                "LEFT JOIN facilities f_title ON r_title.facility_id = f_title.facility_id " +
                 "WHERE rq.request_id = ? AND rq.deleted_at IS NULL";
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -143,12 +151,20 @@ public class RequestDAO extends BaseDAO {
     public List<Request> getRequests(Integer assigneeId, String status, String category, int offset, int limit) {
         List<Request> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
-                        "FROM requests rq " +
-                        "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                        "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                        "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
-                        "WHERE rq.deleted_at IS NULL");
+                "SELECT rq.*, u.full_name AS sender_name, " +
+                "COALESCE(r_tenant.code, r_title.code) AS room_code, " +
+                "COALESCE(f_tenant.name, f_title.name) AS facility_name " +
+                "FROM requests rq " +
+                "LEFT JOIN users u ON rq.sender_id = u.user_id " +
+                "LEFT JOIN rooms r_tenant ON (u.role = 'TENANT' AND u.user_id = r_tenant.tenant_id AND r_tenant.deleted_at IS NULL) " +
+                "LEFT JOIN facilities f_tenant ON r_tenant.facility_id = f_tenant.facility_id " +
+                "LEFT JOIN rooms r_title ON (r_title.deleted_at IS NULL AND ( " +
+                "    rq.title LIKE '%' + r_title.code + '%' OR " +
+                "    rq.content LIKE '%' + r_title.code + '%' OR " +
+                "    rq.code LIKE '%' + r_title.code + '%' " +
+                ")) " +
+                "LEFT JOIN facilities f_title ON r_title.facility_id = f_title.facility_id " +
+                "WHERE rq.deleted_at IS NULL");
 
         if (assigneeId != null) {
             sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(
