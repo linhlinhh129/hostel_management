@@ -81,6 +81,7 @@ Chức năng đăng nhập là chốt chặn bảo mật đầu tiên của hệ
 * **Cơ chế đếm lỗi:** Số lần đăng nhập sai được theo dõi theo từng `username` trên bộ nhớ tạm (RAM).
 * **Khóa tài khoản:** Khi sai 5 lần, thực thi câu lệnh SQL để cập nhật (ví dụ: `UPDATE Users SET status = 'LOCKED' WHERE username = '...'`) sử dụng PreparedStatements. Tài khoản bị vô hiệu hóa cho đến khi Admin mở khóa.
 * **Bảo vệ luồng:** Sử dụng Servlet Filter để kiểm tra Session. Nếu `firstLogin == true` (hoặc `force_change_pass = 1`), mọi request truy cập tài nguyên khác đều bị Redirect về trang đổi mật khẩu (`/first-login`).
+* **Chống lưu bộ nhớ đệm (Cache-Control):** Tại Filter bảo vệ (AuthFilter), phải set các header `Cache-Control: no-cache, no-store, must-revalidate`, `Pragma: no-cache`, và `Expires: 0` cho các luồng đã đăng nhập để chặn trình duyệt lưu lại trang, đảm bảo khi người dùng đăng xuất và ấn nút "Back", trình duyệt bắt buộc tải lại và bị chặn ở màn hình đăng nhập.
 
 ### Chính sách Mật khẩu (Business Constraints)
 

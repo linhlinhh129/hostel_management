@@ -58,8 +58,8 @@ public class RequestDAO extends BaseDAO {
         String sql = "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
                 "FROM requests rq " +
                 "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN rooms r ON (rq.room_id = r.room_id OR (rq.room_id IS NULL AND u.user_id = r.tenant_id AND r.deleted_at IS NULL)) " +
+                "LEFT JOIN facilities f ON (rq.facility_id = f.facility_id OR (rq.facility_id IS NULL AND r.facility_id = f.facility_id AND f.deleted_at IS NULL)) " +
                 "WHERE rq.request_id = ? AND rq.deleted_at IS NULL";
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -146,8 +146,8 @@ public class RequestDAO extends BaseDAO {
                 "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
                         "FROM requests rq " +
                         "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                        "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                        "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                        "LEFT JOIN rooms r ON (rq.room_id = r.room_id OR (rq.room_id IS NULL AND u.user_id = r.tenant_id AND r.deleted_at IS NULL)) " +
+                        "LEFT JOIN facilities f ON (rq.facility_id = f.facility_id OR (rq.facility_id IS NULL AND r.facility_id = f.facility_id AND f.deleted_at IS NULL)) " +
                         "WHERE rq.deleted_at IS NULL");
 
         if (assigneeId != null) {
@@ -305,8 +305,8 @@ public class RequestDAO extends BaseDAO {
         StringBuilder sql = new StringBuilder("SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
                 "FROM requests rq " +
                 "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN rooms r ON (rq.room_id = r.room_id OR (rq.room_id IS NULL AND u.user_id = r.tenant_id AND r.deleted_at IS NULL)) " +
+                "LEFT JOIN facilities f ON (rq.facility_id = f.facility_id OR (rq.facility_id IS NULL AND r.facility_id = f.facility_id AND f.deleted_at IS NULL)) " +
                 "WHERE rq.sender_id = ? AND rq.deleted_at IS NULL ");
         if (status != null && !status.isEmpty()) sql.append(" AND rq.status = ?");
         if (category != null && !category.isEmpty()) sql.append(" AND rq.category = ?");
@@ -520,8 +520,8 @@ public class RequestDAO extends BaseDAO {
         String selectSql = "SELECT req.*, u.full_name AS sender_name, u.role AS sender_role, r.room_id, r.code AS room_code, f.name AS facility_name "
                 + "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
-                "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND f.operator_id = u.user_id)) AND f.deleted_at IS NULL"
+                "LEFT JOIN dbo.rooms r ON (req.room_id = r.room_id OR (req.room_id IS NULL AND u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL)) " +
+                "LEFT JOIN dbo.facilities f ON (req.facility_id = f.facility_id OR (req.facility_id IS NULL AND ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND f.operator_id = u.user_id)) AND f.deleted_at IS NULL))"
                 + whereClause.toString() +
                 " ORDER BY req.request_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
@@ -565,8 +565,8 @@ public class RequestDAO extends BaseDAO {
                 + "r.room_id, r.code AS room_code, f.facility_id, f.name AS facility_name, f.manager_id, o.full_name AS assigned_operator_name "
                 + "FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +
-                "LEFT JOIN dbo.rooms r ON (u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL) " +
-                "LEFT JOIN dbo.facilities f ON ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND f.operator_id = u.user_id)) AND f.deleted_at IS NULL "
+                "LEFT JOIN dbo.rooms r ON (req.room_id = r.room_id OR (req.room_id IS NULL AND u.role = 'TENANT' AND u.user_id = r.tenant_id AND r.deleted_at IS NULL)) " +
+                "LEFT JOIN dbo.facilities f ON (req.facility_id = f.facility_id OR (req.facility_id IS NULL AND ((u.role = 'TENANT' AND r.facility_id = f.facility_id) OR (u.role = 'OPERATOR' AND f.operator_id = u.user_id)) AND f.deleted_at IS NULL)) "
                 + "LEFT JOIN dbo.users o ON req.assigned_staff_id = o.user_id " +
                 "WHERE req.request_id = ? AND req.deleted_at IS NULL";
 

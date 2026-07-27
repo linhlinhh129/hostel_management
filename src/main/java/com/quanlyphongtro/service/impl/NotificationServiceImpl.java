@@ -247,11 +247,14 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Không tìm thấy thông tin chỉ số điện nước.");
 
         int meterId = (int) verify.get("meterId");
+        
+        Integer roomId = (Integer) invoice.get("roomId");
+        Integer facilityId = (Integer) invoice.get("facilityId");
 
         // Sinh code request theo format REQ-UTL-{SEQ}
         RequestDAO requestDAO = new RequestDAO();
         String reqCode = requestDAO.generateCode("UTL");
-        return notificationDAO.sendOperatorRequestTransaction(reqCode, managerId, title, content, operatorId, meterId);
+        return notificationDAO.sendOperatorRequestTransaction(reqCode, managerId, title, content, operatorId, meterId, roomId, facilityId);
     }
 
     @Override

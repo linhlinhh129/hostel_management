@@ -59,6 +59,7 @@
                                             <c:choose>
                                                 <c:when test="${cat == 'ELECTRIC'}">Điện</c:when>
                                                 <c:when test="${cat == 'WATER'}">Nước</c:when>
+                                                <c:when test="${cat == 'UTILITY'}">Điện nước</c:when>
                                                 <c:when test="${cat == 'INTERNET'}">Internet</c:when>
                                                 <c:when test="${cat == 'INFRASTRUCTURE'}">Cơ sở vật chất</c:when>
                                                 <c:when test="${cat == 'MAINTENANCE'}">Bảo trì</c:when>
@@ -134,6 +135,7 @@
                                                     <c:choose>
                                                         <c:when test="${req.category == 'ELECTRIC'}">SỰ CỐ ĐIỆN</c:when>
                                                         <c:when test="${req.category == 'WATER'}">SỰ CỐ NƯỚC</c:when>
+                                                        <c:when test="${req.category == 'UTILITY'}">SỰ CỐ ĐIỆN NƯỚC</c:when>
                                                         <c:when test="${req.category == 'INTERNET'}">INTERNET</c:when>
                                                         <c:when test="${req.category == 'INFRASTRUCTURE'}">CƠ SỞ VẬT CHẤT</c:when>
                                                         <c:when test="${req.category == 'MAINTENANCE'}">BẢO TRÌ</c:when>

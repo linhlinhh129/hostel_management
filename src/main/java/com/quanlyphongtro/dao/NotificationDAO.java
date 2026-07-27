@@ -859,6 +859,7 @@ public class NotificationDAO extends BaseDAO {
                     invoice = new HashMap<>();
                     invoice.put("id", rs.getInt("invoice_id"));
                     invoice.put("code", rs.getString("code"));
+                    invoice.put("roomId", rs.getInt("room_id"));
                     invoice.put("roomCode", rs.getString("room_code"));
                     invoice.put("facilityName", rs.getString("facility_name"));
                     invoice.put("facilityCode", rs.getString("facility_code"));
@@ -966,10 +967,10 @@ public class NotificationDAO extends BaseDAO {
     }
 
     public boolean sendOperatorRequestTransaction(String reqCode, int managerId, String title, String content,
-            int operatorId, int meterId) {
-        String insertReqSql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, status, assigned_staff_id, created_at, updated_at) "
+            int operatorId, int meterId, Integer roomId, Integer facilityId) {
+        String insertReqSql = "INSERT INTO dbo.requests (code, sender_id, category, title, content, status, assigned_staff_id, created_at, updated_at, room_id, facility_id) "
                 +
-                "VALUES (?, ?, 'UTILITY', ?, ?, 'PENDING', ?, GETDATE(), GETDATE())";
+                "VALUES (?, ?, 'UTILITY', ?, ?, 'PENDING', ?, GETDATE(), GETDATE(), ?, ?)";
         String updateMeterSql = "UPDATE dbo.meter_readings SET status = 'REPORTED', updated_at = GETDATE() WHERE meter_id = ?";
 
         Connection conn = null;
@@ -983,6 +984,16 @@ public class NotificationDAO extends BaseDAO {
                 psReq.setString(3, title.trim());
                 psReq.setString(4, content.trim());
                 psReq.setInt(5, operatorId);
+                if (roomId != null) {
+                    psReq.setInt(6, roomId);
+                } else {
+                    psReq.setNull(6, Types.INTEGER);
+                }
+                if (facilityId != null) {
+                    psReq.setInt(7, facilityId);
+                } else {
+                    psReq.setNull(7, Types.INTEGER);
+                }
                 psReq.executeUpdate();
             }
 

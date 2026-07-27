@@ -34,6 +34,11 @@ public class AuthFilter implements Filter {
             return;
         }
 
+        // Chống lưu cache cho các trang yêu cầu đăng nhập
+        resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        resp.setHeader("Pragma", "no-cache");
+        resp.setDateHeader("Expires", 0);
+
         HttpSession session = req.getSession(false);
         UserSessionDTO currentUser = null;
         if (session != null) {

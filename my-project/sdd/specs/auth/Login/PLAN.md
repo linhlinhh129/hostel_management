@@ -35,6 +35,7 @@ Hiện thực hóa chức năng Đăng nhập cho hệ thống quản lý nhà t
 6. **AuthFilter**:
    - Kiểm tra request gửi tới có được xác thực trong `HttpSession` chưa.
    - Kiểm tra nếu `currentUser` có cờ `firstLogin == true` thì điều hướng tất cả truy cập (ngoại trừ các endpoint cho việc đổi mật khẩu, đăng xuất) về trang bắt buộc đổi mật khẩu.
+   - Bổ sung cấu hình chặn lưu bộ nhớ đệm (Cache-Control: no-cache, no-store, must-revalidate) cho các request đã đăng nhập thành công để tránh lỗi Back trên trình duyệt sau khi đăng xuất.
 
 ### 3.2 Frontend (JSP)
 * **/WEB-INF/views/auth/login.jsp**:
