@@ -21,7 +21,14 @@ Phát triển tính năng Báo cáo sự cố cho Nhân viên vận hành (Opera
 ### Tầng View
 **[NEW]** `src/main/webapp/WEB-INF/views/operator\incidents\create.jsp`
 - Tạo giao diện HTML/Bootstrap 5 tuân thủ ngôn ngữ thiết kế từ `DESIGN.md`.
-- Form nhập liệu gồm: Dropdown chọn tòa nhà/vị trí, Phân loại sự cố, Mức độ, Nội dung mô tả và tính năng Upload ảnh kèm Preview thu nhỏ.
+- Form nhập liệu gồm: Tiêu đề, Dropdown chọn tòa nhà/vị trí, Chi tiết vị trí, Phân loại sự cố, Mức độ, Nội dung mô tả và tính năng Upload ảnh kèm Preview thu nhỏ.
+- Thêm Validation ở Frontend: 
+  - Tiêu đề: Tối đa 50 ký tự (`maxlength="50"`, báo lỗi đỏ).
+  - Chi tiết vị trí: Tối đa 50 ký tự (`maxlength="50"`, báo lỗi đỏ).
+  - Mô tả chi tiết: Tối đa 1000 ký tự (`maxlength="1000"`, báo lỗi đỏ).
+
+### Tầng Controller
+- Bổ sung Backend Validation trong Servlet để đảm bảo kiểm tra tương tự ở server-side trước khi gọi DB (Tiêu đề <= 50, Chi tiết vị trí <= 50, Mô tả <= 1000). Trả về cảnh báo nếu vi phạm.
 
 ### Tầng DAO
 **[REUSE]** `src/main/java/com/quanlyphongtro/dao/RequestDAO.java`

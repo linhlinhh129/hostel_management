@@ -220,6 +220,17 @@ public class ManagerTicketsServlet extends BaseServlet {
         if (appointmentDateStr != null && !appointmentDateStr.trim().isEmpty()) {
             try {
                 ldt = LocalDateTime.parse(appointmentDateStr.trim());
+                if (ldt.toLocalDate().isBefore(java.time.LocalDate.now())) {
+                    setFlashMessage(req, "danger", "Không được chọn ngày trong quá khứ.");
+                    resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                    return;
+                }
+                int hour = ldt.getHour();
+                if (hour < 8 || hour >= 18) {
+                    setFlashMessage(req, "danger", "Giờ làm việc chỉ từ 08:00 đến 18:00.");
+                    resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                    return;
+                }
             } catch (Exception e) {
                 logger.error("Failed to parse appointment date", e);
                 setFlashMessage(req, "danger", "Ngày hẹn không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
@@ -270,6 +281,17 @@ public class ManagerTicketsServlet extends BaseServlet {
         LocalDateTime newLdt = null;
         try {
             newLdt = LocalDateTime.parse(appointmentDateStr.trim());
+            if (newLdt.toLocalDate().isBefore(java.time.LocalDate.now())) {
+                setFlashMessage(req, "danger", "Không được chọn ngày trong quá khứ.");
+                resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                return;
+            }
+            int hour = newLdt.getHour();
+            if (hour < 8 || hour >= 18) {
+                setFlashMessage(req, "danger", "Giờ làm việc chỉ từ 08:00 đến 18:00.");
+                resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                return;
+            }
         } catch (Exception e) {
             logger.error("Failed to parse reschedule appointment date", e);
             setFlashMessage(req, "danger", "Ngày hẹn mới không đúng định dạng (yyyy-MM-dd'T'HH:mm).");

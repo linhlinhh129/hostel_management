@@ -132,6 +132,10 @@
                                             <td class="d-none d-lg-table-cell">
                                                 <span class="badge-hms badge-neutral" style="text-transform:uppercase;">
                                                     <c:choose>
+                                                        <c:when test="${req.category == 'ELECTRIC'}">SỰ CỐ ĐIỆN</c:when>
+                                                        <c:when test="${req.category == 'WATER'}">SỰ CỐ NƯỚC</c:when>
+                                                        <c:when test="${req.category == 'INTERNET'}">INTERNET</c:when>
+                                                        <c:when test="${req.category == 'INFRASTRUCTURE'}">CƠ SỞ VẬT CHẤT</c:when>
                                                         <c:when test="${req.category == 'MAINTENANCE'}">BẢO TRÌ</c:when>
                                                         <c:when test="${req.category == 'CLEANING'}">VỆ SINH</c:when>
                                                         <c:when test="${req.category == 'COMPLAINT'}">KHIẾU NẠI</c:when>
