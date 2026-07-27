@@ -31,9 +31,17 @@
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                 <c:choose>
                     <c:when test="${empty posts}">
-                        <div class="col-12 text-center py-5 text-muted">
-                            <i class="bi bi-journal-text fs-1"></i>
-                            <p class="mt-3">Bạn chưa có bài viết nào.</p>
+                        <div class="col-12 d-flex justify-content-center align-items-center" style="min-height: 50vh;">
+                            <div class="text-center p-5 bg-white shadow-sm rounded-4 w-100" style="max-width: 500px;">
+                                <div style="font-size: 4rem; color: var(--bs-gray-400); margin-bottom: 1.5rem;">
+                                    <i class="bi bi-journal-richtext"></i>
+                                </div>
+                                <h4 class="fw-bold mb-3" style="color: var(--bs-gray-700);">Bạn chưa có bài viết nào</h4>
+                                <p class="text-muted mb-4">Hãy chia sẻ thông tin, kinh nghiệm hoặc đóng góp ý kiến với cộng đồng nhé!</p>
+                                <a href="${ctx}/tenant/post/create" class="btn-accent px-4 py-2">
+                                    <i class="bi bi-pencil-square me-2"></i> Đăng bài viết đầu tiên
+                                </a>
+                            </div>
                         </div>
                     </c:when>
                     <c:otherwise>
@@ -56,7 +64,18 @@
                                     </div>
 
                                     <c:if test="${not empty post.imageUrl}">
-                                        <img src="${ctx}/${post.imageUrl}" class="card-img-top" alt="Post thumbnail"
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(post.imageUrl, 'http')}">
+                                                <c:set var="finalImageUrl" value="${post.imageUrl}" />
+                                            </c:when>
+                                            <c:when test="${fn:startsWith(post.imageUrl, '/')}">
+                                                <c:set var="finalImageUrl" value="${ctx}${post.imageUrl}" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <c:set var="finalImageUrl" value="${ctx}/${post.imageUrl}" />
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <img src="${finalImageUrl}" class="card-img-top" alt="Post thumbnail"
                                              style="height: 180px; object-fit: cover; border-radius: var(--hms-radius-md) var(--hms-radius-md) 0 0;">
                                     </c:if>
                                     <div class="card-body d-flex flex-column">
