@@ -115,8 +115,10 @@ public class TenantPaymentServlet extends BaseServlet {
             params.put("vnp_ReturnUrl", returnUrl);
             params.put("vnp_IpAddr", VNPayConfig.getIpAddress(request));
 
-            Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+            TimeZone tz = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
+            Calendar cld = Calendar.getInstance(tz);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            sdf.setTimeZone(tz);
             params.put("vnp_CreateDate", sdf.format(cld.getTime()));
             cld.add(Calendar.MINUTE, 15);
             params.put("vnp_ExpireDate", sdf.format(cld.getTime()));
