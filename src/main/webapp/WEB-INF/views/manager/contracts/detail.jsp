@@ -8,76 +8,7 @@
 <c:set var="activeMenu" value="contracts"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 
-<style>
-  /* Styling cho container hiển thị hợp đồng trên màn hình */
-  .document-viewer-wrapper {
-    background-color: #f1f5f9;
-    padding: 30px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    overflow-x: auto;
-  }
 
-  .a4-container {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 20mm 25mm; /* Tăng lề trái phải lên 25mm */
-    background: white;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    font-family: var(--hms-font);
-    font-size: 12pt;
-    line-height: 1.5;
-    color: #000;
-  }
-  .a4-container h1, .a4-container h2, .a4-container h3, .a4-container h4, .a4-container h5, .a4-container h6 {
-    font-family: var(--hms-font);
-    font-weight: bold;
-    text-align: center;
-    color: #000;
-  }
-  .a4-container .text-center { text-align: center; }
-  .a4-container .text-right { text-align: right; }
-  .a4-container .text-bold { font-weight: bold; }
-  .a4-container .mt-4 { margin-top: 1.5rem; }
-  .a4-container .mb-4 { margin-bottom: 1.5rem; }
-  .a4-container p { margin-bottom: 0.5rem; }
-  .a4-container ul { list-style-type: none; padding-left: 0; }
-  .a4-container ul li::before { content: "- "; }
-  
-  @media print {
-    @page {
-      margin: 15mm;
-    }
-    body {
-      background: white !important;
-    }
-    /* Hide layout elements completely */
-    .sidebar, .topbar, .page-header, .sidebar-overlay, .main-footer, .no-print {
-      display: none !important;
-    }
-    /* Reset wrappers to allow natural flow for print */
-    .app-shell, .main-wrapper, .page-content, .document-viewer-wrapper {
-      display: block !important;
-      position: static !important;
-      height: auto !important;
-      width: auto !important;
-      overflow: visible !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      background: transparent !important;
-    }
-    /* Expand A4 container to fit print page naturally */
-    .a4-container {
-      position: static !important;
-      box-shadow: none !important;
-      width: 100% !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      min-height: auto !important;
-    }
-  }
-</style>
 
 <body>
 <div class="app-shell">

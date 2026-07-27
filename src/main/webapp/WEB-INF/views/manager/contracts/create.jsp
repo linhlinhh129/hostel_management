@@ -7,59 +7,7 @@
 <c:set var="activeMenu" value="contracts"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
 
-<style>
-  .form-section-title {
-    font-size: 1.0625rem;
-    font-weight: 700;
-    color: var(--hms-text-main);
-    margin: 0 0 1.25rem 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid var(--hms-border);
-  }
-  .form-section-title svg {
-    color: var(--hms-accent);
-    flex-shrink: 0;
-  }
-  .contract-section {
-    background: #fff;
-    border: 1px solid var(--hms-border);
-    border-radius: var(--hms-radius-lg);
-    padding: 1.5rem;
-    margin-bottom: 1.25rem;
-  }
-  .form-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--hms-text-secondary);
-    margin-bottom: 0.375rem;
-  }
-  .form-control, .form-select {
-    border-radius: 8px;
-    padding: 0.5625rem 0.875rem;
-    border: 1px solid #e2e8f0;
-    font-size: 0.9375rem;
-    transition: border-color .2s, box-shadow .2s;
-  }
-  .form-control:focus, .form-select:focus {
-    border-color: var(--hms-accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
-    outline: none;
-  }
-  .sticky-sidebar {
-    position: sticky;
-    top: 80px;
-  }
-  .info-box {
-    background: linear-gradient(135deg,rgba(59,130,246,.05),rgba(59,130,246,.1));
-    border: 1px solid rgba(59,130,246,.2);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    color: var(--hms-text-secondary);
-  }
-</style>
+
 
 <body>
 <div class="app-shell">

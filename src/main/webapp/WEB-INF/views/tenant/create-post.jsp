@@ -27,61 +27,7 @@
                 </div>
             </div>
 
-            <style>
-                .post-card {
-                    background: #fff;
-                    border-radius: 16px;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-                    padding: 32px;
-                    margin: 0 auto;
-                    max-width: 850px;
-                    border: 1px solid #e5e5e5;
-                }
-                .form-control-custom {
-                    border-radius: 12px;
-                    border: 1px solid #e5e5e5;
-                    padding: 14px 16px;
-                    background-color: #fcfcfc;
-                    transition: all 0.2s ease;
-                    font-size: 1rem;
-                }
-                .form-control-custom:focus {
-                    border-color: #00d4a4;
-                    box-shadow: 0 0 0 3px rgba(0, 212, 164, 0.1);
-                    background-color: #fff;
-                    outline: none;
-                }
-                .btn-submit-custom {
-                    border-radius: 12px;
-                    background-color: #0a0a0a;
-                    color: #fff;
-                    padding: 14px 24px;
-                    font-weight: 600;
-                    transition: all 0.2s ease;
-                    border: none;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .btn-submit-custom:hover {
-                    background-color: #1a1a1a;
-                    color: #fff;
-                    transform: translateY(-1px);
-                }
-                .upload-btn-outline {
-                    border-radius: 10px;
-                    border: 1px solid #e5e5e5;
-                    background: #fff;
-                    color: #0a0a0a;
-                    transition: all 0.2s ease;
-                    padding: 8px 16px;
-                }
-                .upload-btn-outline:hover {
-                    background: #f7f7f7;
-                    border-color: #d5d5d5;
-                    color: #0a0a0a;
-                }
-            </style>
+
 
             <div class="post-card">
                 <div class="p-2">

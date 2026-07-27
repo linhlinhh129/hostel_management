@@ -89,6 +89,14 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             int prevElectric = previousReading.getPreviousElectricReading() != null ? previousReading.getPreviousElectricReading() : 0;
             int prevWater = previousReading.getPreviousWaterReading() != null ? previousReading.getPreviousWaterReading() : 0;
 
+            // === CHẶN CẬP NHẬT NẾU HÓA ĐƠN THÁNG NÀY ĐÃ ĐƯỢC THANH TOÁN ===
+            if (meterReadingService.isInvoicePaidForMonth(roomId, currentMonth, currentYear)) {
+                session.setAttribute("flashMessage", "Không thể cập nhật chỉ số điện nước cho phòng " + roomCode + " vì hóa đơn tháng này đã được thanh toán. Vui lòng chờ sang tháng sau.");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                return;
+            }
+
             // Get new readings
             int newElectric = Integer.parseInt(request.getParameter("newElectric"));
             int newWater = Integer.parseInt(request.getParameter("newWater"));

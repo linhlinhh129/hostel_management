@@ -27,46 +27,7 @@
                 </div>
             </div>
 
-            <style>
-                .post-card {
-                    background: #fff;
-                    border-radius: 16px;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-                    padding: 32px;
-                    margin: 0 auto;
-                    max-width: 850px;
-                    border: 1px solid #e5e5e5;
-                }
-                .form-control-custom {
-                    border-radius: 12px;
-                    border: 1px solid #e5e5e5;
-                    padding: 14px 16px;
-                    background-color: #fcfcfc;
-                    transition: all 0.2s ease;
-                    font-size: 1rem;
-                }
-                .form-control-custom:focus {
-                    border-color: #00d4a4;
-                    box-shadow: 0 0 0 3px rgba(0, 212, 164, 0.1);
-                    background-color: #fff;
-                    outline: none;
-                }
-                .upload-btn-outline {
-                    border-radius: 10px;
-                    border: 1px solid var(--hms-border);
-                    background: var(--hms-canvas);
-                    color: var(--hms-ink);
-                    transition: all 0.2s ease;
-                    padding: 8px 16px;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                }
-                .upload-btn-outline:hover {
-                    background: var(--hms-surface);
-                    border-color: var(--hms-border-strong);
-                    color: var(--hms-ink);
-                }
-            </style>
+
 
             <c:if test="${not empty error}">
                 <div class="alert alert-danger">${error}</div>

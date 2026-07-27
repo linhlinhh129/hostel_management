@@ -21,12 +21,7 @@
             </div>
 
             <div class="data-surface">
-                <%-- font: Inter toàn trang, Geist Mono riêng cột mã --%>
-                <style>
-                    .page-content td { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-                    .page-content td.col-code,
-                    .page-content td.col-code * { font-family: 'Geist Mono', 'JetBrains Mono', monospace !important; }
-                </style>
+
                 <c:choose>
                     <c:when test="${not empty notifications}">
                         <div class="table-responsive">

@@ -33,29 +33,7 @@
           </div><%-- end flex-column wrapper --%>
         </div>
 
-        <style>
-          /* Shrink table font size on screen to fit without horizontal scroll */
-          @media screen {
-            .table-mintlify { font-size: 0.85rem; }
-            .table-mintlify th, .table-mintlify td { padding: 0.5rem !important; }
-          }
-          @media print {
-            body { background-color: #fff !important; margin: 0; padding: 0; }
-            .sidebar, .topbar, .page-header, .sidebar-overlay, .btn-mintlify-primary, .btn-mintlify-secondary, .btn-mintlify-danger, footer, .alert {
-              display: none !important;
-            }
-            .app-shell { display: block; }
-            .main-wrapper { margin: 0 !important; padding: 0 !important; width: 100%; }
-            .page-content { margin: 0 !important; padding: 20px !important; }
-            .data-surface { box-shadow: none !important; border: none !important; padding: 0 !important; }
-            .table-responsive { overflow: visible !important; }
-            .row { display: flex; flex-direction: column; }
-            .col-lg-8, .col-lg-4 { width: 100% !important; flex: none !important; margin-bottom: 20px; }
-            .table-mintlify th, .table-mintlify td { padding: 4px !important; font-size: 10pt !important; color: #000 !important; border-bottom: 1px solid #ccc !important; }
-            h1, h4 { margin-top: 0 !important; color: #000 !important; }
-            .badge-hms { border: 1px solid #000; color: #000 !important; background: transparent !important; }
-          }
-        </style>
+
 
         <div class="row g-4">
           <div class="col-lg-8">

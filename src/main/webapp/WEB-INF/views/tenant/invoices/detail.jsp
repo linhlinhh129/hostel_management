@@ -168,11 +168,7 @@
                                         color:${invoice.status == 'PAID' ? 'var(--hms-success)' : (invoice.status == 'OVERDUE' or overdueDays > 0) ? 'var(--hms-danger)' : 'var(--hms-ink)'}">
                                 <fmt:formatNumber value="${totalAmountToPay}" pattern="#,##0"/> đ
                             </div>
-                            <c:if test="${overdueDays > 0}">
-                                <div style="font-size: 0.8125rem; color: var(--hms-stone); margin-top: -0.25rem; margin-bottom: 0.75rem;">
-                                    (Tiền gốc: <fmt:formatNumber value="${invoice.totalAmount}" pattern="#,##0"/> đ + Phạt: <fmt:formatNumber value="${penaltyAmount}" pattern="#,##0"/> đ)
-                                </div>
-                            </c:if>
+                           
                             <div class="mb-2">
                                 <c:choose>
                                     <c:when test="${invoice.meterReadingStatus == 'REPORTED' or invoice.isMeterReported()}">

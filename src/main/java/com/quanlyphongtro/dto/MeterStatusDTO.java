@@ -113,4 +113,14 @@ public class MeterStatusDTO {
     public void setUpdatedByName(String updatedByName) {
         this.updatedByName = updatedByName;
     }
+
+    private boolean invoicePaid;
+
+    public boolean isInvoicePaid() {
+        return invoicePaid;
+    }
+
+    public void setInvoicePaid(boolean invoicePaid) {
+        this.invoicePaid = invoicePaid;
+    }
 }

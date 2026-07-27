@@ -32,10 +32,8 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append("    curr_mr.electric_img AS electricImg, ");
         sqlBuilder.append("    curr_mr.water_img AS waterImg, ");
         sqlBuilder.append("    u.full_name AS updatedByName, ");
-        sqlBuilder.append("    CASE ");
-        sqlBuilder.append("        WHEN curr_mr.meter_id IS NOT NULL THEN 'DA_CAP_NHAT' ");
-        sqlBuilder.append("        ELSE 'CHUA_CAP_NHAT' ");
-        sqlBuilder.append("    END AS status ");
+        sqlBuilder.append("    CASE WHEN curr_mr.meter_id IS NOT NULL THEN 'DA_CAP_NHAT' ELSE 'CHUA_CAP_NHAT' END AS status, ");
+        sqlBuilder.append("    CASE WHEN inv.status = 'PAID' THEN 1 ELSE 0 END AS invoicePaid ");
         sqlBuilder.append("FROM rooms r ");
         sqlBuilder.append("INNER JOIN facilities f ON r.facility_id = f.facility_id ");
         sqlBuilder.append("LEFT JOIN meter_readings curr_mr ");
@@ -44,6 +42,7 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append("    AND YEAR(curr_mr.reading_date) = ? ");
         sqlBuilder.append("    AND curr_mr.deleted_at IS NULL ");
         sqlBuilder.append("LEFT JOIN users u ON curr_mr.created_by = u.user_id ");
+        sqlBuilder.append("LEFT JOIN invoices inv ON inv.meter_id = curr_mr.meter_id AND inv.deleted_at IS NULL ");
         sqlBuilder.append("OUTER APPLY ( ");
         sqlBuilder.append("    SELECT TOP 1 electric, water ");
         sqlBuilder.append("    FROM meter_readings ");
@@ -115,6 +114,7 @@ public class MeterReadingDAO extends BaseDAO {
                     dto.setElectricImg(rs.getString("electricImg"));
                     dto.setWaterImg(rs.getString("waterImg"));
                     dto.setUpdatedByName(rs.getString("updatedByName"));
+                    dto.setInvoicePaid(rs.getInt("invoicePaid") == 1);
                     
                     list.add(dto);
                 }
@@ -323,6 +323,34 @@ public class MeterReadingDAO extends BaseDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Kiểm tra xem hóa đơn của phòng trong tháng/năm chỉ định đã được thanh toán chưa.
+     * Dùng để ngăn nhân viên vận hành cập nhật lại chỉ số điện nước sau khi hóa đơn đã PAID.
+     */
+    public boolean isInvoicePaidForMonth(int roomId, int month, int year) {
+        String sql = "SELECT TOP 1 i.status FROM invoices i " +
+                     "INNER JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
+                     "WHERE mr.room_id = ? " +
+                     "  AND MONTH(mr.reading_date) = ? " +
+                     "  AND YEAR(mr.reading_date) = ? " +
+                     "  AND mr.deleted_at IS NULL " +
+                     "  AND i.deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, roomId);
+            ps.setInt(2, month);
+            ps.setInt(3, year);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return "PAID".equals(rs.getString("status"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public boolean updateMeterReading(int meterId, int electric, int water, String electricImg, String waterImg) {

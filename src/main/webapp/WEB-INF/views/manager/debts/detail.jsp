@@ -32,16 +32,7 @@
                 </div>
             </div>
 
-            <style>
-                /* Shrink table font size on screen to fit without horizontal scroll */
-                @media screen {
-                    .table-mintlify { font-size: 0.85rem; }
-                    .table-mintlify th, .table-mintlify td { padding: 0.5rem !important; }
-                }
-                .table-mintlify th, .table-mintlify td {
-                    white-space: nowrap;
-                }
-            </style>
+
 
             <div class="row g-4">
                 <div class="col-md-8">

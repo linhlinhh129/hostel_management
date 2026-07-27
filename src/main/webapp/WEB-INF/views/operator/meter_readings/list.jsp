@@ -135,18 +135,24 @@
                                                                     </c:choose>
                                                                 </td>
                                                                 <td>
-                                                                    <%-- Thống nhất dùng btn-mintlify-secondary cho tất
-                                                                        cả thao tác trong bảng --%>
-                                                                        <a href="${ctx}/operator/meter-readings/update?roomCode=${item.roomCode}"
-                                                                            class="btn-mintlify-secondary text-decoration-none"
-                                                                            style="padding:4px 12px; font-size:12px;">
-                                                                            <c:choose>
-                                                                                <c:when
-                                                                                    test="${item.status != 'DA_CAP_NHAT'}">
-                                                                                    Cập nhật</c:when>
-                                                                                <c:otherwise>Sửa</c:otherwise>
-                                                                            </c:choose>
-                                                                        </a>
+                                                                    <c:choose>
+                                                                        <%-- Hóa đơn đã thanh toán → khóa cập nhật --%>
+                                                                        <c:when test="${item.invoicePaid}">
+                                                                            <span class="badge-hms badge-success" title="Hóa đơn tháng này đã thanh toán, không thể sửa chỉ số">
+                                                                                🔒 Đã thanh toán
+                                                                            </span>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <a href="${ctx}/operator/meter-readings/update?roomCode=${item.roomCode}"
+                                                                                class="btn-mintlify-secondary text-decoration-none"
+                                                                                style="padding:4px 12px; font-size:12px;">
+                                                                                <c:choose>
+                                                                                    <c:when test="${item.status != 'DA_CAP_NHAT'}">Cập nhật</c:when>
+                                                                                    <c:otherwise>Sửa</c:otherwise>
+                                                                                </c:choose>
+                                                                            </a>
+                                                                        </c:otherwise>
+                                                                    </c:choose>
                                                                 </td>
                                                             </tr>
                                                         </c:forEach>

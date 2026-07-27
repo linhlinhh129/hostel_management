@@ -23,22 +23,7 @@
                                     <p>Danh sách các yêu cầu sửa chữa từ khách thuê</p>
                                 </div>
 
-                                <%-- font: Inter toàn trang, Geist Mono riêng cột mã --%>
-                                    <style>
-                                        .page-content,
-                                        .page-content th,
-                                        .page-content td,
-                                        .page-content input,
-                                        .page-content select,
-                                        .page-content button {
-                                            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                                        }
 
-                                        .page-content td.col-code,
-                                        .page-content td.col-code * {
-                                            font-family: 'Geist Mono', 'JetBrains Mono', monospace !important;
-                                        }
-                                    </style>
 
                                     <div class="data-surface">
                                         <%-- Filter bar --%>

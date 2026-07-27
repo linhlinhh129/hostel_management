@@ -6,30 +6,7 @@
 <c:set var="pageRole" value="MANAGER"/>
 <c:set var="activeMenu" value="notifications"/>
 <jsp:include page="/WEB-INF/views/layout/head.jsp"/>
-<style>
-  .ntf-tab-link { font-weight: 600; color: var(--hms-text-muted); }
-  .ntf-tab-link.ntf-tab-active { color: var(--hms-accent-deep); }
-  .ntf-pill-link {
-    font-weight: 600; font-size: 0.8125rem;
-    padding: 8px 20px; border-radius: 6px;
-    transition: all 0.2s;
-    background: var(--hms-surface);
-    color: var(--hms-text-muted);
-    border: 1px solid var(--hms-border);
-    text-decoration: none;
-  }
-  .ntf-pill-link.ntf-pill-active,
-  .ntf-pill-link.active.ntf-pill-active {
-    background: var(--hms-accent-deep) !important;
-    color: #fff !important;
-    border-color: var(--hms-accent-deep) !important;
-  }
-  .ntf-pill-link:hover:not(.ntf-pill-active) {
-    background: var(--hms-surface-hover, #f4f4f5);
-    color: var(--hms-ink);
-    border-color: var(--hms-border-strong, #d1d5db);
-  }
-</style>
+
 <body>
 <div class="app-shell">
   <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>

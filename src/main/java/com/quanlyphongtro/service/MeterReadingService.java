@@ -44,4 +44,12 @@ public class MeterReadingService {
     public MeterStatusDTO getReadingBeforeCurrentMonth(String roomCode, int currentMonth, int currentYear) {
         return meterReadingDAO.getReadingBeforeCurrentMonth(roomCode, currentMonth, currentYear);
     }
+
+    /**
+     * Kiểm tra hóa đơn của phòng trong tháng/năm đã được thanh toán chưa.
+     * Nếu true → không cho phép cập nhật lại chỉ số điện nước.
+     */
+    public boolean isInvoicePaidForMonth(int roomId, int month, int year) {
+        return meterReadingDAO.isInvoicePaidForMonth(roomId, month, year);
+    }
 }
