@@ -26,7 +26,14 @@
     _fldLbl.put("facilityId","Cơ sở"); _fldLbl.put("status","Trạng thái");
     _fldLbl.put("email","Email"); _fldLbl.put("phone","Điện thoại");
     _fldLbl.put("name","Tên cơ sở"); _fldLbl.put("code","Mã");
-    _fldLbl.put("title","Tiêu đề");
+    _fldLbl.put("title","Tiêu đề"); _fldLbl.put("roomNumber","Số phòng");
+    _fldLbl.put("area","Diện tích"); _fldLbl.put("price","Giá");
+    _fldLbl.put("electricityPrice","Giá điện"); _fldLbl.put("waterPrice","Giá nước");
+    _fldLbl.put("serviceFee","Phí dịch vụ"); _fldLbl.put("internetFee","Phí Internet");
+    _fldLbl.put("totalAmount","Tổng tiền"); _fldLbl.put("address","Địa chỉ");
+    _fldLbl.put("description","Mô tả"); _fldLbl.put("password","Mật khẩu");
+    _fldLbl.put("secretKey","Khóa bí mật"); _fldLbl.put("payUrl","Pay URL");
+    _fldLbl.put("apiUrl","API URL"); _fldLbl.put("tmnCode","Mã Merchant");
 
     /* ── Bảng dịch giá trị ────────────────────────────────────── */
     Map<String,String> _valLbl = new LinkedHashMap<>();
@@ -42,6 +49,14 @@
     _valLbl.put("MAINTENANCE","Đang bảo trì"); _valLbl.put("RESERVED","Đã đặt cọc");
     _valLbl.put("UNPAID","Chưa thanh toán"); _valLbl.put("PAID","Đã thanh toán");
     _valLbl.put("OVERDUE","Quá hạn");
+    _valLbl.put("Add Dependent","Thêm người ở cùng");
+    _valLbl.put("Remove Dependent","Xóa người ở cùng");
+    _valLbl.put("Update Dependent","Cập nhật người ở cùng");
+    _valLbl.put("Update Info","Cập nhật thông tin");
+    _valLbl.put("Extend Contract","Gia hạn hợp đồng");
+    _valLbl.put("Soft Delete","Xóa");
+    _valLbl.put("Soft Deleted","Đã xóa");
+    _valLbl.put("End Rental","Thanh lý hợp đồng");
 
     /* ── Helper: dịch giá trị ─────────────────────────────────── */
     // (dùng inner interface pattern thông qua anonymous class)

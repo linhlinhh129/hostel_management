@@ -16,7 +16,8 @@ FROM tomcat:10.1-jdk17-temurin
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-ENV CATALINA_OPTS="-Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource"
+ENV TZ=Asia/Ho_Chi_Minh
+ENV CATALINA_OPTS="-Duser.timezone=Asia/Ho_Chi_Minh -Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource"
 
 COPY --from=build /app/target/*.war /tmp/app.war
 
