@@ -10,6 +10,7 @@ public class AppTimeZoneListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        System.setProperty("user.timezone", "Asia/Ho_Chi_Minh");
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
     }
 

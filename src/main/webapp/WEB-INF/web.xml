@@ -11,6 +11,16 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
+    <!-- Múi giờ Việt Nam (GMT+7) cho JSTL <fmt:formatDate> -->
+    <context-param>
+        <param-name>jakarta.servlet.jsp.jstl.fmt.timeZone</param-name>
+        <param-value>Asia/Ho_Chi_Minh</param-value>
+    </context-param>
+    <context-param>
+        <param-name>javax.servlet.jsp.jstl.fmt.timeZone</param-name>
+        <param-value>Asia/Ho_Chi_Minh</param-value>
+    </context-param>
+
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
