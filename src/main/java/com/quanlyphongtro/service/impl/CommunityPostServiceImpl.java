@@ -44,11 +44,14 @@ public class CommunityPostServiceImpl implements CommunityPostService {
         if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
             throw new ValidationException("Tiêu đề không được để trống.");
         }
-        if (dto.getTitle().length() > 250) {
-            throw new ValidationException("Tiêu đề không được vượt quá 250 ký tự.");
+        if (dto.getTitle().length() > 50) {
+            throw new ValidationException("Tiêu đề không được vượt quá 50 ký tự.");
         }
         if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
             throw new ValidationException("Nội dung không được để trống.");
+        }
+        if (dto.getContent().length() > 1000) {
+            throw new ValidationException("Nội dung không được vượt quá 1000 ký tự.");
         }
 
         String imageUrl = null;
@@ -99,8 +102,14 @@ public class CommunityPostServiceImpl implements CommunityPostService {
         if (title == null || title.trim().isEmpty()) {
             throw new ValidationException("Tiêu đề không được để trống");
         }
+        if (title.length() > 50) {
+            throw new ValidationException("Tiêu đề không được vượt quá 50 ký tự.");
+        }
         if (content == null || content.trim().isEmpty()) {
             throw new ValidationException("Nội dung không được để trống");
+        }
+        if (content.length() > 1000) {
+            throw new ValidationException("Nội dung không được vượt quá 1000 ký tự.");
         }
 
         CommunityPost post = new CommunityPost();

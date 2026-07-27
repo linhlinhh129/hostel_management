@@ -90,13 +90,68 @@ public class DebtPageServlet extends HttpServlet {
                 request.setAttribute("debt", optDebt.get());
                 request.getRequestDispatcher("/WEB-INF/views/manager/debts/detail.jsp").forward(request, response);
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy công nợ hoặc không thuộc quyền quản lý");
+                com.quanlyphongtro.dao.InvoiceDAO invoiceDAO = new com.quanlyphongtro.dao.InvoiceDAO();
+                com.quanlyphongtro.dto.InvoiceDetailDTO invoiceDTO = invoiceDAO.findById(managerId, invoiceId);
+                if (invoiceDTO != null) {
+                    request.getSession().setAttribute("flashType", "info");
+                    request.getSession().setAttribute("flashMessage", "Hóa đơn " + invoiceDTO.getInvoiceCode() + " chưa quá hạn thanh toán. Công nợ chỉ quản lý các hóa đơn đã quá hạn.");
+                    response.sendRedirect(request.getContextPath() + "/manager/invoices/" + invoiceId);
+                    return;
+                }
+                request.getSession().setAttribute("flashType", "error");
+                request.getSession().setAttribute("flashMessage", "Không tìm thấy công nợ hoặc không thuộc quyền quản lý");
+                response.sendRedirect(request.getContextPath() + "/manager/debts");
             }
         } catch (NumberFormatException e) {
+            request.getSession().setAttribute("flashType", "error");
+            request.getSession().setAttribute("flashMessage", "ID công nợ không hợp lệ.");
             response.sendRedirect(request.getContextPath() + "/manager/debts");
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServletException("Lỗi khi tải chi tiết công nợ: " + e.getMessage(), e);
+            request.getSession().setAttribute("flashType", "error");
+            request.getSession().setAttribute("flashMessage", "Lỗi khi tải chi tiết công nợ: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/manager/debts");
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        UserSessionDTO currentUser = (UserSessionDTO) session.getAttribute("currentUser");
+        if (!"MANAGER".equals(currentUser.getRole())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        if ("remind".equals(action)) {
+            handleRemind(request, response, currentUser.getId());
+        } else {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hành động không hợp lệ");
+        }
+    }
+
+    private void handleRemind(HttpServletRequest request, HttpServletResponse response, int managerId) throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isEmpty()) {
+            request.getSession().setAttribute("flashType", "error");
+            request.getSession().setAttribute("flashMessage", "ID công nợ không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/manager/debts");
+            return;
+        }
+
+        try {
+            int invoiceId = Integer.parseInt(idParam);
+            response.sendRedirect(request.getContextPath() + "/manager/notifications/send-debt-reminder?invoiceId=" + invoiceId);
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("flashType", "error");
+            request.getSession().setAttribute("flashMessage", "ID công nợ không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/manager/debts");
         }
     }
 }

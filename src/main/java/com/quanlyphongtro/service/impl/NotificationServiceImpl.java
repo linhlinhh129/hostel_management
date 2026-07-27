@@ -130,6 +130,13 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Tiêu đề, nội dung và loại đối tượng nhận không được để trống.");
         }
 
+        if (title.trim().length() > 250) {
+            throw new IllegalArgumentException("Tiêu đề không được vượt quá 250 ký tự.");
+        }
+        if (content.trim().length() > 5000) {
+            throw new IllegalArgumentException("Nội dung không được vượt quá 5000 ký tự.");
+        }
+
         Integer facilityId = null;
         Integer roomId = null;
         String targetType;
@@ -202,24 +209,7 @@ public class NotificationServiceImpl implements NotificationService {
         return notification;
     }
 
-    @Override
-    public boolean reportIncorrectInvoice(int invoiceId, Integer managerId)
-            throws AccessDeniedException {
-        Map<String, Object> invoice = notificationDAO.getInvoiceVerifyDetails(invoiceId);
-        if (invoice == null)
-            throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
-        Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
-            throw new AccessDeniedException("Bạn không có quyền báo cáo hóa đơn này.");
-
-        String status = (String) invoice.get("status");
-        if ("PAID".equals(status))
-            throw new IllegalStateException("Không thể báo cáo hóa đơn đã thanh toán.");
-
-        int meterId = (int) invoice.get("meterId");
-        return notificationDAO.updateMeterReadingStatus(meterId, "REPORTED");
-    }
 
     @Override
     public Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId, Integer managerId)
@@ -229,7 +219,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền truy cập hóa đơn này.");
 
         return invoice;
@@ -248,7 +238,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền gửi yêu cầu cho hóa đơn này.");
 
         // Lấy meterId từ bảng invoices qua verify details
@@ -272,7 +262,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền truy cập hóa đơn này.");
 
         return invoice;
@@ -286,7 +276,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (!managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền gửi nhắc nợ cho hóa đơn này.");
 
         Integer roomId = (Integer) invoice.get("roomId");

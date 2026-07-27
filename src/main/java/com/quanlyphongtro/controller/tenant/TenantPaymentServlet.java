@@ -75,6 +75,12 @@ public class TenantPaymentServlet extends BaseServlet {
                 return;
             }
 
+            if (invoice.isMeterReported() || "REPORTED".equalsIgnoreCase(invoice.getMeterReadingStatus())) {
+                setFlashMessage(request, "warning", "Hóa đơn đang được xử lý sai số điện nước, tạm thời chưa thể thanh toán.");
+                response.sendRedirect(request.getContextPath() + "/tenant/invoices/" + invoiceId);
+                return;
+            }
+
             // totalAmount trong Invoice đã bao gồm lateFee từ mapRow()
             BigDecimal total = baseAmount;
 
@@ -94,7 +100,18 @@ public class TenantPaymentServlet extends BaseServlet {
             params.put("vnp_OrderType", "other");
             params.put("vnp_Locale", "vn");
             
-            String returnUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath() + "/tenant/payment/return";
+            String configuredReturnUrl = VNPayConfig.getVnp_ReturnUrl();
+            String returnUrl;
+            if (configuredReturnUrl != null && !configuredReturnUrl.trim().isEmpty() 
+                    && !configuredReturnUrl.contains("localhost") && configuredReturnUrl.contains(request.getServerName())) {
+                returnUrl = configuredReturnUrl.trim();
+            } else {
+                String scheme = request.getScheme();
+                String serverName = request.getServerName();
+                int serverPort = request.getServerPort();
+                String portStr = ((scheme.equals("http") && serverPort == 80) || (scheme.equals("https") && serverPort == 443)) ? "" : (":" + serverPort);
+                returnUrl = scheme + "://" + serverName + portStr + request.getContextPath() + "/tenant/payment/return";
+            }
             params.put("vnp_ReturnUrl", returnUrl);
             params.put("vnp_IpAddr", VNPayConfig.getIpAddress(request));
 
@@ -111,19 +128,20 @@ public class TenantPaymentServlet extends BaseServlet {
 
             StringBuilder hashData = new StringBuilder();
             StringBuilder query = new StringBuilder();
+            boolean isFirst = true;
 
-            for (int i = 0; i < keys.size(); i++) {
-                String k = keys.get(i);
+            for (String k : keys) {
                 String v = params.get(k);
-                if (v != null && !v.isEmpty()) {
+                if (v != null && !v.trim().isEmpty()) {
+                    if (!isFirst) {
+                        hashData.append('&');
+                        query.append('&');
+                    }
                     String encodedKey = URLEncoder.encode(k, StandardCharsets.US_ASCII);
                     String encodedVal = URLEncoder.encode(v, StandardCharsets.US_ASCII);
                     hashData.append(k).append('=').append(encodedVal);
                     query.append(encodedKey).append('=').append(encodedVal);
-                    if (i < keys.size() - 1) {
-                        hashData.append('&');
-                        query.append('&');
-                    }
+                    isFirst = false;
                 }
             }
 

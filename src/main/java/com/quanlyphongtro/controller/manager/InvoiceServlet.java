@@ -15,6 +15,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.quanlyphongtro.dto.RoomDTO;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @WebServlet("/manager/invoices")
 public class InvoiceServlet extends BaseServlet {
     private InvoiceService invoiceService = new InvoiceServiceImpl();
@@ -68,12 +72,33 @@ public class InvoiceServlet extends BaseServlet {
 
     private void showCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO user = getCurrentUser(req);
-        String roomCode = req.getParameter("roomCode");
-        if (roomCode != null && !roomCode.trim().isEmpty() && user != null) {
-            BigDecimal previousDebt = invoiceService.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
-            req.setAttribute("previousDebt", previousDebt);
-            req.setAttribute("prefilledRoomCode", roomCode.trim());
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
         }
+
+        String roomCode = req.getParameter("roomCode");
+        String billingPeriod = req.getParameter("billingPeriod");
+        if (billingPeriod == null || billingPeriod.trim().isEmpty()) {
+            billingPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+        } else {
+            billingPeriod = billingPeriod.trim();
+        }
+
+        try {
+            List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(), billingPeriod);
+            req.setAttribute("availableRooms", availableRooms);
+            req.setAttribute("defaultBillingPeriod", billingPeriod);
+
+            if (roomCode != null && !roomCode.trim().isEmpty()) {
+                BigDecimal previousDebt = invoiceService.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
+                req.setAttribute("previousDebt", previousDebt);
+                req.setAttribute("prefilledRoomCode", roomCode.trim());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         req.getRequestDispatcher("/WEB-INF/views/manager/invoices/create.jsp").forward(req, resp);
     }
 
@@ -81,23 +106,34 @@ public class InvoiceServlet extends BaseServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
         if ("create".equals(action)) {
-            try {
-                UserSessionDTO user = getCurrentUser(req);
-                String roomCode = req.getParameter("roomCode");
-                String billingPeriod = req.getParameter("billingPeriod");
-                String dueDate = req.getParameter("dueDate");
-                String taxRate = req.getParameter("taxRate");
-                String otherFee = req.getParameter("otherFee");
-                String note = req.getParameter("note");
+            UserSessionDTO user = getCurrentUser(req);
+            String roomCode = req.getParameter("roomCode");
+            String billingPeriod = req.getParameter("billingPeriod");
+            String dueDate = req.getParameter("dueDate");
+            String otherFee = req.getParameter("otherFee");
+            String note = req.getParameter("note");
 
-                invoiceService.createInvoice(user.getId(), roomCode, billingPeriod, dueDate, taxRate, otherFee, note, user.getId());
+            try {
+                invoiceService.createInvoice(user.getId(), roomCode, billingPeriod, dueDate, otherFee, note, user.getId());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices");
             } catch (IllegalArgumentException e) {
                 req.setAttribute("errorMessage", e.getMessage());
+                req.setAttribute("prefilledRoomCode", roomCode);
+                try {
+                    List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(), billingPeriod);
+                    req.setAttribute("availableRooms", availableRooms);
+                    req.setAttribute("defaultBillingPeriod", billingPeriod);
+                } catch (Exception ignored) {}
                 req.getRequestDispatcher("/WEB-INF/views/manager/invoices/create.jsp").forward(req, resp);
             } catch (Exception e) {
                 e.printStackTrace();
                 req.setAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
+                req.setAttribute("prefilledRoomCode", roomCode);
+                try {
+                    List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(), billingPeriod);
+                    req.setAttribute("availableRooms", availableRooms);
+                    req.setAttribute("defaultBillingPeriod", billingPeriod);
+                } catch (Exception ignored) {}
                 req.getRequestDispatcher("/WEB-INF/views/manager/invoices/create.jsp").forward(req, resp);
             }
         } else {

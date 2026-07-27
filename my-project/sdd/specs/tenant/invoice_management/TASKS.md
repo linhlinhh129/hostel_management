@@ -482,192 +482,63 @@ https://sandbox.vnpayment.vn/paygate?vnp_Version=2.1.0&vnp_Command=pay&...&vnp_S
 
 ---
 
-## Epic 4: REST APIs (10 points)
+## Epic 4: Servlet Controllers & Views (10 points)
 
-### Task 4.1: Get Invoices List Endpoint (2 points)
+### Task 4.1: TenantInvoiceListServlet (2 points)
 **Priority:** HIGH  
 **Duration:** 1 day  
 **Dependencies:** Task 2.1  
 **Assignee:** Backend Developer
 
 **Description:**
-- Create endpoint: `GET /api/v1/tenant/invoices`
-- Query params: `page` (1-based, default 1), `pageSize` (1-100, default 20)
-- Call InvoiceService.getInvoicesList()
-- Validate pagination parameters
-- Return PaginatedResponse with invoices
-
-**Endpoint:**
-```
-GET /api/v1/tenant/invoices?page=1&pageSize=20
-Authorization: Bearer <jwt_token>
-```
-
-**Response (200 OK):**
-```json
-{
-  "page": 1,
-  "pageSize": 20,
-  "totalItems": 42,
-  "items": [...]
-}
-```
-
-**Error Responses:**
-- 400: Invalid pagination
-- 401: Unauthorized
-- 403: Forbidden (non-tenant)
-- 500: Server error
+- Tạo `TenantInvoiceListServlet` mapped với `@WebServlet("/tenant/invoices")`.
+- Đọc tham số `page` và `pageSize`.
+- Lấy `tenantId` từ Session.
+- Gọi `InvoiceService.getInvoicesList()`, gán attribute `"invoiceList"` và forward sang `/WEB-INF/views/tenant/invoice-list.jsp`.
 
 **Acceptance Criteria:**
-- ✅ Returns paginated invoices
-- ✅ Validates parameters
-- ✅ Proper error codes
-- ✅ Performance < 300ms
-- ✅ Swagger documented
+- ✅ Servlet điều hướng đúng route.
+- ✅ Render danh sách hóa đơn theo đúng Session Tenant.
 
 ---
 
-### Task 4.2: Get Invoice Detail Endpoint (2 points)
+### Task 4.2: TenantInvoiceDetailServlet (2 points)
 **Priority:** HIGH  
 **Duration:** 1 day  
 **Dependencies:** Task 2.2, 2.3  
 **Assignee:** Backend Developer
 
 **Description:**
-- Create endpoint: `GET /api/v1/tenant/invoices/{invoiceId}`
-- Validate invoiceId is positive integer
-- Call InvoiceValidator.validateInvoiceAccess()
-- Call InvoiceService.getInvoiceDetail()
-- Return full invoice DTO
-
-**Endpoint:**
-```
-GET /api/v1/tenant/invoices/1
-Authorization: Bearer <jwt_token>
-```
-
-**Response (200 OK):**
-```json
-{
-  "invoiceId": 1,
-  "code": "INV-HN0103-202606",
-  "breakdown": {...},
-  "totalAmount": 3500000,
-  "status": "UNPAID"
-}
-```
-
-**Error Responses:**
-- 400: Invalid invoiceId
-- 401: Unauthorized
-- 403: Forbidden (not owner)
-- 404: Not found or already paid
-- 409: Conflict (already paid)
-
-**Acceptance Criteria:**
-- ✅ Returns full invoice
-- ✅ Authorization enforced
-- ✅ Proper error codes
-- ✅ Performance < 300ms
-- ✅ Swagger documented
+- Tạo `TenantInvoiceDetailServlet` mapped với `@WebServlet("/tenant/invoice-detail")`.
+- Nhận tham số `id`, validate quyền sở hữu hóa đơn từ Session.
+- Gọi `InvoiceService.getInvoiceDetail()`, gán attribute `"invoice"` và forward sang `/WEB-INF/views/tenant/invoice-detail.jsp`.
 
 ---
 
-### Task 4.3: Create VNPAY Payment URL Endpoint (2 points)
+### Task 4.3: TenantVnPayPaymentServlet (2 points)
 **Priority:** CRITICAL  
 **Duration:** 1.5 days  
 **Dependencies:** Task 3.1, 2.2, 2.3, 2.4  
 **Assignee:** Backend Developer
 
 **Description:**
-- Create endpoint: `POST /api/v1/tenant/invoices/{invoiceId}/payment/vnpay`
-- Validate invoice access (authorization)
-- Extract client IP address
-- Call VNPAYAdapter.generatePaymentUrl()
-- Create payment record (PROCESSING status)
-- Return redirect URL
-
-**Request:**
-```
-POST /api/v1/tenant/invoices/1/payment/vnpay
-Authorization: Bearer <jwt_token>
-Content-Type: application/json
-Body: {} (empty or optional orderInfo)
-```
-
-**Response (200 OK):**
-```json
-{
-  "paymentUrl": "https://sandbox.vnpayment.vn/paygate?...",
-  "invoiceId": 1,
-  "amount": 3500000,
-  "transactionRef": "1-1624276800"
-}
-```
-
-**Error Responses:**
-- 400: Invalid invoiceId
-- 401: Unauthorized
-- 403: Not owner
-- 404: Invoice not found
-- 409: Already paid / Already processing
-
-**Acceptance Criteria:**
-- ✅ URL generated correctly
-- ✅ Hash verified in VNPAY sandbox
-- ✅ Payment record created
-- ✅ Prevents double-payment
-- ✅ Returns valid VNPAY URL
-- ✅ Performance < 500ms
-- ✅ Tested with sandbox
+- Tạo `TenantVnPayPaymentServlet` mapped với `@WebServlet("/tenant/vnpay-payment")` (POST).
+- Tạo URL thanh toán VNPAY Sandbox, khởi tạo bản ghi `payments` ở trạng thái `PROCESSING`.
+- Gọi `response.sendRedirect(vnpayUrl)` để chuyển sang cổng thanh toán VNPAY.
 
 ---
 
-### Task 4.4: VNPAY Return URL Handler (2 points)
+### Task 4.4: VnPayReturnServlet (2 points)
 **Priority:** CRITICAL  
 **Duration:** 1.5 days  
 **Dependencies:** Task 3.3  
 **Assignee:** Backend Developer
 
 **Description:**
-- Create endpoint: `GET /api/v1/payment/vnpay/return`
-- Handle VNPAY redirect after user completes/cancels payment
-- **IMPORTANT:** This is synchronous, but may fail → use IPN as authority
-- Extract query parameters from VNPAY
-- Process VNPAY response
-- Redirect to frontend with status (success/fail)
-- Do NOT rely solely on return URL for DB updates (wait for IPN)
-
-**Flow:**
-```
-User completes payment at VNPAY
-    ↓
-VNPAY redirects to: /api/v1/payment/vnpay/return?vnp_ResponseCode=00&...
-    ↓
-Backend processes response (but doesn't update DB)
-    ↓
-Redirect to frontend: /payment-result?status=processing&invoiceId=1
-    ↓
-VNPAY sends IPN → DB updated
-    ↓
-Frontend polls or receives websocket notification
-```
-
-**Response (Redirect 302):**
-```
-Location: /payment-result?status=processing&invoiceId=1
-Or on error:
-Location: /payment-result?status=failed&invoiceId=1&reason=...
-```
-
-**Acceptance Criteria:**
-- ✅ VNPAY response parsed
-- ✅ Proper redirect URLs
-- ✅ Hash verified
-- ✅ Doesn't update DB (wait for IPN)
-- ✅ Handles invalid/malformed requests
-- ✅ Tested with sandbox
+- Tạo `VnPayReturnServlet` mapped với `@WebServlet("/payment/vnpay-return")` (GET).
+- Tiếp nhận kết quả trả về từ VNPAY, verify SecureHash.
+- Thực thi DB Transaction lưu `payments` và cập nhật hóa đơn `PAID`.
+- Forward sang `/WEB-INF/views/tenant/payment-result.jsp` hoặc Redirect về trang chi tiết hóa đơn.
 
 ---
 
@@ -900,6 +771,28 @@ Authorization: Bearer <jwt_token>
 - ✅ Back button works
 - ✅ Error handling (404, 403, already paid)
 - ✅ Responsive layout
+
+---
+
+### Task 5.2b: Tenant Utility Meter Photos Display (UI Parity với Manager) (2 points) - Completed
+**Priority:** HIGH  
+**Duration:** 1 day  
+**Dependencies:** Task 4.2, 5.2  
+**Assignee:** Frontend & Backend Developer  
+
+**Description:**
+- [x] Bổ sung truyền trường `electric_img` và `water_img` trong `Invoice.java`, `InvoiceDetailDTO` và SQL DAO (`InvoiceDAO.java`).
+- [x] Thiết kế hiển thị thẻ Card xem ảnh chỉ số điện nước trong `src/main/webapp/WEB-INF/views/tenant/invoices/detail.jsp`:
+  - [x] Cấu trúc giao diện tái sử dụng 100% chuẩn Mintlify Card của Manager (`background: #fafafa; border-radius: 8px; header: #f1f5f9; font-weight: 600`).
+  - [x] Hiển thị 2 cột responsive (`col-md-6`) cho **Ảnh công tơ điện** (`electric_img`) và **Ảnh công tơ nước** (`water_img`).
+  - [x] Hỗ trợ di chuột phóng to nhẹ (`transform: scale(1.02)`) và click mở ảnh gốc `target="_blank"`.
+  - [x] Tự động ẩn hoặc hiển thị "Không có ảnh minh chứng" nếu kỳ hóa đơn chốt thủ công.
+
+**Acceptance Criteria:**
+- ✅ Tenant xem được ảnh chỉ số điện và nước thực tế do Operator tải lên.
+- ✅ Giao diện giống 100% form Card của Manager, không khác biệt.
+- ✅ Click vào ảnh mở tab ảnh gốc chất lượng cao.
+- ✅ Responsive trên di động và máy tính.
 
 ---
 

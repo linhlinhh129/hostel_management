@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,12 +34,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || "/".equals(pathInfo)) {
-            String action = req.getParameter("action");
-            if ("report-incorrect".equals(action)) {
-                handleReportIncorrect(req, resp);
-            } else {
-                handleList(req, resp);
-            }
+            handleList(req, resp);
         } else if ("/create".equals(pathInfo)) {
             handleCreateForm(req, resp);
         } else if ("/send-operator".equals(pathInfo)) {
@@ -312,47 +308,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/detail.jsp").forward(req, resp);
     }
 
-    private void handleReportIncorrect(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UserSessionDTO currentUser = getCurrentUser(req);
-        if (currentUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
-            return;
-        }
 
-        String invoiceIdStr = req.getParameter("invoiceId");
-        if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu mã hóa đơn.");
-            return;
-        }
-
-        try {
-            int invoiceId = Integer.parseInt(invoiceIdStr.trim());
-            
-            // Get invoice code for success message
-            Map<String, Object> verify = notificationService.getInvoiceDetailsForSendOperator(invoiceId, currentUser.getId());
-            String invoiceCode = (String) verify.get("code");
-
-            boolean success = notificationService.reportIncorrectInvoice(invoiceId, currentUser.getId());
-            if (success) {
-                setFlashMessage(req, "success", "Đã báo cáo sai số điện nước cho hóa đơn " + invoiceCode + ". Vui lòng gửi thông báo cho Operator.");
-                resp.sendRedirect(req.getContextPath() + "/manager/notifications/send-operator?invoiceId=" + invoiceId);
-            } else {
-                setFlashMessage(req, "danger", "Không thể báo cáo hóa đơn.");
-                resp.sendRedirect(req.getContextPath() + "/manager/notifications");
-            }
-        } catch (AccessDeniedException e) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-        } catch (IllegalStateException e) {
-            setFlashMessage(req, "danger", e.getMessage());
-            resp.sendRedirect(req.getContextPath() + "/manager/notifications");
-        } catch (IllegalArgumentException e) {
-            setFlashMessage(req, "danger", e.getMessage());
-            resp.sendRedirect(req.getContextPath() + "/manager/notifications");
-        } catch (Exception e) {
-            logger.error("Failed to report incorrect invoice", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
 
     private void handleSendOperatorForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
@@ -372,13 +328,17 @@ public class ManagerNotificationsServlet extends BaseServlet {
             Map<String, Object> invoice = notificationService.getInvoiceDetailsForSendOperator(invoiceId, currentUser.getId());
             List<Map<String, Object>> operators = notificationService.getActiveOperatorsForFacility((Integer) invoice.get("facilityId"));
 
+            BigDecimal totalAmt = invoice.get("totalAmount") instanceof BigDecimal ? (BigDecimal) invoice.get("totalAmount") : BigDecimal.ZERO;
+            java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+
             String defaultTitle = "Báo cáo sai số điện nước - Phòng " + invoice.get("roomCode");
             String defaultContent = "Kính gửi nhân viên vận hành,\n\nHóa đơn kỳ " + invoice.get("billingPeriod") + 
-                    " của phòng " + invoice.get("roomCode") + " thuộc cơ sở " + invoice.get("facilityName") + 
-                    " được phát hiện bị nhập sai chỉ số điện nước.\n\nThông tin hiện tại:\n" +
-                    "- Chỉ số điện: " + invoice.get("electric") + " kWh\n" +
-                    "- Chỉ số nước: " + invoice.get("water") + " m3\n\n" +
-                    "Vui lòng kiểm tra thực tế, xác minh lại hình ảnh và cập nhật chỉ số chính xác.";
+                    " của phòng " + invoice.get("roomCode") + " (Mã HĐ: " + invoice.get("code") + ") thuộc cơ sở " + invoice.get("facilityName") + 
+                    " được phát hiện bị nhập sai chỉ số điện nước.\n\nThông tin chỉ số ghi nhận hiện tại:\n" +
+                    "- Chỉ số điện: Cũ " + invoice.get("oldElectric") + " kWh → Mới " + invoice.get("newElectric") + " kWh (Sử dụng: " + invoice.get("electricUsage") + " kWh)\n" +
+                    "- Chỉ số nước: Cũ " + invoice.get("oldWater") + " m³ → Mới " + invoice.get("newWater") + " m³ (Sử dụng: " + invoice.get("waterUsage") + " m³)\n" +
+                    "- Tổng tiền hóa đơn: " + fmt.format(totalAmt) + " đ\n\n" +
+                    "Vui lòng kiểm tra thực tế, xác minh hình ảnh chốt chỉ số và cập nhật số liệu chính xác.";
 
             req.setAttribute("invoice", invoice);
             req.setAttribute("operators", operators);
@@ -426,7 +386,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             } else {
                 setFlashMessage(req, "danger", "Gửi thông báo thất bại.");
             }
-            resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
+            resp.sendRedirect(req.getContextPath() + "/manager/invoices");
 
         } catch (AccessDeniedException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -455,13 +415,18 @@ public class ManagerNotificationsServlet extends BaseServlet {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
             Map<String, Object> invoice = notificationService.getInvoiceDetailsForSendDebt(invoiceId, currentUser.getId());
 
+            BigDecimal baseAmount = invoice.get("baseAmount") instanceof BigDecimal ? (BigDecimal) invoice.get("baseAmount") : BigDecimal.ZERO;
+            BigDecimal lateFee = invoice.get("lateFee") instanceof BigDecimal ? (BigDecimal) invoice.get("lateFee") : BigDecimal.ZERO;
+            BigDecimal totalAmount = invoice.get("totalAmount") instanceof BigDecimal ? (BigDecimal) invoice.get("totalAmount") : BigDecimal.ZERO;
+            java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+
             String defaultTitle = "Nhắc đóng tiền phòng quá hạn - Phòng " + invoice.get("roomCode");
             String defaultContent = "Kính gửi thành viên phòng " + invoice.get("roomCode") + ",\n\n" +
                     "Hóa đơn tháng " + invoice.get("billingPeriod") + " của phòng bạn đã quá hạn thanh toán.\n" +
                     "Chi tiết khoản nợ:\n" +
-                    "- Tiền hóa đơn gốc: " + String.format("%,.0f", invoice.get("baseAmount")) + " đ\n" +
-                    "- Phí chậm nộp (" + invoice.get("overdueDays") + " ngày): " + String.format("%,.0f", invoice.get("lateFee")) + " đ\n" +
-                    "- Tổng cần đóng: " + String.format("%,.0f", invoice.get("totalAmount")) + " đ\n" +
+                    "- Tiền hóa đơn gốc: " + fmt.format(baseAmount) + " đ\n" +
+                    "- Phí chậm nộp (" + invoice.get("overdueDays") + " ngày): " + fmt.format(lateFee) + " đ\n" +
+                    "- Tổng cần đóng: " + fmt.format(totalAmount) + " đ\n" +
                     "- Hạn thanh toán: " + invoice.get("dueDateLabel") + "\n" +
                     "- Số ngày quá hạn: " + invoice.get("overdueDays") + " ngày\n\n" +
                     "Vui lòng thanh toán sớm nhất có thể để tránh phát sinh thêm phí phạt quá hạn hoặc các gián đoạn dịch vụ.\n" +

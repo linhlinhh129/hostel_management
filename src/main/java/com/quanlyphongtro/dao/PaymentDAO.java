@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dao;
+
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
@@ -18,11 +19,13 @@ import java.util.List;
 
 public class PaymentDAO extends BaseDAO {
 
-    public boolean insertPayment(String code, int invoiceId, int roomId, String status, LocalDate paymentDate, String method, BigDecimal amount, int createdBy) {
-        String sql = "INSERT INTO dbo.payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_by) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public boolean insertPayment(String code, int invoiceId, int roomId, String status, LocalDate paymentDate,
+            String method, BigDecimal amount, int createdBy) {
+        String sql = "INSERT INTO dbo.payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_by) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code);
             ps.setInt(2, invoiceId);
             ps.setInt(3, roomId);
@@ -41,7 +44,7 @@ public class PaymentDAO extends BaseDAO {
     public boolean hasPendingPayment(int invoiceId) {
         String sql = "SELECT 1 FROM payments WHERE invoice_id = ? AND status = 'PENDING' AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -52,25 +55,30 @@ public class PaymentDAO extends BaseDAO {
         return false;
     }
 
-    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year, int offset, int limit) {
+    public List<PaymentListItemDTO> findPayments(int managerId, String keyword, String status, String fromDate,
+            String toDate, String month, String year, int offset, int limit) {
         List<PaymentListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, " +
-            "r.code AS room_code, u.full_name AS tenant_name " +
-            "FROM payments p " +
-            "INNER JOIN rooms r ON p.room_id = r.room_id " +
-            "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
-            "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
-        );
-        
+                "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, "
+                        +
+                        "r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name " +
+                        "FROM payments p " +
+                        "INNER JOIN rooms r ON p.room_id = r.room_id " +
+                        "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                        "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
+                        "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = p.room_id AND deleted_at IS NULL ORDER BY created_at DESC) "
+                        +
+                        "LEFT JOIN users u ON COALESCE(p.created_by, c.tenant_id, r.tenant_id) = u.user_id "
+                        +
+                        "WHERE p.deleted_at IS NULL AND f.manager_id = ? ");
+
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND p.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
-        
+
         // Lọc theo khoảng thời gian (fromDate - toDate)
         if (fromDate != null && !fromDate.trim().isEmpty()) {
             sql.append("AND p.payment_date >= ? ");
@@ -78,97 +86,101 @@ public class PaymentDAO extends BaseDAO {
         if (toDate != null && !toDate.trim().isEmpty()) {
             sql.append("AND p.payment_date <= ? ");
         }
-        
+
         // Lọc theo kỳ (tháng/năm)
         if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
             sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
         } else if (year != null && !year.trim().isEmpty()) {
             sql.append("AND YEAR(p.payment_date) = ? ");
         }
-        
+
         sql.append("ORDER BY p.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-             
-             int paramIndex = 1;
-             ps.setInt(paramIndex++, managerId);
-             
-             if (status != null && !status.trim().isEmpty()) {
-                 ps.setString(paramIndex++, status);
-             }
-             if (keyword != null && !keyword.trim().isEmpty()) {
-                 String kw = "%" + keyword + "%";
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-             }
-             
-             if (fromDate != null && !fromDate.trim().isEmpty()) {
-                 ps.setDate(paramIndex++, Date.valueOf(fromDate));
-             }
-             if (toDate != null && !toDate.trim().isEmpty()) {
-                 ps.setDate(paramIndex++, Date.valueOf(toDate));
-             }
-             
-             if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
-                 ps.setInt(paramIndex++, Integer.parseInt(month));
-                 ps.setInt(paramIndex++, Integer.parseInt(year));
-             } else if (year != null && !year.trim().isEmpty()) {
-                 ps.setInt(paramIndex++, Integer.parseInt(year));
-             }
-             
-             ps.setInt(paramIndex++, offset);
-             ps.setInt(paramIndex++, limit);
-             
-             try (ResultSet rs = ps.executeQuery()) {
-                 while (rs.next()) {
-                     PaymentListItemDTO dto = new PaymentListItemDTO();
-                     dto.setPaymentId(rs.getInt("payment_id"));
-                     dto.setTransactionCode(rs.getString("code"));
-                     dto.setAmount(rs.getBigDecimal("payment_amount"));
-                     Timestamp created = rs.getTimestamp("created_at");
-                      if (created != null) {
-                          SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                          dto.setPaymentDate(sdf.format(created));
-                      } else {
-                          Date d = rs.getDate("payment_date");
-                          if (d != null) {
-                              SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                              dto.setPaymentDate(sdf.format(d));
-                          }
-                      }
-                     dto.setPaymentMethod(rs.getString("payment_method"));
-                     dto.setStatus(rs.getString("status"));
-                     dto.setRoomCode(rs.getString("room_code"));
-                     dto.setTenantName(rs.getString("tenant_name"));
-                     list.add(dto);
-                 }
-             }
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, managerId);
+
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+            }
+
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, Date.valueOf(fromDate));
+            }
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, Date.valueOf(toDate));
+            }
+
+            if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+                ps.setInt(paramIndex++, Integer.parseInt(month));
+                ps.setInt(paramIndex++, Integer.parseInt(year));
+            } else if (year != null && !year.trim().isEmpty()) {
+                ps.setInt(paramIndex++, Integer.parseInt(year));
+            }
+
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex++, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PaymentListItemDTO dto = new PaymentListItemDTO();
+                    dto.setPaymentId(rs.getInt("payment_id"));
+                    dto.setTransactionCode(rs.getString("code"));
+                    dto.setAmount(rs.getBigDecimal("payment_amount"));
+                    Timestamp created = rs.getTimestamp("created_at");
+                    if (created != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        dto.setPaymentDate(sdf.format(created));
+                    } else {
+                        Date d = rs.getDate("payment_date");
+                        if (d != null) {
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                            dto.setPaymentDate(sdf.format(d));
+                        }
+                    }
+                    dto.setPaymentMethod(rs.getString("payment_method"));
+                    dto.setStatus(rs.getString("status"));
+                    dto.setRoomCode(rs.getString("room_code"));
+                    dto.setTenantName(rs.getString("tenant_name"));
+                    list.add(dto);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
     }
-    
-    public int countPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month, String year) {
+
+    public int countPayments(int managerId, String keyword, String status, String fromDate, String toDate, String month,
+            String year) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(1) " +
-            "FROM payments p " +
-            "INNER JOIN rooms r ON p.room_id = r.room_id " +
-            "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
-            "WHERE p.deleted_at IS NULL AND f.manager_id = ? "
-        );
-        
+                "SELECT COUNT(1) " +
+                        "FROM payments p " +
+                        "INNER JOIN rooms r ON p.room_id = r.room_id " +
+                        "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                        "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
+                        "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = p.room_id AND deleted_at IS NULL ORDER BY created_at DESC) "
+                        +
+                        "LEFT JOIN users u ON COALESCE(p.created_by, c.tenant_id, r.tenant_id) = u.user_id "
+                        +
+                        "WHERE p.deleted_at IS NULL AND f.manager_id = ? ");
+
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND p.status = ? ");
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
-        
+
         // Lọc theo khoảng thời gian (fromDate - toDate)
         if (fromDate != null && !fromDate.trim().isEmpty()) {
             sql.append("AND p.payment_date >= ? ");
@@ -176,49 +188,49 @@ public class PaymentDAO extends BaseDAO {
         if (toDate != null && !toDate.trim().isEmpty()) {
             sql.append("AND p.payment_date <= ? ");
         }
-        
+
         // Lọc theo kỳ (tháng/năm)
         if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
             sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
         } else if (year != null && !year.trim().isEmpty()) {
             sql.append("AND YEAR(p.payment_date) = ? ");
         }
-        
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-             
-             int paramIndex = 1;
-             ps.setInt(paramIndex++, managerId);
-             
-             if (status != null && !status.trim().isEmpty()) {
-                 ps.setString(paramIndex++, status);
-             }
-             if (keyword != null && !keyword.trim().isEmpty()) {
-                 String kw = "%" + keyword + "%";
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-                 ps.setString(paramIndex++, kw);
-             }
-             
-             if (fromDate != null && !fromDate.trim().isEmpty()) {
-                 ps.setDate(paramIndex++, Date.valueOf(fromDate));
-             }
-             if (toDate != null && !toDate.trim().isEmpty()) {
-                 ps.setDate(paramIndex++, Date.valueOf(toDate));
-             }
-             
-             if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
-                 ps.setInt(paramIndex++, Integer.parseInt(month));
-                 ps.setInt(paramIndex++, Integer.parseInt(year));
-             } else if (year != null && !year.trim().isEmpty()) {
-                 ps.setInt(paramIndex++, Integer.parseInt(year));
-             }
-             
-             try (ResultSet rs = ps.executeQuery()) {
-                 if (rs.next()) {
-                     count = rs.getInt(1);
-                 }
-             }
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, managerId);
+
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+            }
+
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, Date.valueOf(fromDate));
+            }
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, Date.valueOf(toDate));
+            }
+
+            if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+                ps.setInt(paramIndex++, Integer.parseInt(month));
+                ps.setInt(paramIndex++, Integer.parseInt(year));
+            } else if (year != null && !year.trim().isEmpty()) {
+                ps.setInt(paramIndex++, Integer.parseInt(year));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -226,68 +238,73 @@ public class PaymentDAO extends BaseDAO {
     }
 
     public PaymentDetailDTO findById(int managerId, int paymentId) {
-        String sql = "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, " +
-                     "r.code AS room_code, u.full_name AS tenant_name, u.phone AS tenant_phone, u.email AS tenant_email, " +
-                     "f.name AS facility_name, f.address AS facility_address, " +
-                     "i.code AS invoice_code, i.due_date, i.total_amount AS invoice_total, i.note AS invoice_note " +
-                     "FROM payments p " +
-                     "INNER JOIN rooms r ON p.room_id = r.room_id " +
-                     "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "LEFT JOIN users u ON COALESCE(r.tenant_id, (SELECT TOP 1 tenant_id FROM contracts WHERE room_id = r.room_id AND deleted_at IS NULL ORDER BY created_at DESC)) = u.user_id " +
-                     "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
-                     "WHERE p.payment_id = ? AND p.deleted_at IS NULL AND f.manager_id = ?";
-        
+        String sql = "SELECT p.payment_id, p.code, p.payment_amount, p.payment_date, p.payment_method, p.status, p.created_at, "
+                +
+                "r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, u.email AS tenant_email, "
+                +
+                "f.name AS facility_name, f.address AS facility_address, " +
+                "i.code AS invoice_code, i.due_date, i.total_amount AS invoice_total, i.note AS invoice_note " +
+                "FROM payments p " +
+                "INNER JOIN rooms r ON p.room_id = r.room_id " +
+                "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN invoices i ON p.invoice_id = i.invoice_id " +
+                "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = p.room_id AND deleted_at IS NULL ORDER BY created_at DESC) "
+                +
+                "LEFT JOIN users u ON COALESCE(p.created_by, c.tenant_id, r.tenant_id) = u.user_id " +
+                "WHERE p.payment_id = ? AND p.deleted_at IS NULL AND f.manager_id = ?";
+
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-             ps.setInt(1, paymentId);
-             ps.setInt(2, managerId);
-             try (ResultSet rs = ps.executeQuery()) {
-                 if (rs.next()) {
-                     PaymentDetailDTO dto = new PaymentDetailDTO();
-                     dto.setPaymentId(rs.getInt("payment_id"));
-                     dto.setTransactionCode(rs.getString("code"));
-                     dto.setAmount(rs.getBigDecimal("payment_amount"));
-                     Date d = rs.getDate("payment_date");
-                      if (d != null) {
-                          SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                          dto.setPaymentDate(sdf.format(d));
-                      }
-                     dto.setPaymentMethod(rs.getString("payment_method"));
-                     dto.setStatus(rs.getString("status"));
-                     dto.setRoomCode(rs.getString("room_code"));
-                     dto.setTenantName(rs.getString("tenant_name"));
-                     dto.setTenantPhone(rs.getString("tenant_phone"));
-                     dto.setTenantEmail(rs.getString("tenant_email"));
-                     dto.setFacilityName(rs.getString("facility_name"));
-                     dto.setFacilityAddress(rs.getString("facility_address"));
-                     
-                     Timestamp created = rs.getTimestamp("created_at");
-                     if (created != null) {
-                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                         dto.setCreatedAt(sdf.format(created));
-                     }
-                     
-                     dto.setInvoiceCode(rs.getString("invoice_code"));
-                     Date dueD = rs.getDate("due_date");
-                      if (dueD != null) dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(dueD));
-                     dto.setInvoiceTotal(rs.getBigDecimal("invoice_total"));
-                     dto.setInvoiceNote(rs.getString("invoice_note"));
-                     
-                     return dto;
-                 }
-             }
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, paymentId);
+            ps.setInt(2, managerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    PaymentDetailDTO dto = new PaymentDetailDTO();
+                    dto.setPaymentId(rs.getInt("payment_id"));
+                    dto.setTransactionCode(rs.getString("code"));
+                    dto.setAmount(rs.getBigDecimal("payment_amount"));
+                    Date d = rs.getDate("payment_date");
+                    if (d != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                        dto.setPaymentDate(sdf.format(d));
+                    }
+                    dto.setPaymentMethod(rs.getString("payment_method"));
+                    dto.setStatus(rs.getString("status"));
+                    dto.setRoomCode(rs.getString("room_code"));
+                    dto.setTenantName(rs.getString("tenant_name"));
+                    dto.setTenantPhone(rs.getString("tenant_phone"));
+                    dto.setTenantEmail(rs.getString("tenant_email"));
+                    dto.setFacilityName(rs.getString("facility_name"));
+                    dto.setFacilityAddress(rs.getString("facility_address"));
+
+                    Timestamp created = rs.getTimestamp("created_at");
+                    if (created != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        dto.setCreatedAt(sdf.format(created));
+                    }
+
+                    dto.setInvoiceCode(rs.getString("invoice_code"));
+                    Date dueD = rs.getDate("due_date");
+                    if (dueD != null)
+                        dto.setDueDate(new SimpleDateFormat("dd/MM/yyyy").format(dueD));
+                    dto.setInvoiceTotal(rs.getBigDecimal("invoice_total"));
+                    dto.setInvoiceNote(rs.getString("invoice_note"));
+
+                    return dto;
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
-    
+
     public void approvePayment(int paymentId, int approvedBy) throws SQLException {
         String updatePaymentSql = "UPDATE payments SET status = 'SUCCESS', updated_at = GETDATE() " +
-                                  "WHERE payment_id = ? AND status IN ('PENDING', 'REJECTED') AND " +
-                                  "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
+                "WHERE payment_id = ? AND status IN ('PENDING', 'REJECTED') AND " +
+                "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(updatePaymentSql)) {
+                PreparedStatement ps = conn.prepareStatement(updatePaymentSql)) {
             ps.setInt(1, paymentId);
             ps.setInt(2, approvedBy);
             int rows = ps.executeUpdate();
@@ -316,10 +333,10 @@ public class PaymentDAO extends BaseDAO {
 
     public void rejectPayment(int paymentId, int rejectedBy) throws SQLException {
         String updatePaymentSql = "UPDATE payments SET status = 'REJECTED', updated_at = GETDATE() " +
-                                  "WHERE payment_id = ? AND status = 'PENDING' AND " +
-                                  "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
+                "WHERE payment_id = ? AND status = 'PENDING' AND " +
+                "EXISTS (SELECT 1 FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id WHERE r.room_id = payments.room_id AND f.manager_id = ?)";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(updatePaymentSql)) {
+                PreparedStatement ps = conn.prepareStatement(updatePaymentSql)) {
             ps.setInt(1, paymentId);
             ps.setInt(2, rejectedBy);
             ps.executeUpdate();

@@ -53,9 +53,10 @@ Tính năng này giúp nhân viên vận hành có cái nhìn tổng quan về c
 - Hiển thị danh sách các yêu cầu được giao cho user đó, sắp xếp mặc định theo ngày hẹn gần nhất.
 - Hiển thị thông tin tóm tắt cho mỗi yêu cầu gồm:
   - Tiêu đề
-  - Phòng
+  - Thể loại (hiển thị bằng tiếng Việt, ví dụ: Sự cố điện, Sự cố nước)
+  - Số phòng
   - Ngày hẹn
-  - Trạng thái
+  - Trạng thái (hiển thị tiếng Việt)
 
 ### AC02 – Lọc dữ liệu
 
@@ -64,7 +65,7 @@ Tính năng này giúp nhân viên vận hành có cái nhìn tổng quan về c
 **THE SYSTEM SHALL**
 
 - Gọi lại API.
-- Hiển thị danh sách kết quả khớp với điều kiện lọc.
+- Hiển thị danh sách kết quả khớp với điều kiện lọc (lưu ý danh sách dropdown thể loại phải được dịch sang tiếng Việt để người dùng dễ chọn).
 
 ### AC03 – Xem chi tiết yêu cầu
 
@@ -74,7 +75,17 @@ Tính năng này giúp nhân viên vận hành có cái nhìn tổng quan về c
 
 - Chuyển hướng user sang trang "Chi tiết yêu cầu" của ID tương ứng.
 
-### AC04 – Không có dữ liệu
+### AC04 – Validate Lịch hẹn (Xác nhận lịch hẹn)
+
+**WHEN** user chọn thời gian để xác nhận lịch hẹn xử lý yêu cầu
+
+**THE SYSTEM SHALL**
+
+- Ràng buộc thời gian làm việc: chỉ cho phép chọn giờ từ 08:00 sáng đến 18:00 chiều.
+- Ràng buộc ngày: không được chọn ngày trong quá khứ (ngày hôm qua trở về trước).
+- Hiển thị thông báo lỗi nếu user cố tình chọn sai quy định (nhập tay vào thẻ input).
+
+### AC05 – Không có dữ liệu
 
 **WHEN** hệ thống không có dữ liệu cho bộ lọc hiện tại
 

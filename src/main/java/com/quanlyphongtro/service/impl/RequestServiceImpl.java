@@ -74,6 +74,11 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    public boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule, int operatorId) {
+        return requestDAO.updateAppointmentSchedule(requestId, appointSchedule, operatorId);
+    }
+
+    @Override
     public int countManagerTickets(int managerId, String type, String status, String keyword) {
         return requestDAO.countManagerTickets(managerId, type, status, keyword);
     }
@@ -292,8 +297,16 @@ public class RequestServiceImpl implements RequestService {
                 || "CANCELLED".equals(status);
     }
 
+    private boolean isOperatorTicket(int ticketId) {
+        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
+        return ticket != null && "OPERATOR".equals(ticket.get("senderRole"));
+    }
+
     @Override
     public boolean receiveTicket(int ticketId) {
+        if (isOperatorTicket(ticketId)) {
+            return false; // Manager cannot mutate Operator tickets
+        }
         String status = getTicketStatus(ticketId);
         if (status == null || isClosedStatus(status)) {
             return false;
@@ -306,6 +319,9 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public boolean rejectTicket(int ticketId, String reason) {
+        if (isOperatorTicket(ticketId)) {
+            return false; // Manager cannot mutate Operator tickets
+        }
         String status = getTicketStatus(ticketId);
         if (status == null || isClosedStatus(status)) {
             return false;
@@ -315,26 +331,24 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public boolean scheduleTicket(int ticketId, LocalDateTime scheduleTime) {
+        if (isOperatorTicket(ticketId)) {
+            return false; // Manager cannot schedule Operator tickets
+        }
         String status = getTicketStatus(ticketId);
         if (status == null || isClosedStatus(status)) {
             return false;
-        }
-        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
-        if (ticket != null && "OPERATOR".equals(ticket.get("senderRole"))) {
-            return false; // Manager cannot schedule Operator tickets
         }
         return requestDAO.scheduleTicket(ticketId, scheduleTime);
     }
 
     @Override
     public boolean completeTicket(int ticketId, String notes, String attachmentUrls2) {
+        if (isOperatorTicket(ticketId)) {
+            return false; // Manager cannot complete Operator tickets
+        }
         String status = getTicketStatus(ticketId);
         if (status == null || isClosedStatus(status)) {
             return false;
-        }
-        Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
-        if (ticket != null && "OPERATOR".equals(ticket.get("senderRole"))) {
-            return false; // Manager cannot complete Operator tickets
         }
         return requestDAO.completeTicket(ticketId, notes, attachmentUrls2);
     }
@@ -342,13 +356,12 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public boolean rescheduleTicket(int ticketId, LocalDateTime newTime, String reason, int managerId,
             String ipAddress) throws Exception {
+        if (isOperatorTicket(ticketId)) {
+            throw new IllegalStateException("Manager chỉ có quyền xem và theo dõi sự cố của Operator, không thể thao tác.");
+        }
         Map<String, Object> ticket = requestDAO.getManagerTicketDetail(ticketId);
         if (ticket == null) {
             return false;
-        }
-
-        if ("OPERATOR".equals(ticket.get("senderRole"))) {
-            throw new IllegalStateException("Manager không có quyền dời lịch hẹn sự cố của Operator.");
         }
 
         Integer ownerManagerId = (Integer) ticket.get("managerId");

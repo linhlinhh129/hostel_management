@@ -97,7 +97,7 @@ public class ProfileServlet extends BaseServlet {
                 if (identityNumber != null && !identityNumber.trim().isEmpty()) {
                     if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
                         setFlashMessage(request, "error",
-                            "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+                            "Số CCCD không hợp lệ (phải gồm 12 chữ số).");
                         response.sendRedirect(request.getContextPath() + "/profile");
                         return;
                     }
@@ -107,7 +107,19 @@ public class ProfileServlet extends BaseServlet {
                 user.setPhone(phone);
                 user.setIdentityNumber(identityNumber);
                 if (dobStr != null && !dobStr.isBlank()) {
-                    user.setDob(LocalDate.parse(dobStr));
+                    try {
+                        LocalDate dob = LocalDate.parse(dobStr.trim());
+                        if (!ValidationUtil.isAtLeast18YearsOld(dob)) {
+                            setFlashMessage(request, "error", "Bạn phải từ 18 tuổi trở lên.");
+                            response.sendRedirect(request.getContextPath() + "/profile");
+                            return;
+                        }
+                        user.setDob(dob);
+                    } catch (Exception e) {
+                        setFlashMessage(request, "error", "Ngày sinh không hợp lệ.");
+                        response.sendRedirect(request.getContextPath() + "/profile");
+                        return;
+                    }
                 }
                 user.setGender(gender);
                 user.setPermanentAddress(permanentAddress);

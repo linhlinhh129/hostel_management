@@ -19,6 +19,7 @@ public interface RequestService {
     boolean rejectRequest(int requestId, int operatorId, String reason);
     boolean completeRequest(int requestId, String notes, String attachmentUrls2);
     boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule);
+    boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule, int operatorId);
 
     // Manager methods
     int countManagerTickets(int managerId, String type, String status, String keyword);

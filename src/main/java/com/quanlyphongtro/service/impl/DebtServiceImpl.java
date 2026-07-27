@@ -32,23 +32,17 @@ public class DebtServiceImpl implements DebtService {
             }
             dto.setDebtAmount(debtAmount);
             
-            // Calculate overdue days
-            int overdueDays = 0;
-            if (dto.getDueDate() != null && today.isAfter(dto.getDueDate())) {
-                overdueDays = (int) ChronoUnit.DAYS.between(dto.getDueDate(), today);
-                if ("UNPAID".equals(dto.getStatus())) {
-                    dto.setStatus("OVERDUE");
+            if (dto.getDueDate() != null) {
+                if (today.isAfter(dto.getDueDate())) {
+                    if ("UNPAID".equals(dto.getStatus())) {
+                        dto.setStatus("OVERDUE");
+                    }
+                } else if (!today.isAfter(dto.getDueDate())) {
+                    if ("OVERDUE".equals(dto.getStatus())) {
+                        dto.setStatus("UNPAID");
+                    }
                 }
             }
-            dto.setOverdueDays(overdueDays);
-            
-            // Calculate late fee preview
-            BigDecimal lateFee = BigDecimal.ZERO;
-            if ("OVERDUE".equals(dto.getStatus()) && overdueDays > 0) {
-                BigDecimal roomFee = dto.getRoomFee() != null ? dto.getRoomFee() : BigDecimal.ZERO;
-                lateFee = roomFee.multiply(new BigDecimal("0.01")).multiply(new BigDecimal(overdueDays));
-            }
-            dto.setLateFeePreview(lateFee);
         }
         
         return list;
@@ -76,24 +70,39 @@ public class DebtServiceImpl implements DebtService {
             }
             dto.setDebtAmount(debtAmount);
             
-            // Calculate overdue days
-            int overdueDays = 0;
-            if (dto.getDueDate() != null && today.isAfter(dto.getDueDate())) {
-                overdueDays = (int) ChronoUnit.DAYS.between(dto.getDueDate(), today);
-                if ("UNPAID".equals(dto.getStatus())) {
-                    dto.setStatus("OVERDUE");
+            if (dto.getDueDate() != null) {
+                if (today.isAfter(dto.getDueDate())) {
+                    if ("UNPAID".equals(dto.getStatus())) {
+                        dto.setStatus("OVERDUE");
+                    }
+                } else if (!today.isAfter(dto.getDueDate())) {
+                    if ("OVERDUE".equals(dto.getStatus())) {
+                        dto.setStatus("UNPAID");
+                    }
                 }
             }
-            dto.setOverdueDays(overdueDays);
-            
-            // Calculate late fee preview
-            BigDecimal lateFee = BigDecimal.ZERO;
-            if ("OVERDUE".equals(dto.getStatus()) && overdueDays > 0) {
-                BigDecimal roomFee = dto.getRoomFee() != null ? dto.getRoomFee() : BigDecimal.ZERO;
-                lateFee = roomFee.multiply(new BigDecimal("0.01")).multiply(new BigDecimal(overdueDays));
-            }
-            dto.setLateFeePreview(lateFee);
         }
         return opt;
+    }
+
+    @Override
+    public void sendRemindNotification(int managerId, int invoiceId) throws Exception {
+        Optional<DebtDetailDTO> optDebt = getDebtDetail(managerId, invoiceId);
+        if (optDebt.isEmpty()) {
+            throw new Exception("Không tìm thấy công nợ hoặc không thuộc quyền quản lý");
+        }
+        DebtDetailDTO debt = optDebt.get();
+        if ("PAID".equals(debt.getStatus())) {
+            throw new Exception("Hóa đơn này đã được thanh toán");
+        }
+        
+        com.quanlyphongtro.dao.NotificationDAO notificationDAO = new com.quanlyphongtro.dao.NotificationDAO();
+        String title = "Nhắc nhở thanh toán hóa đơn " + debt.getInvoiceCode();
+        String content = String.format("Bạn có một hóa đơn chưa thanh toán. Kỳ: %s, Hạn thanh toán: %s, Số tiền cần thanh toán: %,.0f đ. Vui lòng thanh toán sớm để tránh bị phạt phí trả chậm.",
+            debt.getBillingPeriod(), debt.getDueDate(), debt.getDebtAmount());
+            
+        notificationDAO.insertNotificationAndGetId(
+            "INVOICE_REMINDER", title, content, "ROOM", debt.getFacilityId(), debt.getRoomId(), managerId
+        );
     }
 }

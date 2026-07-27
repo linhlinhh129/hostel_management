@@ -1,6 +1,6 @@
 # CONTEXT.md \[Quản lý hợp đồng\]
 
-# Người viết: Bùi Đỉnh | Ngày: 2026-06-13
+# Người viết: Nhật | Ngày: 2026-06-13
 
 ## 1. PROBLEM STATEMENT
 

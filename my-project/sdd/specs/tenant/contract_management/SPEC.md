@@ -124,43 +124,41 @@ CONTRACT_NOT_FOUND
 
 ---
 
-# 4. API Contract
+# 4. Servlet Routes & Page Controller Contract
 
-## 4.1 Danh sách hợp đồng của tôi
+## 4.1 Màn hình Danh sách hợp đồng của tôi
 
-### Endpoint
+### Servlet Mapping
 
 ```http
-GET /api/v1/tenant/contracts
+GET /tenant/contracts
 ```
 
-### Response
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "contractId": 1,
-      "code": "HD-0001",
-      "roomCode": "A101",
-      "startDate": "2026-01-01",
-      "endDate": "2026-12-31",
-      "status": "ACTIVE"
-    }
-  ]
-}
-```
+### Xử lý Request & View
+- **Servlet:** `TenantContractListServlet`
+- **Mô tả:** Tiếp nhận request từ người thuê, lấy `tenant_id` từ `HttpSession`, gọi Service lấy danh sách hợp đồng thuộc người thuê này và chuyển dữ liệu sang giao diện JSP.
+- **Scope & Attribute Name:** `request.setAttribute("contractList", List<ContractDTO>)`
+- **Forward View:** `/WEB-INF/views/tenant/contract-list.jsp`
 
 ---
 
-## 4.2 Chi tiết hợp đồng
+## 4.2 Màn hình Chi tiết hợp đồng
 
-### Endpoint
+### Servlet Mapping
 
 ```http
-GET /api/v1/tenant/contracts/{contractId}
+GET /tenant/contract-detail?id={contractId}
 ```
+
+### Xử lý Request & View
+- **Servlet:** `TenantContractDetailServlet`
+- **Parameter:** `id` (mã định danh hợp đồng `contractId`)
+- **Mô tả:** Lấy thông tin chi tiết hợp đồng theo `id`. Kiểm tra xem hợp đồng đó có thuộc `tenant_id` của người dùng hiện tại không.
+- **Scope & Attribute Name:** `request.setAttribute("contract", ContractDetailDTO)`
+- **Forward View:** `/WEB-INF/views/tenant/contract-detail.jsp`
+- **Trường hợp lỗi:**
+  - Nếu `id` không tồn tại: Chuyển hướng hoặc Forward đến trang lỗi 404 (Contract Not Found).
+  - Nếu hợp đồng không thuộc về `tenant_id` đang đăng nhập: Chuyển hướng hoặc Forward đến trang lỗi 403 (Access Denied).
 
 ---
 
@@ -220,24 +218,24 @@ Không hiển thị các nút:
 
 # 7. Technical Constraints
 
-- Chỉ người dùng có vai trò `TENANT` mới được truy cập.
+- Chỉ người dùng có vai trò `TENANT` trong `HttpSession` mới được truy cập các Servlet này.
 
 - Chỉ truy vấn các hợp đồng có `tenant_id = currentUser.id`.
 
 - Toàn bộ dữ liệu hiển thị ở chế độ chỉ đọc.
 
-- Không cho phép thay đổi dữ liệu thông qua API của người thuê.
+- Không cho phép thay đổi dữ liệu thông qua bất kỳ Servlet/Action nào của người thuê.
 
 ---
 
-# 8. Error Codes
+# 8. Error Codes & Redirection
 
-| Error Code | HTTP | Description |
+| Error Code | Status / Action | Description |
 | --- | --- | --- |
-| UNAUTHORIZED | 401 | Chưa đăng nhập |
-| FORBIDDEN | 403 | Không có quyền truy cập |
-| CONTRACT_ACCESS_DENIED | 403 | Không có quyền xem hợp đồng này |
-| CONTRACT_NOT_FOUND | 404 | Không tìm thấy hợp đồng |
+| UNAUTHORIZED | Redirect `/login` | Chưa đăng nhập (Session không tồn tại) |
+| FORBIDDEN | Forward 403 Page | Không có vai trò TENANT |
+| CONTRACT_ACCESS_DENIED | Forward 403 Page | Hợp đồng yêu cầu không thuộc về tài khoản đang đăng nhập |
+| CONTRACT_NOT_FOUND | Forward 404 Page | Không tìm thấy mã hợp đồng tương ứng |
 
 ---
 

@@ -111,6 +111,42 @@
                         </div>
                     </div>
 
+                    <c:if test="${not empty invoice.electricImg or not empty invoice.waterImg}">
+                        <div class="widget-surface mb-3">
+                            <div class="widget-surface-header"><h3>Ảnh chỉ số điện nước</h3></div>
+                            <div class="widget-surface-body">
+                                <div class="row g-3">
+                                    <c:if test="${not empty invoice.electricImg}">
+                                        <div class="col-md-6">
+                                            <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                                                <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                                                    Ảnh công tơ điện
+                                                </div>
+                                                <div class="p-2 text-center">
+                                                    <c:url value="${invoice.electricImg}" var="electricImgUrl"/>
+                                                    <img src="${electricImgUrl}" alt="Ảnh chỉ số điện" title="Click để phóng to ảnh" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: zoom-in; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';" onclick="showFullImage(this.src)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                    <c:if test="${not empty invoice.waterImg}">
+                                        <div class="col-md-6">
+                                            <div class="card border h-100" style="border-radius: 8px; overflow: hidden; background: #fafafa;">
+                                                <div style="padding: 10px 15px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 0.875rem;">
+                                                    Ảnh công tơ nước
+                                                </div>
+                                                <div class="p-2 text-center">
+                                                    <c:url value="${invoice.waterImg}" var="waterImgUrl"/>
+                                                    <img src="${waterImgUrl}" alt="Ảnh chỉ số nước" title="Click để phóng to ảnh" style="max-width: 100%; max-height: 250px; border-radius: 6px; object-fit: contain; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: zoom-in; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)';" onmouseout="this.style.transform='scale(1)';" onclick="showFullImage(this.src)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
+
                     <c:if test="${not empty invoice.note}">
                         <div class="widget-surface mb-3">
                             <div class="widget-surface-header"><h3>Ghi chú</h3></div>
@@ -139,6 +175,9 @@
                             </c:if>
                             <div class="mb-2">
                                 <c:choose>
+                                    <c:when test="${invoice.meterReadingStatus == 'REPORTED' or invoice.isMeterReported()}">
+                                        <span class="badge-hms badge-warning" style="background-color:#f59e0b;color:#fff">⚠️ Đang xử lý sai số điện nước</span>
+                                    </c:when>
                                     <c:when test="${invoice.status == 'PAID'}">
                                         <span class="badge-hms badge-success">✓ Đã thanh toán</span>
                                     </c:when>
@@ -160,36 +199,70 @@
                     </div>
 
                     <%-- Hướng dẫn thanh toán & VNPAY --%>
-                    <c:if test="${not invoice.hasPendingPayment and (invoice.status == 'UNPAID' or invoice.status == 'OVERDUE')}">
-                        <div class="widget-surface" style="background:var(--hms-accent-bg); border-color:var(--hms-accent);">
-                            <div class="widget-surface-header border-bottom-0 pb-0">
-                                <h3 style="color:var(--hms-ink)">💳 Thanh toán</h3>
-                            </div>
-                            <div class="widget-surface-body">
-                                <div style="font-size:0.8125rem;color:var(--hms-slate);line-height:1.7;margin-bottom:1rem">
-                                    <div>Ngân hàng: <strong>Vietcombank</strong></div>
-                                    <div>Số tài khoản: <strong style="font-family:var(--hms-font-mono)">1234567890</strong></div>
-                                    <div>Chủ tài khoản: <strong>Công ty Quản lý Nhà trọ</strong></div>
-                                    <div>Nội dung CK: <strong style="font-family:var(--hms-font-mono)">
-                                        <c:out value="${invoice.code}"/>
-                                    </strong></div>
-                                </div>
-                                <hr/>
-                                <div class="d-grid mt-3">
-                                    <form method="post" action="${ctx}/tenant/payment/create">
-                                        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-                                        <input type="hidden" name="invoiceId" value="${invoice.id}"/>
-                                        <input type="hidden" name="amount" value="${totalAmountToPay}"/>
-                                        <button type="submit" class="btn btn-mintlify-primary w-100">
-                                            Thanh toán qua VNPAY
-                                        </button>
-                                    </form>
+                    <c:choose>
+                        <c:when test="${invoice.meterReadingStatus == 'REPORTED' or invoice.isMeterReported()}">
+                            <div class="widget-surface" style="background:#fffbeb; border:1px solid #fde68a;">
+                                <div class="widget-surface-body text-center p-3">
+                                    <div style="font-size:1.5rem;margin-bottom:0.25rem">⚠️</div>
+                                    <h4 style="font-size:0.9375rem;font-weight:700;color:#92400e;margin-bottom:0.25rem">Đang xử lý sai số điện nước</h4>
+                                    <p style="font-size:0.8125rem;color:#b45309;margin:0;line-height:1.5">
+                                        Hóa đơn này đang được nhân viên vận hành kiểm tra và xác minh lại chỉ số điện nước. Tạm thời nút thanh toán bị khóa cho tới khi có số liệu cập nhật.
+                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    </c:if>
+                        </c:when>
+                        <c:when test="${not invoice.hasPendingPayment and (invoice.status == 'UNPAID' or invoice.status == 'OVERDUE')}">
+                            <div class="widget-surface" style="background:var(--hms-accent-bg); border-color:var(--hms-accent);">
+                                <div class="widget-surface-header border-bottom-0 pb-0">
+                                    <h3 style="color:var(--hms-ink)">💳 Thanh toán</h3>
+                                </div>
+                                <div class="widget-surface-body">
+                                    <div style="font-size:0.8125rem;color:var(--hms-slate);line-height:1.7;margin-bottom:1rem">
+                                        <div>Ngân hàng: <strong>Vietcombank</strong></div>
+                                        <div>Số tài khoản: <strong style="font-family:var(--hms-font-mono)">1234567890</strong></div>
+                                        <div>Chủ tài khoản: <strong>Công ty Quản lý Nhà trọ</strong></div>
+                                        <div>Nội dung CK: <strong style="font-family:var(--hms-font-mono)">
+                                            <c:out value="${invoice.code}"/>
+                                        </strong></div>
+                                    </div>
+                                    <hr/>
+                                    <div class="d-grid mt-3">
+                                        <form method="post" action="${ctx}/tenant/payment/create">
+                                            <input type="hidden" name="csrfToken" value="${csrfToken}"/>
+                                            <input type="hidden" name="invoiceId" value="${invoice.id}"/>
+                                            <input type="hidden" name="amount" value="${totalAmountToPay}"/>
+                                            <button type="submit" class="btn btn-mintlify-primary w-100">
+                                                Thanh toán qua VNPAY
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:when>
+                    </c:choose>
                 </div>
             </div>
         </main>
     </div></div>
+    <script>
+        function showFullImage(imageSrc) {
+            document.getElementById('modalImagePreview').src = imageSrc;
+            var imgModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+            imgModal.show();
+        }
+    </script>
+
+    <!-- Modal xem ảnh lớn -->
+    <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 justify-content-end p-2">
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <img id="modalImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain;" alt="Ảnh phóng to">
+                </div>
+            </div>
+        </div>
+    </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

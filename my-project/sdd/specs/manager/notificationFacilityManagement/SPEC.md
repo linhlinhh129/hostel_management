@@ -1,121 +1,77 @@
-# **Feature: Quản lý thông báo cho ban quản lý**
+# Feature Specification: Quản lý thông báo & Báo cáo sai số điện nước cho Ban quản lý và Operator
 
-Status: Completed
-
-Author: Antigravity
-
-Reviewer: [Tên]
-
-Date: 2026-07-14
-
-Priority: High
+**Feature Branch**: `notificationFacilityManagement`  
+**Created**: 2026-07-25  
+**Status**: Draft (Updated: Only View Action in List & Removed Delete Flow)  
+**Input**: "Trong module Hóa đơn mọi thao tác phải nằm trong nút 'xem', tức là mọi thao tác 'Báo cáo sai số điện nước' sẽ nằm trong xem chi tiết chứ không phải nằm ở cột thao tác bên ngoài hãy xóa bỏ. Ở tại module hóa đơn đang có luồng xóa hóa đơn đối với hóa đơn chưa thanh toán bạn hãy xóa bỏ luồng đó cho tôi."
 
 ---
 
-## **1. Business Context**
+## 1. Business Context
 
-Tính năng Quản lý thông báo cho Ban quản lý cho phép Manager gửi thông báo chung (theo cơ sở hoặc phòng được phân quyền) tới người thuê trọ. Ngoài ra, tính năng này còn tích hợp luồng gửi nhắc nợ tiền phòng quá hạn (đến phòng có hóa đơn nợ) và xử lý sai lệch chỉ số điện nước thông qua giao dịch báo cáo sai lệch chỉ số điện nước và gửi yêu cầu sửa đổi công việc trực tiếp cho Operator để kiểm tra thực tế.
-
----
-
-## **2. User Stories**
-
-### **Story 1 (Happy Path)**
-
-As a Manager, I want to gửi thông báo chung cho toàn cơ sở hoặc một phòng cụ thể trong phạm vi quản lý so that cư dân nhận được thông tin vận hành quan trọng kịp thời.
-
-### **Story 2 (Happy Path)**
-
-As a Manager, I want to gửi thông báo nhắc nợ quá hạn dựa trên một hóa đơn chưa thanh toán so that tôi đôn đốc cư dân thanh toán tiền phòng đúng hẹn.
-
-### **Story 3 (Happy Path)**
-
-As a Manager, when phát hiện hóa đơn có chỉ số điện nước nhập sai, I want to báo cáo sai lệch và chuyển tiếp yêu cầu sửa đổi cho Operator kiểm tra so that chỉ số được cập nhật chính xác trước khi cư dân thanh toán.
+Tính năng Quản lý thông báo & Báo cáo sai số điện nước chuẩn hóa luồng giao diện cho Manager trong Module Hóa Đơn:
+1. **Danh sách Hóa đơn (`/manager/invoices`)**: Cột thao tác của bảng danh sách **chỉ chứa nút "Xem"**. Tất cả các nút bấm khác (như "Báo sai số" bên ngoài và "Xóa hóa đơn") đều bị loại bỏ khỏi bảng danh sách.
+2. **Chi tiết Hóa đơn (`/manager/invoices/{id}`)**: Sau khi Manager nhấn "Xem" để vào trang chi tiết, nút **"Báo cáo sai số"** mới xuất hiện cho các hóa đơn chưa thanh toán.
+3. **Loại bỏ Luồng Xóa Hóa đơn**: Hệ thống hoàn toàn loại bỏ tính năng/luồng xóa hóa đơn (Delete Invoice) đối với các hóa đơn chưa thanh toán.
+4. **Form Báo cáo sai số (`send_operator.jsp`)**: Khi nhấn "Báo cáo sai số" từ trang chi tiết hóa đơn, hệ thống chuyển hướng sang `GET /manager/notifications/send-operator?invoiceId={id}` tự động điền Tiêu đề và Nội dung chi tiết chỉ số điện/nước.
+5. **Đẩy sang Operator (`/operator/requests`)**: Manager gửi yêu cầu, hệ thống tạo bản ghi công việc `UTILITY` `PENDING` đẩy sang Module Danh sách Yêu cầu của Operator để xem, tiếp nhận (`IN_PROGRESS`) và báo cáo hoàn thành (`COMPLETED`).
 
 ---
 
-## **3. Acceptance Criteria (EARS)**
+## Clarifications
 
-### **Gửi thông báo**
+### Session 2026-07-25
 
-WHEN Manager submit thông báo với tiêu đề, nội dung và phạm vi là cơ sở hoặc phòng được phân công THE SYSTEM SHALL chèn bản ghi mới vào bảng `dbo.notifications` với trạng thái `SENT`.
-
-WHEN Manager tries to send a global notification to the entire system THE SYSTEM SHALL reject and return HTTP 403 Forbidden.
-
-### **Nhắc nợ quá hạn**
-
-WHEN Manager sends debt reminder for an overdue invoice THE SYSTEM SHALL generate a notification with code prefix `NTF-DEBT-` targeting the room of that invoice.
-
-### **Báo cáo sai chỉ số điện nước**
-
-WHEN Manager reports incorrect meter readings and sends operator request THE SYSTEM SHALL update meter reading status to `REPORTED` AND insert a new request under `UTILITY` category with status `PENDING` assigned to Operator.
+- Q: Thao tác bên ngoài bảng danh sách Hóa đơn (`/manager/invoices`) có các nút nào? → A: Chỉ duy nhất nút **"Xem"** nằm trong cột thao tác của bảng danh sách. Nút "Báo sai số" bên ngoài đã bị xóa bỏ.
+- Q: Luồng xóa hóa đơn (Delete Invoice) chưa thanh toán xử lý thế nào? → A: Luồng xóa hóa đơn chưa thanh toán đã bị hoàn toàn loại bỏ khỏi giao diện Module Hóa Đơn.
+- Q: Thao tác "Báo cáo sai số" nằm ở đâu? → A: Nằm duy nhất trong trang **Xem chi tiết Hóa đơn (`/manager/invoices/{id}`)**.
 
 ---
 
-## **4. Servlet Contract**
+## 2. User Scenarios & Testing *(mandatory)*
 
-### **4.1 Servlet Entry Point**
+### User Story 1 - Thao tác Báo cáo sai số từ trang Xem Chi tiết Hóa đơn (Priority: P1)
 
-| Thuộc tính | Giá trị |
-| --- | --- |
-| **Servlet** | `ManagerNotificationsServlet` |
-| **URL Pattern** | `GET /manager/notifications` — danh sách thông báo và các hóa đơn báo lỗi |
-| **URL Pattern** | `GET /manager/notifications/create` — form tạo thông báo chung |
-| **URL Pattern** | `POST /manager/notifications/create` — submit gửi thông báo chung |
-| **URL Pattern** | `GET /manager/notifications/send-debt-reminder` — form nhắc nợ quá hạn |
-| **URL Pattern** | `POST /manager/notifications/send-debt-reminder` — submit gửi nhắc nợ |
-| **URL Pattern** | `GET /manager/notifications/send-operator` — form gửi yêu cầu Operator |
-| **URL Pattern** | `POST /manager/notifications/send-operator` — submit gửi yêu cầu Operator |
-| **Phân quyền** | Dành cho Manager (Kiểm tra qua `UserSessionDTO` / `currentUser` trong session) |
+As a Manager, tại trang danh sách Hóa đơn (`/manager/invoices`), I want to chỉ nhìn thấy nút **"Xem"** trên mỗi dòng hóa đơn so that tôi nhấn nút "Xem" để truy cập vào trang Chi tiết Hóa đơn (`/manager/invoices/{id}`) và thực hiện nút bấm "Báo cáo sai số" bên trong đó.
 
----
+**Acceptance Scenarios**:
 
-### **4.2 Request Attributes — Danh sách (list.jsp)**
+1. **Giao diện Bảng Danh sách Hóa đơn**:
+   - **Given** Manager truy cập `/manager/invoices`,
+   - **Then** Cột thao tác của bảng danh sách chỉ hiển thị duy nhất nút **"Xem"**. Không hiển thị nút "Báo sai số" hay nút "Xóa".
 
-| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
-| --- | --- | --- | --- |
-| `notifications` | `List<Notification>` | `notificationService.getManagerNotifications(...)` | Danh sách thông báo (dành cho tab `general` hoặc `payment-reminder`) |
-| `incorrectInvoices` | `List<Map<String, Object>>`| `notificationService.getIncorrectInvoices(...)` | Danh sách hóa đơn báo sai chỉ số (dành cho tab `incorrect-utility`) |
-| `currentPage`, `totalPages` | `int` | Xử lý logic phân trang | Phục vụ điều hướng phân trang |
-| `tab` | `String` | Query Params | Tab đang được hiển thị (`general`, `payment-reminder`, `incorrect-utility`) |
+2. **Giao diện Trang Chi tiết Hóa đơn**:
+   - **Given** Manager nhấn nút "Xem" và vào trang `/manager/invoices/{id}`,
+   - **Then** Trang chi tiết hiển thị nút **"Báo cáo sai số"** (đối với hóa đơn chưa thanh toán). Không hiển thị nút "Xóa Hóa Đơn".
+
+3. **Chuyển hướng sang Form Gửi Operator**:
+   - **When** Manager nhấn nút "Báo cáo sai số" trong trang chi tiết,
+   - **Then** Hệ thống chuyển hướng tới `GET /manager/notifications/send-operator?invoiceId={id}` nạp sẵn Tiêu đề và Nội dung chi tiết chỉ số.
 
 ---
 
-### **4.3 Request Attributes — Chi tiết / Tạo mới (send_operator.jsp & send_debt_reminder.jsp)**
+### User Story 2 - Operator xem và xử lý Yêu cầu báo sai số (Priority: P1)
 
-| Attribute | Java Type | Nguồn dữ liệu | Mô tả |
-| --- | --- | --- | --- |
-| `invoice` | `Map<String, Object>` | `notificationService.getInvoiceDetails(...)` | Thông tin chi tiết hóa đơn phục vụ nhắc nợ / báo cáo sai số |
-| `operators` | `List<User>` | `notificationService.getActiveOperatorsForFacility(...)`| Danh sách các Operator đang hoạt động tại cơ sở tương ứng |
+As an Operator, khi truy cập Module Danh sách Yêu cầu (`/operator/requests`), I want to xem tiêu đề và nội dung chi tiết về báo cáo sai số điện nước, bấm **"Xác nhận & Đặt lịch xử lý"** (`IN_PROGRESS`), sau đó bấm **"Xác nhận hoàn thành"** (`COMPLETED`) với ghi chú hoàn thành tùy chọn.
 
 ---
 
-### **4.4 Xử lý lỗi (Servlet Behavior)**
+## 3. Requirements *(mandatory)*
 
-| Tình huống | Hành vi |
-| --- | --- |
-| Chưa đăng nhập | Redirect về `/login` |
-| Gửi thông báo toàn hệ thống (`ALL`) | Trả về lỗi `403 Forbidden` |
-| Tiêu đề hoặc nội dung bỏ trống | Gán `error` message vào Session và redirect về lại trang điền form |
-| Lỗi ghi nhận giao dịch Database | Thực hiện rollback giao dịch, gán `error` message và redirect |
-| Thao tác ngoài cơ sở quản lý | Trả về lỗi `403 Forbidden` |
+### Functional Requirements
 
----
-
-## **5. Technical Constraints**
-
-- **Phân quyền và Bảo mật:**
-  - Manager chỉ được quản lý thông báo, gửi nhắc nợ và yêu cầu Operator trong phạm vi các phòng thuộc cơ sở được phân công quản lý (`manager_id` trong `dbo.facilities`).
-- **Tính toàn vẹn dữ liệu (Transaction):**
-  - Giao dịch báo cáo sai chỉ số điện nước (`sendOperatorRequestTransaction`) bắt buộc phải được bọc trong một Database Transaction để đảm bảo trạng thái chỉ số cập nhật sang `REPORTED` và chèn bản ghi yêu cầu hỗ trợ `'PENDING'` gán cho Operator luôn đồng bộ.
-- **Hiệu năng (Performance):**
-  - Thời gian phản hồi khi tải danh sách thông báo theo các tab phân hệ không vượt quá **250 ms (p95)**.
-  - Thời gian xử lý giao dịch báo cáo chỉ số điện nước gửi Operator không vượt quá **400 ms (p95)**.
+- **FR-001**: Hệ thống MUST chỉ hiển thị duy nhất nút **"Xem"** trong cột thao tác của trang Danh sách Hóa đơn (`/manager/invoices`).
+- **FR-002**: Hệ thống MUST hoàn toàn xóa bỏ nút và luồng **Xóa Hóa đơn** khỏi giao diện Module Hóa Đơn (`/manager/invoices` và `/manager/invoices/{id}`).
+- **FR-003**: Hệ thống MUST đặt nút **"Báo cáo sai số"** duy nhất bên trong **Trang Chi tiết Hóa đơn (`/manager/invoices/{id}`)** cho các hóa đơn chưa thanh toán.
+- **FR-004**: Khi Manager bấm "Báo cáo sai số" trong trang chi tiết hóa đơn, hệ thống MUST chuyển hướng tới `/manager/notifications/send-operator?invoiceId={id}` tự động điền Tiêu đề và Nội dung chi tiết chỉ số điện/nước.
+- **FR-005**: Khi Manager gửi yêu cầu, hệ thống MUST thực hiện Database Transaction: cập nhật trạng thái chỉ số sang `REPORTED` và chèn yêu cầu `UTILITY` `PENDING` phân công cho Operator được chọn trong `/operator/requests`.
+- **FR-006**: Operator MUST có khả năng tiếp nhận (`IN_PROGRESS`) và báo cáo hoàn thành (`COMPLETED`) với ghi chú optional.
+- **FR-007**: Cư dân MUST bị tạm khóa tính năng thanh toán khi hóa đơn ở trạng thái `REPORTED`.
 
 ---
 
-## **6. Out of Scope**
+## 4. Success Criteria *(mandatory)*
 
-- Hỗ trợ thu hồi hoặc xóa bỏ thông báo sau khi đã được phát đi.
-- Gửi tin nhắn tự động thông qua SMS, Zalo hoặc Email bên thứ ba.
-- Cho phép cư dân phản hồi hay thảo luận trực tiếp bên dưới thông báo.
+- **SC-001**: 100% cột thao tác bảng danh sách hóa đơn chỉ có nút "Xem".
+- **SC-002**: 100% nút và luồng Xóa Hóa đơn bị loại bỏ khỏi giao diện Module Hóa Đơn.
+- **SC-003**: Nút "Báo cáo sai số" chỉ hiển thị trong trang Chi tiết Hóa đơn và chuyển hướng thành công tới form gửi Operator.

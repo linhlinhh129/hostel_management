@@ -90,7 +90,7 @@ public class PersonnelServiceImpl implements PersonnelService {
         if (identityNumber.isEmpty())
             throw new ValidationException("Số CMND/CCCD không được để trống.");
         if (!ValidationUtil.isValidVnIdentity(identityNumber))
-            throw new ValidationException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+            throw new ValidationException("Số CCCD không hợp lệ (phải gồm 12 chữ số).");
 
         // ── Uniqueness ────────────────────────────────────────────────────
         if (personnelDAO.existsByEmail(email, null))
@@ -178,15 +178,15 @@ public class PersonnelServiceImpl implements PersonnelService {
         if (role.isEmpty() || "ADMIN".equals(role))
             throw new ValidationException("Vai trò không hợp lệ.");
         if (!identityNumber.isEmpty() && !ValidationUtil.isValidVnIdentity(identityNumber))
-            throw new ValidationException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+            throw new ValidationException("Số CCCD không hợp lệ (phải gồm 12 chữ số).");
 
         // ── Date of birth ─────────────────────────────────────────────────
         LocalDate dob = null;
         if (!dobStr.trim().isEmpty()) {
             try {
                 dob = LocalDate.parse(dobStr.trim());
-                if (dob.isAfter(LocalDate.now()))
-                    throw new ValidationException("Ngày sinh không được lớn hơn ngày hiện tại.");
+                if (!ValidationUtil.isAtLeast18YearsOld(dob))
+                    throw new ValidationException("Nhân sự phải từ 18 tuổi trở lên.");
             } catch (ValidationException e) {
                 throw e;
             } catch (Exception ignored) {}
@@ -253,9 +253,19 @@ public class PersonnelServiceImpl implements PersonnelService {
         return s == null ? "" : s.trim();
     }
 
-    private LocalDate parseDob(String dobStr) {
+    private LocalDate parseDob(String dobStr) throws ValidationException {
         if (dobStr == null || dobStr.trim().isEmpty()) return null;
-        try { return LocalDate.parse(dobStr.trim()); } catch (Exception e) { return null; }
+        try {
+            LocalDate dob = LocalDate.parse(dobStr.trim());
+            if (!ValidationUtil.isAtLeast18YearsOld(dob)) {
+                throw new ValidationException("Nhân sự phải từ 18 tuổi trở lên.");
+            }
+            return dob;
+        } catch (ValidationException e) {
+            throw e;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Integer parseFacilityId(String s) throws ValidationException {

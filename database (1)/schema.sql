@@ -164,7 +164,6 @@ BEGIN
         meter_id            INT                 NULL,
         due_date            DATE                NOT NULL,
         status              NVARCHAR(20)        NOT NULL DEFAULT 'UNPAID', -- UNPAID, PAID, OVERDUE
-        tax                 DECIMAL(10,2)       NULL,
         other_fee           DECIMAL(18,2)       NULL,
         room_fee            DECIMAL(18,2)       NULL,-- từ room_id lấy ra  room_fee
         electricity_price   DECIMAL(10,2)       NULL,-- từ room_id lấy ra facilities_id rồi từ đó lấy ra electricity_price

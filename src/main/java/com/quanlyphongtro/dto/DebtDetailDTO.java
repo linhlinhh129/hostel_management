@@ -8,6 +8,7 @@ public class DebtDetailDTO {
     private Integer invoiceId;
     private String invoiceCode;
     private String roomCode;
+    private Integer roomId;
     
     private Integer tenantId;
     private String tenantName;
@@ -19,6 +20,7 @@ public class DebtDetailDTO {
     private String facilityName;
     
     private String billingPeriod;
+    private String contractPeriod;
     private BigDecimal roomFee;
     
     private Integer oldElectricReading;
@@ -37,8 +39,6 @@ public class DebtDetailDTO {
     private BigDecimal internetFee;
     private BigDecimal otherFee;
     private BigDecimal subtotal;
-    private BigDecimal taxRate;
-    private BigDecimal taxAmount;
     
     private BigDecimal invoiceTotalAmount;
     private BigDecimal paidAmount;
@@ -69,6 +69,9 @@ public class DebtDetailDTO {
     public String getRoomCode() { return roomCode; }
     public void setRoomCode(String roomCode) { this.roomCode = roomCode; }
 
+    public Integer getRoomId() { return roomId; }
+    public void setRoomId(Integer roomId) { this.roomId = roomId; }
+
     public Integer getTenantId() { return tenantId; }
     public void setTenantId(Integer tenantId) { this.tenantId = tenantId; }
 
@@ -92,6 +95,9 @@ public class DebtDetailDTO {
 
     public String getBillingPeriod() { return billingPeriod; }
     public void setBillingPeriod(String billingPeriod) { this.billingPeriod = billingPeriod; }
+
+    public String getContractPeriod() { return contractPeriod; }
+    public void setContractPeriod(String contractPeriod) { this.contractPeriod = contractPeriod; }
 
     public BigDecimal getRoomFee() { return roomFee; }
     public void setRoomFee(BigDecimal roomFee) { this.roomFee = roomFee; }
@@ -137,12 +143,6 @@ public class DebtDetailDTO {
 
     public BigDecimal getSubtotal() { return subtotal; }
     public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
-
-    public BigDecimal getTaxRate() { return taxRate; }
-    public void setTaxRate(BigDecimal taxRate) { this.taxRate = taxRate; }
-
-    public BigDecimal getTaxAmount() { return taxAmount; }
-    public void setTaxAmount(BigDecimal taxAmount) { this.taxAmount = taxAmount; }
 
     public BigDecimal getInvoiceTotalAmount() { return invoiceTotalAmount; }
     public void setInvoiceTotalAmount(BigDecimal invoiceTotalAmount) { this.invoiceTotalAmount = invoiceTotalAmount; }

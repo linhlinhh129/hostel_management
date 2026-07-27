@@ -102,9 +102,10 @@ KHI pop-up cập nhật giá được hiển thị, THE SYSTEM SHALL hiển th�
 - Loại phí (Tên khoản phí/dịch vụ)
 - Giá hiện tại và Đơn vị tính
 - Ô nhập Giá mới và Đơn vị tính
-- Ghi chú / Lý do thay đổi
 - Nút Lưu thay đổi
 - Nút Hủy
+
+KHI nhập giá, THE SYSTEM SHALL chỉ cho phép nhập số nguyên dương (ví dụ: 40000), không sử dụng dấu phẩy hoặc dấu chấm phân cách hàng nghìn (ví dụ: không cho phép 40,000 hoặc 40.000).
 
 KHI pop-up được mở, THE SYSTEM SHALL không cho phép chỉnh sửa trực tiếp tên khoản phí/dịch vụ và loại khoản phí/dịch vụ.
 
@@ -126,7 +127,6 @@ KHI cập nhật thành công, THE SYSTEM SHALL lưu thông tin:
 - Giá cũ
 - Giá mới
 - Loại giá được cập nhật
-- Ghi chú thay đổi
 - Thời gian cập nhật
 - Người cập nhật
 
@@ -151,12 +151,14 @@ KHI phí dịch vụ được cập nhật thành công, THE SYSTEM SHALL sử d
 
 KHI hóa đơn đã được tạo trước thời điểm cập nhật phí dịch vụ, THE SYSTEM SHALL không tự động thay đổi lại phí dịch vụ của hóa đơn cũ.
 
-## AC-08: Giá không hợp lệ
-KHI Ban quản lý nhập giá nhỏ hơn hoặc bằng 0, THE SYSTEM SHALL từ chối yêu cầu và trả về HTTP 400 với mã lỗi `INVALID_PRICE`.
+## AC-08: Kiểm tra dữ liệu không hợp lệ
+KHI Ban quản lý nhập giá nhỏ hơn hoặc bằng 0, THE SYSTEM SHALL từ chối yêu cầu và hiển thị thông báo lỗi.
 
-KHI Ban quản lý nhập giá không phải là số, THE SYSTEM SHALL từ chối yêu cầu và trả về HTTP 400 với mã lỗi `INVALID_PRICE_FORMAT`.
+KHI Ban quản lý nhập giá có chứa dấu phẩy (,), dấu chấm (.) hoặc ký tự không phải là số nguyên, THE SYSTEM SHALL từ chối yêu cầu và hiển thị thông báo lỗi (Yêu cầu nhập số nguyên, ví dụ: 40000).
 
-KHI Ban quản lý bỏ trống giá mới, THE SYSTEM SHALL từ chối yêu cầu và trả về HTTP 400 với mã lỗi `REQUIRED_FIELD_MISSING`.
+KHI Ban quản lý bỏ trống giá mới, THE SYSTEM SHALL từ chối yêu cầu và hiển thị thông báo lỗi yêu cầu nhập giá.
+
+KHI giá hiện tại và giá mới giống hệt nhau, THE SYSTEM SHALL từ chối yêu cầu và thông báo giá mới phải khác giá hiện tại.
 
 ## AC-09: Loại giá không hợp lệ
 KHI Ban quản lý cập nhật loại giá không tồn tại trong hệ thống, THE SYSTEM SHALL từ chối yêu cầu và trả về HTTP 400 với mã lỗi `INVALID_PRICE_TYPE`.
@@ -183,7 +185,6 @@ Thông tin lịch sử thay đổi lưu trong DB bao gồm:
 - Loại giá được thay đổi
 - Giá cũ
 - Giá mới
-- Ghi chú thay đổi
 - Người thực hiện
 - Thời gian thực hiện
 
@@ -192,7 +193,7 @@ KHI Ban quản lý bấm vào nút "Lịch sử" của một loại phí cụ th
 
 KHI màn hình Lịch sử thay đổi được hiển thị, THE SYSTEM SHALL hiển thị:
 - Tiêu đề phụ: Tên loại phí đang xem
-- Bảng lịch sử bao gồm: Ngày thay đổi, Giá cũ, Giá mới, Người thay đổi, Ghi chú.
+- Bảng lịch sử bao gồm: Ngày thay đổi, Giá cũ, Giá mới, Người thay đổi.
 - Nút "Quay lại danh sách".
 
 ## AC-13: Ngăn gửi trùng yêu cầu
@@ -236,8 +237,7 @@ WHILE hệ thống đang xử lý yêu cầu cập nhật giá, THE SYSTEM SHALL
 - **Endpoint:** `POST /manager/service-prices?action=update`
 - **Payload (Form Data):**
   - `priceType`: Loại giá cần thay đổi (vd: `ELECTRICITY`).
-  - `newPrice`: Mức giá mới.
-  - `note`: Ghi chú lý do thay đổi.
+  - `newPrice`: Mức giá mới (dạng số nguyên, không có phân cách).
 
 ### Kết quả thành công
 - Hệ thống gọi hàm `updatePrice()`, lưu DB và thực hiện chuyển hướng (`sendRedirect`) về lại trang danh sách `/manager/service-prices`.

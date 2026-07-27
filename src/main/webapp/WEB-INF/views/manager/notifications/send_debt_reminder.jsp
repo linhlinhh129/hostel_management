@@ -15,9 +15,12 @@
     <main class="page-content">
       <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
 
-      <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
-        <h1>Gửi nhắc nhở thanh toán quá hạn</h1>
-        <p>Gửi thông báo nhắc đóng tiền trực tiếp tới cư dân của phòng có hóa đơn quá hạn</p>
+      <div class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem">
+        <div>
+          <h1 class="mb-1">Gửi nhắc nhở thanh toán quá hạn</h1>
+          <p class="mb-0">Gửi thông báo nhắc đóng tiền trực tiếp tới cư dân của phòng có hóa đơn quá hạn</p>
+        </div>
+        <a href="${ctx}/manager/notifications?tab=payment-reminder" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
       </div>
 
       <div class="row g-4">

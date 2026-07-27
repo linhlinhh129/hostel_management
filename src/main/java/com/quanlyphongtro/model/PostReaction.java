@@ -7,7 +7,14 @@ public class PostReaction {
     private Integer userId;
     private LocalDateTime createdAt;
 
-    public PostReaction() {}
+    public PostReaction() {
+    }
+
+    public PostReaction(Integer postId, Integer userId, LocalDateTime createdAt) {
+        this.postId = postId;
+        this.userId = userId;
+        this.createdAt = createdAt;
+    }
 
     public Integer getPostId() {
         return postId;

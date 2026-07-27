@@ -79,7 +79,10 @@ public class ContractDAO extends BaseDAO {
     public List<Room> getAvailableRooms(int managerId) {
         String sql = "SELECT r.* FROM dbo.rooms r " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                "WHERE f.manager_id = ? AND r.tenant_id IS NULL AND r.deleted_at IS NULL";
+                "WHERE f.manager_id = ? AND r.tenant_id IS NULL AND r.deleted_at IS NULL " +
+                "AND r.room_id NOT IN (" +
+                "    SELECT c.room_id FROM dbo.contracts c WHERE c.deleted_at IS NULL AND c.status = 'ACTIVE'" +
+                ")";
         List<Room> rooms = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

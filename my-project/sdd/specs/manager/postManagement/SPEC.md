@@ -1,171 +1,129 @@
-# Feature: Quản lý bài viết cộng đồng
+# Feature Specification: Post Interactions (Comments and Likes)
 
-**Status:** Draft\
-**Author:** Bùi Đỉnh\
-**Reviewer:** \[Tên\]\
-**Date:** 2026-07-08\
-**Priority:** High
+**Feature Branch**: `post-interactions`
 
----
+**Created**: 2026-07-27
 
-# 1. Business Context
+**Status**: Draft
 
-Ban quản lý cần một chức năng để tạo và kiểm duyệt các bài viết trước khi chúng được hiển thị đến cư dân. Điều này giúp đảm bảo nội dung được kiểm soát, chính xác và phù hợp với quy định của khu trọ/chung cư. Tính năng này hỗ trợ quy trình quản lý thông tin nội bộ, giúp nâng cao chất lượng truyền thông giữa ban quản lý và người thuê.
+**Input**: User description: "trang bài viết mình cần thêm cả comment và cả like cho mình đi"
 
----
+## User Scenarios & Testing *(mandatory)*
 
-# 2. User Stories
-### Story 1 - Tạo bài viết
-**Là** Ban quản lý, **tôi muốn** tạo bài viết với tiêu đề, nội dung và hình ảnh (chụp trực tiếp hoặc tải từ thiết bị) **để** gửi bài viết vào danh sách chờ duyệt.
+### User Story 1 - Like and Unlike a Post (Priority: P1)
 
-### Story 2 - Xem danh sách bài viết
-**Là** Ban quản lý, **tôi muốn** xem danh sách tất cả bài viết trên hệ thống (bao gồm PENDING, APPROVED) **để** theo dõi và quản lý.
+Users browsing the community posts can express their appreciation by liking a post. If they change their mind, they can remove their like (unlike).
 
-### Story 3 - Duyệt bài viết
-**Là** Ban quản lý, **tôi muốn** duyệt một bài viết trong danh sách chờ **để** bài viết được phép hiển thị cho người dùng.
+**Why this priority**: Liking is the most basic form of community engagement. It provides immediate feedback to authors and encourages participation.
 
-### Story 4 - Xóa bài viết
-**Là** Ban quản lý, **khi** phát hiện bài viết không còn cần thiết hoặc có nội dung không phù hợp, **tôi muốn** xóa bài viết khỏi danh sách chờ duyệt.
+**Independent Test**: Can be fully tested by clicking a like button on a post and verifying the like count increases/decreases immediately, and the state persists after a page reload.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user is viewing a post they haven't liked, **When** they click the Like button, **Then** the like count increases by 1, and the button visually indicates they have liked it.
+2. **Given** a user is viewing a post they have already liked, **When** they click the Like button again, **Then** the like count decreases by 1, and the button returns to its default state.
+3. **Given** multiple users view the same post, **When** one user likes it, **Then** the updated count is reflected for other users upon their next page load.
 
 ---
 
-# 3. Acceptance Criteria (EARS)
-### UC01 - Tạo bài viết
-- **WHEN** Ban quản lý nhập đầy đủ tiêu đề và nội dung bài viết
-- **AND** chọn hình ảnh bằng cách chụp trực tiếp hoặc tải ảnh từ thiết bị (không bắt buộc)
-- **THE SYSTEM SHALL** tạo bài viết mới với trạng thái **PENDING**.
-- **AND** lưu thời gian tạo, người tạo và đường dẫn ảnh (nếu có).
+### User Story 2 - Add a Comment to a Post (Priority: P1)
 
+Users can write text comments on community posts to discuss topics, ask questions, or provide detailed feedback.
 
-### UC02 - Dữ liệu không hợp lệ
-- **WHEN** tiêu đề hoặc nội dung để trống
-- **THE SYSTEM SHALL** từ chối tạo bài viết.
-- **AND** trả về HTTP 400 cùng thông báo lỗi phù hợp.
+**Why this priority**: Commenting allows for rich, meaningful interactions and discussions between community members, which is the core purpose of a community page.
 
+**Independent Test**: Can be fully tested by entering text in a comment box, submitting it, and verifying the new comment appears at the bottom of the post's comment list with the correct author name and timestamp.
 
-### UC03 - Xem danh sách bài viết
-- **WHEN** Ban quản lý truy cập trang "Danh sách bài viết"
-- **THE SYSTEM SHALL** hiển thị danh sách tất cả bài viết trên hệ thống (không phân biệt trạng thái).
-- **AND** mỗi dòng trong bảng hiển thị:
-  - Tiêu đề
-  - Tác giả
-  - Thời gian đăng
-  - Trạng thái (Chờ duyệt, Đã duyệt)
-  - Các nút thao tác (Chi tiết, Duyệt, Xóa)
+**Acceptance Scenarios**:
 
-
-### UC04 - Duyệt bài viết
-- **WHEN** Ban quản lý chọn "Duyệt" đối với một bài viết PENDING
-- **THE SYSTEM SHALL**
-  - gọi API qua AJAX POST.
-  - cập nhật trạng thái bài viết thành **APPROVED**.
-  - tải lại trang danh sách hoặc chi tiết.
-
-
-### UC05 - Xóa bài viết
-- **WHEN** Ban quản lý chọn "Xóa"
-- **THE SYSTEM SHALL**
-  - gọi API qua AJAX POST.
-  - đánh dấu bài viết đã bị xóa bằng cách cập nhật **deleted_at** (Soft delete).
-  - tải lại trang hoặc chuyển hướng về danh sách bài viết.
-
-
-### UC06 - Phân quyền
-- **WHILE** người dùng không thuộc Ban quản lý
-- **THE SYSTEM SHALL** không cho phép truy cập các chức năng tạo, duyệt hoặc xóa bài viết.
-
-# 4. Servlet & API Contract
-Quản lý bài viết kết hợp giữa Servlet render giao diện (JSP/Form HTML) và API xử lý AJAX cho các tác vụ cần thiết (Duyệt/Xóa/Load JSON).
-
-## 4.1 Servlet Entry Point
-
-| Thuộc tính | Giá trị |
-|---|---|
-| **Servlet** | `CommunityPostServlet` |
-| **URL Pattern** | `/manager/articles`, `/manager/articles/*`, `/manager/community-posts/*`, `/manager/articles/detail` |
-| **Phân quyền** | Dành cho Manager (Kiểm tra qua `currentUser` / `UserSessionDTO` từ Session) |
+1. **Given** a user is viewing a post, **When** they type a valid message in the comment input and submit, **Then** their comment is saved and displayed immediately under the post.
+2. **Given** a user attempts to submit an empty comment, **When** they click submit, **Then** the system prevents submission and shows a validation error.
+3. **Given** a user submits a comment exceeding the maximum length, **When** they click submit, **Then** the system prevents submission and informs the user of the limit.
 
 ---
 
-## 4.2 Giao diện và Request Attributes (JSP/HTML Form)
+### User Story 3 - View Comments and Interactions (Priority: P2)
 
-### Xem danh sách (list-pending.jsp)
-- **Endpoint:** `GET /manager/articles`
-- **Query Params:** `cursor`, `limit` (tùy chọn)
-- **Attribute:** `posts` (`List<CommunityPostDTO>`), `nextCursor`
-- **Lưu ý:** Nếu request mang header `X-Requested-With: XMLHttpRequest` (AJAX) hoặc `Accept: application/json`, hệ thống sẽ trả về chuỗi JSON. Giao diện hiển thị dạng bảng (Table) với các cột Tiêu đề, Tác giả, Thời gian đăng, Trạng thái, Thao tác.
+Users viewing the post feed can quickly see how much engagement a post has received (total likes and total comments) before opening the full details.
 
-### Xem chi tiết (detail.jsp)
-- **Endpoint:** `GET /manager/articles/detail?id={postId}`
-- **Attribute:** `post` (`CommunityPostDTO`)
-- **Tính năng UI:** Hỗ trợ Modal phóng to hình ảnh (Image Viewer Modal) khi người dùng click vào ảnh đính kèm bài viết.
+**Why this priority**: Summarized interaction metrics help users identify popular or active discussions quickly.
 
-### Màn hình tạo bài viết (create.jsp)
-- **Endpoint GET:** `GET /manager/articles/create` (forward form)
-- **Endpoint POST:** `POST /manager/articles/create`
-  - **Payload:** `multipart/form-data` chứa `title`, `content` (text) và `image` (file upload)
-  - **Xử lý thành công:** Redirect (`sendRedirect`) về trang danh sách kèm cờ `?success=create`.
-  - **Xử lý thất bại:** Bắt lỗi và forward ngược lại trang `create.jsp` với thuộc tính `error` hiển thị trên màn hình.
+**Independent Test**: Can be fully tested by viewing the main post feed and ensuring each post card displays accurate aggregate counts for both likes and comments.
+
+**Acceptance Scenarios**:
+
+1. **Given** a post with existing interactions, **When** it appears in a feed, **Then** it clearly displays the total number of likes and comments.
+2. **Given** a user opens a post's detailed view, **When** the page loads, **Then** they see the full list of comments ordered chronologically (oldest first or newest first, depending on standard conventions).
 
 ---
 
-## 4.3 AJAX Endpoints (Trả về JSON)
+### User Story 4 - Delete Own Comment (Priority: P3)
 
-### Duyệt bài viết
-- **Endpoint:** `POST /manager/articles/approve`
-- **Tham số Request:** `postId`
-- **Response 200 (Thành công):**
-  ```json
-  {
-    "success": true,
-    "message": "Bài viết đã được duyệt."
-  }
-  ```
+Users have the ability to remove their own comments if they made a mistake or changed their mind. Managers can delete any comment for moderation purposes.
 
-### Xóa bài viết
-- **Endpoint:** `POST /manager/articles/delete`
-- **Tham số Request:** `postId`
-- **Response 200 (Thành công):**
-  ```json
-  {
-    "success": true,
-    "message": "Bài viết đã được xóa."
-  }
-  ```
+**Why this priority**: Self-correction and moderation are important for maintaining a healthy community environment, but less critical than the core interaction mechanics.
 
----
+**Independent Test**: Can be fully tested by a user deleting their own comment and verifying it disappears from the UI and total count.
 
-## 4.4 Xử lý lỗi (Servlet Behavior)
+**Acceptance Scenarios**:
 
-| Tình huống | Hành vi |
-|---|---|
-| `GET /manager/articles/detail` lỗi ID / Không tìm thấy | Chuyển hướng về trang danh sách kèm tham số query `?error=invalid` hoặc `?error=notfound` |
-| AJAX Endpoint (Duyệt/Xóa) bị lỗi Validation | Trả về HTTP `400 Bad Request` kèm JSON chứa `"error"` |
-| Có Exception hoặc Lỗi Server | Trả về HTTP `500 Internal Server Error` kèm JSON chứa lỗi hệ thống hoặc chuyển hướng kèm lỗi tuỳ context gọi |
+1. **Given** a user views a comment they authored, **When** they click delete and confirm, **Then** the comment is removed from the post.
+2. **Given** a user views a comment authored by someone else, **When** they view the options, **Then** the delete option is not available (unless they are a Manager/Admin).
 
----
+### User Story 5 - Post Content Constraints (Priority: P1)
 
-# 5. Technical Constraints
+Managers creating or editing a post must adhere to character limits to maintain a clean and consistent UI.
 
-- Chỉ Ban quản lý được phép truy cập chức năng này.
-- Tiêu đề không được vượt quá **250 ký tự**.
-- Nội dung bài viết không được để trống.
-- Hỗ trợ:
-  - Chụp ảnh trực tiếp từ thiết bị.
-  - Tải ảnh từ thư viện thiết bị.
-- Chỉ chấp nhận định dạng ảnh JPG, JPEG, PNG.
-- Kích thước ảnh tối đa: **5 MB**.
-- Thời gian phản hồi API không vượt quá **500 ms (P95)**.
-- Rate limit: **100 requests/phút/người dùng**.
-- Bài viết mới luôn được tạo với trạng thái **PENDING**.
-- Khi xóa bài viết sử dụng **Soft Delete** bằng trường `deleted_at`.
+**Why this priority**: Prevents layout breaking and ensures content is concise and readable.
 
----
+**Independent Test**: Attempting to save a post with a title longer than 50 characters or content longer than 1000 characters should display validation errors and prevent saving.
 
-# 6. Out of Scope
+**Acceptance Scenarios**:
 
-- Chỉnh sửa bài viết sau khi đã tạo.
-- Từ chối bài viết và nhập lý do từ chối.
-- Bình luận hoặc thả cảm xúc cho bài viết.
-- Thông báo tự động đến cư dân sau khi bài viết được duyệt.
-- Lên lịch đăng bài tự động.
+1. **Given** a manager is creating/editing a post, **When** they enter a title exceeding 50 characters, **Then** the system prevents submission and shows a validation error.
+2. **Given** a manager is creating/editing a post, **When** they enter content exceeding 1000 characters, **Then** the system prevents submission and shows a validation error.
+
+### Edge Cases
+
+- What happens when a user tries to like a post that has just been deleted by a manager? (System should return a friendly error and refresh the view).
+- How does system handle extremely long words without spaces in comments? (UI must wrap text properly to prevent layout breaking).
+- What happens if a user submits multiple comments very quickly (spam)? (System should process them, but rate limiting could be applied in the future).
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST allow authenticated users to add a Like to any active community post.
+- **FR-002**: System MUST allow users to remove their own Like from a post.
+- **FR-003**: System MUST prevent a single user from liking the same post multiple times (toggle behavior).
+- **FR-004**: System MUST allow authenticated users to submit text comments (up to 1000 characters) on any active post.
+- **FR-005**: System MUST NOT allow submission of empty or whitespace-only comments.
+- **FR-006**: System MUST display the aggregate count of Likes and Comments on the post summary/feed view.
+- **FR-007**: System MUST display a list of comments for a post, including the author's name, timestamp, and content.
+- **FR-008**: System MUST allow users to delete their own comments.
+- **FR-009**: System MUST allow users with the MANAGER or ADMIN role to delete any comment for moderation purposes.
+- **FR-010**: System MUST validate that the Post Title does not exceed 50 characters upon creation or editing.
+- **FR-011**: System MUST validate that the Post Content does not exceed 1000 characters upon creation or editing.
+
+### Key Entities *(include if feature involves data)*
+
+- **Post Reaction (Like)**: Represents a user's "like" on a specific post. Key attributes: Post ID, User ID, Created Timestamp.
+- **Post Comment**: Represents a textual reply to a post. Key attributes: Post ID, User ID (Author), Content, Created Timestamp.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can successfully add a like to a post, with UI reflecting the change in under 500ms.
+- **SC-002**: Users can successfully submit a comment, with the new comment appearing in the thread in under 1 second.
+- **SC-003**: Total interaction counts (likes, comments) displayed on the UI are 100% accurate based on the underlying data.
+- **SC-004**: 0% of unauthorized deletions occur (users cannot delete comments they did not author, excluding managers).
+- **SC-005**: 100% of posts created or updated successfully adhere to the maximum character limits for title (50) and content (1000).
+
+## Assumptions
+
+- Users must be logged in to like or comment on posts (no guest interactions).
+- Comments are flat; nested replies (threads) are out of scope for this version.
+- Rich text or image attachments in comments are out of scope; comments are plain text only.
+- The underlying database schema for `post_reactions` and `post_comments` already exists or matches the standard structure defined in the current architecture.
+- "Likes" are binary (Like/Unlike), no reaction varieties (e.g., Love, Haha, Sad) are needed for v1.

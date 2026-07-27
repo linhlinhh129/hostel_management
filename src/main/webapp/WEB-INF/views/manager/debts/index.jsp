@@ -19,29 +19,19 @@
                             <div
                                 class="page-header hero-sky-gradient d-flex flex-wrap justify-content-between align-items-start gap-3">
                                 <div>
-                                    <h1>Quản lý công nợ</h1>
-                                    <p>Theo dõi các khoản thu chưa hoàn thành và tình trạng trễ hạn</p>
+                                    <h1>Quản lý công nợ quá hạn</h1>
+                                    <p>Theo dõi các hóa đơn đã quá hạn thanh toán và gửi thông báo nhắc nợ tới cư dân</p>
                                 </div>
                             </div>
-
-
 
                             <div class="data-surface">
                                 <form method="get" action="${ctx}/manager/debts" id="filterForm"
                                     style="background:#fff; border:1px solid var(--hms-border-soft); border-radius:8px; padding:20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.02)">
                                     <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:20px;">
-                                        <div style="flex:2; min-width:200px;">
-                                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm</label>
+                                        <div style="flex:1; min-width:250px;">
+                                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Tìm kiếm công nợ quá hạn</label>
                                             <input type="text" class="form-control" name="keyword"
-                                                value="<c:out value='${keyword}'/>" placeholder="Tìm mã HĐ, phòng..." style="width:100%"/>
-                                        </div>
-                                        <div style="flex:1; min-width:150px;">
-                                            <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái</label>
-                                            <select class="form-select" name="status" style="width:100%">
-                                                <option value="">Tất cả</option>
-                                                <option value="UNPAID"  ${status=='UNPAID'  ? 'selected' : ''}>Chưa thanh toán</option>
-                                                <option value="OVERDUE" ${status=='OVERDUE' ? 'selected' : ''}>Quá hạn</option>
-                                            </select>
+                                                value="<c:out value='${keyword}'/>" placeholder="Tìm theo mã HĐ, tên phòng, người thuê..." style="width:100%"/>
                                         </div>
                                     </div>
                                     <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px dashed var(--hms-border-soft); padding-top:16px;">
@@ -107,23 +97,11 @@
                                                                 <fmt:formatDate value="${parsedDueDate}" pattern="dd/MM/yyyy" />
                                                             </td>
                                                             <td>
-                                                                <c:choose>
-                                                                    <c:when test="${debt.status == 'UNPAID'}">
-                                                                        <span class="badge-hms badge-warning">Chưa thanh toán</span>
-                                                                    </c:when>
-                                                                    <c:when test="${debt.status == 'OVERDUE'}">
-                                                                        <span class="badge-hms badge-danger">Quá hạn
-                                                                            <c:if test="${debt.overdueDays > 0}">
-                                                                                (${debt.overdueDays} ngày)
-                                                                            </c:if>
-                                                                        </span>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        <span class="badge-hms badge-neutral">
-                                                                            <c:out value="${debt.status}" />
-                                                                        </span>
-                                                                    </c:otherwise>
-                                                                </c:choose>
+                                                                <span class="badge-hms badge-danger">Quá hạn
+                                                                    <c:if test="${debt.overdueDays > 0}">
+                                                                        (${debt.overdueDays} ngày)
+                                                                    </c:if>
+                                                                </span>
                                                             </td>
                                                             <td class="d-none d-md-table-cell" style="white-space: nowrap;">
                                                                 <a href="${ctx}/manager/debts?action=detail&id=${debt.invoiceId}"
@@ -131,20 +109,18 @@
                                                                     style="padding:4px 12px;font-size:0.8125rem">
                                                                     Xem
                                                                 </a>
-                                                                <c:if test="${debt.status == 'OVERDUE'}">
-                                                                    <a href="${ctx}/manager/notifications/send-debt-reminder?invoiceId=${debt.invoiceId}"
-                                                                        class="btn-mintlify-primary text-decoration-none ms-1"
-                                                                        style="padding:4px 12px;font-size:0.8125rem;background-color:#d97706;border-color:#d97706;color:#ffffff;display:inline-flex;align-items:center;gap:4px;"
-                                                                        onclick="event.stopPropagation();"
-                                                                        title="Gửi nhắc nhở thanh toán">
-                                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                                                                            <line x1="12" y1="9" x2="12" y2="13"/>
-                                                                            <line x1="12" y1="17" x2="12.01" y2="17"/>
-                                                                        </svg>
-                                                                        Nhắc nợ
-                                                                    </a>
-                                                                </c:if>
+                                                                <a href="${ctx}/manager/notifications/send-debt-reminder?invoiceId=${debt.invoiceId}"
+                                                                    class="btn-mintlify-primary text-decoration-none ms-1"
+                                                                    style="padding:4px 12px;font-size:0.8125rem;background-color:#d97706;border-color:#d97706;color:#ffffff;display:inline-flex;align-items:center;gap:4px;"
+                                                                    onclick="event.stopPropagation();"
+                                                                    title="Soạn & gửi thông báo nhắc nợ thanh toán">
+                                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                                                        <line x1="12" y1="9" x2="12" y2="13"/>
+                                                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                                                    </svg>
+                                                                    Nhắc nợ
+                                                                </a>
                                                             </td>
                                                         </tr>
                                                     </c:forEach>

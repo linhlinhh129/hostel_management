@@ -172,7 +172,7 @@ public class ContractServiceImpl implements ContractService {
             throw new IllegalArgumentException("Số CMND/CCCD không được để trống.");
         }
         if (!ValidationUtil.isValidVnIdentity(identityNumber.trim())) {
-            throw new IllegalArgumentException("Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+            throw new IllegalArgumentException("Số CCCD không hợp lệ (phải gồm 12 chữ số).");
         }
 
         String username = email.trim();
@@ -192,8 +192,8 @@ public class ContractServiceImpl implements ContractService {
         String passwordHash = PasswordUtil.hash(plainPassword);
 
         LocalDate dob = (dobStr != null && !dobStr.isEmpty()) ? LocalDate.parse(dobStr) : null;
-        if (dob != null && dob.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Ngày sinh không thể ở tương lai.");
+        if (dob != null && !ValidationUtil.isAtLeast18YearsOld(dob)) {
+            throw new IllegalArgumentException("Người thuê phải từ 18 tuổi trở lên.");
         }
         LocalDate startDate = (contractStartDateStr != null && !contractStartDateStr.isEmpty())
                 ? LocalDate.parse(contractStartDateStr)

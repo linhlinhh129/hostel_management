@@ -162,41 +162,54 @@ Sắp xếp theo kỳ hóa đơn giảm dần.
 
 Hiển thị:
 
-\- Mã hóa đơn
+- Mã hóa đơn
 
-\- Phòng
+- Phòng
 
-\- Tiền phòng
+- Tiền phòng
 
-\- Chỉ số điện cũ
+- Chỉ số điện cũ
 
-\- Chỉ số điện mới
+- Chỉ số điện mới
 
-\- Đơn giá điện
+- Đơn giá điện
 
-\- Thành tiền điện
+- Thành tiền điện
 
-\- Chỉ số nước cũ
+- **Ảnh chụp chỉ số điện thực tế (từ Operator)**
 
-\- Chỉ số nước mới
+- Chỉ số nước cũ
 
-\- Đơn giá nước
+- Chỉ số nước mới
 
-\- Thành tiền nước
+- Đơn giá nước
 
-\- Internet
+- Thành tiền nước
 
-\- Phí dịch vụ
+- **Ảnh chụp chỉ số nước thực tế (từ Operator)**
 
-\- Thuế
+- Internet
 
-\- Phụ phí
+- Phí dịch vụ
 
-\- Tổng tiền
+- Thuế
 
-\- Hạn thanh toán
+- Phụ phí
 
-\- Trạng thái
+- Tổng tiền
+
+- Hạn thanh toán
+
+- Trạng thái
+
+---
+
+### FR04.4 - Xem & Phóng to ảnh minh chứng điện nước do Operator tải lên
+**WHEN** Tenant xem chi tiết hóa đơn
+**THE SYSTEM SHALL**
+- Hiển thị hình ảnh chụp đồng hồ điện (`electric_img`) và đồng hồ nước (`water_img`) được ghi nhận trong bảng `meter_readings` do Nhân viên Vận hành (Operator) chụp lại khi chốt chỉ số.
+- Cho phép Tenant nhấp vào ảnh minh chứng để xem kích thước lớn (Lightbox/Modal image view) nhằm kiểm tra, đối chiếu chỉ số thực tế trên đồng hồ phòng mình.
+- Nếu kỳ hóa đơn không có ảnh minh chứng (chốt thủ công), hệ thống hiển thị thông báo "Không có ảnh minh chứng".
 
 ---
 
@@ -367,135 +380,82 @@ Thông tin hiển thị
 
 \- Amount
 
-\- Payment Date
+# 6. Servlet Routes & Page Controller Contract
 
-\- Payment Method
+## 6.1 Màn hình Danh sách hóa đơn
 
-\- VNPAY Transaction No
+### Servlet Mapping
+```http
+GET /tenant/invoices
+```
+- **Servlet:** `TenantInvoiceListServlet`
+- **Scope & Attribute Name:** `request.setAttribute("invoiceList", List<InvoiceDTO>)`
+- **Forward View:** `/WEB-INF/views/tenant/invoice-list.jsp`
 
-\- Status
+---
 
-\---
+## 6.2 Màn hình Chi tiết hóa đơn
 
-\# 6. Error Handling
+### Servlet Mapping
+```http
+GET /tenant/invoice-detail?id={invoiceId}
+```
+- **Servlet:** `TenantInvoiceDetailServlet`
+- **Parameter:** `id`
+- **Scope & Attribute Name:** `request.setAttribute("invoice", InvoiceDetailDTO)`
+- **Forward View:** `/WEB-INF/views/tenant/invoice-detail.jsp`
 
-\### ER01
+---
 
-Invoice không tồn tại
+## 6.3 Lịch sử thanh toán
 
-→ HTTP 404
+### Servlet Mapping
+```http
+GET /tenant/payment-history
+```
+- **Servlet:** `TenantPaymentHistoryServlet`
+- **Scope & Attribute Name:** `request.setAttribute("paymentList", List<PaymentDTO>)`
+- **Forward View:** `/WEB-INF/views/tenant/payment-history.jsp`
 
-\---
+---
 
-\### ER02
+## 6.4 Thanh toán VNPAY (Khởi tạo URL & Redirect)
 
-Invoice không thuộc Tenant
+### Servlet Mapping
+```http
+POST /tenant/vnpay-payment
+```
+- **Servlet:** `TenantVnPayPaymentServlet`
+- **Parameters:** `invoiceId`
+- **Xử lý:** Tạo URL giao dịch VNPAY Sandbox, cập nhật trạng thái hóa đơn thành `PROCESSING` và thực hiện `response.sendRedirect(vnpayUrl)`.
 
-→ HTTP 403
+---
 
-\---
+## 6.5 VNPAY Return Callback Handling
 
-\### ER03
+### Servlet Mapping
+```http
+GET /payment/vnpay-return
+```
+- **Servlet:** `VnPayReturnServlet`
+- **Xử lý:** Nhận kết quả từ VNPAY, xác thực chữ ký Secure Hash. Nếu hợp lệ và `vnp_ResponseCode = 00`, thực thi DB Transaction lưu `payments` và cập nhật hóa đơn `PAID`.
+- **View:** Forward `/WEB-INF/views/tenant/payment-result.jsp` hoặc Redirect `/tenant/invoice-detail?id={id}&status=success`.
 
-Invoice đã thanh toán
+---
 
-→ HTTP 409
+# 7. Error Handling & Redirection
 
-\---
+| Error Code | Status / Action | Description |
+| --- | --- | --- |
+| UNAUTHORIZED | Redirect `/login` | Chưa đăng nhập (Session không tồn tại) |
+| FORBIDDEN | Forward 403 Page | Hóa đơn không thuộc về tài khoản đang đăng nhập |
+| INVOICE_NOT_FOUND | Forward 404 Page | Không tìm thấy mã hóa đơn yêu cầu |
+| INVOICE_ALREADY_PAID | Redirect `/tenant/invoice-detail` | Hóa đơn đã được thanh toán từ trước |
+| INVALID_HASH | Forward Error Page | Chữ ký checksum VNPAY không hợp lệ (Security Violation) |
 
-\### ER04
+---
 
-Invoice đang PROCESSING
-
-→ HTTP 409
-
-\---
-
-\### ER05
-
-Secure Hash sai
-
-→ Reject IPN
-
-→ ghi Security Log
-
-\---
-
-\### ER06
-
-Amount từ VNPAY khác Invoice
-
-→ Reject
-
-→ Không cập nhật DB
-
-\---
-
-\### ER07
-
-IPN gửi nhiều lần
-
-→ áp dụng Idempotency
-
-→ bỏ qua
-
-→ trả HTTP 200
-
-\---
-
-\### ER08
-
-DB update lỗi
-
-→ Rollback toàn bộ Transaction
-
-\---
-
-\# 7. Technical Notes
-
-\## APIs
-
-\### Invoice List
-
-GET /api/v1/tenant/invoices
-
-\---
-
-\### Invoice Detail
-
-GET /api/v1/tenant/invoices/{invoiceId}
-
-\---
-
-\### Payment History
-
-GET /api/v1/tenant/payments/history
-
-\---
-
-\### Create Payment URL
-
-POST /api/v1/tenant/invoices/{invoiceId}/payment/vnpay
-
-\---
-
-\### VNPAY Return URL
-
-GET /api/v1/payment/vnpay/return
-
-\---
-
-\### VNPAY IPN
-
-POST /api/v1/payment/vnpay/ipn
-
-\---
-
-\# 8. Validation
-
-\- User đã đăng nhập
-
-\- Role = Tenant
+# 8. Validation
 
 \- invoiceId tồn tại
 

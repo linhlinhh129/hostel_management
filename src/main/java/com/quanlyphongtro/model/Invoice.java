@@ -15,7 +15,6 @@ public class Invoice {
     private Integer meterId;
     private LocalDate dueDate;
     private String status;
-    private BigDecimal tax;
     private BigDecimal otherFee;
     private BigDecimal roomFee;
     private BigDecimal electricityPrice;
@@ -25,6 +24,8 @@ public class Invoice {
     private BigDecimal totalAmount;
     private String note;
     private Integer createdBy;
+    private Integer contractId;
+    private Integer tenantId;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -42,6 +43,19 @@ public class Invoice {
     // Transient from JOIN
     private String roomCodeCache;
     private boolean hasPendingPayment;
+    private String meterReadingStatus;
+    private String electricImg;
+    private String waterImg;
+
+    public String getElectricImg() { return electricImg; }
+    public void setElectricImg(String electricImg) { this.electricImg = electricImg; }
+
+    public String getWaterImg() { return waterImg; }
+    public void setWaterImg(String waterImg) { this.waterImg = waterImg; }
+
+    public String getMeterReadingStatus() { return meterReadingStatus; }
+    public void setMeterReadingStatus(String meterReadingStatus) { this.meterReadingStatus = meterReadingStatus; }
+    public boolean isMeterReported() { return "REPORTED".equalsIgnoreCase(meterReadingStatus); }
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -69,9 +83,6 @@ public class Invoice {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public BigDecimal getTax() { return tax; }
-    public void setTax(BigDecimal tax) { this.tax = tax; }
-
     public BigDecimal getOtherFee() { return otherFee; }
     public void setOtherFee(BigDecimal otherFee) { this.otherFee = otherFee; }
 
@@ -98,6 +109,12 @@ public class Invoice {
 
     public Integer getCreatedBy() { return createdBy; }
     public void setCreatedBy(Integer createdBy) { this.createdBy = createdBy; }
+
+    public Integer getContractId() { return contractId; }
+    public void setContractId(Integer contractId) { this.contractId = contractId; }
+
+    public Integer getTenantId() { return tenantId; }
+    public void setTenantId(Integer tenantId) { this.tenantId = tenantId; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

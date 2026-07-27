@@ -77,90 +77,48 @@ Frontend UI          →  Backend API (REST)          →  Database
 3. Plan database indexes
 4. Prepare test data (scenarios)
 
----
-
 ### Phase 2: Backend Implementation (Tuần 2-3)
 **Duration:** 5-7 ngày  
 **Deliverables:**
-- ✓ Backend APIs deployed to staging
-- ✓ Unit & integration tests ≥80% coverage
-- ✓ API documentation (Swagger)
+- ✓ Controller Servlets (`TenantNotificationListServlet`, `TenantNotificationDetailServlet`)
+- ✓ Query Optimization & Visibility Filter (Public vs Specific Tenant)
+- ✓ Unit & Integration tests ≥80% coverage
 
 **Key Components:**
-1. Notification Service (list, get detail)
-2. Visibility Filter (public + private)
-3. Permission Validator
-4. Pagination Handler
-5. Error Handler
+1. `NotificationDAO` (query public + tenant-specific notifications)
+2. `TenantNotificationListServlet` (`/tenant/notifications`)
+3. `TenantNotificationDetailServlet` (`/tenant/notification-detail`)
+4. Session Permission Validator
+5. Error Handler (Forward 403, 404, 500)
 
----
-
-### Phase 3: Frontend Implementation (Tuần 3-4)
+### Phase 3: Frontend & Views Implementation (Tuần 3-4)
 **Duration:** 6-8 ngày  
 **Deliverables:**
-- ✓ UI components completed
-- ✓ Integration tests passed
+- ✓ JSP Views completed (`/WEB-INF/views/tenant/notification-list.jsp`, `notification-detail.jsp`)
 - ✓ Responsive design verified
 
-**Key Components:**
-1. Notification List Page
-2. Notification Detail Page
-3. Empty State Component
-4. Error State + Retry
-5. Loading Indicator
-
----
-
-### Phase 4: Testing & Deployment (Tuần 5)
-**Duration:** 4-5 ngày  
-**Deliverables:**
-- ✓ E2E tests passed
-- ✓ UAT signed off
-- ✓ Production deployment completed
-
-**Activities:**
-1. End-to-end testing
-2. Performance testing (load test)
-3. Security testing (authorization checks)
-4. User acceptance testing
 5. Deployment & monitoring
 
 ---
 
 ## 4. Technical Design Decisions
 
-### API Endpoints
+### Servlet Endpoints & Controller Contract
+```http
+GET /tenant/notifications?page=1&pageSize=10
+  → TenantNotificationListServlet (Forward: /WEB-INF/views/tenant/notification-list.jsp)
+
+GET /tenant/notification-detail?id={notificationId}
+  → TenantNotificationDetailServlet (Forward: /WEB-INF/views/tenant/notification-detail.jsp)
 ```
-GET  /api/v1/tenant/notifications?page=1&pageSize=20
-  → Danh sách thông báo với phân trang
 
-GET  /api/v1/tenant/notifications/{notificationId}
-  → Chi tiết thông báo
-```
+### View Data Scope Attributes
+```jsp
+// Notification List Scope Attribute:
+request.setAttribute("notificationPage", NotificationPageDTO)
 
-### Response Format
-```json
-// List Response
-{
-  "page": 1,
-  "pageSize": 20,
-  "totalItems": 42,
-  "items": [
-    {
-      "notificationId": 1,
-      "title": "...",
-      "createdAt": "2026-06-10T08:00:00"
-    }
-  ]
-}
-
-// Detail Response
-{
-  "notificationId": 1,
-  "title": "...",
-  "content": "...",
-  "createdAt": "2026-06-10T08:00:00"
-}
+// Notification Detail Scope Attribute:
+request.setAttribute("notification", NotificationDTO)
 ```
 
 ### Error Handling Strategy

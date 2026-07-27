@@ -1,36 +1,37 @@
-# Checklist Task Quản lý Thanh toán
+# Tasks: Quản lý Thanh toán (Payment Management Snapshot Binding)
 
-Dưới đây là các đầu mục cần code theo thứ tự từ dưới lên trên (Bottom-Up) để đảm bảo không gặp lỗi phụ thuộc trong Java:
+**Input**: Design documents from `/my-project/sdd/specs/manager/paymentManagement/`
 
-## 1. Init Database Models & DTOs
-- [x] Task 1.1: Tạo class `PaymentTransaction.java` trong thư mục model ánh xạ bảng `payments`.
-- [x] Task 1.2: Tạo class `PaymentListItemDTO.java` (các trường hiển thị ở list.jsp).
-- [x] Task 1.3: Tạo class `PaymentDetailDTO.java` (cho màn hình xem ảnh và duyệt).
+## Phase 1: Setup & Data Models
 
-## 2. Xây dựng Data Access Object (DAO)
-- [x] Task 2.1: Khởi tạo `PaymentDAO.java` kế thừa `BaseDAO`.
-- [x] Task 2.2: Viết Query SQL cho `findPayments` & `countPayments` bao gồm cả filter từ khoá và logic Parameter.
-- [x] Task 2.3: Viết Query SQL cho `findById`.
-- [x] Task 2.4: Viết Query UPDATE trạng thái `payments` (hỗ trợ update sang `SUCCESS` hoặc `REJECTED`, lưu vết `approvedBy` và `approvedAt`) và Insert vào `audit_logs`.
-- [x] Task 2.5: Viết Query UPDATE trạng thái `invoices` thành PAID (cô lập độc lập, không xài `InvoiceDAO`).
+- [x] T001 [P] Tạo entity `src/main/java/com/quanlyphongtro/model/PaymentTransaction.java` ánh xạ bảng `payments`.
+- [x] T002 [P] Tạo DTO `src/main/java/com/quanlyphongtro/dto/PaymentListItemDTO.java` cho danh sách thanh toán.
+- [x] T003 [P] Tạo DTO `src/main/java/com/quanlyphongtro/dto/PaymentDetailDTO.java` cho màn hình chi tiết thanh toán.
 
-## 3. Tầng Business Service
-- [x] Task 3.1: Định nghĩa Interface `PaymentService.java`.
-- [x] Task 3.2: Triển khai `PaymentServiceImpl.java`. Xử lý phân trang Pagination logic.
-- [x] Task 3.3: Triển khai luồng Check "Transaction Not Found" và kiểm tra State Machine (không cho Duyệt lại/Từ chối giao dịch đã `SUCCESS`) trước khi gọi DAO approve/reject.
-- [x] Task 3.4: Triển khai logic Service hỗ trợ cả luồng Duyệt (Approve) và Từ chối (Reject) thanh toán.
+## Phase 2: Foundational DAO & Services (Snapshot Binding)
 
-## 4. Tầng Servlet/Controllers
-- [x] Task 4.1: Xây dựng `PaymentServlet.java` (`GET /manager/payments`). Xử lý Exception gọn gàng.
-- [x] Task 4.2: Xây dựng `PaymentDetailServlet.java` (`GET /manager/payments/*`).
-- [x] Task 4.3: Tích hợp method `POST` trong `PaymentDetailServlet` cho cả hai hành động `/approve` (Duyệt) và `/reject` (Từ chối). Bọc `try-catch` chuyển hướng lỗi phù hợp.
+- [x] T004 Khởi tạo `src/main/java/com/quanlyphongtro/dao/PaymentDAO.java` kế thừa `BaseDAO`.
+- [x] T005 [P] Viết Query UPDATE trạng thái `payments` (`SUCCESS` / `REJECTED`) và lưu Audit log vết trong `PaymentDAO.java`.
+- [x] T006 [P] Viết Query UPDATE trạng thái `invoices` thành `PAID` khi duyệt trong `PaymentDAO.java`.
+- [x] T007 [US1] [P] Cập nhật SQL Query trong `src/main/java/com/quanlyphongtro/dao/PaymentDAO.java` (`findPayments`, `countPayments`, `findById`) để `LEFT JOIN` lấy thông tin người nộp tiền qua `i.contract_id` và `p.created_by` (thay thế logic `COALESCE(r.tenant_id, ...)`), đảm bảo lịch sử giao dịch không bị nhảy tên hay bị rỗng khi cư dân trả phòng.
 
-## 5. UI/UX Views (JSP)
-- [x] Task 5.1: Xây dựng `list.jsp` bám sát template Dashboard cũ. Hiển thị thông báo, nút Xem, table UI.
-- [x] Task 5.2: Xây dựng `detail.jsp` hiển thị 2 cột, 1 bên text, 1 bên `paymentProofUrl`. Có Form cho 2 thao tác Duyệt và Từ chối kèm CSRF hidden.
-- [x] Task 5.3: Mở file `sidebar.jsp`, chèn mục `Giao dịch` trỏ tới `/manager/payments` ngay bên dưới mục Hóa đơn.
+## Phase 3: Business Logic & Controllers
 
-## 6. Review & Testing
-- [x] Thử Build chạy Clean Compile không bắt Error Java.
-- [x] Kiểm tra Linter lỗi Cú pháp HTML/Java.
-- [x] Trigger POST /approve để xác minh việc Update Status cho cả bảng Payments & Invoices hoạt động như ý trên UI.
+- [x] T008 [P] Định nghĩa Interface `src/main/java/com/quanlyphongtro/service/PaymentService.java`.
+- [x] T009 Triển khai Service `src/main/java/com/quanlyphongtro/service/impl/PaymentServiceImpl.java` xử lý logic phân trang và State Machine.
+- [x] T010 [P] Xây dựng Servlet `src/main/java/com/quanlyphongtro/controller/manager/PaymentServlet.java` (`GET /manager/payments`).
+- [x] T011 [P] Xây dựng Servlet `src/main/java/com/quanlyphongtro/controller/manager/PaymentDetailServlet.java` (`GET /manager/payments/*`, `POST /approve`, `POST /reject`).
+
+## Phase 4: Views & Testing
+
+- [x] T012 [P] Xây dựng View `src/main/webapp/WEB-INF/views/manager/payments/list.jsp`.
+- [x] T013 [P] Xây dựng View `src/main/webapp/WEB-INF/views/manager/payments/detail.jsp`.
+- [x] T014 [US1] Kiểm thử Kịch bản Snapshot người nộp tiền: Tạo giao dịch thanh toán -> Cư dân A trả phòng (`INACTIVE`) -> Kiểm tra thông tin người nộp tiền A vẫn giữ nguyên 100% trên trang danh sách và chi tiết thanh toán.
+
+---
+
+## Dependencies & Execution Order
+- Phase 1 & 2 (DAO SQL Updates) cần thực hiện trước.
+- Phase 3 (Services & Servlets) phụ thuộc vào Phase 2.
+- Phase 4 (Views & Testing) nghiệm thu độc lập sau khi hoàn thành Phase 2 & 3.
+

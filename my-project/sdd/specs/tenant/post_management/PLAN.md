@@ -32,28 +32,39 @@ Do yêu cầu tối đa 10 ảnh mỗi bài, ta nên lưu thành bảng riêng �
 - `image_url` (NVARCHAR(500) NOT NULL)
 - `created_at` (DATETIME2 DEFAULT GETDATE())
 
-## 4. Backend (API Services)
-- **POST /api/v1/posts**: 
-  - Validate dữ liệu đầu vào (title, content không được rỗng).
-  - Xử lý upload ảnh (tối đa 10 ảnh, kích thước tối đa 10MB/ảnh, format: JPG, JPEG, PNG, WEBP).
-  - Lưu bản ghi vào bảng `posts` và `post_images`. Trả về `HTTP 201`.
-- **GET /api/v1/posts/my**:
-  - Lấy danh sách bài viết dựa trên `tenant_id` (từ context xác thực của user đang đăng nhập).
-  - Trả về danh sách được sắp xếp theo `created_at` giảm dần (DESC). Trả về `HTTP 200`.
-- **GET /api/v1/posts/{id}**:
-  - Trả về chi tiết bài viết (bao gồm nội dung và mảng `images`). 
-  - Đảm bảo kiểm tra quyền truy cập (nếu cần giới hạn chỉ chủ bài viết hoặc admin được xem bài Pending).
-- **DELETE /api/v1/posts/{id}**:
-  - Xác thực quyền sở hữu của Tenant (trả về `HTTP 403` nếu không phải chủ sở hữu).
-  - Áp dụng rule ở phần 2 (được phép xóa bài đã Approve hay không).
-  - Thực hiện Soft Delete đối với bài viết và xóa các dữ liệu liên quan. Trả về `HTTP 200`.
+## 4. Backend (Servlet Controllers & Action Endpoints)
+- **`TenantMyPostsServlet`** (`GET /tenant/my-posts`):
+  - Lấy danh sách bài viết cá nhân do `tenant_id` từ Session đã tạo, sắp xếp theo thời gian mới nhất (DESC).
+  - Scope Attribute: `request.setAttribute("postList", List<PostDTO>)`.
+  - Forward View: `/WEB-INF/views/tenant/my-posts.jsp`.
 
-## 5. Frontend (Tenant Web/App)
-- **UI Components**:
-  - Form tạo bài viết: Nhập tiêu đề, nội dung, component upload nhiều file (tích hợp chọn ảnh từ thư viện hoặc chụp camera thiết bị di động).
-  - Danh sách bài viết: Layout dạng danh sách hiển thị Thumbnail bài viết, Title, Date, Status (badge màu cho Pending/Approved).
-  - Chi tiết bài viết: Hiển thị đầy đủ nội dung văn bản và bộ sưu tập (gallery) hình ảnh.
-  - Nút Xóa bài viết: Nút xóa kèm popup xác nhận an toàn trước khi xóa, hiển thị toast message nếu xóa lỗi (VD: không được phép xóa).
-- **Integration**:
-  - Gọi các RESTful API đã định nghĩa.
-  - Hiển thị toast notifications phản hồi cho Tenant (tạo thành công, xóa thành công, lỗi xác thực, lỗi format ảnh...).
+- **`TenantPostDetailServlet`** (`GET /tenant/post-detail?id={postId}`):
+  - Đọc `id` bài viết, kiểm tra quyền sở hữu của Tenant đang đăng nhập.
+  - Scope Attribute: `request.setAttribute("post", PostDetailDTO)`.
+  - Forward View: `/WEB-INF/views/tenant/post-detail.jsp`.
+  - Trả về 403 Page nếu không phải chủ sở hữu.
+
+- **`TenantPostCreateFormServlet`** (`GET /tenant/post-create`):
+  - Forward View: `/WEB-INF/views/tenant/post-create.jsp`.
+
+- **`TenantPostCreateServlet`** (`POST /tenant/post-create`):
+  - Nhận form `multipart/form-data` gồm `title`, `content`, `images` (multi-file upload, max 10 ảnh, <= 10MB/ảnh).
+  - Validate dữ liệu, lưu bài viết ở trạng thái `Pending` và lưu ảnh vào CSDL/Storage.
+  - Success Redirect: `response.sendRedirect(request.getContextPath() + "/tenant/my-posts?msg=created_success")`.
+  - Error: Forward lại `post-create.jsp` kèm thông báo lỗi.
+
+- **`TenantPostDeleteServlet`** (`POST /tenant/post-delete`):
+  - Nhận `id` bài viết cần xóa.
+  - Kiểm tra điều kiện chính chủ: `post.tenant_id == session.tenant_id`.
+  - Nếu không chính chủ: Forward trang lỗi 403 (Forbidden).
+  - Nếu hợp lệ: Xóa bài viết cùng các ảnh/dữ liệu liên quan và Redirect về `/tenant/my-posts?msg=deleted_success`.
+
+## 5. Frontend & Views (JSP & Servlet Flow)
+- **View Templates**:
+  - `/WEB-INF/views/tenant/my-posts.jsp`: Hiển thị danh sách bài viết cá nhân do Tenant đăng nhập tạo ra, badge trạng thái (Pending/Approved/Rejected), nút Xem chi tiết và nút Xóa bài viết.
+  - `/WEB-INF/views/tenant/post-detail.jsp`: Hiển thị nội dung chi tiết bài viết cá nhân và bộ sưu tập (gallery) hình ảnh đính kèm.
+  - `/WEB-INF/views/tenant/post-create.jsp`: Form nhập tiêu đề, nội dung, đính kèm tối đa 10 ảnh (upload từ máy hoặc chụp ảnh).
+- **Form Actions & Redirects**:
+  - Submit Form Đăng bài (`POST /tenant/post-create`) với `enctype="multipart/form-data"`.
+  - Submit Form Xóa bài (`POST /tenant/post-delete`) kèm hộp thoại xác nhận JavaScript `confirm()`.
+  - Nhận thông báo qua query param `?msg=created_success` hoặc `?msg=deleted_success` hiển thị Alert thông báo trên JSP.

@@ -1,38 +1,81 @@
-# Implementation Plan: Quản lý bài viết cộng đồng (Manager)
+# Implementation Plan: Post Interactions (Comments and Likes)
 
-## 1. Mục tiêu (Goal)
-Xây dựng tính năng "Quản lý bài viết cộng đồng" cho Ban quản lý (Manager), bao gồm các chức năng tạo bài viết, xem danh sách tất cả bài viết (bao gồm PENDING, APPROVED), duyệt bài viết và xóa mềm bài viết.
+**Branch**: `post-interactions` | **Date**: 2026-07-27 | **Spec**: [spec.md](file:///f:/SU26/New%20folder/hostel_management/my-project/sdd/specs/manager/postManagement/spec.md)
 
-## 2. Thiết kế Database (ĐÃ HOÀN THÀNH)
-- Cơ sở dữ liệu đã được khởi tạo với các bảng `community_posts`, `post_reactions`, và `post_comments`. 
-- **CẤM** không được thay đổi, chỉnh sửa hay chạy lệnh tạo mới database.
+**Input**: Feature specification from `/my-project/sdd/specs/manager/postManagement/spec.md`
 
-## 3. Kiến trúc Backend (Java 17 + Servlet + JDBC)
-- **Cấu trúc Package:** Theo chuẩn của dự án (`com.quanlyphongtro`).
-- **Model:** Tạo lớp `CommunityPost` trong package `com.quanlyphongtro.model`.
-- **DTO:** Tạo các lớp `CommunityPostDTO`, `CommunityPostCreateDTO` trong package `com.quanlyphongtro.dto`.
-- **DAO:** Tạo lớp `CommunityPostDAO` trong package `com.quanlyphongtro.dao` (Sử dụng `PreparedStatement`, query phải lọc `deleted_at IS NULL`). Kế thừa từ `BaseDAO` nếu có thể.
-- **Service:** Tạo interface `CommunityPostService` và class `CommunityPostServiceImpl` trong `com.quanlyphongtro.service` để xử lý business logic, upload file, và tính toán Cursor-based pagination.
-- **Controller (Servlet):** Tạo `CommunityPostServlet` (kế thừa `BaseServlet`) trong package `com.quanlyphongtro.controller.manager` để xử lý các endpoint:
-  - `GET /manager/articles/create` (Hiển thị Form tạo bài viết)
-  - `POST /manager/articles/create` (Xử lý tạo bài viết)
-  - `GET /manager/articles` (Lấy danh sách tất cả bài viết)
-  - `GET /manager/articles/detail` (Xem chi tiết bài viết, hỗ trợ Modal phóng to ảnh)
-  - `POST /manager/articles/approve` (Duyệt bài)
-  - `POST /manager/articles/delete` (Xóa mềm bài viết)
+## Summary
 
-## 4. Thiết kế Frontend (JSP + Bootstrap 5)
-- **Thư mục:** `/WEB-INF/views/manager/postManagement/`
-- **Files:**
-  - `list-pending.jsp`: Danh sách tất cả bài viết (có phân trang).
-  - `create.jsp`: Form tạo bài viết mới (Tiêu đề, Nội dung, Upload Ảnh).
-  - `detail.jsp`: Hiển thị chi tiết bài viết và hỗ trợ Modal phóng to ảnh khi click vào ảnh đính kèm.
-- Giao diện tuân thủ layout có sẵn trong dự án và hệ thống thiết kế `Mintlify` (theo DESIGN.md).
+Add comment and like functionality to the community posts page. This includes allowing authenticated users to like/unlike posts, add text comments, and displaying aggregated counts for likes and comments. The database schema already has `post_reactions` and `post_comments` tables, so the focus will be on backend APIs and frontend UI integration. Additionally, implement character limit validation for creating and editing posts (Title: max 50 chars, Content: max 1000 chars) to prevent UI layout breaking.
 
-## 5. Ràng buộc Kỹ thuật & Bảo mật (Constraints & Security)
-- **Rate Limit:** Trả về các header `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` nếu request là dạng API/JSON. Giới hạn 100 req/min.
-- **Pagination:** Sử dụng Cursor-based pagination.
-- **Soft Delete:** Logic xóa chỉ cập nhật `deleted_at = CURRENT_TIMESTAMP`. Tuyệt đối không dùng lệnh `DELETE` vật lý.
-- **File Upload:** Chỉ nhận định dạng `.jpg`, `.jpeg`, `.png`, dung lượng tối đa 5MB. Lưu cục bộ.
-- **Authorization:** Controller phải được cấu hình kiểm tra quyền (chỉ `MANAGER` được truy cập).
-- **Logging:** Dùng SLF4J, tuyệt đối không dùng `System.out.println()`. Không log PII dạng thô.
+## Technical Context
+
+**Language/Version**: Java 17, Servlet API, JSP
+
+**Primary Dependencies**: JDBC, Bootstrap 5, Mintlify design system
+
+**Storage**: SQL Server (tables `post_reactions`, `post_comments` already exist)
+
+**Testing**: JUnit, Mockito (if applicable)
+
+**Target Platform**: Web application deployed on Tomcat
+
+**Project Type**: Web application (Frontend + Backend in same repo)
+
+**Performance Goals**: UI updates under 500ms for likes, 1s for comments
+
+**Constraints**: Role-based access control (must be logged in), no nested comments, plain text only for comments. Strict character limits on post creation/editing (title: 50, content: 1000).
+
+**Scale/Scope**: Extension of existing Community Post feature.
+
+## Constitution Check
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+- [x] **Layered Architecture (MVC)**: Yes, using Servlets, Services, DAOs, and JSPs.
+- [x] **Consistent UI Design**: Yes, will use `hostel-design.css` and Bootstrap 5.
+- [x] **Role-Based Access Control (RBAC)**: Yes, restricted to authenticated users.
+- [x] **Safe Database Operations**: Yes, using JDBC PreparedStatement and transactions where necessary.
+- [x] **Test-Driven and Code Quality**: Yes, logic placed in services.
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+my-project/sdd/specs/manager/postManagement/
+├── plan.md              # This file
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output (empty for internal app)
+└── tasks.md             # To be created later
+```
+
+### Source Code (repository root)
+
+```text
+src/main/
+├── java/com/quanlyphongtro/
+│   ├── model/
+│   │   ├── PostComment.java
+│   │   └── PostReaction.java
+│   ├── dto/
+│   │   ├── PostCommentDTO.java
+│   │   └── PostReactionDTO.java
+│   ├── dao/
+│   │   ├── PostCommentDAO.java
+│   │   └── PostReactionDAO.java
+│   ├── service/
+│   │   ├── PostInteractionService.java
+│   │   └── impl/PostInteractionServiceImpl.java
+│   └── controller/
+│       ├── PostCommentServlet.java
+│       └── PostReactionServlet.java
+└── webapp/WEB-INF/views/
+    └── manager/postManagement/
+        ├── list-pending.jsp (update to show counts)
+        └── detail.jsp (update to show comments thread and like button)
+```
+
+**Structure Decision**: Standard MVC structure following existing project conventions. Added DAOs, Services, and Controllers for Post Comments and Post Reactions. UI changes will be made to existing post management JSPs.

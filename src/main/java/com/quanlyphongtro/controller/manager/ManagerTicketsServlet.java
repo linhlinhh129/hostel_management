@@ -161,7 +161,23 @@ public class ManagerTicketsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/tickets/detail.jsp").forward(req, resp);
     }
 
+    private boolean isOperatorTicket(int ticketId, HttpServletRequest req) {
+        UserSessionDTO currentUser = getCurrentUser(req);
+        if (currentUser == null) return false;
+        try {
+            Map<String, Object> ticket = requestService.getManagerTicketDetail(ticketId, currentUser.getId());
+            return ticket != null && "OPERATOR".equals(ticket.get("senderRole"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void handleReceive(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        if (isOperatorTicket(ticketId, req)) {
+            setFlashMessage(req, "warning", "Yêu cầu sự cố từ Nhân viên Vận hành chỉ dành cho Quản lý xem và theo dõi, không thể thao tác.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
         boolean success = requestService.receiveTicket(ticketId);
         if (success) {
             setFlashMessage(req, "success", "Tiếp nhận yêu cầu thành công!");
@@ -172,6 +188,11 @@ public class ManagerTicketsServlet extends BaseServlet {
     }
 
     private void handleReject(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        if (isOperatorTicket(ticketId, req)) {
+            setFlashMessage(req, "warning", "Yêu cầu sự cố từ Nhân viên Vận hành chỉ dành cho Quản lý xem và theo dõi, không thể thao tác.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
         String reason = req.getParameter("reason");
         if (reason == null || reason.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Vui lòng nhập lý do từ chối.");
@@ -189,11 +210,27 @@ public class ManagerTicketsServlet extends BaseServlet {
     }
 
     private void handleSchedule(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        if (isOperatorTicket(ticketId, req)) {
+            setFlashMessage(req, "warning", "Yêu cầu sự cố từ Nhân viên Vận hành chỉ dành cho Quản lý xem và theo dõi, không thể thao tác.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
         String appointmentDateStr = req.getParameter("appointmentDate");
         LocalDateTime ldt = null;
         if (appointmentDateStr != null && !appointmentDateStr.trim().isEmpty()) {
             try {
                 ldt = LocalDateTime.parse(appointmentDateStr.trim());
+                if (ldt.toLocalDate().isBefore(java.time.LocalDate.now())) {
+                    setFlashMessage(req, "danger", "Không được chọn ngày trong quá khứ.");
+                    resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                    return;
+                }
+                int hour = ldt.getHour();
+                if (hour < 8 || hour >= 18) {
+                    setFlashMessage(req, "danger", "Giờ làm việc chỉ từ 08:00 đến 18:00.");
+                    resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                    return;
+                }
             } catch (Exception e) {
                 logger.error("Failed to parse appointment date", e);
                 setFlashMessage(req, "danger", "Ngày hẹn không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
@@ -215,6 +252,11 @@ public class ManagerTicketsServlet extends BaseServlet {
     }
 
     private void handleReschedule(int ticketId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        if (isOperatorTicket(ticketId, req)) {
+            setFlashMessage(req, "warning", "Yêu cầu sự cố từ Nhân viên Vận hành chỉ dành cho Quản lý xem và theo dõi, không thể thao tác.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -239,6 +281,17 @@ public class ManagerTicketsServlet extends BaseServlet {
         LocalDateTime newLdt = null;
         try {
             newLdt = LocalDateTime.parse(appointmentDateStr.trim());
+            if (newLdt.toLocalDate().isBefore(java.time.LocalDate.now())) {
+                setFlashMessage(req, "danger", "Không được chọn ngày trong quá khứ.");
+                resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                return;
+            }
+            int hour = newLdt.getHour();
+            if (hour < 8 || hour >= 18) {
+                setFlashMessage(req, "danger", "Giờ làm việc chỉ từ 08:00 đến 18:00.");
+                resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+                return;
+            }
         } catch (Exception e) {
             logger.error("Failed to parse reschedule appointment date", e);
             setFlashMessage(req, "danger", "Ngày hẹn mới không đúng định dạng (yyyy-MM-dd'T'HH:mm).");
@@ -268,6 +321,11 @@ public class ManagerTicketsServlet extends BaseServlet {
 
     private void handleComplete(int ticketId, HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        if (isOperatorTicket(ticketId, req)) {
+            setFlashMessage(req, "warning", "Yêu cầu sự cố từ Nhân viên Vận hành chỉ dành cho Quản lý xem và theo dõi, không thể thao tác.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tickets/" + ticketId);
+            return;
+        }
         String notes = req.getParameter("notes");
         if (notes == null || notes.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Ghi chú hoàn thành không được để trống.");

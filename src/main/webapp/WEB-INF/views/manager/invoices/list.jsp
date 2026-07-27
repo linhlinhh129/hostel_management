@@ -77,6 +77,7 @@
                                 <tr>
                                   <th>Mã Hóa Đơn</th>
                                   <th>Phòng</th>
+                                  <th class="d-none d-md-table-cell">Người thuê</th>
                                   <th class="d-none d-md-table-cell">Kỳ HĐ</th>
                                   <th class="d-none d-md-table-cell" style="text-align:right">Tổng tiền</th>
                                   <th class="d-none d-md-table-cell">Hạn TT</th>
@@ -97,6 +98,9 @@
                                         <c:out value="${invoice.roomCode}" />
                                       </span></td>
                                     <td class="d-none d-md-table-cell">
+                                      <c:out value="${invoice.tenantName}" default="—" />
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
                                       <c:out value="${invoice.billingPeriod}" />
                                     </td>
                                     <td class="d-none d-md-table-cell" style="text-align:right;font-weight:600">
@@ -115,15 +119,6 @@
                                         <a href="${ctx}/manager/invoices/${invoice.invoiceId}"
                                           class="btn-mintlify-secondary text-decoration-none"
                                           style="padding:4px 12px;font-size:0.8125rem">Xem</a>
-                                        <c:if test="${invoice.status ne 'PAID'}">
-                                          <form action="${ctx}/manager/invoices/${invoice.invoiceId}/delete"
-                                            method="POST" class="d-inline"
-                                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa hóa đơn này?');">
-                                            <input type="hidden" name="csrfToken" value="${csrfToken}">
-                                            <button type="submit" class="btn btn-sm btn-danger"
-                                              style="background-color: var(--hms-danger); color: white; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.8125rem; font-weight: 500;">Xóa</button>
-                                          </form>
-                                        </c:if>
                                       </div>
                                     </td>
                                   </tr>

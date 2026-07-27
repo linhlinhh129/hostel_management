@@ -1,51 +1,40 @@
-# TASKS: Quản lý hóa đơn
+# Tasks: Quản lý hóa đơn & Giao dịch thanh toán (Snapshot Định danh Người thuê & Dọn dẹp Code thừa)
 
-## Phase 1: Setup & Foundational
-- [x] T001 Create `InvoiceListItemDTO` with necessary fields in `src/main/java/com/quanlyphongtro/dto/InvoiceListItemDTO.java`
-- [x] T002 Create `InvoiceDetailDTO` with necessary fields in `src/main/java/com/quanlyphongtro/dto/InvoiceDetailDTO.java`
-- [x] T003 Create `InvoiceService` interface in `src/main/java/com/quanlyphongtro/service/InvoiceService.java`
+**Input**: Design documents from `/my-project/sdd/specs/manager/invoiceManagement/`
 
-## Phase 2: Danh sách và Tìm kiếm Hóa Đơn (US3, US7, US9)
-**Goal:** Hiển thị danh sách hóa đơn với phân trang và lọc.
-**Test Criteria:** 
-- Phân quyền MANAGER thành công.
-- Trả về danh sách chính xác với keyword và bộ lọc.
-**Implementation:**
-- [x] T004 [US3] Add `getInvoices` and `countInvoices` methods to `InvoiceDAO` in `src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java`
-- [x] T005 [US3] Implement `getInvoices` in `InvoiceServiceImpl` in `src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java`
-- [x] T006 [US3] Create `InvoiceServlet` handling GET `/manager/invoices` in `src/main/java/com/quanlyphongtro/controller/manager/InvoiceServlet.java`
-- [x] T007 [US3] Create UI `list.jsp` for displaying table of invoices with search/filters in `src/main/webapp/WEB-INF/views/manager/invoices/list.jsp`
+## Phase 1: Database Migration & Schema Update (Data Layer)
 
-## Phase 3: Tạo hóa đơn (US1, US2)
-**Goal:** Cho phép quản lý tạo hóa đơn, tự động snapshot dữ liệu và tính tiền.
-**Test Criteria:**
-- Tự động lấy giá điện, nước từ `facilities`, và lấy chỉ số điện nước chốt trong kỳ từ `meter_readings`.
-- Tính toán chính xác tổng tiền.
-- Từ chối và ném exception nếu phòng chưa chốt số điện nước trong kỳ.
-**Implementation:**
-- [x] T008 [US1] Add `createInvoice` and methods to fetch facility prices and meter readings to `InvoiceDAO` in `src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java`
-- [x] T009 [US1] Implement `createInvoice` logic (snapshot price, calculate amounts) inside a transaction in `InvoiceServiceImpl` in `src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java`
-- [x] T010 [US1] Update `InvoiceServlet` to handle GET and POST for `action=create` in `src/main/java/com/quanlyphongtro/controller/manager/InvoiceServlet.java`
-- [x] T011 [US1] Create UI `create.jsp` in `src/main/webapp/WEB-INF/views/manager/invoices/create.jsp`
+**Purpose**: Nâng cấp CSDL bổ sung lưu vết `contract_id` và `tenant_id` cho bảng `dbo.invoices`
+- [x] T001 [P] [US1] Chạy script SQL `ALTER TABLE dbo.invoices ADD contract_id INT NULL, tenant_id INT NULL;` và thêm khóa ngoại `FK_invoices_contracts`, `FK_invoices_tenants`.
+- [x] T002 [US1] Chạy script SQL Migration map các Hóa đơn lịch sử hiện tại với `contract_id` tương ứng theo thời gian hợp đồng của phòng.
 
-## Phase 4: Chi tiết, Điều chỉnh, và In hóa đơn (US4, US5, US6, US8)
-**Goal:** Xem chi tiết, chỉnh sửa thông tin chưa thanh toán, xóa, đổi trạng thái và in hóa đơn (PDF browser print).
-**Test Criteria:**
-- 404 cho hóa đơn không tồn tại.
-- 400 nếu cố sửa hóa đơn đã PAID.
-- Bản in ẩn đi topbar và sidebar.
-**Implementation:**
-- [x] T012 [P] [US4] Add `getInvoiceDetail`, `updateInvoice`, `deleteInvoice`, `updateStatus` to `InvoiceDAO` in `src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java`
-- [x] T013 [US4] Implement detail, update, delete logic (recalculate amounts on update) in `InvoiceServiceImpl` in `src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java`
-- [x] T014 [US4] Create `InvoiceDetailServlet` handling detail, edit, delete, update-status in `src/main/java/com/quanlyphongtro/controller/manager/InvoiceDetailServlet.java`
-- [x] T015 [US4] Create UI `detail.jsp` displaying all info and including print styles (`@media print`) in `src/main/webapp/WEB-INF/views/manager/invoices/detail.jsp`
-- [x] T016 [US5] Create UI `edit.jsp` for adjusting unpaid invoices in `src/main/webapp/WEB-INF/views/manager/invoices/edit.jsp`
+## Phase 2: DAO & Service Updates (Snapshot Binding)
 
-## Dependencies
-- Phase 1 must be completed first.
-- Phase 2, Phase 3, Phase 4 can be developed in parallel for DAO/Service, but Servlets and UIs depend on respective Services.
+**Purpose**: Cập nhật logic tạo hóa đơn và câu lệnh SQL JOIN định danh cố định
+- [x] T003 [US1] Cập nhật `src/main/java/com/quanlyphongtro/service/impl/InvoiceServiceImpl.java` trong `createInvoice()` để tự động lấy `contract_id` và `tenant_id` của hợp đồng hiệu lực tại thời điểm chốt.
+- [x] T004 [US1] Cập nhật `src/main/java/com/quanlyphongtro/dao/InvoiceDAO.java` trong `insertInvoice()` để lưu `contract_id` và `tenant_id` vào CSDL.
+- [x] T005 [US4] Cập nhật các câu lệnh SQL trong `InvoiceDAO.java` (`findById`, `findInvoices`, `countInvoices`) thay thế JOIN động bằng `LEFT JOIN contracts c ON i.contract_id = c.contract_id` và `LEFT JOIN users u ON i.tenant_id = u.user_id`.
+- [x] T006 [US4] Cập nhật các câu lệnh SQL trong `src/main/java/com/quanlyphongtro/dao/PaymentDAO.java` (`findPayments`, `countPayments`, `findById`) để JOIN người thuê cố định qua `i.contract_id` và `p.created_by`.
+- [x] T007 [US4] Cập nhật câu SQL trong `NotificationDAO.java` và `DebtDAO.java` để JOIN theo `i.contract_id`.
 
-## Implementation Strategy
-- Hoàn thiện Phase 1 & Phase 2 để hiển thị được danh sách.
-- Tập trung xử lý tính tiền phức tạp ở Phase 3.
-- Hoàn thiện xem chi tiết và in ấn ở Phase 4.
+## Phase 3: Dọn dẹp Code thừa (Legacy Function Cleanup)
+
+**Purpose**: Xóa bỏ các hàm và endpoint cũ dư thừa không còn sử dụng
+- [x] T008 [P] Xóa bỏ hàm `reportError()` trong `src/main/java/com/quanlyphongtro/service/InvoiceService.java` và `InvoiceServiceImpl.java`.
+- [x] T009 [P] Xóa bỏ hàm `reportIncorrectInvoice()` trong `src/main/java/com/quanlyphongtro/service/NotificationService.java` và `NotificationServiceImpl.java`.
+- [x] T010 [P] Xóa bỏ handler `handleReportIncorrect()` và nhánh `action=report-incorrect` trong `src/main/java/com/quanlyphongtro/controller/manager/ManagerNotificationsServlet.java`.
+
+## Phase 4: Views & Verification (Testing & Quality Assurance)
+
+**Purpose**: Xác minh giao diện và chạy các kịch bản kiểm thử
+- [x] T011 [P] [US4] Đảm bảo `src/main/webapp/WEB-INF/views/manager/invoices/detail.jsp` hiển thị đầy đủ thông tin người thuê cố định (`tenantName`, `tenantPhone`, `tenantEmail`).
+- [x] T012 Chạy kịch bản kiểm thử: Tạo hóa đơn -> Thanh lý hợp đồng / Đổi cư dân mới -> Kiểm tra Hóa đơn & Giao dịch cũ vẫn giữ nguyên 100% tên người thuê cũ ban đầu.
+
+---
+
+## Dependencies & Execution Order
+- Phase 1 (DB Migration) cần thực hiện đầu tiên để bảng `dbo.invoices` có cột `contract_id` và `tenant_id`.
+- Phase 2 (DAO/Service) phụ thuộc vào Phase 1.
+- Phase 3 (Dọn dẹp code thừa) có thể thực hiện song song với Phase 2.
+- Phase 4 (Views & Verification) thực hiện sau cùng để nghiệm thu toàn bộ tính năng.
+

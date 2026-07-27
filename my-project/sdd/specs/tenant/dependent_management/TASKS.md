@@ -41,167 +41,73 @@
 
 ---
 
-## Epic 2: Backend Implementation (14 points)
+## Epic 2: Backend Implementation - Servlet & DAO (14 points)
 
-### Task 2.1: Dependent List Service (4 points)
+### Task 2.1: Dependent DAO (4 points)
 **Priority:** HIGH  
 **Duration:** 2 days  
-**Dependencies:** Task 1.1, 1.2  
 **Description:**
-- Implement service to query dependents by tenantId
-- Include only `deleted_at IS NULL`
-- Sort by `full_name` ascending
-- Return fields: dependentId, fullName, relationship, phoneNumber, isVerified
-- Support pagination
+- Viết `getDependentsByTenantId(int tenantId)` trong `DependentDAO` (truy vấn `deleted_at IS NULL`, sắp xếp theo `full_name`).
+- Viết `getDependentByIdAndTenantId(int dependentId, int tenantId)` trong `DependentDAO` (kiểm tra sở hữu theo `tenant_id`).
 
 **Acceptance Criteria:**
-- ✅ Tenant sees only own dependents
-- ✅ Sorted ascending by full name
-- ✅ Pagination works
-- ✅ Response fits defined schema
+- ✅ SQL queries đúng, bảo mật và chống SQL Injection.
+- ✅ Trả về dữ liệu chính xác theo tenant_id.
 
 ---
 
-### Task 2.2: Dependent Detail Service (4 points)
-**Priority:** HIGH  
-**Duration:** 2 days  
-**Dependencies:** Task 1.1, 1.2  
-**Description:**
-- Implement service to load dependent detail by dependentId and tenantId
-- Validate tenant ownership
-- Exclude soft deleted records
-- Mask citizenId/CCCD before returning
-- Return full tenant detail payload
-
-**Acceptance Criteria:**
-- ✅ Detail returned only for owned dependent
-- ✅ 404 when missing or soft deleted
-- ✅ 403 when accessing another tenant's dependent
-- ✅ citizenId masked correctly
-
----
-
-### Task 2.3: Data Protection & Filtering (3 points)
-**Priority:** HIGH  
-**Duration:** 1.5 days  
-**Dependencies:** Task 2.1, 2.2  
-**Description:**
-- Enforce soft-delete filter globally for dependent queries
-- Mask PII fields server-side
-- Ensure email and phone display only when allowed
-- Add tenant ownership check at query layer
-
-**Acceptance Criteria:**
-- ✅ Soft-deleted dependents never appear
-- ✅ PII masking executed before response
-- ✅ Tenant isolation enforced in all queries
-
----
-
-### Task 2.4: Performance & Index Review (3 points)
-**Priority:** MEDIUM  
-**Duration:** 1 day  
-**Dependencies:** Task 2.1  
-**Description:**
-- Review schema indexes for dependent queries
-- Add/verify indexes on `tenant_id`, `deleted_at`, `full_name`
-- Validate list/detail query performance
-
-**Acceptance Criteria:**
-- ✅ Query performance targets documented
-- ✅ Index recommendations captured
-- ✅ No full table scan for tenant list
-
----
-
-## Epic 3: API Endpoints (8 points)
-
-### Task 3.1: Implement List Endpoint (3 points)
-**Priority:** HIGH  
-**Duration:** 1.5 days  
-**Dependencies:** Task 2.1  
-**Description:**
-- Build `GET /api/v1/tenant/dependents`
-- Enforce authentication and tenant context
-- Accept pagination parameters
-- Return structured JSON response
-
-**Acceptance Criteria:**
-- ✅ Endpoint returns tenant-scoped list
-- ✅ 401 for missing auth
-- ✅ 500 handled gracefully
-- ✅ Matches API contract
-
----
-
-### Task 3.2: Implement Detail Endpoint (3 points)
-**Priority:** HIGH  
-**Duration:** 1.5 days  
-**Dependencies:** Task 2.2  
-**Description:**
-- Build `GET /api/v1/tenant/dependents/{dependentId}`
-- Validate path parameter and tenant ownership
-- Return detailed dependent data
-- Return 403/404 as defined
-
-**Acceptance Criteria:**
-- ✅ Detail endpoint works for valid request
-- ✅ 403 and 404 responses implemented
-- ✅ Response conforming to SPEC example
-
----
-
-### Task 3.3: API Error Handling & Logging (2 points)
+### Task 2.2: PII Masking Utility (3 points)
 **Priority:** HIGH  
 **Duration:** 1 day  
-**Dependencies:** Task 3.1, 3.2  
 **Description:**
-- Implement standard error response format
-- Log access denial and missing resource events
-- Provide retry-friendly messaging for front-end
+- Xây dựng helper mask thông tin CCCD/CMND theo chuẩn SEC-01 (`0790******123`).
+- Tích hợp masking vào DTO trước khi trả về View.
 
 **Acceptance Criteria:**
-- ✅ Error response format consistent
-- ✅ Authentication and authorization errors logged
-- ✅ Frontend-friendly messages available
+- ✅ CCCD được che đúng 6 số giữa.
 
 ---
 
-## Epic 4: Frontend Experience (8 points)
+## Epic 3: Servlet Controllers & Views (12 points)
 
-### Task 4.1: Dependent List Screen (4 points)
+### Task 3.1: TenantDependentListServlet (4 points)
 **Priority:** HIGH  
 **Duration:** 2 days  
-**Dependencies:** Task 3.1  
 **Description:**
-- Implement list view for dependents
-- Display columns: dependentId, fullName, relationship, phoneNumber, isVerified
-- Show sort order by name A→Z
-- Show empty state copy per SPEC
-- Navigate to detail view on selection
+- Tạo `TenantDependentListServlet` mapped với `@WebServlet("/tenant/dependents")`.
+- Kiểm tra session đăng nhập & role `TENANT`.
+- Gọi `DependentDAO`, gán `request.setAttribute("dependentList", list)` và forward sang `/WEB-INF/views/tenant/dependent-list.jsp`.
 
 **Acceptance Criteria:**
-- ✅ List displays expected fields
-- ✅ Empty state shown when no dependents
-- ✅ Sorting and navigation work
-- ✅ Loading/error states handled
+- ✅ Servlet hoạt động đúng route `/tenant/dependents`.
+- ✅ Forward giao diện thành công.
 
 ---
 
-### Task 4.2: Dependent Detail Screen (3 points)
+### Task 3.2: TenantDependentDetailServlet (4 points)
 **Priority:** HIGH  
-**Duration:** 1.5 days  
-**Dependencies:** Task 3.2  
+**Duration:** 2 days  
 **Description:**
-- Implement detail page with read-only information
-- Display avatar, full name, dateOfBirth, gender, relationship, phoneNumber, email, masked citizenId, sponsoredBy, registeredDate, isVerified
-- Add back navigation and error state handling
+- Tạo `TenantDependentDetailServlet` mapped với `@WebServlet("/tenant/dependent-detail")`.
+- Nhận tham số `id`, kiểm tra quyền sở hữu của tenant.
+- Nếu không hợp lệ: Forward tới 403/404 Page.
+- Nếu hợp lệ: Mask CCCD, gán `request.setAttribute("dependent", dto)` và forward sang `/WEB-INF/views/tenant/dependent-detail.jsp`.
 
 **Acceptance Criteria:**
-- ✅ Detail screen matches SPEC fields
-- ✅ citizenId is masked correctly
-- ✅ 403/404 handled gracefully
-- ✅ Back navigation works
+- ✅ Servlet hoạt động đúng route `/tenant/dependent-detail`.
+- ✅ Chặn các request xem dependent của tenant khác (403).
+
+---
+
+### Task 3.3: JSP Views Development (4 points)
+**Priority:** HIGH  
+**Duration:** 2 days  
+**Description:**
+- Xây dựng giao diện JSP `/WEB-INF/views/tenant/dependent-list.jsp` (sử dụng JSTL `<c:forEach>`, xử lý Empty State).
+- Xây dựng giao diện JSP `/WEB-INF/views/tenant/dependent-detail.jsp` (hiển thị thông tin read-only, nút Back).
+
+**Acceptance Criteria:**
+- ✅ Hiển thị giao diện mạch lạc, chuẩn responsive.
 
 ---
 

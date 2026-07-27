@@ -1,13 +1,24 @@
 package com.quanlyphongtro.util;
 
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 public class ValidationUtil {
     // Regex cho số điện thoại Việt Nam: Bắt đầu bằng 0, +84 hoặc 84, tiếp theo là đầu số di động 3, 5, 7, 8, 9, tiếp theo là 8 số
     private static final Pattern VN_PHONE_PATTERN = Pattern.compile("^(0|\\+84|84)(3|5|7|8|9)[0-9]{8}$");
     
-    // Regex cho CMND/CCCD Việt Nam: 9 số (CMND cũ) hoặc 12 số (CMND mới/CCCD)
-    private static final Pattern VN_IDENTITY_PATTERN = Pattern.compile("^([0-9]{9}|[0-9]{12})$");
+    // Regex cho CCCD Việt Nam: 12 số
+    private static final Pattern VN_IDENTITY_PATTERN = Pattern.compile("^[0-9]{12}$");
+
+    /**
+     * Kiểm tra người dùng đã đủ 18 tuổi hay chưa.
+     */
+    public static boolean isAtLeast18YearsOld(LocalDate dob) {
+        if (dob == null) {
+            return false;
+        }
+        return !dob.plusYears(18).isAfter(LocalDate.now());
+    }
 
     /**
      * Kiểm tra số điện thoại Việt Nam hợp lệ.

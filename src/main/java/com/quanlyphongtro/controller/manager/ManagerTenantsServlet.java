@@ -276,7 +276,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
         if (identityNumber != null && !identityNumber.trim().isEmpty()) {
             if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
-                setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+                setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 12 chữ số).");
                 resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
                 return;
             }
@@ -471,7 +471,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
         if (identityNumber != null && !identityNumber.trim().isEmpty()) {
             if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
-                setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+                setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 12 chữ số).");
                 if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
                     resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
                 } else {
@@ -577,7 +577,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
         if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
-            setFlashMessage(req, "danger", "Số CMND/CCCD không hợp lệ (phải gồm 9 hoặc 12 chữ số).");
+            setFlashMessage(req, "danger", "Số CCCD không hợp lệ (phải gồm 12 chữ số).");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
             return;
         }
@@ -586,6 +586,11 @@ public class ManagerTenantsServlet extends BaseServlet {
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
                 dob = LocalDate.parse(dobStr.trim());
+                if (!ValidationUtil.isAtLeast18YearsOld(dob)) {
+                    setFlashMessage(req, "danger", "Người thuê phải từ 18 tuổi trở lên.");
+                    resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+                    return;
+                }
             } catch (Exception e) {
                 setFlashMessage(req, "danger", "Ngày sinh không đúng định dạng (yyyy-MM-dd).");
                 resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);

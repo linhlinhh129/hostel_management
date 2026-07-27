@@ -206,89 +206,42 @@ Mục tiêu của tính năng là:
 
 ---
 
-# 6. Technical Notes
+# 6. Servlet Routes & Page Controller Contract
 
-## API
+## 6.1 Màn hình Danh sách thông báo
 
-### Lấy danh sách
-
-GET /api/v1/tenant/notifications?page=1&pageSize=10
-
----
-
-### Lấy chi tiết
-
-GET /api/v1/tenant/notifications/{notificationId}
-
----
-
-## Database
-
-Không thay đổi schema.
-
----
-
-## Validation
-
-- Người dùng đã đăng nhập.
-
-- Vai trò phải là Tenant.
-
-- notificationId là số nguyên dương.
-
-- notificationId phải tồn tại.
-
-- Chỉ được xem thông báo được gửi cho Tenant hoặc thông báo Public.
-
----
-
-# 7. Response Data
-
-## Notification List
-
-```json
-{
-    "page":1,
-    "pageSize":10,
-    "totalItems":42,
-    "items":[
-        {
-            "notificationId":1,
-            "title":"Thông báo bảo trì hệ thống nước",
-            "createdAt":"2026-06-10T08:00:00"
-        },
-        {
-            "notificationId":2,
-            "title":"Thông báo thu tiền phòng tháng 06",
-            "createdAt":"2026-06-09T14:30:00"
-        }
-    ]
-}
+### Servlet Mapping
+```http
+GET /tenant/notifications?page=1&pageSize=10
 ```
+- **Servlet:** `TenantNotificationListServlet`
+- **Parameters:** `page` (default 1), `pageSize` (default 10)
+- **Scope & Attribute Name:** `request.setAttribute("notificationPage", NotificationPageDTO)`
+- **Forward View:** `/WEB-INF/views/tenant/notification-list.jsp`
 
 ---
 
-## Notification Detail
+## 6.2 Màn hình Chi tiết thông báo
 
-```json
-{
-    "notificationId":1,
-    "title":"Thông báo bảo trì hệ thống nước",
-    "content":"Hệ thống nước sẽ được bảo trì từ 08:00 đến 12:00 ngày 15/06/2026.",
-    "createdAt":"2026-06-10T08:00:00"
-}
+### Servlet Mapping
+```http
+GET /tenant/notification-detail?id={notificationId}
 ```
+- **Servlet:** `TenantNotificationDetailServlet`
+- **Parameter:** `id`
+- **Scope & Attribute Name:** `request.setAttribute("notification", NotificationDTO)`
+- **Forward View:** `/WEB-INF/views/tenant/notification-detail.jsp`
 
 ---
 
-# 8. Error Handling
+# 7. Error Handling & Redirection
 
-| HTTP Code | Description | UI Action |
+| Error Code | Status / Action | Description |
 | --- | --- | --- |
-| 401 | Unauthorized | Redirect Login |
-| 403 | Forbidden | Hiển thị "Bạn không có quyền truy cập." |
-| 404 | Notification Not Found | Hiển thị màn hình Not Found |
-| 500 | Internal Server Error | Hiển thị thông báo lỗi và nút Retry |
+| UNAUTHORIZED | Redirect `/login` | Chưa đăng nhập (Session không tồn tại) |
+| FORBIDDEN | Forward 403 Page | Không có quyền xem thông báo này |
+| NOTIFICATION_NOT_FOUND | Forward 404 Page | Thông báo không tồn tại |
+| INTERNAL_ERROR | Forward 500 Page | Lỗi hệ thống server |
 
 ---
 

@@ -65,10 +65,13 @@ public class CommunityPostDAO extends BaseDAO {
     public List<CommunityPostDTO> getPostsForManager(int managerId, int cursor, int limit) {
         List<CommunityPostDTO> list = new ArrayList<>();
         // Cursor is the minimum post_id seen so far (because we load newest first)
-        String sql = "SELECT p.*, u.full_name as author_name " +
+        String sql = "SELECT p.*, u.full_name as author_name, " +
+                     "(SELECT COUNT(*) FROM dbo.post_reactions pr WHERE pr.post_id = p.post_id) as total_likes, " +
+                     "(SELECT COUNT(*) FROM dbo.post_comments pc WHERE pc.post_id = p.post_id AND pc.deleted_at IS NULL) as total_comments, " +
+                     "CASE WHEN EXISTS (SELECT 1 FROM dbo.post_reactions pr2 WHERE pr2.post_id = p.post_id AND pr2.user_id = ?) THEN 1 ELSE 0 END as is_liked " +
                      "FROM dbo.community_posts p " +
                      "JOIN dbo.users u ON p.author_id = u.user_id " +
-                     "WHERE p.deleted_at IS NULL AND p.reviewed_by = ? ";
+                     "WHERE p.deleted_at IS NULL AND (p.status = 'PENDING' OR p.reviewed_by = ?) ";
         if (cursor > 0) {
             sql += "AND p.post_id < ? ";
         }
@@ -77,7 +80,8 @@ public class CommunityPostDAO extends BaseDAO {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             int paramIndex = 1;
-            ps.setInt(paramIndex++, managerId);
+            ps.setInt(paramIndex++, managerId); // for is_liked
+            ps.setInt(paramIndex++, managerId); // for reviewed_by
             if (cursor > 0) {
                 ps.setInt(paramIndex++, cursor);
             }
@@ -95,6 +99,9 @@ public class CommunityPostDAO extends BaseDAO {
                     dto.setStatus(rs.getString("status"));
                     dto.setCreatedAt(toLocalDateTime(rs, "created_at"));
                     dto.setUpdatedAt(toLocalDateTime(rs, "updated_at"));
+                    dto.setTotalLikes(rs.getInt("total_likes"));
+                    dto.setTotalComments(rs.getInt("total_comments"));
+                    dto.setLikedByCurrentUser(rs.getInt("is_liked") == 1);
                     list.add(dto);
                 }
             }

@@ -170,111 +170,52 @@ API đạt **99.9% uptime**.
 
 ---
 
-# 6. Technical Notes
+# 6. Servlet Routes & Page Controller Contract
 
-## API
+## 6.1 Màn hình Danh sách người phụ thuộc
 
-### Danh sách người phụ thuộc
+### Servlet Mapping
 
-GET /api/v1/tenant/dependents
-
----
-
-### Chi tiết người phụ thuộc
-
-GET /api/v1/tenant/dependents/{dependentId}
-
----
-
-## Database
-
-Không thay đổi schema.
-
-Hệ thống chỉ truy vấn các bản ghi:
-
-```
-deleted_at IS NULL
+```http
+GET /tenant/dependents
 ```
 
----
-
-## Validation
-
-### Authorization
-
-- User đã đăng nhập.
-
-- Role = Tenant.
-
-- dependentId thuộc Tenant hiện tại.
-
-### Dependent
-
-- dependentId tồn tại.
-
-- Chưa Soft Delete.
-
-- Là mã hợp lệ.
+### Xử lý Request & View
+- **Servlet:** `TenantDependentListServlet`
+- **Mô tả:** Tiếp nhận request từ người thuê, lấy `tenant_id` từ `HttpSession`, gọi Service lấy danh sách người phụ thuộc (`deleted_at IS NULL`) thuộc người thuê này.
+- **Scope & Attribute Name:** `request.setAttribute("dependentList", List<DependentDTO>)`
+- **Forward View:** `/WEB-INF/views/tenant/dependent-list.jsp`
 
 ---
 
-# 7. Response Data
+## 6.2 Màn hình Chi tiết người phụ thuộc
 
-## Dependent List
+### Servlet Mapping
 
-```json
-[
-  {
-    "dependentId": "DEP001",
-    "fullName": "Nguyễn Văn B",
-    "relationship": "Em trai",
-    "phoneNumber": "0912345678",
-    "isVerified": true
-  },
-  {
-    "dependentId": "DEP002",
-    "fullName": "Nguyễn Thị C",
-    "relationship": "Mẹ",
-    "phoneNumber": "0987654321",
-    "isVerified": false
-  }
-]
+```http
+GET /tenant/dependent-detail?id={dependentId}
 ```
 
----
-
-## Dependent Detail
-
-```json
-{
-  "dependentId": "DEP001",
-  "fullName": "Nguyễn Văn B",
-  "avatar": "https://...",
-  "dateOfBirth": "2005-10-12",
-  "gender": "Male",
-  "phoneNumber": "0912345678",
-  "citizenId": "0790******123",
-  "email": "nguyenvanb@gmail.com",
-  "relationship": "Em trai",
-  "registeredDate": "2026-01-15",
-  "isVerified": true,
-  "sponsoredBy": {
-    "tenantId": "TEN001",
-    "fullName": "Nguyễn Văn A"
-  }
-}
-```
+### Xử lý Request & View
+- **Servlet:** `TenantDependentDetailServlet`
+- **Parameter:** `id` (mã định danh người phụ thuộc `dependentId`)
+- **Mô tả:** Lấy thông tin chi tiết người phụ thuộc theo `id`. Kiểm tra xem bản ghi đó có thuộc sở hữu của `tenant_id` đang đăng nhập hay không và mask CCCD theo chuẩn SEC-01 (`0790******123`).
+- **Scope & Attribute Name:** `request.setAttribute("dependent", DependentDetailDTO)`
+- **Forward View:** `/WEB-INF/views/tenant/dependent-detail.jsp`
+- **Trường hợp lỗi:**
+  - Nếu `id` không tồn tại hoặc đã bị soft delete: Forward tới trang lỗi 404 (Not Found).
+  - Nếu bản ghi không thuộc `tenant_id` hiện tại: Forward tới trang lỗi 403 (Access Denied).
 
 ---
 
-# 8. Error Handling
+# 7. Error Handling & Redirection
 
-| HTTP Code | Description | UI Action |
+| Error Code | Status / Action | Description |
 | --- | --- | --- |
-| 401 | Unauthorized | Redirect Login |
-| 403 | Forbidden | Hiển thị "Bạn không có quyền truy cập." |
-| 404 | Dependent Not Found | Hiển thị màn hình Not Found |
-| 500 | Internal Server Error | Hiển thị thông báo lỗi và Retry |
+| UNAUTHORIZED | Redirect `/login` | Chưa đăng nhập (Session không tồn tại) |
+| FORBIDDEN | Forward 403 Page | Không có quyền xem thông tin người phụ thuộc này |
+| DEPENDENT_NOT_FOUND | Forward 404 Page | Không tìm thấy người phụ thuộc hoặc bản ghi đã bị xóa |
+| INTERNAL_ERROR | Forward 500 Page | Lỗi hệ thống server |
 
 ---
 

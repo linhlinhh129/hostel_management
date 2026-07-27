@@ -55,7 +55,7 @@
                                             <c:set var="finalImg1" value="${ctx}/${img1}" />
                                         </c:otherwise>
                                     </c:choose>
-                                    <img src="${finalImg1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
+                                    <img src="${finalImg1}" alt="Đính kèm" style="max-width: 100%; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm); cursor: zoom-in;" onclick="showFullImage(this.src)">
                                 </div>
                             </c:if>
                         </div>
@@ -85,7 +85,7 @@
                                                     <c:set var="finalImg2" value="${ctx}/${trimmedUrl}" />
                                                 </c:otherwise>
                                             </c:choose>
-                                            <img src="${finalImg2}" alt="Kết quả xử lý" style="max-width: 200px; height: auto; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm);">
+                                            <img src="${finalImg2}" alt="Kết quả xử lý" style="max-width: 200px; height: auto; border-radius: var(--hms-radius-md); box-shadow: var(--hms-shadow-sm); cursor: zoom-in;" onclick="showFullImage(this.src)">
                                         </c:if>
                                     </c:forTokens>
                                 </div>
@@ -140,4 +140,25 @@
         </main>
     </div>
 </div>
+    <script>
+        function showFullImage(imageSrc) {
+            document.getElementById('modalImagePreview').src = imageSrc;
+            var imgModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+            imgModal.show();
+        }
+    </script>
+
+    <!-- Modal xem ảnh lớn -->
+    <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 justify-content-end p-2">
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <img id="modalImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain;" alt="Ảnh phóng to">
+                </div>
+            </div>
+        </div>
+    </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

@@ -146,138 +146,86 @@ THE SYSTEM SHALL:
 
 ---
 
-# 4. API Contract
+# 4. Servlet Routes & Page Controller Contract
+
+## 4.1 Màn hình Bài viết của tôi (Danh sách bài viết)
+
+### Servlet Mapping
+```http
+GET /tenant/my-posts
+```
+- **Servlet:** `TenantMyPostsServlet`
+- **Mô tả:** Lấy danh sách bài viết do Tenant hiện tại (`tenant_id`) đã tạo, sắp xếp theo thời gian mới nhất.
+- **Scope & Attribute Name:** `request.setAttribute("postList", List<PostDTO>)`
+- **Forward View:** `/WEB-INF/views/tenant/my-posts.jsp`
 
 ---
 
-## 4.1 Tạo bài viết
+## 4.2 Màn hình Chi tiết bài viết cá nhân
 
-**Endpoint**
-
-POST /api/v1/posts
-
-**Request**
-
-```json
-{
-  "title": "Thông báo mất xe",
-  "content": "Xe máy bị mất tại tầng hầm B1.",
-  "images": [
-    "image1.jpg",
-    "image2.jpg"
-  ]
-}
+### Servlet Mapping
+```http
+GET /tenant/post-detail?id={postId}
 ```
-
-**Response 201**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 101,
-    "status": "Pending"
-  }
-}
-```
-
-**Response 400**
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "POST_INVALID_DATA",
-    "message": "Dữ liệu không hợp lệ."
-  }
-}
-```
-
-**Response 401**
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "UNAUTHORIZED"
-  }
-}
-```
+- **Servlet:** `TenantPostDetailServlet`
+- **Parameter:** `id`
+- **Mô tả:** Lấy thông tin chi tiết bài viết cá nhân theo `id`. Kiểm tra xem bài viết có thuộc sở hữu của `tenant_id` đang đăng nhập hay không.
+- **Scope & Attribute Name:** `request.setAttribute("post", PostDetailDTO)`
+- **Forward View:** `/WEB-INF/views/tenant/post-detail.jsp`
 
 ---
 
-## 4.2 Lấy danh sách bài viết của Tenant
+## 4.3 Màn hình Tạo bài viết mới (Form View)
 
-**Endpoint**
-
-GET /api/v1/posts/my
-
-**Response 200**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 101,
-      "title": "Thông báo",
-      "status": "Pending",
-      "createdAt": "2026-07-09T09:00:00"
-    }
-  ]
-}
+### Servlet Mapping
+```http
+GET /tenant/post-create
 ```
+- **Servlet:** `TenantPostCreateFormServlet`
+- **Forward View:** `/WEB-INF/views/tenant/post-create.jsp`
 
 ---
 
-## 4.3 Xem chi tiết bài viết
+## 4.4 Thực thi Tạo bài viết (Form Submit Action)
 
-**Endpoint**
-
-GET /api/v1/posts/{id}
-
-**Response 200**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 101,
-    "title": "Thông báo",
-    "content": "...",
-    "images": [],
-    "status": "Pending"
-  }
-}
+### Servlet Mapping
+```http
+POST /tenant/post-create
 ```
+- **Servlet:** `TenantPostCreateServlet`
+- **Content-Type:** `multipart/form-data`
+- **Form Parameters:** `title`, `content`, `images` (multi-file upload, tối đa 10 ảnh, max 10MB/ảnh)
+- **Xử lý:**
+  - Lưu bài viết ở trạng thái `Pending`.
+  - Lưu các ảnh liên quan vào thư mục đính kèm hoặc storage.
+  - Thành công: Redirect sang `/tenant/my-posts?msg=created_success`.
+  - Thiếu dữ liệu/Lỗi: Gán `request.setAttribute("error", "Invalid data")` và Forward lại trang `post-create.jsp`.
 
 ---
 
-## 4.4 Xóa bài viết
+## 4.5 Thực thi Xóa bài viết cá nhân
 
-**Endpoint**
-
-DELETE /api/v1/posts/{id}
-
-**Response 200**
-
-```json
-{
-  "success": true
-}
+### Servlet Mapping
+```http
+POST /tenant/post-delete
 ```
+- **Servlet:** `TenantPostDeleteServlet`
+- **Form Parameter:** `id` (mã bài viết cần xóa)
+- **Xử lý:**
+  - Kiểm tra `tenant_id` sở hữu bài viết.
+  - Nếu không đúng chủ sở hữu: Forward trang lỗi 403 (Forbidden).
+  - Nếu hợp lệ: Xóa bài viết cùng các ảnh/dữ liệu liên quan và Redirect sang `/tenant/my-posts?msg=deleted_success`.
 
-**Response 403**
-
-```json{
-  "success": false,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Bạn không có quyền xóa bài viết này."
-  }
-}
-```
 ---
+
+# 4.6 Error Handling & Redirection
+
+| Error Code | Status / Action | Description |
+| --- | --- | --- |
+| UNAUTHORIZED | Redirect `/login` | Chưa đăng nhập (Session không tồn tại) |
+| FORBIDDEN | Forward 403 Page | Không phải chủ sở hữu bài viết |
+| POST_NOT_FOUND | Forward 404 Page | Không tìm thấy bài viết |
+| INVALID_DATA | Forward `/WEB-INF/views/tenant/post-create.jsp` | Tiêu đề hoặc nội dung rỗng, hoặc upload sai định dạng ảnh |
 
 # 5. Technical Constraints
 

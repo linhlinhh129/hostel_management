@@ -61,21 +61,27 @@ public class ServicePricePageServlet extends BaseServlet {
             try {
                 String priceType = req.getParameter("priceType");
                 String newPriceStr = req.getParameter("newPrice");
-                String note = req.getParameter("note");
+
+                if (newPriceStr == null || !newPriceStr.matches("^\\d+$")) {
+                    throw new IllegalArgumentException("Yêu cầu nhập số nguyên dương, ví dụ: 40000");
+                }
 
                 BigDecimal newPrice = new BigDecimal(newPriceStr);
-                boolean success = servicePriceService.updatePrice(currentUser.getId(), priceType, newPrice, note);
+                boolean success = servicePriceService.updatePrice(currentUser.getId(), priceType, newPrice);
                 
                 if (success) {
-                    // removed successMessage
                     resp.sendRedirect(req.getContextPath() + "/manager/service-prices");
                 } else {
-                    req.setAttribute("errorMessage", "Cập nhật thất bại (Lỗi nghiệp vụ hoặc cơ sở không hợp lệ).");
+                    req.setAttribute("errorMessage", "Cập nhật thất bại (cơ sở không hợp lệ hoặc dữ liệu sai).");
                     req.setAttribute("servicePrices", servicePriceService.getCurrentPrices(currentUser.getId()));
                     req.getRequestDispatcher("/WEB-INF/views/manager/service-prices/index.jsp").forward(req, resp);
                 }
+            } catch (IllegalArgumentException e) {
+                req.setAttribute("errorMessage", e.getMessage());
+                req.setAttribute("servicePrices", servicePriceService.getCurrentPrices(currentUser.getId()));
+                req.getRequestDispatcher("/WEB-INF/views/manager/service-prices/index.jsp").forward(req, resp);
             } catch (Exception e) {
-                req.setAttribute("errorMessage", "Dữ liệu không hợp lệ.");
+                req.setAttribute("errorMessage", "Đã xảy ra lỗi không xác định.");
                 req.setAttribute("servicePrices", servicePriceService.getCurrentPrices(currentUser.getId()));
                 req.getRequestDispatcher("/WEB-INF/views/manager/service-prices/index.jsp").forward(req, resp);
             }

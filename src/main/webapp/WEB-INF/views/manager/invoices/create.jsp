@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
@@ -52,32 +52,40 @@
             <div class="row g-4">
               <div class="col-md-6">
                 <label class="form-label fw-bold">Mã phòng <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <input type="text" class="form-control" name="roomCode" id="roomCodeInput" required placeholder="VD: HN0101"
-                    value="<c:out value='${prefilledRoomCode}'/>">
-                  <button type="button" class="btn btn-outline-secondary" id="checkDebtBtn" title="Kiểm tra tiền nợ">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                  </button>
-                </div>
+                <select class="form-select" name="roomCode" id="roomCodeSelect" required>
+                  <option value="">-- Chọn mã phòng --</option>
+                  <c:set var="foundPrefilled" value="false" />
+                  <c:forEach var="r" items="${availableRooms}">
+                    <c:if test="${not empty prefilledRoomCode and prefilledRoomCode == r.code}">
+                      <c:set var="foundPrefilled" value="true" />
+                    </c:if>
+                    <option value="${r.code}" <c:if test="${prefilledRoomCode == r.code}">selected</c:if>>
+                      Phòng <c:out value="${r.code}"/>
+                    </option>
+                  </c:forEach>
+                  <c:if test="${not empty prefilledRoomCode and !foundPrefilled}">
+                    <option value="${prefilledRoomCode}" selected>
+                      Phòng <c:out value="${prefilledRoomCode}"/>
+                    </option>
+                  </c:if>
+                </select>
+                <c:if test="${empty availableRooms}">
+                  <small class="text-warning d-block mt-1 fw-bold">
+                    ⚠ Không tìm thấy phòng nào đang có người thuê.
+                  </small>
+                </c:if>
                 <small id="debtHint" class="text-muted mt-1 d-block"></small>
               </div>
 
               <div class="col-md-6">
                 <label class="form-label fw-bold">Kỳ hóa đơn (YYYYMM) <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="billingPeriod" required pattern="\d{6}" placeholder="VD: 202606">
+                <input type="text" class="form-control" name="billingPeriod" id="billingPeriodInput" required pattern="\d{6}" placeholder="VD: 202606"
+                  value="<c:out value='${param.billingPeriod != null ? param.billingPeriod : defaultBillingPeriod}'/>">
               </div>
 
               <div class="col-md-6">
                 <label class="form-label fw-bold">Hạn thanh toán <span class="text-danger">*</span></label>
                 <input type="date" class="form-control" name="dueDate" required>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Thuế (%) <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" name="taxRate" value="0" min="0" step="0.1" required>
               </div>
 
               <div class="col-md-6">
@@ -95,7 +103,8 @@
 
               <div class="col-12">
                 <label class="form-label fw-bold">Ghi chú</label>
-                <textarea class="form-control" name="note" rows="3" placeholder="Ghi chú thêm nếu có..."></textarea>
+                <textarea class="form-control" name="note" rows="3" maxlength="1000" placeholder="Ghi chú thêm nếu có..."></textarea>
+                <div class="form-text text-muted">Tối đa 1000 ký tự.</div>
               </div>
             </div>
 
@@ -114,31 +123,36 @@
   <script>
     (function () {
       var ctx = '<c:out value="${ctx}"/>';
-      var roomCodeInput = document.getElementById('roomCodeInput');
-      var otherFeeInput = document.getElementById('otherFeeInput');
-      var debtHint = document.getElementById('debtHint');
-      var debtInOtherFeeHint = document.getElementById('debtInOtherFeeHint');
-      var checkDebtBtn = document.getElementById('checkDebtBtn');
+      var roomCodeSelect = document.getElementById('roomCodeSelect');
+      var billingPeriodInput = document.getElementById('billingPeriodInput');
 
-      // Khi nhấn nút tìm kiếm tiền nợ, reload form với roomCode để server tính nợ
-      checkDebtBtn.addEventListener('click', function () {
-        var roomCode = roomCodeInput.value.trim();
-        if (!roomCode) {
-          debtHint.textContent = 'Vui lòng nhập mã phòng.';
-          debtHint.style.color = '#dc3545';
-          return;
-        }
-        var url = ctx + '/manager/invoices?action=create&roomCode=' + encodeURIComponent(roomCode);
-        window.location.href = url;
-      });
+      if (roomCodeSelect) {
+        roomCodeSelect.addEventListener('change', function () {
+          var roomCode = roomCodeSelect.value.trim();
+          var period = billingPeriodInput ? billingPeriodInput.value.trim() : '';
+          if (roomCode) {
+            var url = ctx + '/manager/invoices?action=create&roomCode=' + encodeURIComponent(roomCode);
+            if (period) {
+              url += '&billingPeriod=' + encodeURIComponent(period);
+            }
+            window.location.href = url;
+          }
+        });
+      }
 
-      // Cho phép Enter trong ô mã phòng cũng trigger kiểm tra nợ
-      roomCodeInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          checkDebtBtn.click();
-        }
-      });
+      if (billingPeriodInput) {
+        billingPeriodInput.addEventListener('change', function () {
+          var period = billingPeriodInput.value.trim();
+          var roomCode = roomCodeSelect ? roomCodeSelect.value.trim() : '';
+          if (period && /^\d{6}$/.test(period)) {
+            var url = ctx + '/manager/invoices?action=create&billingPeriod=' + encodeURIComponent(period);
+            if (roomCode) {
+              url += '&roomCode=' + encodeURIComponent(roomCode);
+            }
+            window.location.href = url;
+          }
+        });
+      }
     })();
   </script>
 </body>

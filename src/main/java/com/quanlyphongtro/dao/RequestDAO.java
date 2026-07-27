@@ -55,11 +55,19 @@ public class RequestDAO extends BaseDAO {
     // ==================== HEAD (OPERATOR) METHODS ====================
 
     public Request getRequestById(int requestId) {
-        String sql = "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
+        String sql = "SELECT rq.*, u.full_name AS sender_name, " +
+                "COALESCE(r_tenant.code, r_title.code) AS room_code, " +
+                "COALESCE(f_tenant.name, f_title.name) AS facility_name " +
                 "FROM requests rq " +
                 "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
+                "LEFT JOIN rooms r_tenant ON (u.role = 'TENANT' AND u.user_id = r_tenant.tenant_id AND r_tenant.deleted_at IS NULL) " +
+                "LEFT JOIN facilities f_tenant ON r_tenant.facility_id = f_tenant.facility_id " +
+                "LEFT JOIN rooms r_title ON (r_title.deleted_at IS NULL AND ( " +
+                "    rq.title LIKE '%' + r_title.code + '%' OR " +
+                "    rq.content LIKE '%' + r_title.code + '%' OR " +
+                "    rq.code LIKE '%' + r_title.code + '%' " +
+                ")) " +
+                "LEFT JOIN facilities f_title ON r_title.facility_id = f_title.facility_id " +
                 "WHERE rq.request_id = ? AND rq.deleted_at IS NULL";
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -143,12 +151,20 @@ public class RequestDAO extends BaseDAO {
     public List<Request> getRequests(Integer assigneeId, String status, String category, int offset, int limit) {
         List<Request> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT rq.*, u.full_name AS sender_name, r.code AS room_code, f.name AS facility_name " +
-                        "FROM requests rq " +
-                        "LEFT JOIN users u ON rq.sender_id = u.user_id " +
-                        "LEFT JOIN rooms r ON u.user_id = r.tenant_id " +
-                        "LEFT JOIN facilities f ON r.facility_id = f.facility_id " +
-                        "WHERE rq.deleted_at IS NULL");
+                "SELECT rq.*, u.full_name AS sender_name, " +
+                "COALESCE(r_tenant.code, r_title.code) AS room_code, " +
+                "COALESCE(f_tenant.name, f_title.name) AS facility_name " +
+                "FROM requests rq " +
+                "LEFT JOIN users u ON rq.sender_id = u.user_id " +
+                "LEFT JOIN rooms r_tenant ON (u.role = 'TENANT' AND u.user_id = r_tenant.tenant_id AND r_tenant.deleted_at IS NULL) " +
+                "LEFT JOIN facilities f_tenant ON r_tenant.facility_id = f_tenant.facility_id " +
+                "LEFT JOIN rooms r_title ON (r_title.deleted_at IS NULL AND ( " +
+                "    rq.title LIKE '%' + r_title.code + '%' OR " +
+                "    rq.content LIKE '%' + r_title.code + '%' OR " +
+                "    rq.code LIKE '%' + r_title.code + '%' " +
+                ")) " +
+                "LEFT JOIN facilities f_title ON r_title.facility_id = f_title.facility_id " +
+                "WHERE rq.deleted_at IS NULL");
 
         if (assigneeId != null) {
             sql.append(" AND (rq.assigned_staff_id = ").append(assigneeId).append(
@@ -218,14 +234,25 @@ public class RequestDAO extends BaseDAO {
     }
 
     public boolean updateAppointmentSchedule(int requestId, LocalDateTime appointSchedule) {
-        String sql = "UPDATE requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ? AND status = 'ASSIGNED'";
+        return updateAppointmentSchedule(requestId, appointSchedule, 0);
+    }
+
+    public boolean updateAppointmentSchedule(int requestId, LocalDateTime appointSchedule, int operatorId) {
+        String sql = operatorId > 0
+                ? "UPDATE dbo.requests SET status = 'IN_PROGRESS', appoint_schedule = ?, assigned_staff_id = ISNULL(assigned_staff_id, ?), updated_at = GETDATE() WHERE request_id = ? AND deleted_at IS NULL"
+                : "UPDATE dbo.requests SET status = 'IN_PROGRESS', appoint_schedule = ?, updated_at = GETDATE() WHERE request_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setTimestamp(1, Timestamp.valueOf(appointSchedule));
-            ps.setInt(2, requestId);
+            if (operatorId > 0) {
+                ps.setInt(2, operatorId);
+                ps.setInt(3, requestId);
+            } else {
+                ps.setInt(2, requestId);
+            }
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            logger.error("updateAppointmentSchedule failed", e);
+            logger.error("updateAppointmentSchedule failed for requestId=" + requestId, e);
         }
         return false;
     }
@@ -399,7 +426,7 @@ public class RequestDAO extends BaseDAO {
                 : "GEN";
         if (tag.length() > 6) tag = tag.substring(0, 6);
         String prefix = "REQ-" + tag + "-";
-        String sql = "SELECT ISNULL(MAX(CAST(SUBSTRING(code, LEN(?) + 2, 5) AS INT)), 0) " +
+        String sql = "SELECT ISNULL(MAX(TRY_CAST(SUBSTRING(code, LEN(?) + 1, 10) AS INT)), 0) " +
                      "FROM dbo.requests " +
                      "WHERE code LIKE ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();

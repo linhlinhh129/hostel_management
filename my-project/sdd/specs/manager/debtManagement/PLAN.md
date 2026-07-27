@@ -17,8 +17,8 @@
 Sử dụng các bảng có sẵn, không tạo bảng mới:
 - **Thực thể gốc**: `invoices` (status = `UNPAID`, `OVERDUE`).
 - **DTOs cần tạo**:
-  - `DebtListItemDTO`: Chứa thông tin rút gọn (invoiceId, mã hóa đơn, mã phòng, tên người thuê, kỳ hóa đơn, tổng tiền, ngày đến hạn, số ngày nợ, phí chậm nộp tạm tính, trạng thái).
-  - `DebtDetailDTO`: Chứa thông tin chi tiết hóa đơn (tiền phòng, điện, nước, phí dịch vụ...), thông tin người thuê, và số tiền CÒN NỢ thực tế.
+  - `DebtListItemDTO`: Chứa thông tin rút gọn (invoiceId, mã hóa đơn, mã phòng, tên người thuê, kỳ hóa đơn, tổng tiền (đã cộng phí chậm nộp), ngày đến hạn, số ngày nợ, phí chậm nộp tạm tính, trạng thái).
+  - `DebtDetailDTO`: Chứa thông tin chi tiết hóa đơn, thông tin người thuê, số tiền tạm tính (đã bao gồm phí chậm nộp) và số tiền CÒN NỢ thực tế (Tổng đã gồm phí - Đã trả).
 
 ## 4. API / Servlet Contract
 - `DebtPageServlet` (`/manager/debts`):

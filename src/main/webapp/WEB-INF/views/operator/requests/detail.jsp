@@ -176,10 +176,6 @@
                   </div>
                 </c:if>
                 <c:if test="${not empty sessionScope.successMessage}">
-                  <div class="alert alert-success border-0"
-                    style="border-radius:var(--hms-radius);background:var(--hms-success-bg);color:var(--hms-success);margin-bottom:16px;">
-                    <c:out value="${sessionScope.successMessage}" />
-                  </div>
                   <c:remove var="successMessage" scope="session" />
                 </c:if>
 
@@ -547,9 +543,10 @@
                       <label class="d-block mb-2" style="font-size:14px;font-weight:500;color:#111827;">
                         Ghi chú kết quả <span style="color:var(--hms-danger)">*</span>
                       </label>
-                      <textarea name="notes" class="form-control" rows="3" required
+                      <textarea name="notes" class="form-control" rows="3" required maxlength="1000"
                         placeholder="Nhập ghi chú hoặc kết quả xử lý..."
                         style="border-radius:8px;font-size:14px;"></textarea>
+                      <div class="invalid-feedback">Vui lòng nhập ghi chú hoàn thành (tối đa 1000 ký tự).</div>
                     </div>
                     <div class="mb-3">
                       <label class="d-flex align-items-center gap-2 mb-2"
@@ -633,9 +630,17 @@
 
                   function validateAppointment(form) {
                     var appt = document.getElementById('appointmentDateInput');
-                    if (appt && appt.value && new Date(appt.value) < new Date()) {
-                      alert('Không thể chọn lịch hẹn trong quá khứ. Vui lòng chọn thời gian từ hiện tại trở đi.');
-                      return false;
+                    if (appt && appt.value) {
+                      var dateObj = new Date(appt.value);
+                      if (dateObj < new Date()) {
+                        alert('Không thể chọn lịch hẹn trong quá khứ. Vui lòng chọn thời gian từ hiện tại trở đi.');
+                        return false;
+                      }
+                      var hour = dateObj.getHours();
+                      if (hour < 8 || hour >= 18) {
+                        alert('Giờ làm việc chỉ từ 08:00 đến 18:00. Vui lòng chọn lại.');
+                        return false;
+                      }
                     }
                     return true;
                   }

@@ -1,128 +1,54 @@
-# Feature: Chi tiết yêu cầu sửa chữa
+# Feature: Chi tiết yêu cầu sửa chữa & xử lý sai số điện nước (Operator)
 
-**Status:** Draft  
-**Author:** [Tên của bạn]  
+**Status:** Approved (Updated)  
+**Author:** Phạm Anh Tú / Antigravity  
 **Reviewer:** [Tên Reviewer]  
-**Date:** 2026-06-10  
+**Date:** 2026-07-25  
 **Priority:** High
 
 ---
 
-# 1. Business Context
+## 1. Business Context
 
-Tính năng này cung cấp toàn bộ thông tin về một sự cố hoặc yêu cầu sửa chữa để nhân viên vận hành có thể đánh giá mức độ nghiêm trọng và quyết định việc tiếp nhận hay từ chối xử lý yêu cầu.
-
-Đây là bước quan trọng trong quy trình xử lý sự cố, giúp phân bổ công việc chính xác, minh bạch và đảm bảo trách nhiệm của người thực hiện.
+Tính năng này cung cấp toàn bộ thông tin chi tiết về một sự cố hoặc yêu cầu sửa chữa / báo cáo sai số điện nước (`UTILITY`) để nhân viên vận hành (Operator) đánh giá, tiếp nhận/đặt lịch xử lý và báo cáo hoàn thành sau khi kiểm tra thực tế.
 
 ---
 
-# 2. User Stories
+## 2. User Stories
 
-## Story 1 (Happy Path - Xem chi tiết)
+### Story 1 (Xem chi tiết yêu cầu)
+**As an** Operator, **I want to** xem toàn bộ tiêu đề, nội dung mô tả sai số điện nước và thông tin phòng/cơ sở **so that** tôi nắm rõ tình hình cần kiểm tra thực tế.
 
-**As a** nhân viên vận hành,
+### Story 2 (Xác nhận & Đặt lịch xử lý)
+**As an** Operator, **when** nhận được yêu cầu ở trạng thái `PENDING`, **I want to** nhấn "Xác nhận & Đặt lịch xử lý" **so that** trạng thái chuyển sang `IN_PROGRESS` và hệ thống ghi nhận tôi đang phụ trách.
 
-**I want to** xem toàn bộ thông tin chi tiết của yêu cầu sửa chữa (bao gồm cả hình ảnh đính kèm),
-
-**so that** tôi hiểu rõ vấn đề cần xử lý trước khi tiếp nhận yêu cầu.
-
-## Story 2 (Hành động - Nhận/Từ chối)
-
-**As a** nhân viên vận hành,
-
-**I want to** nhận hoặc từ chối yêu cầu được giao,
-
-**so that** hệ thống và người quản lý biết ai đang chịu trách nhiệm xử lý sự cố.
-
-## Story 3 (Điều hướng)
-
-**As a** nhân viên vận hành,
-
-**when** tôi đã tiếp nhận yêu cầu,
-
-**I want to** chuyển sang màn hình "Cập nhật trạng thái",
-
-**so that** tôi có thể cập nhật kết quả xử lý sau khi hoàn thành công việc.
+### Story 3 (Xác nhận hoàn thành)
+**As an** Operator, **when** đã kiểm tra/điều chỉnh chỉ số điện nước xong, **I want to** nhấn "Xác nhận hoàn thành" và nhập ghi chú (không bắt buộc) **so that** công việc chuyển sang trạng thái `COMPLETED`.
 
 ---
 
-# 3. Acceptance Criteria (EARS)
+## 3. Acceptance Criteria (EARS)
 
-## AC01 – Hiển thị chi tiết yêu cầu
+### AC01 – Hiển thị chi tiết yêu cầu UTILITY
+**WHEN** Operator truy cập `GET /operator/requests/detail?id={id}`
+**THE SYSTEM SHALL** hiển thị Tiêu đề, Nội dung chi tiết (Mã HĐ, chỉ số điện/nước nghi ngờ sai), Phòng, Cơ sở, Ngày tạo và Trạng thái hiện tại.
 
-**WHEN** user truy cập trang "Chi tiết yêu cầu" từ màn hình "Danh sách yêu cầu"
+### AC02 – Xác nhận & Đặt lịch xử lý
+**WHEN** yêu cầu ở trạng thái `PENDING` và Operator nhấn "Xác nhận & Đặt lịch xử lý"
+**THE SYSTEM SHALL** cập nhật trạng thái yêu cầu sang `IN_PROGRESS` và gửi thông báo thành công.
 
+### AC03 – Xác nhận hoàn thành công việc
+**WHEN** yêu cầu ở trạng thái `IN_PROGRESS` và Operator nhấn "Xác nhận hoàn thành"
 **THE SYSTEM SHALL**
-
-- Gửi request lấy dữ liệu chi tiết từ server
-- Hiển thị đầy đủ thông tin yêu cầu gồm:
-  - Thể loại
-  - Tiêu đề
-  - Nội dung
-  - Ảnh đính kèm (nếu có)
-  - Phòng gửi yêu cầu
-  - Cơ sở
-  - Ngày tạo yêu cầu
-  - Ngày hẹn sửa
-  - Trạng thái hiện tại
-
-## AC02 – Hiển thị nút nhận/từ chối
-
-**WHEN** trạng thái yêu cầu là `PENDING`
-
-**THE SYSTEM SHALL** hiển thị:
-
-- Nút [Nhận yêu cầu]
-- Nút [Từ chối]
-
-## AC03 – Nhận yêu cầu thành công
-
-**WHEN** user nhấn nút [Nhận yêu cầu]
-
-**THE SYSTEM SHALL**
-
-- Gửi request cập nhật trạng thái (POST form)
-- Hiển thị thông báo thành công
-- Ẩn nút [Nhận yêu cầu]
-- Ẩn nút [Từ chối]
-- Hiển thị nút [Cập nhật trạng thái]
-
-## AC04 – Từ chối yêu cầu
-
-**WHEN** user nhấn nút [Từ chối]
-
-**THE SYSTEM SHALL**
-
-- Hiển thị popup nhập lý do từ chối
-
-**AND WHEN** user gửi lý do hợp lệ
-
-**THE SYSTEM SHALL**
-
-- Gửi request cập nhật trạng thái (POST form)
-- Lưu lý do từ chối
-- Điều hướng người dùng về màn hình "Danh sách yêu cầu"
-
-## AC05 – Chuyển sang cập nhật trạng thái
-
-**WHEN** user nhấn nút [Cập nhật trạng thái]
-
-**AND** yêu cầu đã được tiếp nhận
-
-**THE SYSTEM SHALL**
-
-- Điều hướng sang màn hình "Cập nhật trạng thái sửa chữa"
+- Chấp nhận submit form kể cả khi trường Ghi chú hoàn thành bị bỏ trống (Optional), nhưng nếu có nhập thì tối đa 1000 ký tự (có validation trên giao diện và backend).
+- Cập nhật trạng thái yêu cầu sang `COMPLETED`.
+- Cập nhật chỉ số điện nước liên quan sang `CORRECTED` (hoặc `NORMAL`).
+- Redirect về lại trang danh sách hoặc chi tiết yêu cầu kèm thông báo thành công.
 
 ---
 
-## 4. Giao tiếp Hệ thống (System Flow)
+## 4. Technical Integration
 
-### Đường dẫn (Endpoint)
-* **Endpoint xem chi tiết:** `GET /operator/requests/detail?id={id}`
-* **Endpoint thao tác (Nhận/Từ chối/Hẹn):** `POST /operator/requests/detail`
-* **Loại dữ liệu (Content-Type):** Trả về HTML (JSP) (cho phương thức GET) và Form Submit truyền thống (`application/x-www-form-urlencoded` hoặc `multipart/form-data`) cho POST.
-
-### Phản hồi Hệ thống (System Response)
-* **GET - Xem chi tiết:** Forward đến `/WEB-INF/views/operator/requests/detail.jsp` với attribute `reqDetail`.
-* **POST - Thao tác thành công:** Điều hướng (Redirect 302) trở lại trang chi tiết kèm theo thông báo thành công `successMessage`.
-* **POST - Thất bại:** Forward lại trang chi tiết kèm theo `errorMessage`.
+- **Endpoint**: `GET /operator/requests/detail?id={id}`
+- **Form Submit Action**: `POST /operator/requests/detail`
+- **Parameters**: `id`, `action` ("accept" / "schedule" / "complete"), `notes` (optional).

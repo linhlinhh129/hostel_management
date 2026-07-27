@@ -75,11 +75,10 @@ public class InvoiceDetailServlet extends BaseServlet {
                 int invoiceId = Integer.parseInt(parts[1]);
                 UserSessionDTO user = getCurrentUser(req);
                 String dueDate = req.getParameter("dueDate");
-                String taxRate = req.getParameter("taxRate");
                 String otherFee = req.getParameter("otherFee");
                 String note = req.getParameter("note");
 
-                invoiceService.updateInvoice(user.getId(), invoiceId, dueDate, taxRate, otherFee, note);
+                invoiceService.updateInvoice(user.getId(), invoiceId, dueDate, otherFee, note);
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + invoiceId);
             } catch (IllegalArgumentException e) {
                 setFlashMessage(req, "danger", e.getMessage());
@@ -102,18 +101,9 @@ public class InvoiceDetailServlet extends BaseServlet {
                 setFlashMessage(req, "danger", "Đã xảy ra lỗi: " + e.getMessage());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1]);
             }
-        } else if (parts.length == 3 && "delete".equals(parts[2])) {
-            try {
-                int invoiceId = Integer.parseInt(parts[1]);
-                UserSessionDTO user = getCurrentUser(req);
-                invoiceService.deleteInvoice(user.getId(), invoiceId);
-                setFlashMessage(req, "success", "Xóa hóa đơn thành công!");
-                resp.sendRedirect(req.getContextPath() + "/manager/invoices");
-            } catch (Exception e) {
-                e.printStackTrace();
-                setFlashMessage(req, "danger", "Đã xảy ra lỗi: " + e.getMessage());
-                resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + parts[1]);
-            }
+        } else if (parts.length == 3 && "report-error".equals(parts[2])) {
+            int invoiceId = Integer.parseInt(parts[1]);
+            resp.sendRedirect(req.getContextPath() + "/manager/notifications/send-operator?invoiceId=" + invoiceId);
         } else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
