@@ -53,14 +53,14 @@
               <div class="col-md-6">
                 <label class="form-label fw-bold">Mã phòng <span class="text-danger">*</span></label>
                 <select class="form-select" name="roomCode" id="roomCodeSelect" required>
-                  <option value="">-- Chọn phòng đang thuê chưa tạo hóa đơn --</option>
+                  <option value="">-- Chọn mã phòng --</option>
                   <c:set var="foundPrefilled" value="false" />
                   <c:forEach var="r" items="${availableRooms}">
                     <c:if test="${not empty prefilledRoomCode and prefilledRoomCode == r.code}">
                       <c:set var="foundPrefilled" value="true" />
                     </c:if>
                     <option value="${r.code}" <c:if test="${prefilledRoomCode == r.code}">selected</c:if>>
-                      Phòng <c:out value="${r.code}"/> (Số phòng: <c:out value="${r.roomNumber}"/> - Người thuê: <c:out value="${r.tenantName != null ? r.tenantName : 'Chưa có'}"/>)
+                      Phòng <c:out value="${r.code}"/>
                     </option>
                   </c:forEach>
                   <c:if test="${not empty prefilledRoomCode and !foundPrefilled}">
@@ -71,7 +71,7 @@
                 </select>
                 <c:if test="${empty availableRooms}">
                   <small class="text-warning d-block mt-1 fw-bold">
-                    ⚠ Không tìm thấy phòng nào khả dụng (đã tạo hóa đơn hoặc chưa chốt điện nước kỳ này).
+                    ⚠ Không tìm thấy phòng nào đang có người thuê.
                   </small>
                 </c:if>
                 <small id="debtHint" class="text-muted mt-1 d-block"></small>

@@ -1,4 +1,5 @@
 package com.quanlyphongtro.util;
+
 import com.quanlyphongtro.dao.SystemConfigDAO;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,11 +11,25 @@ import java.util.Random;
 public class VNPayConfig {
     private static final SystemConfigDAO configDAO = new SystemConfigDAO();
 
-    public static String getVnp_PayUrl() { return configDAO.getConfigValue("vnpay.payUrl"); }
-    public static String getVnp_ReturnUrl() { return configDAO.getConfigValue("vnpay.returnUrl"); }
-    public static String getVnp_TmnCode() { return configDAO.getConfigValue("vnpay.tmnCode"); }
-    public static String getSecretKey() { return configDAO.getConfigValue("vnpay.secretKey"); }
-    public static String getVnp_ApiUrl() { return configDAO.getConfigValue("vnpay.apiUrl"); }
+    public static String getVnp_PayUrl() {
+        return configDAO.getConfigValue("vnpay.payUrl");
+    }
+
+    public static String getVnp_ReturnUrl() {
+        return configDAO.getConfigValue("vnpay.returnUrl");
+    }
+
+    public static String getVnp_TmnCode() {
+        return configDAO.getConfigValue("vnpay.tmnCode");
+    }
+
+    public static String getSecretKey() {
+        return configDAO.getConfigValue("vnpay.secretKey");
+    }
+
+    public static String getVnp_ApiUrl() {
+        return configDAO.getConfigValue("vnpay.apiUrl");
+    }
 
     public static String hmacSHA512(final String key, final String data) {
         try {
