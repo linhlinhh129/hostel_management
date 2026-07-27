@@ -7,6 +7,7 @@
 - [x] Cài đặt validation kiểm tra AC02 (Số điện mới < số cũ), AC03 (Số nước mới < số cũ) và AC06 (Sai mã phòng).
 - [x] Xử lý lưu file ảnh công tơ điện, công tơ nước vào thư mục `uploads/meters` và lưu đường dẫn vào CSDL.
 - [x] Fix triệt để lỗi `ClassCastException` khi xác thực quyền Operator bằng `UserSessionDTO`.
+- [x] Cập nhật câu lệnh SQL trong `getPreviousReadingByRoomCode` (`MeterReadingDAO.java`) để cho phép lấy thông tin các phòng đang trống (không có hợp đồng thuê/tenant), đáp ứng yêu cầu luồng nghiệp vụ AC07.
 
 ## Frontend
 - [x] Bổ sung link "Cập nhật điện nước" độc lập trên `sidebar.jsp` (Nằm ngay dưới mục Chỉ số điện nước).

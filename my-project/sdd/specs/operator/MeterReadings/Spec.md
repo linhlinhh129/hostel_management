@@ -40,7 +40,7 @@
 ### AC01 – Hiển thị danh sách điện nước tháng hiện tại
 **WHEN** user truy cập vào trang "Danh sách điện nước" (`/operator/meter-readings`)  
 **THE SYSTEM SHALL**
-- Hiển thị danh sách các phòng thuộc cơ sở user quản lý.
+- Hiển thị danh sách TẤT CẢ các phòng thuộc cơ sở user quản lý (bao gồm cả phòng đang có người thuê và phòng trống chưa có người thuê).
 - Hiển thị trạng thái cập nhật trong tháng hiện tại: "CHƯA CẬP NHẬT" hoặc "ĐÃ CẬP NHẬT".
 - Hỗ trợ lọc theo Mã phòng và Cơ sở.
 

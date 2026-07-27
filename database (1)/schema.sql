@@ -173,6 +173,8 @@ BEGIN
         total_amount        DECIMAL(18,2)       NULL, -- snapshot tại thời điểm chốt
         note                NVARCHAR(1000)      NULL,
         created_by          INT                 NULL,
+        contract_id         INT                 NULL,
+        tenant_id           INT                 NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         deleted_at          DATETIME2           NULL,
@@ -203,6 +205,8 @@ BEGIN
         payment_method      NVARCHAR(50)        NOT NULL DEFAULT 'BANK_TRANSFER',
         payment_amount		DECIMAL(18,2)		NOT NULL,
 		created_by          INT                 NULL,
+        contract_id         INT                 NULL,
+        tenant_id           INT                 NULL,
         created_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         updated_at          DATETIME2           NOT NULL DEFAULT GETDATE(),
         deleted_at          DATETIME2           NULL,

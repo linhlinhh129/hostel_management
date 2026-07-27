@@ -10,7 +10,7 @@
 
 ## 1. Business Context
 
-Nhân viên vận hành cần cập nhật chỉ số điện và nước định kỳ cho từng phòng để phục vụ việc tính hóa đơn hàng tháng.
+Nhân viên vận hành cần cập nhật chỉ số điện và nước định kỳ cho từng phòng (bao gồm cả phòng đang cho thuê và phòng trống chưa có người thuê) để theo dõi mức tiêu thụ liên tục và phục vụ việc tính hóa đơn hàng tháng.
 
 Hệ thống phải lưu lại chỉ số mới, hình ảnh công tơ làm minh chứng và lịch sử cập nhật nhằm đảm bảo tính minh bạch, hỗ trợ đối soát dữ liệu và xử lý khi phát sinh tranh chấp.
 
@@ -113,6 +113,12 @@ WATER_METER_IMAGE_REQUIRED
 ```text
 ROOM_NOT_FOUND
 ```
+
+### AC07 – Cập nhật phòng trống (Chưa có người thuê)
+
+**WHEN** người dùng cập nhật chỉ số cho phòng có trạng thái trống (ví dụ: AVAILABLE)
+
+**THE SYSTEM SHALL** vẫn cho phép quá trình cập nhật diễn ra bình thường theo luồng AC01 mà không bị chặn, nhằm đảm bảo lịch sử chỉ số điện nước luôn liên tục ngay cả khi không có khách thuê.
 
 ---
 

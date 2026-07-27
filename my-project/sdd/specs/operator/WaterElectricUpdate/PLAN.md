@@ -13,6 +13,7 @@ Thiết kế trang Cập nhật chỉ số điện nước cho nhân viên Vận
   - Xử lý **POST**: Đón nhận `multipart/form-data`, lookup `roomCode` trong Database.
   - Xử lý Validate chặt chẽ:
     - **AC06**: Mã phòng không hợp lệ -> Báo lỗi không tồn tại phòng.
+    - **AC07**: Đảm bảo câu lệnh truy vấn khi lấy thông tin phòng và số liệu kỳ trước KHÔNG lọc bỏ các phòng trống (phòng chưa có người thuê/không có hợp đồng).
     - **AC02, AC03**: Số điện/nước mới nhỏ hơn số cũ -> Báo lỗi.
     - **AC04, AC05**: Xử lý lưu ảnh công tơ thực tế vào thư mục dự án và lưu đường dẫn.
 

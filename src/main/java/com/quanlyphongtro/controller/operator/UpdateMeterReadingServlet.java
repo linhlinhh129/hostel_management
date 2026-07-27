@@ -72,7 +72,7 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                 // Let's check if the room exists using getPreviousReadingByRoomCode just to get roomId if getReadingBeforeCurrentMonth is null.
                 previousReading = meterReadingService.getPreviousReadingByRoomCode(roomCode);
                 if (previousReading == null) {
-                    session.setAttribute("flashMessage", "Mã phòng không tồn tại hoặc phòng không ở trạng thái đang thuê.");
+                    session.setAttribute("flashMessage", "Mã phòng không tồn tại.");
                     session.setAttribute("flashType", "error");
                     response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                     return;
