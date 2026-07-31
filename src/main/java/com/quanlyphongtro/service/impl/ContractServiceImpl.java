@@ -87,9 +87,14 @@ public class ContractServiceImpl implements ContractService {
         if (contract.getTenantIdentityNumber() == null || contract.getTenantIdentityNumber().trim().isEmpty()) {
             throw new Exception("CCCD không được để trống.");
         }
-        if (contract.getSignedDate() == null || contract.getStartDate() == null || contract.getEndDate() == null) {
-            throw new Exception("Ngày tháng ký/bắt đầu/kết thúc không được để trống.");
-        }
+        // Freeze current room fee and facility service prices into contract snapshot fields
+        Facility facility = facilityOpt.get();
+        contract.setRoomFee(room.getRoomFee());
+        contract.setDepositAmount(room.getDepositAmount() != null && room.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) > 0 ? room.getDepositAmount() : room.getRoomFee());
+        contract.setElectricityPrice(facility.getElectricityPrice());
+        contract.setWaterPrice(facility.getWaterPrice());
+        contract.setInternetFee(facility.getInternetFee());
+        contract.setServiceFee(facility.getServiceFee());
 
         int id = contractDAO.create(contract);
         if (id <= 0) {
