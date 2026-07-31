@@ -16,6 +16,8 @@ import com.quanlyphongtro.util.AuditLogHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 
 import com.quanlyphongtro.dto.RoomDTO;
@@ -92,9 +94,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         BigDecimal manualOtherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
-        if (manualOtherFee.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
-
         BigDecimal otherFee = manualOtherFee;
 
         InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
@@ -189,8 +188,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
 
         BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
-        if (otherFee.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Phí khác không được nhỏ hơn 0.");
 
         InvoiceDAO.InvoicePriceSnapshot snap = invoiceDAO.getInvoicePriceSnapshot(invoiceId);
         if (snap != null) {
@@ -255,5 +252,83 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId) {
         return invoiceDAO.getUnpaidDebtByRoomCode(roomCode, managerId);
+    }
+    @Override
+    public Map<String, Object> getInvoicePreview(int managerId, String roomCode, String billingPeriod) throws Exception {
+        InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
+        if (roomSnap == null) {
+            throw new IllegalArgumentException("Phòng không tồn tại hoặc bạn không có quyền quản lý.");
+        }
+        if (!"OCCUPIED".equals(roomSnap.status) || !roomSnap.hasTenant) {
+            throw new IllegalArgumentException("Không thể tính hóa đơn cho phòng trống.");
+        }
+
+        String year = billingPeriod.substring(0, 4);
+        String month = billingPeriod.substring(4, 6);
+
+        MeterReading currentMeter = meterReadingDAO.getReadingByMonth(roomSnap.roomId, Integer.parseInt(year), Integer.parseInt(month));
+        if (currentMeter == null) {
+            throw new IllegalArgumentException("Chưa chốt điện nước kỳ " + billingPeriod);
+        }
+
+        String invoiceCode = "INV-" + roomCode + "-" + billingPeriod;
+        if (invoiceDAO.checkInvoiceCodeExists(invoiceCode)) {
+            throw new IllegalArgumentException("Phòng đã có hóa đơn kỳ " + billingPeriod);
+        }
+
+        MeterReading oldMeter = meterReadingDAO.getPreviousReadingByDate(roomSnap.roomId, currentMeter.getReadingDate());
+        int oldElectric = oldMeter != null ? oldMeter.getElectric() : 0;
+        int oldWater = oldMeter != null ? oldMeter.getWater() : 0;
+
+        if (currentMeter.getElectric() < oldElectric) throw new IllegalArgumentException("Chỉ số điện bị âm.");
+        if (currentMeter.getWater() < oldWater) throw new IllegalArgumentException("Chỉ số nước bị âm.");
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("roomFee", roomSnap.roomFee);
+        result.put("serviceFee", roomSnap.serviceFee);
+        result.put("internetFee", roomSnap.internetFee);
+        result.put("electricityPrice", roomSnap.electricityPrice);
+        result.put("waterPrice", roomSnap.waterPrice);
+        result.put("oldElectric", oldElectric);
+        result.put("newElectric", currentMeter.getElectric());
+        result.put("oldWater", oldWater);
+        result.put("newWater", currentMeter.getWater());
+        result.put("electricImg", currentMeter.getElectricImg());
+        result.put("waterImg", currentMeter.getWaterImg());
+        result.put("meterId", currentMeter.getMeterId());
+
+        return result;
+    }
+
+    @Override
+    public void reportIncorrectMeter(int managerId, int meterId, String roomCode, String billingPeriod, String title, String content) throws Exception {
+        InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
+        if (roomSnap == null) {
+            throw new IllegalArgumentException("Phòng không tồn tại hoặc bạn không có quyền quản lý.");
+        }
+        
+        com.quanlyphongtro.dao.NotificationDAO notifDAO = new com.quanlyphongtro.dao.NotificationDAO();
+        List<Map<String, Object>> ops = notifDAO.getActiveOperatorsForFacility(roomSnap.facilityId);
+        int operatorId = -1;
+        if (ops != null && !ops.isEmpty()) {
+            operatorId = (int) ops.get(0).get("id");
+        }
+        
+        if (operatorId == -1) {
+            throw new Exception("Không tìm thấy nhân viên vận hành nào cho cơ sở này để gửi yêu cầu báo cáo.");
+        }
+        
+        String reqCode = notifDAO.generateCode("UTILITY");
+        if (title == null || title.trim().isEmpty()) {
+            title = "Báo cáo sai số điện nước - Phòng " + roomCode + " (Kỳ " + billingPeriod + ")";
+        }
+        if (content == null || content.trim().isEmpty()) {
+            content = "Quản lý phát hiện sai số hình ảnh chỉ số khi chuẩn bị tạo hóa đơn. Vui lòng kiểm tra thực tế, xác minh hình ảnh chốt chỉ số và cập nhật số liệu chính xác.";
+        }
+        
+        boolean success = notifDAO.sendOperatorRequestTransaction(reqCode, managerId, title, content, operatorId, meterId);
+        if (!success) {
+            throw new Exception("Không thể gửi yêu cầu báo cáo sai số.");
+        }
     }
 }

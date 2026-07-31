@@ -30,6 +30,12 @@ public class InvoiceServlet extends BaseServlet {
             showCreateForm(req, resp);
         } else if ("getDebt".equals(action)) {
             handleGetDebt(req, resp);
+        } else if ("getInvoicePreview".equals(action)) {
+            handleGetInvoicePreview(req, resp);
+        } else if ("getAvailableRooms".equals(action)) {
+            handleGetAvailableRooms(req, resp);
+        } else if ("reportMeter".equals(action)) {
+            handleReportMeter(req, resp);
         } else {
             showList(req, resp);
         }
@@ -50,6 +56,103 @@ public class InvoiceServlet extends BaseServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         resp.getWriter().write("{\"debt\":" + debt + "}");
+    }
+
+    private void handleGetInvoicePreview(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO user = getCurrentUser(req);
+        if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        String roomCode = req.getParameter("roomCode");
+        String billingPeriod = req.getParameter("billingPeriod");
+        
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        
+        try {
+            java.util.Map<String, Object> preview = invoiceService.getInvoicePreview(user.getId(), roomCode, billingPeriod);
+            StringBuilder json = new StringBuilder("{");
+            json.append("\"roomFee\":").append(preview.get("roomFee")).append(",");
+            json.append("\"serviceFee\":").append(preview.get("serviceFee")).append(",");
+            json.append("\"internetFee\":").append(preview.get("internetFee")).append(",");
+            json.append("\"electricityPrice\":").append(preview.get("electricityPrice")).append(",");
+            json.append("\"waterPrice\":").append(preview.get("waterPrice")).append(",");
+            json.append("\"oldElectric\":").append(preview.get("oldElectric")).append(",");
+            json.append("\"newElectric\":").append(preview.get("newElectric")).append(",");
+            json.append("\"oldWater\":").append(preview.get("oldWater")).append(",");
+            json.append("\"newWater\":").append(preview.get("newWater")).append(",");
+            json.append("\"meterId\":").append(preview.get("meterId")).append(",");
+            json.append("\"electricImg\":\"").append(preview.get("electricImg") != null ? preview.get("electricImg") : "").append("\",");
+            json.append("\"waterImg\":\"").append(preview.get("waterImg") != null ? preview.get("waterImg") : "").append("\"");
+            json.append("}");
+            resp.getWriter().write(json.toString());
+        } catch (Exception e) {
+            String errorMsg = e.getMessage();
+            if (errorMsg != null) {
+                errorMsg = errorMsg.replace("\"", "\\\"");
+            }
+            resp.getWriter().write("{\"error\":\"" + errorMsg + "\"}");
+        }
+    }
+
+    private void handleReportMeter(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO user = getCurrentUser(req);
+        if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        String roomCode = req.getParameter("roomCode");
+        String billingPeriod = req.getParameter("billingPeriod");
+        String meterIdStr = req.getParameter("meterId");
+        String title = req.getParameter("title");
+        String content = req.getParameter("content");
+        
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        
+        try {
+            int meterId = Integer.parseInt(meterIdStr);
+            invoiceService.reportIncorrectMeter(user.getId(), meterId, roomCode, billingPeriod, title, content);
+            resp.getWriter().write("{\"success\":true}");
+        } catch (Exception e) {
+            String errorMsg = e.getMessage();
+            if (errorMsg != null) {
+                errorMsg = errorMsg.replace("\"", "\\\"");
+                errorMsg = errorMsg.replace("\n", " ");
+            } else {
+                errorMsg = "Lỗi không xác định";
+            }
+            resp.getWriter().write("{\"error\":\"" + errorMsg + "\"}");
+        }
+    }
+
+    private void handleGetAvailableRooms(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO user = getCurrentUser(req);
+        if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        String billingPeriod = req.getParameter("billingPeriod");
+        if (billingPeriod == null || billingPeriod.trim().isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        try {
+            List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(), billingPeriod.trim());
+            StringBuilder json = new StringBuilder("[");
+            for (int i = 0; i < availableRooms.size(); i++) {
+                RoomDTO r = availableRooms.get(i);
+                json.append("{\"code\":\"").append(r.getCode()).append("\"}");
+                if (i < availableRooms.size() - 1) json.append(",");
+            }
+            json.append("]");
+            resp.getWriter().write(json.toString());
+        } catch (Exception e) {
+            resp.getWriter().write("[]");
+        }
     }
 
     private void showList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

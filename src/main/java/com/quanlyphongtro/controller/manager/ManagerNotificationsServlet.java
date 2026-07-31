@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.manager;
+
 import com.quanlyphongtro.dao.NotificationDAO;
 import java.nio.file.AccessDeniedException;
 
@@ -105,11 +106,15 @@ public class ManagerNotificationsServlet extends BaseServlet {
             type = "received";
         }
 
-        int totalCount = notificationService.countManagerNotifications(currentUser.getId(), tab, type, filterFacilityId, keyword);
-        List<Map<String, Object>> notifications = notificationService.getManagerNotifications(currentUser.getId(), tab, type, filterFacilityId, keyword, page, pageSize);
+        int totalCount = notificationService.countManagerNotifications(currentUser.getId(), tab, type, filterFacilityId,
+                keyword);
+        List<Map<String, Object>> notifications = notificationService.getManagerNotifications(currentUser.getId(), tab,
+                type, filterFacilityId, keyword, page, pageSize);
 
-        List<Map<String, Object>> assignedFacilities = notificationService.getAssignedFacilitiesForManager(currentUser.getId());
-        List<Map<String, Object>> incorrectInvoices = notificationService.getReportedIncorrectInvoices(currentUser.getId(), filterFacilityId, keyword);
+        List<Map<String, Object>> assignedFacilities = notificationService
+                .getAssignedFacilitiesForManager(currentUser.getId());
+        List<Map<String, Object>> incorrectInvoices = notificationService
+                .getReportedIncorrectInvoices(currentUser.getId(), filterFacilityId, keyword);
 
         int totalPages = totalCount > 0 ? (int) Math.ceil((double) totalCount / pageSize) : 1;
 
@@ -130,7 +135,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/list.jsp").forward(req, resp);
     }
 
-    private void handleCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleCreateForm(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -152,7 +158,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
                 try {
                     pRecipientId = Integer.parseInt(pRoomIdStr.trim());
                     pRecipientType = "ROOM";
-                    
+
                     // Call service to resolve facility for room
                     NotificationDAO ndao = new NotificationDAO();
                     pFacilityId = ndao.getRoomFacilityId(pRecipientId);
@@ -170,11 +176,13 @@ public class ManagerNotificationsServlet extends BaseServlet {
             }
 
             if (pRecipientType != null || pTitle != null || pContent != null || pIsDebtReminder) {
-                req.setAttribute("dto", buildDto(pTitle, pContent, pRecipientType, pRecipientId, pFacilityId, pIsDebtReminder));
+                req.setAttribute("dto",
+                        buildDto(pTitle, pContent, pRecipientType, pRecipientId, pFacilityId, pIsDebtReminder));
             }
         }
 
-        List<Map<String, Object>> assignedFacilities = notificationService.getAssignedFacilitiesForManager(currentUser.getId());
+        List<Map<String, Object>> assignedFacilities = notificationService
+                .getAssignedFacilitiesForManager(currentUser.getId());
         List<Map<String, Object>> assignedRooms = notificationService.getAssignedRoomsForManager(currentUser.getId());
 
         req.setAttribute("assignedFacilities", assignedFacilities);
@@ -182,7 +190,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/create.jsp").forward(req, resp);
     }
 
-    private void handleCreateSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleCreateSubmit(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -205,12 +214,15 @@ public class ManagerNotificationsServlet extends BaseServlet {
             }
         }
 
-        if (title == null || content == null || recipientType == null || title.trim().isEmpty() || content.trim().isEmpty()) {
+        if (title == null || content == null || recipientType == null || title.trim().isEmpty()
+                || content.trim().isEmpty()) {
             req.setAttribute("errorMessage", "Vui lòng điền đầy đủ các trường bắt buộc.");
             Integer rId = null;
             try {
-                if (recipientIdStr != null) rId = Integer.parseInt(recipientIdStr.trim());
-            } catch (Exception e) {}
+                if (recipientIdStr != null)
+                    rId = Integer.parseInt(recipientIdStr.trim());
+            } catch (Exception e) {
+            }
             req.setAttribute("dto", buildDto(title, content, recipientType, rId, facilityIdForRoom, isDebtReminder));
             handleCreateForm(req, resp);
             return;
@@ -229,49 +241,61 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
 
         try {
-            boolean success = notificationService.sendNotification(title, content, recipientType, recipientId, facilityIdForRoom, currentUser.getId());
+            boolean success = notificationService.sendNotification(title, content, recipientType, recipientId,
+                    facilityIdForRoom, currentUser.getId());
             if (success) {
-                // To get generated notification ID for audit log, we can select latest notification by this manager.
-                // However, since AuditLogHelper.log doesn't require a strict non-null audit ID if not available, we can skip or use dummy ID.
-                // Let's pass a dummy -1 or retrieve the latest. Let's just log with a general indicator.
+                // To get generated notification ID for audit log, we can select latest
+                // notification by this manager.
+                // However, since AuditLogHelper.log doesn't require a strict non-null audit ID
+                // if not available, we can skip or use dummy ID.
+                // Let's pass a dummy -1 or retrieve the latest. Let's just log with a general
+                // indicator.
                 try {
-                    AuditLogHelper.log(auditLogDAO, req, "notifications", 0, "CREATE", null, title.trim(), currentUser.getId());
+                    AuditLogHelper.log(auditLogDAO, req, "notifications", 0, "CREATE", null, title.trim(),
+                            currentUser.getId());
                 } catch (Exception ex) {
                     logger.warn("AuditLog failed after create notification", ex);
                 }
                 setFlashMessage(req, "success", "Gửi thông báo thành công!");
             } else {
                 req.setAttribute("errorMessage", "Không thể gửi thông báo.");
-                req.setAttribute("dto", buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
+                req.setAttribute("dto",
+                        buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
                 handleCreateForm(req, resp);
                 return;
             }
         } catch (AccessDeniedException e) {
             req.setAttribute("errorMessage", e.getMessage());
-            req.setAttribute("dto", buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
+            req.setAttribute("dto",
+                    buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
             handleCreateForm(req, resp);
             return;
         } catch (IllegalArgumentException e) {
             req.setAttribute("errorMessage", e.getMessage());
-            req.setAttribute("dto", buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
+            req.setAttribute("dto",
+                    buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
             handleCreateForm(req, resp);
             return;
         } catch (Exception e) {
             logger.error("Failed to send notification", e);
             req.setAttribute("errorMessage", "Lỗi gửi thông báo: " + e.getMessage());
-            req.setAttribute("dto", buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
+            req.setAttribute("dto",
+                    buildDto(title, content, recipientType, recipientId, facilityIdForRoom, isDebtReminder));
             handleCreateForm(req, resp);
             return;
         }
 
-        resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=" + (isDebtReminder ? "payment-reminder" : "general&type=sent"));
+        resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab="
+                + (isDebtReminder ? "payment-reminder" : "general&type=sent"));
     }
 
-    private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId, Integer facilityId) {
+    private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId,
+            Integer facilityId) {
         return buildDto(title, content, recipientType, recipientId, facilityId, false);
     }
 
-    private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId, Integer facilityId, boolean isDebtReminder) {
+    private Map<String, Object> buildDto(String title, String content, String recipientType, Integer recipientId,
+            Integer facilityId, boolean isDebtReminder) {
         Map<String, Object> dto = new HashMap<>();
         dto.put("title", title);
         dto.put("content", content);
@@ -282,7 +306,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         return dto;
     }
 
-    private void handleDetail(int notificationId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleDetail(int notificationId, HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -308,9 +333,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/notifications/detail.jsp").forward(req, resp);
     }
 
-
-
-    private void handleSendOperatorForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleSendOperatorForm(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -325,18 +349,25 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
         try {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
-            Map<String, Object> invoice = notificationService.getInvoiceDetailsForSendOperator(invoiceId, currentUser.getId());
-            List<Map<String, Object>> operators = notificationService.getActiveOperatorsForFacility((Integer) invoice.get("facilityId"));
+            Map<String, Object> invoice = notificationService.getInvoiceDetailsForSendOperator(invoiceId,
+                    currentUser.getId());
+            List<Map<String, Object>> operators = notificationService
+                    .getActiveOperatorsForFacility((Integer) invoice.get("facilityId"));
 
-            BigDecimal totalAmt = invoice.get("totalAmount") instanceof BigDecimal ? (BigDecimal) invoice.get("totalAmount") : BigDecimal.ZERO;
+            BigDecimal totalAmt = invoice.get("totalAmount") instanceof BigDecimal
+                    ? (BigDecimal) invoice.get("totalAmount")
+                    : BigDecimal.ZERO;
             java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
 
             String defaultTitle = "Báo cáo sai số điện nước - Phòng " + invoice.get("roomCode");
-            String defaultContent = "Kính gửi nhân viên vận hành,\n\nHóa đơn kỳ " + invoice.get("billingPeriod") + 
-                    " của phòng " + invoice.get("roomCode") + " (Mã HĐ: " + invoice.get("code") + ") thuộc cơ sở " + invoice.get("facilityName") + 
+            String defaultContent = "Kính gửi nhân viên vận hành,\n\nHóa đơn kỳ " + invoice.get("billingPeriod") +
+                    " của phòng " + invoice.get("roomCode") + " (Mã HĐ: " + invoice.get("code") + ") thuộc cơ sở "
+                    + invoice.get("facilityName") +
                     " được phát hiện bị nhập sai chỉ số điện nước.\n\nThông tin chỉ số ghi nhận hiện tại:\n" +
-                    "- Chỉ số điện: Cũ " + invoice.get("oldElectric") + " kWh → Mới " + invoice.get("newElectric") + " kWh (Sử dụng: " + invoice.get("electricUsage") + " kWh)\n" +
-                    "- Chỉ số nước: Cũ " + invoice.get("oldWater") + " m³ → Mới " + invoice.get("newWater") + " m³ (Sử dụng: " + invoice.get("waterUsage") + " m³)\n" +
+                    "- Chỉ số điện: Cũ " + invoice.get("oldElectric") + " kWh → Mới " + invoice.get("newElectric")
+                    + " kWh (Sử dụng: " + invoice.get("electricUsage") + " kWh)\n" +
+                    "- Chỉ số nước: Cũ " + invoice.get("oldWater") + " m³ → Mới " + invoice.get("newWater")
+                    + " m³ (Sử dụng: " + invoice.get("waterUsage") + " m³)\n" +
                     "- Tổng tiền hóa đơn: " + fmt.format(totalAmt) + " đ\n\n" +
                     "Vui lòng kiểm tra thực tế, xác minh hình ảnh chốt chỉ số và cập nhật số liệu chính xác.";
 
@@ -357,7 +388,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
     }
 
-    private void handleSendOperatorSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleSendOperatorSubmit(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -369,8 +401,9 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String title = req.getParameter("title");
         String content = req.getParameter("content");
 
-        if (invoiceIdStr == null || operatorIdStr == null || title == null || content == null || 
-                invoiceIdStr.trim().isEmpty() || operatorIdStr.trim().isEmpty() || title.trim().isEmpty() || content.trim().isEmpty()) {
+        if (invoiceIdStr == null || operatorIdStr == null || title == null || content == null ||
+                invoiceIdStr.trim().isEmpty() || operatorIdStr.trim().isEmpty() || title.trim().isEmpty()
+                || content.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Vui lòng nhập đầy đủ tất cả các trường.");
             resp.sendRedirect(req.getContextPath() + "/manager/notifications?tab=incorrect-utility");
             return;
@@ -380,9 +413,11 @@ public class ManagerNotificationsServlet extends BaseServlet {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
             int operatorId = Integer.parseInt(operatorIdStr.trim());
 
-            boolean success = notificationService.sendOperatorRequest(invoiceId, operatorId, title, content, currentUser.getId());
+            boolean success = notificationService.sendOperatorRequest(invoiceId, operatorId, title, content,
+                    currentUser.getId());
             if (success) {
-                setFlashMessage(req, "success", "Đã gửi thông báo yêu cầu sửa chỉ số điện nước cho Operator thành công!");
+                setFlashMessage(req, "success",
+                        "Đã gửi thông báo yêu cầu sửa chỉ số điện nước cho Operator thành công!");
             } else {
                 setFlashMessage(req, "danger", "Gửi thông báo thất bại.");
             }
@@ -398,7 +433,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
     }
 
-    private void handleSendDebtReminderForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleSendDebtReminderForm(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -413,11 +449,17 @@ public class ManagerNotificationsServlet extends BaseServlet {
 
         try {
             int invoiceId = Integer.parseInt(invoiceIdStr.trim());
-            Map<String, Object> invoice = notificationService.getInvoiceDetailsForSendDebt(invoiceId, currentUser.getId());
+            Map<String, Object> invoice = notificationService.getInvoiceDetailsForSendDebt(invoiceId,
+                    currentUser.getId());
 
-            BigDecimal baseAmount = invoice.get("baseAmount") instanceof BigDecimal ? (BigDecimal) invoice.get("baseAmount") : BigDecimal.ZERO;
-            BigDecimal lateFee = invoice.get("lateFee") instanceof BigDecimal ? (BigDecimal) invoice.get("lateFee") : BigDecimal.ZERO;
-            BigDecimal totalAmount = invoice.get("totalAmount") instanceof BigDecimal ? (BigDecimal) invoice.get("totalAmount") : BigDecimal.ZERO;
+            BigDecimal baseAmount = invoice.get("baseAmount") instanceof BigDecimal
+                    ? (BigDecimal) invoice.get("baseAmount")
+                    : BigDecimal.ZERO;
+            BigDecimal lateFee = invoice.get("lateFee") instanceof BigDecimal ? (BigDecimal) invoice.get("lateFee")
+                    : BigDecimal.ZERO;
+            BigDecimal totalAmount = invoice.get("totalAmount") instanceof BigDecimal
+                    ? (BigDecimal) invoice.get("totalAmount")
+                    : BigDecimal.ZERO;
             java.text.NumberFormat fmt = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
 
             String defaultTitle = "Nhắc đóng tiền phòng quá hạn - Phòng " + invoice.get("roomCode");
@@ -429,7 +471,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
                     "- Tổng cần đóng: " + fmt.format(totalAmount) + " đ\n" +
                     "- Hạn thanh toán: " + invoice.get("dueDateLabel") + "\n" +
                     "- Số ngày quá hạn: " + invoice.get("overdueDays") + " ngày\n\n" +
-                    "Vui lòng thanh toán sớm nhất có thể để tránh phát sinh thêm phí phạt quá hạn hoặc các gián đoạn dịch vụ.\n" +
+                    "Vui lòng thanh toán sớm nhất có thể để tránh phát sinh thêm phí phạt quá hạn hoặc các gián đoạn dịch vụ.\n"
+                    +
                     "Xin cảm ơn!";
 
             req.setAttribute("invoice", invoice);
@@ -448,7 +491,8 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
     }
 
-    private void handleSendDebtReminderSubmit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleSendDebtReminderSubmit(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -459,7 +503,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
         String title = req.getParameter("title");
         String content = req.getParameter("content");
 
-        if (invoiceIdStr == null || title == null || content == null || 
+        if (invoiceIdStr == null || title == null || content == null ||
                 invoiceIdStr.trim().isEmpty() || title.trim().isEmpty() || content.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Vui lòng điền đầy đủ tiêu đề và nội dung nhắc nợ.");
             resp.sendRedirect(req.getContextPath() + "/manager/debts");
