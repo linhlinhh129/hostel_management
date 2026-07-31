@@ -29,5 +29,4 @@ public interface InvoiceService {
     BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId);
     
     Map<String, Object> getInvoicePreview(int managerId, String roomCode, String billingPeriod) throws Exception;
-    void reportIncorrectMeter(int managerId, int meterId, String roomCode, String billingPeriod, String title, String content) throws Exception;
 }

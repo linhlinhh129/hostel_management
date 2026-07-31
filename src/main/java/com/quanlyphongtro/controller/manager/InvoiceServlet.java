@@ -34,8 +34,6 @@ public class InvoiceServlet extends BaseServlet {
             handleGetInvoicePreview(req, resp);
         } else if ("getAvailableRooms".equals(action)) {
             handleGetAvailableRooms(req, resp);
-        } else if ("reportMeter".equals(action)) {
-            handleReportMeter(req, resp);
         } else {
             showList(req, resp);
         }
@@ -91,37 +89,6 @@ public class InvoiceServlet extends BaseServlet {
             String errorMsg = e.getMessage();
             if (errorMsg != null) {
                 errorMsg = errorMsg.replace("\"", "\\\"");
-            }
-            resp.getWriter().write("{\"error\":\"" + errorMsg + "\"}");
-        }
-    }
-
-    private void handleReportMeter(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        UserSessionDTO user = getCurrentUser(req);
-        if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-        String roomCode = req.getParameter("roomCode");
-        String billingPeriod = req.getParameter("billingPeriod");
-        String meterIdStr = req.getParameter("meterId");
-        String title = req.getParameter("title");
-        String content = req.getParameter("content");
-        
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        
-        try {
-            int meterId = Integer.parseInt(meterIdStr);
-            invoiceService.reportIncorrectMeter(user.getId(), meterId, roomCode, billingPeriod, title, content);
-            resp.getWriter().write("{\"success\":true}");
-        } catch (Exception e) {
-            String errorMsg = e.getMessage();
-            if (errorMsg != null) {
-                errorMsg = errorMsg.replace("\"", "\\\"");
-                errorMsg = errorMsg.replace("\n", " ");
-            } else {
-                errorMsg = "Lỗi không xác định";
             }
             resp.getWriter().write("{\"error\":\"" + errorMsg + "\"}");
         }

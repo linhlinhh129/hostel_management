@@ -300,35 +300,5 @@ public class InvoiceServiceImpl implements InvoiceService {
         return result;
     }
 
-    @Override
-    public void reportIncorrectMeter(int managerId, int meterId, String roomCode, String billingPeriod, String title, String content) throws Exception {
-        InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
-        if (roomSnap == null) {
-            throw new IllegalArgumentException("Phòng không tồn tại hoặc bạn không có quyền quản lý.");
-        }
-        
-        com.quanlyphongtro.dao.NotificationDAO notifDAO = new com.quanlyphongtro.dao.NotificationDAO();
-        List<Map<String, Object>> ops = notifDAO.getActiveOperatorsForFacility(roomSnap.facilityId);
-        int operatorId = -1;
-        if (ops != null && !ops.isEmpty()) {
-            operatorId = (int) ops.get(0).get("id");
-        }
-        
-        if (operatorId == -1) {
-            throw new Exception("Không tìm thấy nhân viên vận hành nào cho cơ sở này để gửi yêu cầu báo cáo.");
-        }
-        
-        String reqCode = notifDAO.generateCode("UTILITY");
-        if (title == null || title.trim().isEmpty()) {
-            title = "Báo cáo sai số điện nước - Phòng " + roomCode + " (Kỳ " + billingPeriod + ")";
-        }
-        if (content == null || content.trim().isEmpty()) {
-            content = "Quản lý phát hiện sai số hình ảnh chỉ số khi chuẩn bị tạo hóa đơn. Vui lòng kiểm tra thực tế, xác minh hình ảnh chốt chỉ số và cập nhật số liệu chính xác.";
-        }
-        
-        boolean success = notifDAO.sendOperatorRequestTransaction(reqCode, managerId, title, content, operatorId, meterId);
-        if (!success) {
-            throw new Exception("Không thể gửi yêu cầu báo cáo sai số.");
-        }
-    }
+
 }

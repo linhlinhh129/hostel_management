@@ -93,6 +93,9 @@ public class InvoiceDAO extends BaseDAO {
 
     public List<RoomDTO> getAvailableRoomsForInvoice(int managerId, String billingPeriod) throws SQLException {
         List<RoomDTO> list = new ArrayList<>();
+        int year = Integer.parseInt(billingPeriod.substring(0, 4));
+        int month = Integer.parseInt(billingPeriod.substring(4, 6));
+
         String sql = "SELECT DISTINCT r.room_id, r.code, u.full_name AS tenant_name " +
                      "FROM rooms r " +
                      "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
@@ -103,11 +106,14 @@ public class InvoiceDAO extends BaseDAO {
                      "  AND r.deleted_at IS NULL " +
                      "  AND f.deleted_at IS NULL " +
                      "  AND NOT EXISTS (SELECT 1 FROM invoices i WHERE i.room_id = r.room_id AND i.deleted_at IS NULL AND i.code LIKE '%-' + ?) " +
+                     "  AND EXISTS (SELECT 1 FROM meter_readings mr WHERE mr.room_id = r.room_id AND mr.deleted_at IS NULL AND YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ?) " +
                      "ORDER BY r.code ASC";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, managerId);
             ps.setString(2, billingPeriod);
+            ps.setInt(3, year);
+            ps.setInt(4, month);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     RoomDTO dto = new RoomDTO();

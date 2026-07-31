@@ -312,7 +312,7 @@
               fetch(ctx + '/manager/invoices?action=getInvoicePreview&roomCode=' + encodeURIComponent(roomCode) + '&billingPeriod=' + encodeURIComponent(billingPeriod))
                 .then(function (res) {
                   return res.json().then(function (data) {
-                    if (!res.ok) throw new Error(data.error || 'Lỗi mạng');
+                    if (!res.ok || data.error) throw new Error(data.error || 'Lỗi mạng');
                     return data;
                   });
                 })
@@ -338,7 +338,6 @@
                   var electricImgCol = document.getElementById('electricImgCol');
                   var waterImgCol = document.getElementById('waterImgCol');
                   var previewMeterImages = document.getElementById('previewMeterImages');
-                  var reportErrorContainer = document.getElementById('reportErrorContainer');
 
                   var hasElectricImg = data.electricImg && data.electricImg.trim() !== '';
                   var hasWaterImg = data.waterImg && data.waterImg.trim() !== '';
@@ -365,7 +364,7 @@
                 })
                 .catch(function (err) {
                   currentPreviewMeterId = null;
-                  previewSection.style.display = 'block';
+                  previewSection.style.display = 'none';
                   previewError.style.display = 'block';
                   previewError.textContent = err.message;
                   document.getElementById('previewRoomFee').value = '';
