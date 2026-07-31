@@ -97,8 +97,10 @@
       <div class="field-row">2.4. Tiền cọc giữ phòng: Bên B đã giao cho Bên A số tiền cọc là <strong><fmt:formatNumber value="${contract.room != null ? contract.room.depositAmount : 0}" pattern="#,##0"/> VNĐ</strong>.</div>
       <div class="field-row">2.5. Các khoản chi phí dịch vụ hàng tháng:</div>
       <div class="ps-3">
-        - Tiền điện: Tính theo chỉ số đồng hồ công tơ thực tế.<br/>
-        - Tiền nước, internet, rác thải & vệ sinh chung: Theo biểu giá niêm yết của cơ sở.
+        - Tiền điện: <fmt:formatNumber value="${contract.facility != null && contract.facility.electricityPrice != null ? contract.facility.electricityPrice : 0}" pattern="#,##0"/> VNĐ/số, tính theo chỉ số đồng hồ công tơ thực tế.<br/>
+        - Tiền nước: <fmt:formatNumber value="${contract.facility != null && contract.facility.waterPrice != null && contract.facility.waterPrice > 0 ? contract.facility.waterPrice : 25000}" pattern="#,##0"/> VNĐ/m³, tính theo chỉ số đồng hồ nước thực tế.<br/>
+        - Tiền internet, rác thải & vệ sinh chung: Theo biểu giá niêm yết của cơ sở.<br/>
+        <em style="font-size: 0.9em; color: #444;">* <u>Điều khoản đi kèm</u>: Đơn giá điện và đơn giá nước nêu trên có thể được điều chỉnh tăng hoặc giảm căn cứ theo quyết định thay đổi biểu giá của cơ quan Nhà nước có thẩm quyền hoặc đơn vị cung cấp (EVN, Công ty cấp nước sạch) và phải thông báo trước cho Bên thuê ít nhất 15 ngày.</em>
       </div>
       <div class="field-row">2.6. Quy định thanh toán: Bên B thanh toán tiền phòng và dịch vụ định kỳ từ ngày 01 đến ngày 05 hàng tháng.</div>
     </div>
