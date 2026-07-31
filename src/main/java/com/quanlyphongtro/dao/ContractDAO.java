@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dao;
+
 import com.quanlyphongtro.model.Room;
 import com.quanlyphongtro.model.Facility;
 import com.quanlyphongtro.model.User;
@@ -166,14 +167,6 @@ public class ContractDAO extends BaseDAO {
     }
 
     public int create(Contract contract) {
-        // Tự động sửa lỗi Database NOT NULL cho tenant_id để cứu sinh viên
-        try (Connection conn = DatabaseUtil.getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.execute("ALTER TABLE dbo.contracts ALTER COLUMN tenant_id INT NULL;");
-        } catch (Exception ignored) {
-            // Lỗi do không có quyền hoặc đã alter rồi thì bỏ qua
-        }
-
         String sql = "INSERT INTO dbo.contracts (code, room_id, tenant_id, tenant_full_name, tenant_dob, " +
                 "tenant_permanent_address, tenant_identity_number, tenant_identity_issue_date, " +
                 "tenant_identity_issue_place, tenant_phone, amount_in_words, signed_date, start_date, " +
@@ -522,19 +515,19 @@ public class ContractDAO extends BaseDAO {
         String updContract = "UPDATE dbo.contracts SET end_date = ?, status = 'ACTIVE', updated_at = GETDATE() WHERE contract_id = ?";
         String updRoom = "UPDATE dbo.rooms SET contract_end_date = ?, tenant_id = ?, status = 'OCCUPIED', updated_at = GETDATE() WHERE room_id = ?";
         String updUser = "UPDATE dbo.users SET status = 'ACTIVE', updated_at = GETDATE() WHERE user_id = ?";
-        
+
         Connection conn = null;
         try {
             conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false);
-            
+
             // 1. Update contract
             try (PreparedStatement ps = conn.prepareStatement(updContract)) {
                 ps.setDate(1, Date.valueOf(newEndDate));
                 ps.setInt(2, contractId);
                 ps.executeUpdate();
             }
-            
+
             // 2. Update room
             try (PreparedStatement ps = conn.prepareStatement(updRoom)) {
                 ps.setDate(1, Date.valueOf(newEndDate));
@@ -546,7 +539,7 @@ public class ContractDAO extends BaseDAO {
                 ps.setInt(3, roomId);
                 ps.executeUpdate();
             }
-            
+
             // 3. Update user if tenantId is not null
             if (tenantId != null) {
                 try (PreparedStatement ps = conn.prepareStatement(updUser)) {
@@ -554,18 +547,25 @@ public class ContractDAO extends BaseDAO {
                     ps.executeUpdate();
                 }
             }
-            
+
             conn.commit();
             return true;
         } catch (Exception e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (Exception ignored) {}
+                try {
+                    conn.rollback();
+                } catch (Exception ignored) {
+                }
             }
             logger.error("extendContractTransaction failed for contractId={}", contractId, e);
             return false;
         } finally {
             if (conn != null) {
-                try { conn.setAutoCommit(true); conn.close(); } catch (Exception ignored) {}
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (Exception ignored) {
+                }
             }
         }
     }

@@ -168,7 +168,10 @@ public class RoomDAO extends BaseDAO {
             } else {
                 ps.setNull(5, Types.INTEGER);
             }
-            ps.setBigDecimal(6, room.getDepositAmount() != null ? room.getDepositAmount() : BigDecimal.ZERO);
+            BigDecimal deposit = (room.getDepositAmount() != null && room.getDepositAmount().compareTo(BigDecimal.ZERO) > 0) 
+                    ? room.getDepositAmount() 
+                    : (room.getRoomFee() != null ? room.getRoomFee() : BigDecimal.ZERO);
+            ps.setBigDecimal(6, deposit);
             if (room.getContractStartDate() != null) {
                 ps.setDate(7, Date.valueOf(room.getContractStartDate()));
             } else {
@@ -268,13 +271,19 @@ public class RoomDAO extends BaseDAO {
      * Cập nhật diện tích và giá phòng cùng lúc — dùng cho AdminRoomServlet.
      */
     public boolean updateAreaAndFee(int roomId, BigDecimal area, BigDecimal fee) {
-        String sql = "UPDATE dbo.rooms SET area = ?, room_fee = ?, updated_at = GETDATE() " +
+        String sql = "UPDATE dbo.rooms SET area = ?, room_fee = ?, deposit_amount = ?, updated_at = GETDATE() " +
                      "WHERE room_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             if (area != null) ps.setBigDecimal(1, area); else ps.setNull(1, Types.DECIMAL);
-            if (fee  != null) ps.setBigDecimal(2, fee);  else ps.setNull(2, Types.DECIMAL);
-            ps.setInt(3, roomId);
+            if (fee  != null) {
+                ps.setBigDecimal(2, fee);
+                ps.setBigDecimal(3, fee); // Automatically set default deposit equal to room fee
+            } else {
+                ps.setNull(2, Types.DECIMAL);
+                ps.setNull(3, Types.DECIMAL);
+            }
+            ps.setInt(4, roomId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             logger.error("RoomDAO.updateAreaAndFee failed for roomId={}", roomId, e);
