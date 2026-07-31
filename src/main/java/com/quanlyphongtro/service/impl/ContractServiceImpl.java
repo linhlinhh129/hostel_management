@@ -96,7 +96,10 @@ public class ContractServiceImpl implements ContractService {
         }
         contract.setContractId(id);
 
-        // Cập nhật trạng thái phòng sang OCCUPIED
+        // Cập nhật trạng thái phòng sang OCCUPIED & tự động đảm bảo tiền cọc bằng tiền phòng
+        if (room.getDepositAmount() == null || room.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            room.setDepositAmount(room.getRoomFee());
+        }
         room.setStatus("OCCUPIED");
         room.setContractStartDate(contract.getStartDate());
         room.setContractEndDate(contract.getEndDate());
