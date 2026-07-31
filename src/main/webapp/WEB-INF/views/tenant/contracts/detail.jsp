@@ -172,7 +172,7 @@
           </ul>
           <p class="text-bold mt-2">Trách nhiệm của bên B</p>
           <ul>
-            <li>Thanh toán đầy đủ các khoản tiền theo đúng thỏa thuận, đúng thời hạn từ ngày 01 đến ngày 05 hàng tháng. Nếu nộp muộn quá 03 ngày kể từ ngày đến hạn, mỗi ngày muộn sẽ tính bằng 1% giá trị tiền phòng/tháng, mọi trường hợp khác cần sự đồng ý của bên A.</li>
+            <li>Thanh toán đầy đủ các khoản tiền theo đúng thỏa thuận, đúng thời hạn từ ngày 01 đến ngày 05 hàng tháng. Nếu nộp muộn kể từ ngày đến hạn, mỗi ngày muộn sẽ tính bằng 1% giá trị tiền phòng/tháng, mọi trường hợp khác cần sự đồng ý của bên A.</li>
             <li>Bảo quản các trang thiết bị và cơ sở vật chất của bên A trang bị ban đầu. Nếu làm hỏng phải sửa chữa, nếu mất mát phải đền bù.</li>
             <li>Không được tự ý sửa chữa, cải tạo cơ sở vật chất, tuyệt đối không khoan đục tường khi chưa được sự đồng ý của bên A. Nếu phát hiện tự ý khoan đục sẽ phạt <strong>500.000 đ/lần</strong>. Trường hợp tự ý khoan đục vào đường điện gây cháy nổ thì bên B phải hoàn toàn chịu trách nhiệm với những thiệt hại do việc khoan đục gây ra.</li>
             <li>Giữ gìn vệ sinh trong và ngoài khuôn viên của phòng trọ.</li>
@@ -186,7 +186,7 @@
           <p class="text-bold mt-4" style="text-decoration: underline">Điều 4: Trách nhiệm chung</p>
           <ul>
             <li>Hai bên phải tạo điều kiện cho nhau thực hiện hợp đồng.</li>
-            <li>Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất.</li>
+            <li>Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất. Thời điểm chấm dứt hợp đồng bắt buộc phải rơi vào ngày cuối cùng của tháng lịch và bàn giao lại phòng vào ngày mùng 1 đầu tháng kế tiếp. Trong trường hợp Bên thuê tự ý dọn đi trước ngày cuối tháng, hợp đồng vẫn tính là có hiệu lực đến hết tháng đó; Bên thuê không được hoàn lại tiền nhà cho những ngày không sử dụng và phải thanh toán toàn bộ tiền điện, nước phát sinh tính đến ngày dọn đi thực tế.</li>
             <li>Trường hợp xảy ra tranh chấp hoặc một bên vi phạm hợp đồng thì hai bên cùng nhau giải quyết tranh chấp. Nếu không giải quyết được thì yêu cầu cơ quan có thẩm quyền giải quyết.</li>
             <li>Hợp đồng được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản.</li>
           </ul>

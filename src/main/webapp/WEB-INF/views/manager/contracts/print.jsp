@@ -125,7 +125,7 @@
     <div class="section-header">ĐIỀU 4: ĐIỀU KHOẢN CHUNG</div>
     <div class="ps-3 mb-2">
       <div class="field-row">- Hai bên cam kết thực hiện đúng và đầy đủ các điều khoản đã ghi trong Hợp đồng.</div>
-      <div class="field-row">- Trường hợp chấm dứt hợp đồng trước thời hạn, bên muốn chấm dứt phải thông báo trước ít nhất 30 ngày. Nếu Bên B đơn phương hủy hợp đồng trước hạn sẽ không được hoàn lại tiền cọc.</div>
+      <div class="field-row">- Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất. Thời điểm chấm dứt hợp đồng bắt buộc phải rơi vào ngày cuối cùng của tháng lịch và bàn giao lại phòng vào ngày mùng 1 đầu tháng kế tiếp. Trong trường hợp Bên thuê tự ý dọn đi trước ngày cuối tháng, hợp đồng vẫn tính là có hiệu lực đến hết tháng đó; Bên thuê không được hoàn lại tiền nhà cho những ngày không sử dụng và phải thanh toán toàn bộ tiền điện, nước phát sinh tính đến ngày dọn đi thực tế. Nếu Bên B đơn phương hủy hợp đồng trước hạn sẽ không được hoàn lại tiền cọc.</div>
       <div class="field-row">- Hợp đồng này được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản để làm căn cứ thực hiện.</div>
     </div>
 
