@@ -28,9 +28,28 @@ public class InvoiceServlet extends BaseServlet {
         String action = req.getParameter("action");
         if ("create".equals(action)) {
             showCreateForm(req, resp);
+        } else if ("getDebt".equals(action)) {
+            handleGetDebt(req, resp);
         } else {
             showList(req, resp);
         }
+    }
+
+    private void handleGetDebt(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        UserSessionDTO user = getCurrentUser(req);
+        if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        String roomCode = req.getParameter("roomCode");
+        BigDecimal debt = BigDecimal.ZERO;
+        if (roomCode != null && !roomCode.trim().isEmpty()) {
+            debt = invoiceService.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
+            if (debt == null) debt = BigDecimal.ZERO;
+        }
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.getWriter().write("{\"debt\":" + debt + "}");
     }
 
     private void showList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
