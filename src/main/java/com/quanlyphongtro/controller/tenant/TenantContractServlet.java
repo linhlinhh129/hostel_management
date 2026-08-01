@@ -22,9 +22,12 @@ public class TenantContractServlet extends BaseServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             UserSessionDTO currentUser = getCurrentUser(req);
-            String idParam = req.getParameter("id");
+            if (currentUser == null) {
+                resp.sendRedirect(req.getContextPath() + "/login");
+                return;
+            }
 
-            // Lấy hợp đồng theo id cụ thể hoặc hợp đồng duy nhất của tenant
+            String idParam = req.getParameter("id");
             Contract contract = null;
 
             if (idParam != null && !idParam.trim().isEmpty()) {
@@ -35,12 +38,7 @@ public class TenantContractServlet extends BaseServlet {
                     resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID hợp đồng không hợp lệ");
                     return;
                 }
-                if (contract == null) {
-                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hợp đồng hoặc bạn không có quyền xem.");
-                    return;
-                }
             } else {
-                // Không có id → lấy hợp đồng đầu tiên (tenant chỉ có 1 hợp đồng)
                 List<Contract> contracts = contractService.getContractsByTenant(currentUser.getId());
                 if (contracts != null && !contracts.isEmpty()) {
                     contract = contractService.getContractDetailForTenant(contracts.get(0).getContractId(), currentUser.getId());

@@ -197,12 +197,18 @@
                   <p>Tiền điện: <strong>
                       <fmt:formatNumber value="${contract.facility.electricityPrice}" pattern="#,##0" /> đ/số
                     </strong>, tính theo chỉ số công tơ, thanh toán vào cuối các tháng.</p>
+                  <p>Tiền nước: <strong>
+                      <fmt:formatNumber value="${contract.facility.waterPrice != null && contract.facility.waterPrice > 0 ? contract.facility.waterPrice : 25000}" pattern="#,##0" /> đ/m³
+                    </strong>, tính theo chỉ số đồng hồ nước, thanh toán vào cuối các tháng.</p>
                   <p>Tiền Internet: <strong>
                       <fmt:formatNumber value="${contract.facility.internetFee}" pattern="#,##0" /> đ/người/tháng
                     </strong></p>
                   <p>Tiền dịch vụ: <strong>
                       <fmt:formatNumber value="${contract.facility.serviceFee}" pattern="#,##0" /> đ/người/tháng
                     </strong></p>
+                  <p style="font-style: italic; color: #4b5563; margin-top: 4px; margin-bottom: 12px; font-size: 0.95em;">
+                    <em>* <strong>Điều khoản đi kèm:</strong> Đơn giá điện và đơn giá nước nêu trên có thể được điều chỉnh tăng hoặc giảm căn cứ theo quyết định thay đổi biểu giá của cơ quan Nhà nước có thẩm quyền hoặc đơn vị cung cấp (EVN, Công ty cấp nước sạch) và phải thông báo trước cho Bên thuê ít nhất 15 ngày.</em>
+                  </p>
                   <p>Bên B đặt cọc cho bên A số tiền là: <strong>
                       <fmt:formatNumber value="${contract.room.depositAmount}" pattern="#,##0" /> đ
                     </strong></p>

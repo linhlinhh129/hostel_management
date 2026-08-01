@@ -178,12 +178,18 @@ public class ContractDAO extends BaseDAO {
         try (Connection conn = DatabaseUtil.getConnection();
                 Statement stmt = conn.createStatement()) {
             stmt.execute("ALTER TABLE dbo.contracts ALTER COLUMN tenant_id INT NULL;");
-            stmt.execute("IF COL_LENGTH('dbo.contracts', 'room_fee') IS NULL ALTER TABLE dbo.contracts ADD room_fee DECIMAL(18,2) NULL;");
-            stmt.execute("IF COL_LENGTH('dbo.contracts', 'deposit_amount') IS NULL ALTER TABLE dbo.contracts ADD deposit_amount DECIMAL(18,2) NULL;");
-            stmt.execute("IF COL_LENGTH('dbo.contracts', 'electricity_price') IS NULL ALTER TABLE dbo.contracts ADD electricity_price DECIMAL(10,2) NULL;");
-            stmt.execute("IF COL_LENGTH('dbo.contracts', 'water_price') IS NULL ALTER TABLE dbo.contracts ADD water_price DECIMAL(10,2) NULL;");
-            stmt.execute("IF COL_LENGTH('dbo.contracts', 'internet_fee') IS NULL ALTER TABLE dbo.contracts ADD internet_fee DECIMAL(10,2) NULL;");
-            stmt.execute("IF COL_LENGTH('dbo.contracts', 'service_fee') IS NULL ALTER TABLE dbo.contracts ADD service_fee DECIMAL(10,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'room_fee') IS NULL ALTER TABLE dbo.contracts ADD room_fee DECIMAL(18,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'deposit_amount') IS NULL ALTER TABLE dbo.contracts ADD deposit_amount DECIMAL(18,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'electricity_price') IS NULL ALTER TABLE dbo.contracts ADD electricity_price DECIMAL(10,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'water_price') IS NULL ALTER TABLE dbo.contracts ADD water_price DECIMAL(10,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'internet_fee') IS NULL ALTER TABLE dbo.contracts ADD internet_fee DECIMAL(10,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'service_fee') IS NULL ALTER TABLE dbo.contracts ADD service_fee DECIMAL(10,2) NULL;");
         } catch (Exception ignored) {
             // Lỗi do không có quyền hoặc đã alter rồi thì bỏ qua
         }
@@ -191,7 +197,8 @@ public class ContractDAO extends BaseDAO {
         String sql = "INSERT INTO dbo.contracts (code, room_id, tenant_id, tenant_full_name, tenant_dob, " +
                 "tenant_permanent_address, tenant_identity_number, tenant_identity_issue_date, " +
                 "tenant_identity_issue_place, tenant_phone, amount_in_words, signed_date, start_date, " +
-                "end_date, status, created_by, room_fee, deposit_amount, electricity_price, water_price, internet_fee, service_fee) " +
+                "end_date, status, created_by, room_fee, deposit_amount, electricity_price, water_price, internet_fee, service_fee) "
+                +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {

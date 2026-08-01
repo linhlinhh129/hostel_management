@@ -81,7 +81,7 @@
                         </select>
                         <c:if test="${empty availableRooms}">
                           <small class="text-warning d-block mt-1 fw-bold">
-                            ⚠ Không tìm thấy phòng nào hợp lệ để tạo hóa đơn.
+                            ⚠ Không tìm thấy phòng nào đang có người thuê.
                           </small>
                         </c:if>
                         <small id="debtHint" class="text-muted mt-1 d-block"></small>

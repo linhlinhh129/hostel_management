@@ -620,3 +620,11 @@ UNION ALL SELECT 'post_comments', COUNT(*) FROM dbo.post_comments
 GO
 
 
+
+
+
+
+
+
+
+

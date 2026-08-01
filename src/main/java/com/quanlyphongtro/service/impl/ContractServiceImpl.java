@@ -27,10 +27,11 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public List<Contract> getContractsByManager(int managerId, String searchName) {
         List<Contract> contracts = contractDAO.findAllByManagerId(managerId, searchName);
-        // Map room details if necessary
         for (Contract c : contracts) {
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
         }
         return contracts;
     }
@@ -42,6 +43,8 @@ public class ContractServiceImpl implements ContractService {
             Contract c = opt.get();
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
             return c;
         }
         return null;
@@ -122,6 +125,8 @@ public class ContractServiceImpl implements ContractService {
         for (Contract c : contracts) {
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
         }
         return contracts;
     }
@@ -133,6 +138,8 @@ public class ContractServiceImpl implements ContractService {
             Contract c = opt.get();
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
             return c;
         }
         return null;
