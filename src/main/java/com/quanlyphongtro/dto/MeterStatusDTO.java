@@ -14,8 +14,23 @@ public class MeterStatusDTO {
     private Integer meterId;
     private String electricImg;
     private String waterImg;
+    private String previousElectricImg;
+    private String previousWaterImg;
     private String updatedByName;
+    private boolean invoicePaid;
 
+    // Metadata fields for Rollover and Replaced meters
+    private String electricStatus;
+    private Integer electricOldFinal;
+    private Integer electricNewStart;
+    private Integer electricMaxLimit;
+    private Integer electricUsage;
+
+    private String waterStatus;
+    private Integer waterOldFinal;
+    private Integer waterNewStart;
+    private Integer waterMaxLimit;
+    private Integer waterUsage;
     public MeterStatusDTO() {}
 
     public int getRoomId() {
@@ -106,6 +121,22 @@ public class MeterStatusDTO {
         this.waterImg = waterImg;
     }
 
+    public String getPreviousElectricImg() {
+        return previousElectricImg;
+    }
+
+    public void setPreviousElectricImg(String previousElectricImg) {
+        this.previousElectricImg = previousElectricImg;
+    }
+
+    public String getPreviousWaterImg() {
+        return previousWaterImg;
+    }
+
+    public void setPreviousWaterImg(String previousWaterImg) {
+        this.previousWaterImg = previousWaterImg;
+    }
+
     public String getUpdatedByName() {
         return updatedByName;
     }
@@ -114,13 +145,91 @@ public class MeterStatusDTO {
         this.updatedByName = updatedByName;
     }
 
-    private boolean invoicePaid;
-
     public boolean isInvoicePaid() {
         return invoicePaid;
     }
 
     public void setInvoicePaid(boolean invoicePaid) {
         this.invoicePaid = invoicePaid;
+    }
+
+    public String getElectricStatus() {
+        return electricStatus;
+    }
+
+    public void setElectricStatus(String electricStatus) {
+        this.electricStatus = electricStatus;
+    }
+
+    public Integer getElectricOldFinal() {
+        return electricOldFinal;
+    }
+
+    public void setElectricOldFinal(Integer electricOldFinal) {
+        this.electricOldFinal = electricOldFinal;
+    }
+
+    public Integer getElectricNewStart() {
+        return electricNewStart;
+    }
+
+    public void setElectricNewStart(Integer electricNewStart) {
+        this.electricNewStart = electricNewStart;
+    }
+
+    public Integer getElectricMaxLimit() {
+        return electricMaxLimit;
+    }
+
+    public void setElectricMaxLimit(Integer electricMaxLimit) {
+        this.electricMaxLimit = electricMaxLimit;
+    }
+
+    public Integer getElectricUsage() {
+        return electricUsage;
+    }
+
+    public void setElectricUsage(Integer electricUsage) {
+        this.electricUsage = electricUsage;
+    }
+
+    public String getWaterStatus() {
+        return waterStatus;
+    }
+
+    public void setWaterStatus(String waterStatus) {
+        this.waterStatus = waterStatus;
+    }
+
+    public Integer getWaterOldFinal() {
+        return waterOldFinal;
+    }
+
+    public void setWaterOldFinal(Integer waterOldFinal) {
+        this.waterOldFinal = waterOldFinal;
+    }
+
+    public Integer getWaterNewStart() {
+        return waterNewStart;
+    }
+
+    public void setWaterNewStart(Integer waterNewStart) {
+        this.waterNewStart = waterNewStart;
+    }
+
+    public Integer getWaterMaxLimit() {
+        return waterMaxLimit;
+    }
+
+    public void setWaterMaxLimit(Integer waterMaxLimit) {
+        this.waterMaxLimit = waterMaxLimit;
+    }
+
+    public Integer getWaterUsage() {
+        return waterUsage;
+    }
+
+    public void setWaterUsage(Integer waterUsage) {
+        this.waterUsage = waterUsage;
     }
 }

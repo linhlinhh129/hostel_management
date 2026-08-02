@@ -1,151 +1,158 @@
-# Graph Report - hostel_management  (2026-07-24)
+# Graph Report - hostel_management  (2026-07-28)
 
 ## Corpus Check
-- 195 files · ~102,665 words
+- 211 files · ~111,086 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2784 nodes · 6993 edges · 127 communities (79 shown, 48 thin omitted)
-- Extraction: 71% EXTRACTED · 29% INFERRED · 0% AMBIGUOUS · INFERRED: 2038 edges (avg confidence: 0.8)
+- 2928 nodes · 7365 edges · 135 communities (93 shown, 42 thin omitted)
+- Extraction: 72% EXTRACTED · 28% INFERRED · 0% AMBIGUOUS · INFERRED: 2077 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c882ac58`
+- Built from commit: `b24a062a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- Module src_main_java_com_quanlyphongtro_controller_admin_adminnotificationservlet_adminnotificationservlet
-- Module src_main_java_com_quanlyphongtro_dto_debtdetaildto_debtdetaildto
-- Module src_main_java_com_quanlyphongtro_dao_invoicedao_invoicedao_insert
-- Module src_main_java_com_quanlyphongtro_dao_notificationdao_java_resultset
-- Module src_main_java_com_quanlyphongtro_dao_operatordashboarddao_operatordashboarddao_getupcomingappointments
-- Module src_main_java_com_quanlyphongtro_dao_basedao_basedao_tolocaldate
-- Module src_main_java_com_quanlyphongtro_dao_contractdao_contractdao_create
-- Module src_main_java_com_quanlyphongtro_dao_commentdao
-- Module src_main_java_com_quanlyphongtro_dto_debtlistitemdto_debtlistitemdto
-- Module src_main_java_com_quanlyphongtro_dao_communitypostdao
-- Module src_main_java_com_quanlyphongtro_dto_communitypostcreatedto
-- Module src_main_java_com_quanlyphongtro_dto_roomdetaildto_roomdetaildto
-- Module src_main_java_com_quanlyphongtro_dao_communitypostdao_communitypostdao_getpostbyid
-- Module src_main_java_com_quanlyphongtro_dao_roomdao_roomdao_update
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantmypostsservlet
-- Module src_main_java_com_quanlyphongtro_dao_personneldao_personneldao
-- Module src_main_java_com_quanlyphongtro_dto_paymentdetaildto_paymentdetaildto
-- Module src_main_java_com_quanlyphongtro_controller_operator_listrequestservlet
-- Module src_main_java_com_quanlyphongtro_model_facility_facility
-- Module src_main_java_com_quanlyphongtro_dao_meterreadingdao
-- Module src_main_java_com_quanlyphongtro_model_paymenttransaction
-- Module src_main_java_com_quanlyphongtro_dao_auditlogdao
-- Module src_main_java_com_quanlyphongtro_dao_dependentdao_dependentdao_insert
-- Module src_main_java_com_quanlyphongtro_dao_auditlogdao_auditlogdao_getpricehistories
-- Module src_main_java_com_quanlyphongtro_constant_statusconstant
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantnotificationservlet
-- Module src_main_java_com_quanlyphongtro_dao_invoicedao
-- Module src_main_java_com_quanlyphongtro_dto_facilityrevenuestatdto_facilityrevenuestatdto
-- Module src_main_java_com_quanlyphongtro_dto_usersessiondto_usersessiondto
-- Module src_main_java_com_quanlyphongtro_controller_manager_managerroomsservlet
-- Module src_main_java_com_quanlyphongtro_dao_dependentdao_dependentdao_deletedependent
-- Module src_main_java_com_quanlyphongtro_dao_requestdao_requestdao_updaterequeststatus
-- Module src_main_java_com_quanlyphongtro_controller_manager_invoicedetailservlet
-- Module src_main_java_com_quanlyphongtro_dao_communitypostdao_communitypostdao_getmanagerbytenant
-- Module src_main_java_com_quanlyphongtro_dao_postcommentdao
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcontractservlet
-- Module src_main_java_com_quanlyphongtro_dao_notificationdao_notificationdao_getinvoiceverifydetails
-- Module src_main_java_com_quanlyphongtro_dto_meterstatusdto
-- Module src_main_java_com_quanlyphongtro_controller_admin_adminfacilityservlet_adminfacilityservlet
-- Module src_main_java_com_quanlyphongtro_dao_facilitydao_facilitydao
-- Module src_main_java_com_quanlyphongtro_dto_invoicelistitemdto
-- Module securerandom
-- Module src_main_java_com_quanlyphongtro_dao_facilitydao_facilitydao_countbycode
-- Module src_main_java_com_quanlyphongtro_dto_emailconfigdto_emailconfigdto
-- Module src_main_java_com_quanlyphongtro_service_notificationservice_notificationservice
-- Module src_main_java_com_quanlyphongtro_controller_admin_adminauditlogservlet
-- Module src_main_java_com_quanlyphongtro_service_requestservice
-- Module httpsession
-- Module src_main_java_com_quanlyphongtro_controller_auth_resetpasswordservlet
-- Module src_main_java_com_quanlyphongtro_dao_auditlogdao_auditlogdao_counttoday
-- Module src_main_java_com_quanlyphongtro_dao_newsfeeddao
-- Module src_main_java_com_quanlyphongtro_dto_roomdto_roomdto
-- Module src_main_java_com_quanlyphongtro_dto_systemrevenuedto_systemrevenuedto
-- Module datasource
-- Module src_main_java_com_quanlyphongtro_controller_admin_admindashboardservlet
-- Module src_main_java_com_quanlyphongtro_dto_paymentlistitemdto_paymentlistitemdto
-- Module src_main_java_com_quanlyphongtro_dto_servicepricedto
-- Module src_main_java_com_quanlyphongtro_controller_baseservlet
-- Module src_main_java_com_quanlyphongtro_controller_manager_paymentservlet
-- Module src_main_java_com_quanlyphongtro_controller_operator_listelectricservlet
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdashboardservlet
-- Module src_main_java_com_quanlyphongtro_dao_auditlogdao_auditlogdao_maprow
-- Module src_main_java_com_quanlyphongtro_dao_debtdao
-- Module src_main_java_com_quanlyphongtro_dto_pagedto_pagedto
-- Module httpservlet
-- Module src_main_java_com_quanlyphongtro_controller_api_forgotpasswordapiservlet
-- Module src_main_java_com_quanlyphongtro_controller_operator_updatemeterreadingservlet
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdependentservlet
-- Module src_main_java_com_quanlyphongtro_dao_basedao
-- Module src_main_java_com_quanlyphongtro_dao_meterreadingdao_meterreadingdao
-- Module src_main_java_com_quanlyphongtro_dao_systemconfigdao
-- Module src_main_java_com_quanlyphongtro_dto_vnpayconfigdto_vnpayconfigdto
-- Module src_main_java_com_quanlyphongtro_filter_rolefilter
-- Module src_main_java_com_quanlyphongtro_model_user_user_isactive
-- Module session
-- Module specify_scripts_powershell_common
-- Module src_main_java_com_quanlyphongtro_controller_manager_contractservlet_contractservlet_dopost
-- Module src_main_java_com_quanlyphongtro_controller_manager_managerdashboardservlet
-- Module src_main_java_com_quanlyphongtro_controller_manager_newsfeedapiservlet
-- Module src_main_java_com_quanlyphongtro_controller_operator_editincidentservlet
-- Module src_main_java_com_quanlyphongtro_controller_operator_incidentreportservlet
-- Module simpledateformat
-- Module src_main_java_com_quanlyphongtro_controller_manager_communitypostservlet
-- Module src_main_java_com_quanlyphongtro_dao_roomdao_roomdao_countfacilityrooms
-- Module src_main_java_com_quanlyphongtro_dao_roomdao_roomdao_getoccupancystats
-- .insert
-- CommunityPostService
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcreatepostservlet
-- Module src_main_java_com_quanlyphongtro_dao_dependentdao
-- Module src_main_java_com_quanlyphongtro_filter_authfilter
-- PersonnelFormDTO
-- Module src_main_java_com_quanlyphongtro_controller_admin_adminsystemconfigservlet
-- Module src_main_java_com_quanlyphongtro_controller_auth_firstloginservlet
-- Module src_main_java_com_quanlyphongtro_controller_manager_debtpageservlet
-- Module src_main_java_com_quanlyphongtro_controller_operator_operatordashboardservlet
-- Module src_main_java_com_quanlyphongtro_dto_revenueactivitydto
-- Module src_main_java_com_quanlyphongtro_service_facilityservice_facilityservice
-- Module src_main_java_com_quanlyphongtro_service_impl_contractserviceimpl_contractserviceimpl
-- InvoiceServlet.java
-- Module src_main_java_com_quanlyphongtro_controller_operator_notificationlistservlet
+- .getId
+- DebtDetailDTO
+- Invoice
+- Notification
+- Request
+- .getConnection
+- Contract
+- CommentDTO
+- DebtListItemDTO
+- NewsFeedDTO
+- CommunityPost
+- RoomDetailDTO
+- CommunityPostDTO
+- Room
+- AdminRevenueServlet
+- PersonnelDAO
+- PaymentDetailDTO
+- RequestDAO
+- Facility
+- MeterReading
+- PaymentTransaction
+- AuditLog
+- Dependent
+- ServicePriceHistoryDTO
+- SystemRevenueDTO
+- InvoiceDetailDTO
+- InvoiceDAO
+- FacilityRevenueStatDTO
+- UserSessionDTO
+- ManagerRoomsServlet.java
+- Override
+- RequestServiceImpl
+- CommunityPostServiceImpl.java
+- PostComment
+- ContractService
+- PostInteractionService
+- MeterStatusDTO
+- AdminFacilityServlet
+- RevenueDAO
+- InvoiceListItemDTO
 - .doFilter
-- Module src_main_java_com_quanlyphongtro_exception_appexception
-- Module src_main_java_com_quanlyphongtro_service_personnelservice_personnelservice
-- Module src_main_java_com_quanlyphongtro_controller_auth_forgotpasswordservlet
-- Module src_main_java_com_quanlyphongtro_controller_manager_paymentdetailservlet
-- Module src_main_java_com_quanlyphongtro_controller_manager_servicepricepageservlet
-- Module src_main_java_com_quanlyphongtro_model_postreaction
-- Module src_main_java_com_quanlyphongtro_controller_admin_adminroomservlet
-- Module src_main_java_com_quanlyphongtro_controller_api_resetpasswordapiservlet
-- Module src_main_java_com_quanlyphongtro_controller_operator_meterreadinghistoryservlet
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcommentservlet
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdeletepostservlet
-- Module src_main_java_com_quanlyphongtro_controller_tenant_tenantlikeservlet
-- AuditLogHelper.java
-- schema.sql
-- Module src_main_java_com_quanlyphongtro_dao_contractdao_contractdao_findbyidandmanagerid
-- Module src_main_webapp_sw
-- Module specify_scripts_powershell_create_new_feature
-- Module specify_extensions_agent_context_scripts_bash_update_agent_context
+- AdminNotificationServlet
+- EmailConfigDTO
+- .sendError
+- NotFoundException.java
+- .trim
+- HttpSession
+- ResetPasswordServlet.java
+- AdminDashboardServiceImpl
+- NewsFeedServiceImpl
+- RoomDTO
+- .count
+- .mapRow
+- .doGet
+- PaymentListItemDTO
+- ServicePriceDTO
+- PageResult
+- PaymentServlet.java
+- ListElectricServlet.java
+- BaseServlet
+- FacilityDAO
+- .sendRemindNotification
+- .mapRow
+- PostCommentDTO
+- HttpServlet
+- .login
+- .doPost
+- .doPost
+- MeterReadingService
+- SystemConfigDAO
+- VNPayConfigDTO
+- PostReactionDAO
+- UserServiceImpl.java
+- EditIncidentReportServlet.java
+- common.ps1
+- DatabaseUtil.java
+- ManagerDashboardServlet.java
+- NewsFeedApiServlet.java
+- .doPost
+- PaymentDAO
+- EmailService
+- CommunityPostService
+- TenantPostDetailServlet.java
+- RoomDAO
+- RoomOccupancyStatDTO
+- .doGet
+- PostReactionDTO
+- TenantMyPostsServlet.java
+- .doPost
+- AppTimeZoneListener.java
+- AuthFilter
+- BaseDAO
+- AdminSystemConfigServlet.java
+- .doPost
+- .getRole
+- OperatorDashboardServlet.java
+- Q: những class nào phụ trách cái tính năng auth này vậy, cụ thể cho mình biết đi và nhớ comment vào để cho mình biết
+- RevenueActivityDTO
+- .doPost
+- .findById
+- Q: ấn đăng xuất ở web thì nó xuất hiện ở class nào vậy mà có 2 tận 2 đăng xuất là sao vậy
+- UserSessionDTO.java
+- Q: giải thích phần jsp của logout qua graphify
+- NotificationListServlet.java
+- EncodingFilter
+- Q: chỉ class LoginServlet giống lệnh graphify
+- Q: giải thích các hàm trong LoginServlet
+- PageDTO
+- Q: FirstLoginServlet jsp đoạn nằm ở đâu và luồng backend
+- UserDAO
+- PaymentService
+- .doPost
+- PostReaction
+- RoomService
+- ResetPasswordApiServlet.java
+- MeterReadingHistoryServlet.java
+- TenantCommentServlet.java
+- TenantDeletePostServlet.java
+- TenantLikeServlet.java
+- Q: giải thích luồng forgot-password
+- Q: JSP của ProfileServlet nằm ở đâu
+- Q: Giải thích luồng ProfileServlet và profile.jsp
+- User
+- sw.js
+- create-new-feature.ps1
+- update-agent-context.sh
 
 ## God Nodes (most connected - your core abstractions)
-1. `BaseServlet` - 95 edges
-2. `InvoiceDetailDTO` - 89 edges
-3. `DebtDetailDTO` - 88 edges
-4. `Invoice` - 87 edges
-5. `Facility` - 83 edges
+1. `BaseServlet` - 97 edges
+2. `Invoice` - 96 edges
+3. `InvoiceDetailDTO` - 91 edges
+4. `DebtDetailDTO` - 88 edges
+5. `Facility` - 84 edges
 6. `User` - 80 edges
 7. `Contract` - 78 edges
-8. `Request` - 73 edges
+8. `Request` - 76 edges
 9. `Notification` - 65 edges
-10. `Room` - 62 edges
+10. `Room` - 64 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `AdminAuditLogServlet` --inherits--> `BaseServlet`  [EXTRACTED]
@@ -162,311 +169,363 @@
 ## Import Cycles
 - None detected.
 
-## Communities (127 total, 48 thin omitted)
+## Communities (135 total, 42 thin omitted)
 
-### Community 0 - "Module src_main_java_com_quanlyphongtro_controller_admin_adminnotificationservlet_adminnotificationservlet"
-Cohesion: 0.18
-Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerTenantsServlet, TenantService
+### Community 0 - ".getId"
+Cohesion: 0.32
+Nodes (5): Override, HttpServletRequest, HttpServletResponse, Override, ManagerTenantsServlet
 
-### Community 7 - "Module src_main_java_com_quanlyphongtro_dao_basedao_basedao_tolocaldate"
-Cohesion: 0.09
+### Community 7 - ".getConnection"
+Cohesion: 0.10
 Nodes (3): NotificationDAO, Override, NotificationServiceImpl
 
-### Community 16 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantmypostsservlet"
+### Community 11 - "NewsFeedDTO"
+Cohesion: 0.09
+Nodes (3): CommunityPostDAO, ResultSet, NewsFeedDTO
+
+### Community 16 - "AdminRevenueServlet"
 Cohesion: 0.18
 Nodes (6): AdminRevenueServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, RevenueService
 
-### Community 17 - "Module src_main_java_com_quanlyphongtro_dao_personneldao_personneldao"
-Cohesion: 0.13
-Nodes (4): PersonnelDAO, Logger, Override, PersonnelServiceImpl
+### Community 17 - "PersonnelDAO"
+Cohesion: 0.11
+Nodes (5): PersonnelDAO, Logger, Override, PersonnelServiceImpl, ValidationUtil
 
-### Community 19 - "Module src_main_java_com_quanlyphongtro_controller_operator_listrequestservlet"
-Cohesion: 0.10
-Nodes (7): HttpServletRequest, HttpServletResponse, Override, WebServlet, ListRequestServlet, Override, RequestDAO
+### Community 19 - "RequestDAO"
+Cohesion: 0.08
+Nodes (12): HttpServletRequest, HttpServletResponse, Override, WebServlet, ListRequestServlet, HttpServletRequest, HttpServletResponse, Override (+4 more)
 
-### Community 20 - "Module src_main_java_com_quanlyphongtro_model_facility_facility"
-Cohesion: 0.05
-Nodes (13): DataSource, FacilityDAO, Connection, ResultSet, ResultSet, Facility, FacilityServiceImpl, Logger (+5 more)
+### Community 23 - "AuditLog"
+Cohesion: 0.09
+Nodes (3): AuditLogDAO, ResultSet, AuditLog
 
-### Community 24 - "Module src_main_java_com_quanlyphongtro_dao_dependentdao_dependentdao_insert"
+### Community 24 - "Dependent"
 Cohesion: 0.06
 Nodes (11): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantDependentServlet, DependentDAO, ResultSet, Dependent (+3 more)
 
-### Community 28 - "Module src_main_java_com_quanlyphongtro_dao_invoicedao"
+### Community 28 - "InvoiceDAO"
 Cohesion: 0.12
-Nodes (5): InvoiceDAO, InvoicePriceSnapshot, InvoiceRoomSnapshot, InvoiceServiceImpl, Override
+Nodes (6): InvoiceDAO, InvoicePriceSnapshot, InvoiceRoomSnapshot, Connection, InvoiceServiceImpl, Override
 
-### Community 31 - "Module src_main_java_com_quanlyphongtro_controller_manager_managerroomsservlet"
+### Community 30 - "UserSessionDTO"
+Cohesion: 0.08
+Nodes (8): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, ProfileServlet, UserSessionDTO
+
+### Community 31 - "ManagerRoomsServlet.java"
+Cohesion: 0.29
+Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerRoomsServlet
+
+### Community 33 - "RequestServiceImpl"
 Cohesion: 0.20
-Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerRoomsServlet, RoomService
-
-### Community 32 - "Module src_main_java_com_quanlyphongtro_dao_dependentdao_dependentdao_deletedependent"
-Cohesion: 0.12
-Nodes (4): UserDAO, Override, TenantServiceImpl, MapStringConsumer
-
-### Community 33 - "Module src_main_java_com_quanlyphongtro_dao_requestdao_requestdao_updaterequeststatus"
-Cohesion: 0.18
 Nodes (3): Logger, Override, RequestServiceImpl
 
-### Community 34 - "Module src_main_java_com_quanlyphongtro_controller_manager_invoicedetailservlet"
-Cohesion: 0.18
-Nodes (5): InvoiceDetailServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet
+### Community 35 - "CommunityPostServiceImpl.java"
+Cohesion: 0.23
+Nodes (4): CommunityPostServiceImpl, Logger, Override, Part
 
-### Community 35 - "Module src_main_java_com_quanlyphongtro_dao_communitypostdao_communitypostdao_getmanagerbytenant"
-Cohesion: 0.15
-Nodes (10): BaseDAO, Logger, ResultSet, Timestamp, CommunityPostDAO, PostCommentDAO, PostReactionDAO, CommunityPostServiceImpl (+2 more)
-
-### Community 37 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcontractservlet"
-Cohesion: 0.13
+### Community 37 - "ContractService"
+Cohesion: 0.12
 Nodes (11): ContractServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, HttpServletRequest, HttpServletResponse, Override (+3 more)
 
-### Community 40 - "Module src_main_java_com_quanlyphongtro_controller_admin_adminfacilityservlet_adminfacilityservlet"
+### Community 38 - "PostInteractionService"
+Cohesion: 0.14
+Nodes (13): HttpServletRequest, HttpServletResponse, Logger, Override, WebServlet, PostCommentServlet, HttpServletRequest, HttpServletResponse (+5 more)
+
+### Community 40 - "AdminFacilityServlet"
 Cohesion: 0.07
 Nodes (15): AdminFacilityServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, FacilityFormDTO, HttpServletRequest, FilterChain (+7 more)
 
-### Community 41 - "Module src_main_java_com_quanlyphongtro_dao_facilitydao_facilitydao"
+### Community 41 - "RevenueDAO"
 Cohesion: 0.25
 Nodes (3): RevenueDAO, Override, RevenueServiceImpl
 
-### Community 43 - "Module securerandom"
-Cohesion: 0.20
+### Community 43 - ".doFilter"
+Cohesion: 0.19
 Nodes (7): ErrorMessageConstant, CsrfFilter, FilterChain, Override, ServletRequest, ServletResponse, WebFilter
 
-### Community 44 - "Module src_main_java_com_quanlyphongtro_dao_facilitydao_facilitydao_countbycode"
-Cohesion: 0.25
+### Community 44 - "AdminNotificationServlet"
+Cohesion: 0.33
 Nodes (5): AdminNotificationServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet
 
-### Community 46 - "Module src_main_java_com_quanlyphongtro_service_notificationservice_notificationservice"
-Cohesion: 0.18
+### Community 46 - ".sendError"
+Cohesion: 0.15
 Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerNotificationsServlet, NotificationService
 
-### Community 47 - "Module src_main_java_com_quanlyphongtro_controller_admin_adminauditlogservlet"
-Cohesion: 0.21
-Nodes (6): AdminAuditLogServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, AuditLogService
+### Community 47 - "NotFoundException.java"
+Cohesion: 0.18
+Nodes (7): AdminAuditLogServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, NotFoundException, AuditLogService
 
-### Community 48 - "Module src_main_java_com_quanlyphongtro_service_requestservice"
-Cohesion: 0.09
-Nodes (17): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, ManagerTicketsServlet, DetailRequestServlet (+9 more)
+### Community 48 - ".trim"
+Cohesion: 0.11
+Nodes (15): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, ManagerTicketsServlet, DetailRequestServlet (+7 more)
 
-### Community 49 - "Module httpsession"
+### Community 49 - "HttpSession"
 Cohesion: 0.25
-Nodes (9): HttpSession, HttpSessionAttributeListener, HttpSessionBindingEvent, HttpSessionEvent, HttpSessionListener, Override, UserSessionListener, SessionRegistry (+1 more)
+Nodes (9): HttpSession, HttpSessionAttributeListener, HttpSessionBindingEvent, HttpSessionEvent, HttpSessionListener, Override, WebListener, UserSessionListener (+1 more)
 
-### Community 50 - "Module src_main_java_com_quanlyphongtro_controller_auth_resetpasswordservlet"
-Cohesion: 0.42
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordServlet
+### Community 50 - "ResetPasswordServlet.java"
+Cohesion: 0.25
+Nodes (7): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordServlet, Pattern, PasswordValidator
 
-### Community 52 - "Module src_main_java_com_quanlyphongtro_dao_newsfeeddao"
+### Community 52 - "NewsFeedServiceImpl"
 Cohesion: 0.15
 Nodes (8): CommentDAO, Logger, Logger, NewsFeedDAO, Logger, ReactionDAO, Override, NewsFeedServiceImpl
 
-### Community 55 - "Module datasource"
-Cohesion: 0.29
-Nodes (7): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, ProfileServlet
-
-### Community 56 - "Module src_main_java_com_quanlyphongtro_controller_admin_admindashboardservlet"
+### Community 56 - ".doGet"
 Cohesion: 0.18
 Nodes (7): AdminDashboardServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, AdminDashboardService, Logger
 
-### Community 60 - "Module src_main_java_com_quanlyphongtro_controller_manager_paymentservlet"
+### Community 60 - "PaymentServlet.java"
 Cohesion: 0.24
 Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, PaymentServlet
 
-### Community 61 - "Module src_main_java_com_quanlyphongtro_controller_operator_listelectricservlet"
+### Community 61 - "ListElectricServlet.java"
 Cohesion: 0.39
 Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ListElectricServlet
 
-### Community 62 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdashboardservlet"
-Cohesion: 0.07
-Nodes (27): BaseServlet, HttpServletRequest, HttpServletResponse, Logger, HttpServletRequest, HttpServletResponse, WebServlet, MyIncidentListServlet (+19 more)
+### Community 62 - "BaseServlet"
+Cohesion: 0.05
+Nodes (27): StatusConstant, BaseServlet, HttpServletRequest, HttpServletResponse, Logger, WebServlet, HttpServletRequest, HttpServletResponse (+19 more)
 
-### Community 64 - "Module src_main_java_com_quanlyphongtro_dao_debtdao"
-Cohesion: 0.36
+### Community 63 - "FacilityDAO"
+Cohesion: 0.12
+Nodes (6): FacilityDAO, Connection, FacilityServiceImpl, Logger, Override, ServicePriceServiceImpl
+
+### Community 64 - ".sendRemindNotification"
+Cohesion: 0.14
 Nodes (3): DebtDAO, DebtServiceImpl, Override
 
-### Community 67 - "Module httpservlet"
+### Community 67 - "HttpServlet"
 Cohesion: 0.21
 Nodes (11): HttpServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, LogoutServlet, HttpServletRequest, HttpServletResponse (+3 more)
 
-### Community 68 - "Module src_main_java_com_quanlyphongtro_controller_api_forgotpasswordapiservlet"
-Cohesion: 0.13
-Nodes (7): ForgotPasswordApiServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, AttemptRecord, LoginAttemptTracker
-
-### Community 69 - "Module src_main_java_com_quanlyphongtro_controller_operator_updatemeterreadingservlet"
+### Community 69 - ".doPost"
 Cohesion: 0.23
 Nodes (7): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, UpdateMeterReadingServlet
 
-### Community 70 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdependentservlet"
-Cohesion: 0.36
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantNewsFeedServlet
+### Community 71 - ".doPost"
+Cohesion: 0.17
+Nodes (5): HttpServletRequest, HttpServletResponse, Override, HttpServletRequest, VNPayConfig
 
-### Community 73 - "Module src_main_java_com_quanlyphongtro_dao_systemconfigdao"
-Cohesion: 0.38
-Nodes (4): ConfigMetadata, Logger, Timestamp, SystemConfigDAO
+### Community 73 - "SystemConfigDAO"
+Cohesion: 0.16
+Nodes (8): ConfigMetadata, Connection, Logger, Timestamp, SystemConfigDAO, AppException, ValidationException, Override
 
-### Community 76 - "Module src_main_java_com_quanlyphongtro_model_user_user_isactive"
-Cohesion: 0.15
-Nodes (9): RoleConstant, HttpServletRequest, HttpServletResponse, Override, WebServlet, LoginServlet, Logger, UserServiceImpl (+1 more)
+### Community 75 - "PostReactionDAO"
+Cohesion: 0.22
+Nodes (4): PostCommentDAO, PostReactionDAO, Override, PostInteractionServiceImpl
 
-### Community 78 - "Module specify_scripts_powershell_common"
+### Community 76 - "UserServiceImpl.java"
+Cohesion: 0.13
+Nodes (10): RoleConstant, HttpServletRequest, HttpServletResponse, Override, WebServlet, LoginServlet, ForbiddenException, Logger (+2 more)
+
+### Community 77 - "EditIncidentReportServlet.java"
+Cohesion: 0.24
+Nodes (8): EditIncidentReportServlet, HttpServletRequest, HttpServletResponse, Logger, MultipartConfig, Override, Part, WebServlet
+
+### Community 78 - "common.ps1"
 Cohesion: 0.22
 Nodes (10): Find-SpecifyRoot(), Format-SpecKitCommand(), Get-CurrentBranch(), Get-FeaturePathsEnv(), Get-InvokeSeparator(), Get-Python3Command(), Get-RepoRoot(), Resolve-SpecifyInitDir() (+2 more)
 
-### Community 79 - "Module src_main_java_com_quanlyphongtro_controller_manager_contractservlet_contractservlet_dopost"
-Cohesion: 0.47
-Nodes (3): SimpleDateFormat, Logger, SystemConfigServiceImpl
+### Community 79 - "DatabaseUtil.java"
+Cohesion: 0.19
+Nodes (7): DataSource, SimpleDateFormat, Logger, SystemConfigServiceImpl, DatabaseUtil, Connection, Logger
 
-### Community 80 - "Module src_main_java_com_quanlyphongtro_controller_manager_managerdashboardservlet"
-Cohesion: 0.18
-Nodes (9): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerDashboardServlet, ManagerDashboardDAO, DashboardService, DashboardServiceImpl (+1 more)
+### Community 80 - "ManagerDashboardServlet.java"
+Cohesion: 0.19
+Nodes (8): HttpServletRequest, HttpServletResponse, WebServlet, ManagerDashboardServlet, ManagerDashboardDAO, DashboardService, DashboardServiceImpl, Override
 
-### Community 81 - "Module src_main_java_com_quanlyphongtro_controller_manager_newsfeedapiservlet"
+### Community 81 - "NewsFeedApiServlet.java"
 Cohesion: 0.19
 Nodes (8): Gson, HttpServletRequest, HttpServletResponse, Logger, Override, WebServlet, NewsFeedApiServlet, NewsFeedService
 
-### Community 82 - "Module src_main_java_com_quanlyphongtro_controller_operator_editincidentservlet"
-Cohesion: 0.16
-Nodes (7): EditIncidentServlet, HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet
-
-### Community 83 - "Module src_main_java_com_quanlyphongtro_controller_operator_incidentreportservlet"
-Cohesion: 0.19
+### Community 83 - ".doPost"
+Cohesion: 0.27
 Nodes (8): IncidentReportServlet, HttpServletRequest, HttpServletResponse, Logger, MultipartConfig, Override, Part, WebServlet
 
-### Community 84 - "Module simpledateformat"
+### Community 84 - "PaymentDAO"
 Cohesion: 0.23
 Nodes (3): PaymentDAO, Override, PaymentServiceImpl
 
-### Community 86 - "Module src_main_java_com_quanlyphongtro_controller_manager_communitypostservlet"
-Cohesion: 0.20
-Nodes (8): CommunityPostServlet, Gson, HttpServletRequest, HttpServletResponse, Logger, MultipartConfig, Override, WebServlet
+### Community 85 - "EmailService"
+Cohesion: 0.28
+Nodes (3): Session, EmailService, Logger
 
-### Community 88 - "Module src_main_java_com_quanlyphongtro_dao_roomdao_roomdao_countfacilityrooms"
+### Community 86 - "CommunityPostService"
+Cohesion: 0.13
+Nodes (11): CommunityPostServlet, Gson, HttpServletRequest, HttpServletResponse, Logger, MultipartConfig, Override, WebServlet (+3 more)
+
+### Community 87 - "TenantPostDetailServlet.java"
+Cohesion: 0.27
+Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantPostDetailServlet
+
+### Community 88 - "RoomDAO"
 Cohesion: 0.15
 Nodes (3): RoomDAO, Override, RoomServiceImpl
 
-### Community 92 - "CommunityPostService"
-Cohesion: 0.18
-Nodes (11): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantMyPostsServlet, HttpServletRequest, HttpServletResponse, Override (+3 more)
+### Community 90 - ".doGet"
+Cohesion: 0.20
+Nodes (3): HttpServletRequest, HttpServletResponse, Override
 
-### Community 93 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcreatepostservlet"
+### Community 92 - "TenantMyPostsServlet.java"
+Cohesion: 0.16
+Nodes (10): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantMyPostsServlet, HttpServletRequest, HttpServletResponse, Override (+2 more)
+
+### Community 93 - ".doPost"
 Cohesion: 0.28
 Nodes (7): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, TenantCreatePostServlet
 
-### Community 95 - "Module src_main_java_com_quanlyphongtro_filter_authfilter"
-Cohesion: 0.23
-Nodes (7): AuthFilter, FilterChain, FilterConfig, Override, ServletRequest, ServletResponse, WebFilter
+### Community 94 - "AppTimeZoneListener.java"
+Cohesion: 0.43
+Nodes (5): ServletContextEvent, ServletContextListener, AppTimeZoneListener, Override, WebListener
 
-### Community 97 - "Module src_main_java_com_quanlyphongtro_controller_admin_adminsystemconfigservlet"
+### Community 95 - "AuthFilter"
+Cohesion: 0.21
+Nodes (8): Filter, AuthFilter, FilterChain, FilterConfig, Override, ServletRequest, ServletResponse, WebFilter
+
+### Community 96 - "BaseDAO"
+Cohesion: 0.43
+Nodes (4): BaseDAO, Logger, ResultSet, Timestamp
+
+### Community 97 - "AdminSystemConfigServlet.java"
 Cohesion: 0.21
 Nodes (6): AdminSystemConfigServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, SystemConfigService
 
-### Community 98 - "Module src_main_java_com_quanlyphongtro_controller_auth_firstloginservlet"
-Cohesion: 0.17
+### Community 98 - ".doPost"
+Cohesion: 0.19
 Nodes (7): SecureRandom, FirstLoginServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, PasswordUtil
 
-### Community 99 - "Module src_main_java_com_quanlyphongtro_controller_manager_debtpageservlet"
-Cohesion: 0.23
+### Community 99 - ".getRole"
+Cohesion: 0.21
 Nodes (6): DebtPageServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, DebtService
 
-### Community 100 - "Module src_main_java_com_quanlyphongtro_controller_operator_operatordashboardservlet"
+### Community 100 - "OperatorDashboardServlet.java"
 Cohesion: 0.31
 Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, OperatorDashboardServlet, OperatorDashboardDAO
 
-### Community 103 - "Module src_main_java_com_quanlyphongtro_service_facilityservice_facilityservice"
-Cohesion: 0.23
+### Community 101 - "Q: những class nào phụ trách cái tính năng auth này vậy, cụ thể cho mình biết đi và nhớ comment vào để cho mình biết"
+Cohesion: 0.50
+Nodes (3): Answer, Q: những class nào phụ trách cái tính năng auth này vậy, cụ thể cho mình biết đi và nhớ comment vào để cho mình biết, Source Nodes
+
+### Community 103 - ".doPost"
+Cohesion: 0.27
 Nodes (6): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, WebServlet, TenantRequestServlet
 
-### Community 104 - "Module src_main_java_com_quanlyphongtro_service_impl_contractserviceimpl_contractserviceimpl"
-Cohesion: 0.13
+### Community 104 - ".findById"
+Cohesion: 0.12
 Nodes (4): ContractDAO, ResultSet, ContractServiceImpl, Override
 
-### Community 106 - "InvoiceServlet.java"
-Cohesion: 0.19
-Nodes (6): InvoiceServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, InvoiceService
+### Community 105 - "Q: ấn đăng xuất ở web thì nó xuất hiện ở class nào vậy mà có 2 tận 2 đăng xuất là sao vậy"
+Cohesion: 0.50
+Nodes (3): Answer, Q: ấn đăng xuất ở web thì nó xuất hiện ở class nào vậy mà có 2 tận 2 đăng xuất là sao vậy, Source Nodes
 
-### Community 108 - "Module src_main_java_com_quanlyphongtro_controller_operator_notificationlistservlet"
-Cohesion: 0.21
+### Community 106 - "UserSessionDTO.java"
+Cohesion: 0.10
+Nodes (16): InvoiceDetailServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, InvoiceServlet, HttpServletRequest, HttpServletResponse (+8 more)
+
+### Community 107 - "Q: giải thích phần jsp của logout qua graphify"
+Cohesion: 0.50
+Nodes (3): Answer, Q: giải thích phần jsp của logout qua graphify, Source Nodes
+
+### Community 108 - "NotificationListServlet.java"
+Cohesion: 0.24
 Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, NotificationListServlet
 
-### Community 109 - ".doFilter"
-Cohesion: 0.25
-Nodes (7): Filter, EncodingFilter, FilterChain, Override, ServletRequest, ServletResponse, WebFilter
+### Community 109 - "EncodingFilter"
+Cohesion: 0.24
+Nodes (8): EncodingFilter, FilterChain, FilterConfig, Override, ServletRequest, ServletResponse, WebFilter, TimeZone
 
-### Community 111 - "Module src_main_java_com_quanlyphongtro_exception_appexception"
-Cohesion: 0.15
-Nodes (6): Connection, AppException, ForbiddenException, NotFoundException, ValidationException, Override
+### Community 110 - "Q: chỉ class LoginServlet giống lệnh graphify"
+Cohesion: 0.50
+Nodes (3): Answer, Q: chỉ class LoginServlet giống lệnh graphify, Source Nodes
 
-### Community 112 - "Module src_main_java_com_quanlyphongtro_service_personnelservice_personnelservice"
-Cohesion: 0.26
-Nodes (4): AdminPersonnelServlet, HttpServletRequest, HttpServletResponse, Override
+### Community 111 - "Q: giải thích các hàm trong LoginServlet"
+Cohesion: 0.50
+Nodes (3): Answer, Q: giải thích các hàm trong LoginServlet, Source Nodes
 
-### Community 114 - "Module src_main_java_com_quanlyphongtro_controller_auth_forgotpasswordservlet"
-Cohesion: 0.07
-Nodes (17): Session, ForgotPasswordServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, HttpServletRequest, HttpServletResponse (+9 more)
+### Community 112 - "PageDTO"
+Cohesion: 0.06
+Nodes (9): AdminPersonnelServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, PageDTO, HttpServletRequest, PersonnelFormDTO (+1 more)
 
-### Community 115 - "Module src_main_java_com_quanlyphongtro_controller_manager_paymentdetailservlet"
+### Community 113 - "Q: FirstLoginServlet jsp đoạn nằm ở đâu và luồng backend"
+Cohesion: 0.50
+Nodes (3): Answer, Q: FirstLoginServlet jsp đoạn nằm ở đâu và luồng backend, Source Nodes
+
+### Community 114 - "UserDAO"
+Cohesion: 0.13
+Nodes (13): ForgotPasswordApiServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, ForgotPasswordServlet, HttpServletRequest, HttpServletResponse (+5 more)
+
+### Community 115 - "PaymentService"
 Cohesion: 0.25
 Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, PaymentDetailServlet, PaymentService
 
-### Community 116 - "Module src_main_java_com_quanlyphongtro_controller_manager_servicepricepageservlet"
-Cohesion: 0.26
+### Community 116 - ".doPost"
+Cohesion: 0.24
 Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ServicePricePageServlet, ServicePriceService
 
-### Community 118 - "Module src_main_java_com_quanlyphongtro_controller_admin_adminroomservlet"
-Cohesion: 0.33
-Nodes (5): AdminRoomServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet
+### Community 118 - "RoomService"
+Cohesion: 0.19
+Nodes (6): AdminRoomServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, RoomService
 
-### Community 119 - "Module src_main_java_com_quanlyphongtro_controller_api_resetpasswordapiservlet"
-Cohesion: 0.29
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordApiServlet
+### Community 119 - "ResetPasswordApiServlet.java"
+Cohesion: 0.19
+Nodes (7): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordApiServlet, ResetTokenManager, TokenData
 
-### Community 120 - "Module src_main_java_com_quanlyphongtro_controller_operator_meterreadinghistoryservlet"
+### Community 120 - "MeterReadingHistoryServlet.java"
 Cohesion: 0.39
 Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, MeterReadingHistoryServlet
 
-### Community 121 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcommentservlet"
-Cohesion: 0.29
+### Community 121 - "TenantCommentServlet.java"
+Cohesion: 0.33
 Nodes (6): Gson, HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantCommentServlet
 
-### Community 122 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdeletepostservlet"
-Cohesion: 0.33
+### Community 122 - "TenantDeletePostServlet.java"
+Cohesion: 0.39
 Nodes (6): Gson, HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantDeletePostServlet
 
-### Community 123 - "Module src_main_java_com_quanlyphongtro_controller_tenant_tenantlikeservlet"
-Cohesion: 0.33
+### Community 123 - "TenantLikeServlet.java"
+Cohesion: 0.29
 Nodes (6): Gson, HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantLikeServlet
 
-### Community 127 - "AuditLogHelper.java"
-Cohesion: 0.40
-Nodes (3): AuditLogHelper, HttpServletRequest, Logger
+### Community 124 - "Q: giải thích luồng forgot-password"
+Cohesion: 0.50
+Nodes (3): Answer, Q: giải thích luồng forgot-password, Source Nodes
 
-### Community 131 - "Module src_main_java_com_quanlyphongtro_dao_contractdao_contractdao_findbyidandmanagerid"
+### Community 125 - "Q: JSP của ProfileServlet nằm ở đâu"
+Cohesion: 0.50
+Nodes (3): Answer, Q: JSP của ProfileServlet nằm ở đâu, Source Nodes
+
+### Community 126 - "Q: Giải thích luồng ProfileServlet và profile.jsp"
+Cohesion: 0.50
+Nodes (3): Answer, Q: Giải thích luồng ProfileServlet và profile.jsp, Source Nodes
+
+### Community 131 - "User"
 Cohesion: 0.13
-Nodes (3): ResultSet, User, Override
+Nodes (4): ResultSet, ResultSet, User, Override
 
-### Community 134 - "Module src_main_webapp_sw"
+### Community 134 - "sw.js"
 Cohesion: 0.50
 Nodes (3): networkFirst(), offlineFallback(), STATIC_ASSETS
 
 ## Knowledge Gaps
-- **3 isolated node(s):** `update-agent-context.sh script`, `dbo.system_config`, `STATIC_ASSETS`
+- **20 isolated node(s):** `update-agent-context.sh script`, `STATIC_ASSETS`, `Answer`, `Source Nodes`, `Answer` (+15 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **48 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **42 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BaseServlet` connect `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdashboardservlet` to `Module src_main_java_com_quanlyphongtro_controller_admin_adminnotificationservlet_adminnotificationservlet`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantmypostsservlet`, `Module src_main_java_com_quanlyphongtro_controller_operator_listrequestservlet`, `Module src_main_java_com_quanlyphongtro_dao_dependentdao_dependentdao_insert`, `Module src_main_java_com_quanlyphongtro_controller_manager_managerroomsservlet`, `Module src_main_java_com_quanlyphongtro_controller_manager_invoicedetailservlet`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcontractservlet`, `Module src_main_java_com_quanlyphongtro_controller_admin_adminfacilityservlet_adminfacilityservlet`, `Module src_main_java_com_quanlyphongtro_dao_facilitydao_facilitydao_countbycode`, `Module src_main_java_com_quanlyphongtro_service_notificationservice_notificationservice`, `Module src_main_java_com_quanlyphongtro_controller_admin_adminauditlogservlet`, `Module src_main_java_com_quanlyphongtro_service_requestservice`, `Module src_main_java_com_quanlyphongtro_controller_auth_resetpasswordservlet`, `Module datasource`, `Module src_main_java_com_quanlyphongtro_controller_admin_admindashboardservlet`, `Module src_main_java_com_quanlyphongtro_controller_baseservlet`, `Module src_main_java_com_quanlyphongtro_controller_manager_paymentservlet`, `Module httpservlet`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdependentservlet`, `Module src_main_java_com_quanlyphongtro_model_user_user_isactive`, `Module src_main_java_com_quanlyphongtro_controller_manager_managerdashboardservlet`, `Module src_main_java_com_quanlyphongtro_controller_operator_editincidentservlet`, `Module src_main_java_com_quanlyphongtro_controller_manager_communitypostservlet`, `CommunityPostService`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcreatepostservlet`, `Module src_main_java_com_quanlyphongtro_controller_admin_adminsystemconfigservlet`, `Module src_main_java_com_quanlyphongtro_controller_auth_firstloginservlet`, `Module src_main_java_com_quanlyphongtro_controller_operator_operatordashboardservlet`, `Module src_main_java_com_quanlyphongtro_service_facilityservice_facilityservice`, `InvoiceServlet.java`, `Module src_main_java_com_quanlyphongtro_service_personnelservice_personnelservice`, `Module src_main_java_com_quanlyphongtro_controller_auth_forgotpasswordservlet`, `Module src_main_java_com_quanlyphongtro_controller_manager_paymentdetailservlet`, `Module src_main_java_com_quanlyphongtro_controller_manager_servicepricepageservlet`, `Module src_main_java_com_quanlyphongtro_controller_admin_adminroomservlet`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantcommentservlet`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdeletepostservlet`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantlikeservlet`?**
-  _High betweenness centrality (0.122) - this node is a cross-community bridge._
-- **Why does `DebtListItemDTO` connect `Module src_main_java_com_quanlyphongtro_dto_debtlistitemdto_debtlistitemdto` to `Module src_main_java_com_quanlyphongtro_dao_debtdao`, `Module src_main_java_com_quanlyphongtro_controller_manager_debtpageservlet`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
-- **Why does `Facility` connect `Module src_main_java_com_quanlyphongtro_model_facility_facility` to `Module src_main_java_com_quanlyphongtro_dao_dependentdao_dependentdao_deletedependent`, `Module src_main_java_com_quanlyphongtro_dao_notificationdao_notificationdao_getinvoiceverifydetails`, `Module src_main_java_com_quanlyphongtro_dao_contractdao_contractdao_create`, `Module src_main_java_com_quanlyphongtro_controller_admin_adminfacilityservlet_adminfacilityservlet`, `Module src_main_java_com_quanlyphongtro_service_personnelservice_personnelservice`, `Module src_main_java_com_quanlyphongtro_dao_personneldao_personneldao`, `Module src_main_java_com_quanlyphongtro_controller_baseservlet`, `Module src_main_java_com_quanlyphongtro_controller_tenant_tenantdashboardservlet`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
-- **What connects `update-agent-context.sh script`, `dbo.system_config`, `STATIC_ASSETS` to the rest of the system?**
-  _3 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Module src_main_java_com_quanlyphongtro_dto_debtdetaildto_debtdetaildto` be split into smaller, more focused modules?**
-  _Cohesion score 0.042206590151795634 - nodes in this community are weakly interconnected._
-- **Should `Module src_main_java_com_quanlyphongtro_dto_invoicedetaildto_invoicedetaildto` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
-- **Should `Module src_main_java_com_quanlyphongtro_dao_invoicedao_invoicedao_insert` be split into smaller, more focused modules?**
-  _Cohesion score 0.07337526205450734 - nodes in this community are weakly interconnected._
+- **Why does `BaseServlet` connect `BaseServlet` to `.getId`, `AdminRevenueServlet`, `RequestDAO`, `Dependent`, `UserSessionDTO`, `ManagerRoomsServlet.java`, `ContractService`, `PostInteractionService`, `AdminFacilityServlet`, `AdminNotificationServlet`, `.sendError`, `NotFoundException.java`, `.trim`, `ResetPasswordServlet.java`, `.doGet`, `PaymentServlet.java`, `HttpServlet`, `UserServiceImpl.java`, `ManagerDashboardServlet.java`, `CommunityPostService`, `TenantPostDetailServlet.java`, `TenantMyPostsServlet.java`, `.doPost`, `AdminSystemConfigServlet.java`, `.doPost`, `OperatorDashboardServlet.java`, `.doPost`, `UserSessionDTO.java`, `PageDTO`, `UserDAO`, `PaymentService`, `.doPost`, `RoomService`, `TenantCommentServlet.java`, `TenantDeletePostServlet.java`, `TenantLikeServlet.java`?**
+  _High betweenness centrality (0.112) - this node is a cross-community bridge._
+- **Why does `Request` connect `Request` to `RequestServiceImpl`, `OperatorDashboardServlet.java`, `.doPost`, `EditIncidentReportServlet.java`, `.trim`, `.insert`, `RequestDAO`, `.doPost`, `BaseServlet`?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `User` connect `User` to `.login`, `.insert`, `Contract`, `.findById`, `UserServiceImpl.java`, `PageDTO`, `PersonnelDAO`, `UserDAO`, `.mapRow`, `BaseServlet`, `UserSessionDTO`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+- **What connects `update-agent-context.sh script`, `STATIC_ASSETS`, `Answer` to the rest of the system?**
+  _20 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `DebtDetailDTO` be split into smaller, more focused modules?**
+  _Cohesion score 0.04460093896713615 - nodes in this community are weakly interconnected._
+- **Should `.findById` be split into smaller, more focused modules?**
+  _Cohesion score 0.04878048780487805 - nodes in this community are weakly interconnected._
+- **Should `Invoice` be split into smaller, more focused modules?**
+  _Cohesion score 0.07827260458839407 - nodes in this community are weakly interconnected._

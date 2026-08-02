@@ -143,14 +143,16 @@
                                                                             </span>
                                                                         </c:when>
                                                                         <c:otherwise>
-                                                                            <a href="${ctx}/operator/meter-readings/update?roomCode=${item.roomCode}"
-                                                                                class="btn-mintlify-secondary text-decoration-none"
-                                                                                style="padding:4px 12px; font-size:12px;">
-                                                                                <c:choose>
-                                                                                    <c:when test="${item.status != 'DA_CAP_NHAT'}">Cập nhật</c:when>
-                                                                                    <c:otherwise>Sửa</c:otherwise>
-                                                                                </c:choose>
-                                                                            </a>
+                                                                            <c:choose>
+                                                                                <c:when test="${item.status != 'DA_CAP_NHAT'}">
+                                                                                    <a href="${ctx}/operator/meter-readings/update?roomCode=${item.roomCode}"
+                                                                                        class="btn-mintlify-secondary text-decoration-none"
+                                                                                        style="padding:4px 12px; font-size:12px;">Cập nhật</a>
+                                                                                </c:when>
+                                                                                <c:otherwise>
+                                                                                    <span class="text-muted" style="font-size:12px; font-style:italic;">(Vào lịch sử để sửa)</span>
+                                                                                </c:otherwise>
+                                                                            </c:choose>
                                                                         </c:otherwise>
                                                                     </c:choose>
                                                                 </td>

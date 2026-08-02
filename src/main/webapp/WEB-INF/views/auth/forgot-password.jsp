@@ -60,26 +60,31 @@
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
+// Lắng nghe sự kiện Submit (nhấn nút Gửi) trên form
 document.getElementById('forgotPasswordForm').addEventListener('submit', function (e) {
+    // Ngăn không cho form submit theo cách truyền thống (không làm tải lại trang web)
     e.preventDefault();
     var btn   = document.getElementById('submitBtn');
     var email = document.getElementById('email').value;
 
+    // Đổi trạng thái nút thành "Đang gửi..." để tránh người dùng click spam nhiều lần
     btn.disabled  = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> \u0110ang g\u1EED\u0069...';
 
+    // Gọi API ngầm (AJAX) xuống Backend thay vì submit vào ForgotPasswordServlet.doPost
     fetch('${ctx}/api/v1/auth/forgot-password', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept':        'application/json',
-            'X-CSRF-Token':  '${csrfToken}'
+            'X-CSRF-Token':  '${csrfToken}' // Gửi kèm token chống tấn công giả mạo (CSRF)
         },
-        body: JSON.stringify({ email: email })
+        body: JSON.stringify({ email: email }) // Đóng gói email thành dạng JSON gửi đi
     })
     .then(function (r) { return r.json(); })
     .then(function (data) {
         if (data.success) {
+            // Thành công: Ẩn form nhập liệu và Hiện giao diện thông báo check email
             document.getElementById('forgotPasswordForm').style.display = 'none';
             document.getElementById('successState').style.display = 'block';
             document.getElementById('successMessageText').innerHTML =

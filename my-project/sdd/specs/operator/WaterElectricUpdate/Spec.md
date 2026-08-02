@@ -10,29 +10,61 @@
 
 ## 1. Business Context
 
-Nhân viên vận hành cần cập nhật chỉ số điện và nước định kỳ cho từng phòng (bao gồm cả phòng đang cho thuê và phòng trống chưa có người thuê) để theo dõi mức tiêu thụ liên tục và phục vụ việc tính hóa đơn hàng tháng.
-
-Hệ thống phải lưu lại chỉ số mới, hình ảnh công tơ làm minh chứng và lịch sử cập nhật nhằm đảm bảo tính minh bạch, hỗ trợ đối soát dữ liệu và xử lý khi phát sinh tranh chấp.
+Nhân viên vận hành thỉnh thoảng có thể nhập sai chỉ số điện nước hoặc tải nhầm ảnh minh chứng. Tính năng này cho phép nhân viên vận hành "Sửa" lại một bản ghi chỉ số điện nước ĐÃ NHẬP trước đó. 
+Hệ thống sẽ lấy chính xác các dữ liệu (chỉ số, hình ảnh) của bản ghi đó hiển thị lên form để nhân viên có thể điều chỉnh lại cho đúng (thay vì nhập chỉ số mới cho tháng tiếp theo - đây là một tính năng khác).
+Bên cạnh đó, tính năng này còn hỗ trợ xử lý nghiệp vụ **Thay công tơ mới** (do công tơ cũ bị hỏng) hoặc **Công tơ chạy hết vòng quay (Rollover)** khi phát hiện chỉ số mới nhập vào nhỏ hơn chỉ số kỳ trước.
 
 ---
 
 ## 2. User Stories
 
-### Story 1 (Happy Path)
+### Story 1 (Happy Path - Chỉnh sửa)
 
 **As a** nhân viên vận hành,
 
-**I want to** cập nhật chỉ số điện nước của phòng,
+**I want to** sửa lại thông tin của một bản ghi chỉ số điện nước đã nhập,
 
-**so that** hệ thống có dữ liệu tính chi phí điện nước cho kỳ hiện tại.
+**so that** tôi có thể khắc phục các sai sót do nhập liệu nhầm lẫn.
 
-### Story 2 (Validation)
+### Story 2 (Hiển thị dữ liệu cần sửa)
 
 **As a** nhân viên vận hành,
 
-**when** nhập chỉ số mới nhỏ hơn chỉ số kỳ trước,
+**when** tôi click vào nút "Sửa" của một bản ghi,
 
-**I want** hệ thống cảnh báo lỗi để tránh nhập sai dữ liệu.
+**I want** hệ thống hiển thị form điền sẵn toàn bộ dữ liệu hiện tại của bản ghi đó (chỉ số điện, nước, ảnh),
+
+**so that** tôi biết mình đang sửa cái gì và sửa trên nền dữ liệu cũ.
+
+### Story 3 (Validation & Xử lý bất thường)
+
+**As a** nhân viên vận hành,
+
+**when** tôi sửa chỉ số nhỏ hơn chỉ số của tháng liền kề trước đó,
+
+**I want** hệ thống hiển thị cảnh báo và cho phép tôi chọn lý do (Nhập sai, Thay công tơ, Công tơ quay vòng),
+
+**so that** tôi có thể xử lý các nghiệp vụ đặc biệt mà hệ thống vẫn tính đúng số lượng tiêu thụ.
+
+### Story 4 (Thay công tơ mới)
+
+**As a** nhân viên vận hành,
+
+**when** tôi chọn lý do "Thay công tơ",
+
+**I want** hệ thống hiển thị thêm ô nhập "Chỉ số chốt công tơ cũ" và "Chỉ số bắt đầu công tơ mới",
+
+**so that** hệ thống tính toán chính xác tổng tiêu thụ dựa trên cả hai công tơ.
+
+### Story 5 (Công tơ chạy hết vòng - Rollover)
+
+**As a** nhân viên vận hành,
+
+**when** tôi chọn lý do "Công tơ quay vòng",
+
+**I want** hệ thống hiển thị thông tin "Giới hạn lớn nhất của công tơ" được cố định là 10.000,
+
+**so that** hệ thống tự động cộng dồn chỉ số bị reset qua vòng lặp dựa trên giới hạn chuẩn của nhà trọ.
 
 ### Story 3 (Evidence)
 
@@ -46,105 +78,104 @@ Hệ thống phải lưu lại chỉ số mới, hình ảnh công tơ làm minh
 
 ## 3. Acceptance Criteria (EARS)
 
-### AC01 – Cập nhật thành công
+### AC01 – Hiển thị form điền sẵn dữ liệu
 
-**WHEN** người dùng nhập mã phòng hợp lệ, chỉ số điện mới hợp lệ, chỉ số nước mới hợp lệ và tải đủ ảnh công tơ
-
+**WHEN** người dùng truy cập vào màn hình sửa chỉ số điện nước (ví dụ qua URL có chứa `meterId`)
 **THE SYSTEM SHALL**
+- Truy xuất bản ghi `meter_readings` tương ứng với `meterId`.
+- Hiển thị form với dữ liệu đã được điền sẵn (pre-filled):
+  - Số điện đã nhập của bản ghi này.
+  - Số nước đã nhập của bản ghi này.
+  - Ảnh minh chứng điện đã upload của bản ghi này.
+  - Ảnh minh chứng nước đã upload của bản ghi này.
 
-- Lấy chỉ số điện kỳ trước từ cơ sở dữ liệu.
-- Lấy chỉ số nước kỳ trước từ cơ sở dữ liệu.
-- Lưu chỉ số điện mới.
-- Lưu chỉ số nước mới.
-- Lưu ảnh công tơ điện.
-- Lưu ảnh công tơ nước.
-- Ghi nhận thời gian cập nhật.
-- Ghi nhận người thực hiện cập nhật.
-- Đặt trạng thái bản ghi là `UPDATED`.
+### AC02 – Lưu thông tin chỉnh sửa thành công
 
-**AND** trả về HTTP 200.
+**WHEN** người dùng sửa các chỉ số hợp lệ (hoặc upload ảnh mới nếu muốn đổi ảnh) và nhấn Lưu
+**THE SYSTEM SHALL**
+- Cập nhật đè lên bản ghi `meter_readings` đang sửa (`meterId`).
+- Thay thế ảnh công tơ mới (nếu người dùng có chọn upload ảnh mới, nếu không chọn thì giữ nguyên ảnh cũ).
+- Cập nhật thời gian chỉnh sửa (`updatedAt`) và người chỉnh sửa.
+**AND** trả về HTTP 200 / Redirect về trang danh sách với thông báo thành công.
 
-### AC02 – Chỉ số điện không hợp lệ
+### AC03 – Chỉ số điện/nước không hợp lệ (Bất thường)
 
-**WHEN** chỉ số điện mới nhỏ hơn chỉ số điện kỳ trước
+**WHEN** chỉ số điện hoặc nước được sửa nhỏ hơn chỉ số của tháng liền trước đó (nếu có)
+**THE SYSTEM SHALL** cảnh báo người dùng và hiển thị dropdown "Lý do chỉ số bất thường":
+1. **Nhập sai:** Hiển thị lỗi, không cho phép lưu (Hành vi mặc định).
+2. **Thay công tơ mới:** Hiển thị thêm 2 ô nhập liệu: `Chỉ số chốt công tơ cũ` và `Chỉ số bắt đầu công tơ mới`.
+3. **Công tơ quay vòng:** Hiển thị thông báo giới hạn công tơ được cố định là 10.000.
 
-**THE SYSTEM SHALL** trả về HTTP 400 với mã lỗi:
+### AC04 – Tính toán tiêu thụ khi thay công tơ
 
-```text
-ELECTRIC_READING_INVALID
-```
+**WHEN** người dùng chọn "Thay công tơ mới" và điền đầy đủ số chốt cũ, số bắt đầu mới
+**THE SYSTEM SHALL**
+- Validate: `Chỉ số chốt cũ` >= `Chỉ số tháng trước`.
+- Validate: `Chỉ số cuối tháng (số mới)` >= `Chỉ số bắt đầu mới`.
+- Lưu trữ các thông tin này vào cơ sở dữ liệu.
 
-### AC03 – Chỉ số nước không hợp lệ
+### AC04b – Tính toán tiêu thụ khi công tơ quay vòng
 
-**WHEN** chỉ số nước mới nhỏ hơn chỉ số nước kỳ trước
+**WHEN** người dùng chọn "Công tơ quay vòng"
+**THE SYSTEM SHALL**
+- Tự động gán giới hạn công tơ `maxLimit` = 10000 ở phía Backend để tránh bị thay đổi từ Frontend.
+- Validate: `Chỉ số tháng trước` < 10000.
+- Validate: `Chỉ số cuối tháng (số mới)` < 10000.
+- Lưu trữ thông tin giới hạn 10000 vào cơ sở dữ liệu.
 
-**THE SYSTEM SHALL** trả về HTTP 400 với mã lỗi:
+### AC05 – Validation ảnh
 
-```text
-WATER_READING_INVALID
-```
+**WHEN** người dùng không tải ảnh mới lên
+**THE SYSTEM SHALL** giữ nguyên ảnh cũ đã có của bản ghi (không báo lỗi thiếu ảnh vì ảnh đã có sẵn từ trước).
 
-### AC04 – Thiếu ảnh công tơ điện
+### AC06 – Bản ghi không tồn tại
 
-**WHEN** người dùng không tải lên ảnh công tơ điện
+**WHEN** truyền sai `meterId` không có trong hệ thống
+**THE SYSTEM SHALL** trả về thông báo lỗi "Không tìm thấy bản ghi" hoặc HTTP 404.
 
-**THE SYSTEM SHALL** trả về HTTP 400 với mã lỗi:
+### AC07 – Chặn sửa khi hóa đơn đã thanh toán
 
-```text
-ELECTRIC_METER_IMAGE_REQUIRED
-```
-
-### AC05 – Thiếu ảnh công tơ nước
-
-**WHEN** người dùng không tải lên ảnh công tơ nước
-
-**THE SYSTEM SHALL** trả về HTTP 400 với mã lỗi:
-
-```text
-WATER_METER_IMAGE_REQUIRED
-```
-
-### AC06 – Mã phòng không tồn tại
-
-**WHEN** người dùng nhập mã phòng không tồn tại
-
-**THE SYSTEM SHALL** trả về HTTP 404 với mã lỗi:
-
-```text
-ROOM_NOT_FOUND
-```
-
-### AC07 – Cập nhật phòng trống (Chưa có người thuê)
-
-**WHEN** người dùng cập nhật chỉ số cho phòng có trạng thái trống (ví dụ: AVAILABLE)
-
-**THE SYSTEM SHALL** vẫn cho phép quá trình cập nhật diễn ra bình thường theo luồng AC01 mà không bị chặn, nhằm đảm bảo lịch sử chỉ số điện nước luôn liên tục ngay cả khi không có khách thuê.
+**WHEN** hóa đơn tương ứng với bản ghi này đã chuyển trạng thái `PAID`
+**THE SYSTEM SHALL** chặn việc chỉnh sửa và hiển thị thông báo lỗi "Không thể sửa chỉ số vì hóa đơn đã được thanh toán".
 
 ---
 
 ## 4. Giao tiếp Hệ thống (System Flow)
 
 ### Đường dẫn (Endpoint)
-* **Endpoint:** `POST /operator/meter-readings/update`
+* **Endpoint (Hiển thị form):** `GET /operator/meter-readings/update` (nhận tham số `meterId` thay vì hoặc cùng với `roomCode`)
+* **Endpoint (Xử lý cập nhật):** `POST /operator/meter-readings/update`
 * **Loại dữ liệu (Content-Type):** `multipart/form-data` (form submit chứa file ảnh)
 
-### Request Form Data
-* `roomId` / `roomCode` (text/number, bắt buộc)
-* `newElectricReading` (number, bắt buộc)
-* `newWaterReading` (number, bắt buộc)
-* `electricMeterImage` (file, bắt buộc)
-* `waterMeterImage` (file, bắt buộc)
+### Request Dữ liệu (GET)
+* `meterId` (number, bắt buộc) để xác định chính xác bản ghi cần sửa.
+
+### Request Form Data (POST)
+* `meterId` (number, bắt buộc)
+* `electric` (number, bắt buộc)
+* `electricStatus` (string: NORMAL, REPLACED, ROLLOVER)
+* `electricOldFinal` (number, bắt buộc nếu REPLACED)
+* `electricNewStart` (number, bắt buộc nếu REPLACED)
+* `electricMaxLimit` (number, bắt buộc nếu ROLLOVER)
+* `water` (number, bắt buộc)
+* `waterStatus` (string: NORMAL, REPLACED, ROLLOVER)
+* `waterOldFinal` (number, bắt buộc nếu REPLACED)
+* `waterNewStart` (number, bắt buộc nếu REPLACED)
+* `waterMaxLimit` (number, bắt buộc nếu ROLLOVER)
+* `electricMeterImage` (file, tùy chọn - nếu không gửi thì giữ ảnh cũ)
+* `waterMeterImage` (file, tùy chọn - nếu không gửi thì giữ ảnh cũ)
 
 ### Phản hồi Hệ thống (System Response)
-* **Thành công (OK):** Forward hoặc Redirect về trang danh sách `/operator/meter-readings` kèm thông báo thành công `successMessage`.
-* **Thất bại (Validation Error/Exception):** Forward lại trang JSP hiện tại kèm theo attribute `errorMessage` tương ứng với lỗi nghiệp vụ.
+* **Hiển thị form thành công (GET):** Forward tới trang JSP cập nhật kèm theo dữ liệu `electric`, `water`, `electricImg`, `waterImg` đang có sẵn.
+* **Cập nhật thành công (POST):** Redirect về trang danh sách.
+* **Cập nhật thất bại:** Trở lại form kèm thông báo lỗi.
 
 ---
 
 ## 5. Technical Constraints
 
 - Chỉ số điện và nước phải là số nguyên không âm.
-- Chỉ số mới phải lớn hơn hoặc bằng chỉ số kỳ trước.
+- Chỉ số mới mặc định phải lớn hơn hoặc bằng chỉ số kỳ trước. Trừ khi Trạng thái công tơ là `REPLACED` hoặc `ROLLOVER`.
 - Chỉ chấp nhận file ảnh JPG, JPEG hoặc PNG.
 - Kích thước mỗi ảnh tối đa 5MB.
 - Thời gian phản hồi tối đa 500ms (P95).
@@ -158,26 +189,28 @@ ROOM_NOT_FOUND
 
 | Trường | Kiểu dữ liệu | Bắt buộc |
 |---------|-------------|----------|
-| roomCode | String | Yes |
-| newElectricReading | Integer | Yes |
-| newWaterReading | Integer | Yes |
-| electricMeterImage | File | Yes |
-| waterMeterImage | File | Yes |
+| meterId | Integer | Yes (Hidden) |
+| electric | Integer | Yes |
+| electricStatus | String | Yes (NORMAL, REPLACED, ROLLOVER) |
+| electricOldFinal | Integer | Nếu Status = REPLACED |
+| electricNewStart | Integer | Nếu Status = REPLACED |
+| electricMaxLimit | Integer | Nếu Status = ROLLOVER |
+| water | Integer | Yes |
+| waterStatus | String | Yes (NORMAL, REPLACED, ROLLOVER) |
+| waterOldFinal | Integer | Nếu Status = REPLACED |
+| waterNewStart | Integer | Nếu Status = REPLACED |
+| waterMaxLimit | Integer | Nếu Status = ROLLOVER |
+| electricMeterImage | File | No (Chỉ upload khi đổi ảnh) |
+| waterMeterImage | File | No (Chỉ upload khi đổi ảnh) |
 
-### Dữ liệu đọc tự động từ DB
+### Dữ liệu đọc tự động từ DB (Dùng để hiển thị Form Sửa)
 
-| Trường |
-|---------|
-| previousElectricReading |
-| previousWaterReading |
-
-### Dữ liệu hệ thống tự sinh
-
-| Trường |
-|---------|
-| status |
-| updatedAt |
-| updatedBy |
+| Trường | Mô tả |
+|---------|---------|
+| currentElectric | Chỉ số điện đang lưu trong DB của bản ghi này |
+| currentWater | Chỉ số nước đang lưu trong DB của bản ghi này |
+| currentElectricImg | Hình ảnh điện đang lưu trong DB của bản ghi này |
+| currentWaterImg | Hình ảnh nước đang lưu trong DB của bản ghi này |
 
 ---
 

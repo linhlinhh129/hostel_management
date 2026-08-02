@@ -135,6 +135,16 @@ BEGIN
         room_id             INT                 NOT NULL,
         electric            INT                 NOT NULL,
         water               INT                 NOT NULL,
+        electric_usage      INT                 NULL, -- Lượng điện tiêu thụ thực tế trong kỳ
+        water_usage         INT                 NULL, -- Lượng nước tiêu thụ thực tế trong kỳ
+        electric_status     NVARCHAR(20)        NOT NULL DEFAULT 'NORMAL', -- Trạng thái: NORMAL, REPLACED (Thay công tơ), ROLLOVER (Quay hết vòng)
+        electric_old_final  INT                 NULL, -- Số chốt cuối của công tơ điện cũ (khi REPLACED)
+        electric_new_start  INT                 NULL, -- Số bắt đầu của công tơ điện mới (khi REPLACED)
+        electric_max_limit  INT                 NULL, -- Giới hạn tối đa của công tơ điện (khi ROLLOVER, vd: 10000)
+        water_status        NVARCHAR(20)        NOT NULL DEFAULT 'NORMAL', -- Trạng thái: NORMAL, REPLACED, ROLLOVER
+        water_old_final     INT                 NULL, -- Số chốt cuối của công tơ nước cũ (khi REPLACED)
+        water_new_start     INT                 NULL, -- Số bắt đầu của công tơ nước mới (khi REPLACED)
+        water_max_limit     INT                 NULL, -- Giới hạn tối đa của công tơ nước (khi ROLLOVER, vd: 10000)
         reading_date        DATE                NOT NULL,
         status              NVARCHAR(20)        NOT NULL DEFAULT 'UPDATED',
         created_by          INT                 NULL, -- Nhân viên chốt số

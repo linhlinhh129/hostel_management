@@ -20,10 +20,9 @@ import java.util.HashMap;
 public class UserDAO extends BaseDAO {
 
     /**
-     * Map ResultSet sang User — chỉ dùng các cột thực tế có trong schema.sql.
-     * Schema columns: user_id, username, password_hash, role, full_name, email, phone,
-     *   status, avatar_url, force_change_pass, identity_number, dob, gender,
-     *   permanent_address, created_at, updated_at, deleted_at
+     * Hàm tiện ích: Đọc từng dòng dữ liệu từ ResultSet (lấy từ Database)
+     * và chuyển đổi (map) nó thành một đối tượng Java (User).
+     * Chỉ map các cột thực tế có trong bảng users.
      */
     private User mapRow(ResultSet rs) throws Exception {
         User user = new User();
@@ -47,6 +46,10 @@ public class UserDAO extends BaseDAO {
         return user;
     }
 
+    /**
+     * Tìm kiếm người dùng dựa trên tên đăng nhập (username).
+     * Bỏ qua các tài khoản đã bị xóa mềm (deleted_at IS NULL).
+     */
     public Optional<User> findByUsername(String username) {
         String sql = "SELECT * FROM dbo.users WHERE username = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -63,6 +66,9 @@ public class UserDAO extends BaseDAO {
         return Optional.empty();
     }
 
+    /**
+     * Tìm kiếm thông tin chi tiết của người dùng dựa vào mã ID.
+     */
     public Optional<User> findById(int id) {
         String sql = "SELECT * FROM dbo.users WHERE user_id = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -79,6 +85,9 @@ public class UserDAO extends BaseDAO {
         return Optional.empty();
     }
 
+    /**
+     * Tìm kiếm người dùng dựa vào địa chỉ email (phục vụ chức năng Quên mật khẩu).
+     */
     public Optional<User> findByEmail(String email) {
         String sql = "SELECT * FROM dbo.users WHERE email = ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -96,7 +105,7 @@ public class UserDAO extends BaseDAO {
     }
 
     /**
-     * Cập nhật trạng thái tài khoản (ACTIVE / LOCKED / INACTIVE).
+     * Cập nhật trạng thái tài khoản (ACTIVE: Hoạt động / LOCKED: Khóa / INACTIVE: Vô hiệu hóa).
      */
     public void updateStatus(int userId, String status) {
         String sql = "UPDATE dbo.users SET status = ?, updated_at = GETDATE() WHERE user_id = ?";
@@ -111,7 +120,8 @@ public class UserDAO extends BaseDAO {
     }
 
     /**
-     * Xóa cờ force_change_pass sau khi người dùng đổi mật khẩu lần đầu thành công.
+     * Xóa cờ ép buộc đổi mật khẩu (force_change_pass = 0)
+     * Thường gọi khi người dùng đăng nhập lần đầu và đã đổi mật khẩu thành công.
      */
     public void clearForceChangePass(int userId) {
         String sql = "UPDATE dbo.users SET force_change_pass = 0, updated_at = GETDATE() WHERE user_id = ?";
@@ -125,7 +135,8 @@ public class UserDAO extends BaseDAO {
     }
 
     /**
-     * Cập nhật password hash sau khi người dùng đổi mật khẩu.
+     * Cập nhật mật khẩu mới (đã mã hóa) vào cơ sở dữ liệu.
+     * Đồng thời tắt luôn cờ ép buộc đổi mật khẩu (force_change_pass = 0).
      */
     public void updatePassword(int userId, String newPasswordHash) {
         String sql = "UPDATE dbo.users SET password_hash = ?, force_change_pass = 0, updated_at = GETDATE() WHERE user_id = ?";
@@ -140,7 +151,7 @@ public class UserDAO extends BaseDAO {
     }
 
     /**
-     * Cập nhật thông tin hồ sơ người dùng.
+     * Lưu thông tin cá nhân của người dùng từ form Profile xuống Database.
      */
     public void updateProfile(User user) {
         String sql = "UPDATE dbo.users SET full_name = ?, phone = ?, avatar_url = ?, identity_number = ?, dob = ?, gender = ?, permanent_address = ?, updated_at = GETDATE() WHERE user_id = ?";
@@ -164,6 +175,11 @@ public class UserDAO extends BaseDAO {
         }
     }
 
+    /**
+     * Đếm tổng số lượng khách thuê (TENANT) thuộc quyền quản lý của một Manager.
+     * Hỗ trợ tìm kiếm theo từ khóa (tên, sđt, email, mã phòng) và lọc theo trạng thái.
+     * Dùng để phân trang ở giao diện quản lý khách thuê.
+     */
     public int countTenants(int managerId, String keyword, String status) {
         int totalCount = 0;
         StringBuilder whereClause = new StringBuilder(
@@ -208,6 +224,10 @@ public class UserDAO extends BaseDAO {
         return totalCount;
     }
 
+    /**
+     * Lấy danh sách khách thuê (TENANT) có phân trang (offset, limit).
+     * Kết bảng với phòng (rooms) để hiển thị thông tin phòng đang thuê.
+     */
     public List<Map<String, Object>> getTenants(int managerId, String keyword, String status, int offset, int limit) {
         List<Map<String, Object>> tenants = new ArrayList<>();
         StringBuilder whereClause = new StringBuilder(
@@ -270,6 +290,10 @@ public class UserDAO extends BaseDAO {
         return tenants;
     }
 
+    /**
+     * Lấy toàn bộ thông tin chi tiết của một khách thuê (tenantId).
+     * Bao gồm cả thông tin phòng và hợp đồng mới nhất (nếu có).
+     */
     public Map<String, Object> getTenantDetail(int tenantId) {
         Map<String, Object> tenant = null;
         String tenantSql = "SELECT u.*, r.room_id, r.code AS room_code, r.contract_start_date, " +
@@ -308,6 +332,10 @@ public class UserDAO extends BaseDAO {
         return tenant;
     }
 
+    /**
+     * Kiểm tra quyền: Manager này có quyền sửa thông tin của Tenant này hay không?
+     * Chỉ được sửa khi Tenant đang thuê phòng thuộc cơ sở do Manager quản lý.
+     */
     public boolean verifyTenantEditPermission(int tenantId, int managerId) {
         String verifySql = 
             "SELECT 1 FROM dbo.users u " +
@@ -327,6 +355,9 @@ public class UserDAO extends BaseDAO {
         }
     }
 
+    /**
+     * Kiểm tra xem địa chỉ email đã bị người khác sử dụng hay chưa (ngoại trừ user hiện tại).
+     */
     public boolean isDuplicateEmail(String email, int tenantId) {
         String duplicateSql = "SELECT user_id FROM dbo.users WHERE (username = ? OR email = ?) AND user_id != ? AND deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -343,6 +374,9 @@ public class UserDAO extends BaseDAO {
         }
     }
 
+    /**
+     * Cập nhật thông tin của Khách thuê (Tenant) - thường được gọi từ màn hình Quản lý của Manager.
+     */
     public boolean updateTenantInfo(int tenantId, String username, String email, String fullName, String phone, String identityNumber, LocalDate dob, String gender, String permanentAddress) {
         String updateSql = 
             "UPDATE dbo.users SET username = ?, email = ?, full_name = ?, phone = ?, identity_number = ?, " +
@@ -366,6 +400,9 @@ public class UserDAO extends BaseDAO {
         }
     }
 
+    /**
+     * Xóa mềm khách thuê (soft delete): Không xóa hẳn dữ liệu mà chỉ đánh dấu thời gian xóa vào cột deleted_at.
+     */
     public boolean softDeleteTenant(int tenantId) {
         String sql = "UPDATE dbo.users SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE user_id = ? AND role = 'TENANT'";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -378,27 +415,34 @@ public class UserDAO extends BaseDAO {
         }
     }
 
+    /**
+     * Kết thúc phiên giao dịch thuê phòng của khách thuê:
+     * Bước 1: Trả phòng, set trạng thái phòng thành AVAILABLE.
+     * Bước 2: Chuyển trạng thái khách thuê thành INACTIVE.
+     * Bước 3: Vô hiệu hóa Hợp đồng đang hoạt động thành INACTIVE.
+     * Sử dụng Transaction (conn.setAutoCommit(false)) để đảm bảo nếu lỗi 1 bước thì hoàn tác toàn bộ.
+     */
     public boolean endRentalTransaction(int tenantId) {
         Connection conn = null;
         try {
             conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Release room
+            // 1. Giải phóng phòng (Release room)
             String sqlRoom = "UPDATE dbo.rooms SET tenant_id = NULL, status = 'AVAILABLE', contract_start_date = NULL, contract_end_date = NULL, updated_at = GETDATE() WHERE tenant_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sqlRoom)) {
                 ps.setInt(1, tenantId);
                 ps.executeUpdate();
             }
 
-            // 2. Set tenant's status to INACTIVE
+            // 2. Chuyển trạng thái Khách thuê thành INACTIVE (Không hoạt động)
             String sqlUser = "UPDATE dbo.users SET status = 'INACTIVE', updated_at = GETDATE() WHERE user_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sqlUser)) {
                 ps.setInt(1, tenantId);
                 ps.executeUpdate();
             }
 
-            // 3. Set contract's status to INACTIVE
+            // 3. Chuyển trạng thái Hợp đồng hiện tại thành INACTIVE
             String sqlContract = "UPDATE dbo.contracts SET status = 'INACTIVE', updated_at = GETDATE() WHERE tenant_id = ? AND status = 'ACTIVE'";
             try (PreparedStatement ps = conn.prepareStatement(sqlContract)) {
                 ps.setInt(1, tenantId);
@@ -420,6 +464,10 @@ public class UserDAO extends BaseDAO {
         }
     }
 
+    /**
+     * Lấy danh sách toàn bộ các nhân viên (gồm Quản lý - MANAGER và Vận hành - OPERATOR)
+     * đang có trạng thái hoạt động (ACTIVE).
+     */
     public List<User> getStaffUsers() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM dbo.users WHERE status = 'ACTIVE' AND deleted_at IS NULL AND role IN ('MANAGER', 'OPERATOR')";
@@ -435,6 +483,11 @@ public class UserDAO extends BaseDAO {
         return users;
     }
 
+    /**
+     * Lấy danh sách nhân viên (Quản lý hoặc Vận hành) quản lý cụ thể một Khách thuê (Tenant).
+     * Dựa vào logic: Khách thuê mướn phòng (rooms), phòng nằm trong khu vực (facilities),
+     * khu vực đó do Manager hoặc Operator quản lý.
+     */
     public List<User> getStaffUsersByTenantId(int tenantId) {
         List<User> users = new ArrayList<>();
         String sql = "SELECT u.* FROM dbo.users u " +

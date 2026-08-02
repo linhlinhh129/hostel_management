@@ -25,20 +25,58 @@ public class MeterReadingService {
         return meterReadingDAO.getMeterStatusList(month, year, facility, roomCode, operatorId);
     }
 
-    public boolean insertMeterReading(int roomId, int electric, int water, String electricImg, String waterImg, int createdBy) {
-        return meterReadingDAO.insertMeterReading(roomId, electric, water, electricImg, waterImg, createdBy);
+    public boolean insertMeterReading(MeterStatusDTO dto, int createdBy) {
+        calculateUsage(dto);
+        return meterReadingDAO.insertMeterReading(dto, createdBy);
     }
 
     public Integer checkCurrentMonthReadingExists(int roomId, int month, int year) {
         return meterReadingDAO.checkCurrentMonthReadingExists(roomId, month, year);
     }
 
-    public boolean updateMeterReading(int meterId, int electric, int water, String electricImg, String waterImg) {
-        return meterReadingDAO.updateMeterReading(meterId, electric, water, electricImg, waterImg);
+    public boolean updateMeterReading(MeterStatusDTO dto) {
+        calculateUsage(dto);
+        return meterReadingDAO.updateMeterReading(dto);
+    }
+
+    private void calculateUsage(MeterStatusDTO dto) {
+        int prevElec = dto.getPreviousElectricReading() != null ? dto.getPreviousElectricReading() : 0;
+        int currElec = dto.getCurrentElectricReading() != null ? dto.getCurrentElectricReading() : 0;
+        String eStatus = dto.getElectricStatus();
+        if ("REPLACED".equals(eStatus)) {
+            int oldFinal = dto.getElectricOldFinal() != null ? dto.getElectricOldFinal() : prevElec;
+            int newStart = dto.getElectricNewStart() != null ? dto.getElectricNewStart() : 0;
+            dto.setElectricUsage((oldFinal - prevElec) + (currElec - newStart));
+        } else if ("ROLLOVER".equals(eStatus)) {
+            int maxLimit = 10000;
+            dto.setElectricMaxLimit(maxLimit);
+            dto.setElectricUsage((maxLimit - prevElec) + currElec);
+        } else {
+            dto.setElectricUsage(currElec - prevElec);
+        }
+
+        int prevWater = dto.getPreviousWaterReading() != null ? dto.getPreviousWaterReading() : 0;
+        int currWater = dto.getCurrentWaterReading() != null ? dto.getCurrentWaterReading() : 0;
+        String wStatus = dto.getWaterStatus();
+        if ("REPLACED".equals(wStatus)) {
+            int oldFinal = dto.getWaterOldFinal() != null ? dto.getWaterOldFinal() : prevWater;
+            int newStart = dto.getWaterNewStart() != null ? dto.getWaterNewStart() : 0;
+            dto.setWaterUsage((oldFinal - prevWater) + (currWater - newStart));
+        } else if ("ROLLOVER".equals(wStatus)) {
+            int maxLimit = 10000;
+            dto.setWaterMaxLimit(maxLimit);
+            dto.setWaterUsage((maxLimit - prevWater) + currWater);
+        } else {
+            dto.setWaterUsage(currWater - prevWater);
+        }
     }
 
     public MeterStatusDTO getPreviousReadingByRoomCode(String roomCode) {
         return meterReadingDAO.getPreviousReadingByRoomCode(roomCode);
+    }
+
+    public MeterStatusDTO getReadingForEdit(int meterId) {
+        return meterReadingDAO.getReadingForEdit(meterId);
     }
 
     public MeterStatusDTO getReadingBeforeCurrentMonth(String roomCode, int currentMonth, int currentYear) {

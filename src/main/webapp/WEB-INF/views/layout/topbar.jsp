@@ -58,6 +58,7 @@
             <div class="dropdown-menu">
                 <a href="${ctx}/profile" class="dropdown-item">Hồ sơ cá nhân</a>
                 <div class="dropdown-divider"></div>
+                <!--Nút đăng xuất chính nằm ở đây-->>
                 <a href="${ctx}/logout" class="dropdown-item text-danger">Đăng xuất</a>
             </div>
         </div>

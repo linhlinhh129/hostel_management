@@ -53,3 +53,9 @@ src/main/webapp/META-INF/context.xml
 
 
 tomcat-dist/
+
+# AI workflows and artifacts
+.agents/
+.specify/
+my-project/
+graphify-out/

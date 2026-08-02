@@ -18,17 +18,17 @@
                 <div class="auth-stagger-2">
                     <jsp:include page="/WEB-INF/views/layout/inline_alerts.jsp"/>
                 </div>
-
+                <!--Đây là form của trang login-->
                 <form action="${ctx}/login" method="post" class="auth-stagger-3">
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-
+                    <!--Nhập ô tên đăng nhập-->>
                     <div class="mb-4">
                         <label for="username" class="form-label-modern">Tên đăng nhập</label>
                         <input type="text" class="form-control auth-input" id="username" name="username"
                                value="<c:out value='${username}'/>" placeholder="Nhập tên đăng nhập"
                                required autocomplete="username" maxlength="50">
                     </div>
-
+                    <!--Nhập ô mật khẩu-->
                     <div class="mb-4">
                         <label for="password" class="form-label-modern">Mật khẩu</label>
                         <div class="position-relative">
@@ -51,7 +51,7 @@
                             </span>
                         </div>
                     </div>
-
+                    <!--Link quên mật khẩu và nút submit-->
                     <div class="d-flex justify-content-between align-items-center mb-4 auth-stagger-4">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="remember" name="remember">
@@ -68,6 +68,7 @@
                         </button>
                     </div>
                 </form>
+                <!-- Kết thúc form đăng nhập-->
 
             </div>
         </div>

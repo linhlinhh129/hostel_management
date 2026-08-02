@@ -1,8 +1,8 @@
 # Specification Quality Checklist: WaterElectricUpdate
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-07-27
-**Feature**: [Spec.md](file:///f:/SU26/New%20folder/hostel_management/my-project/sdd/specs/operator/WaterElectricUpdate/Spec.md)
+**Created**: 2026-07-31
+**Feature**: [spec.md](file:///f:/SU26/New%20folder/hostel_management/my-project/sdd/specs/operator/WaterElectricUpdate/spec.md)
 
 ## Content Quality
 
@@ -31,4 +31,4 @@
 
 ## Notes
 
-- Checked off requirements validation. Spec clearly covers that unoccupied rooms (AVAILABLE) can also have their electric and water meters updated.
+- Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`

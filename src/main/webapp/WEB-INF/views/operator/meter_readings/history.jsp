@@ -156,6 +156,16 @@
                                                                 </td>
                                                                 <td>
                                                                     <c:if test="${item.status == 'DA_CAP_NHAT'}">
+                                                                        <c:choose>
+                                                                            <c:when test="${item.invoicePaid}">
+                                                                                <span class="badge-hms badge-success" title="Hóa đơn tháng này đã thanh toán, không thể sửa" style="margin-right: 4px;">🔒 Đã thanh toán</span>
+                                                                            </c:when>
+                                                                            <c:otherwise>
+                                                                                <a href="${ctx}/operator/meter-readings/update?meterId=${item.meterId}"
+                                                                                   class="btn-mintlify-secondary text-decoration-none"
+                                                                                   style="padding:4px 12px; font-size:12px; margin-right: 4px;">Sửa</a>
+                                                                            </c:otherwise>
+                                                                        </c:choose>
                                                                         <button type="button"
                                                                             class="btn-mintlify-secondary"
                                                                             style="padding:4px 12px; font-size:12px;"

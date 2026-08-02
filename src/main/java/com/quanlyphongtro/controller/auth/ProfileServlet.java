@@ -39,26 +39,32 @@ public class ProfileServlet extends BaseServlet {
 
     // ── GET ──────────────────────────────────────────────────────────────
     @Override
+    // Hàm xử lý khi người dùng truy cập trang /profile để xem hồ sơ
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Bước 1: Kiểm tra xem người dùng đã đăng nhập chưa
         UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
+        // Bước 2: Lấy thông tin mới nhất của người dùng từ Database
         Optional<User> userOpt = userDAO.findById(currentUser.getId());
         userOpt.ifPresent(u -> request.setAttribute("userProfile", u));
 
+        // Bước 3: Mở file giao diện profile.jsp và truyền dữ liệu sang để hiển thị
         request.getRequestDispatcher("/WEB-INF/views/common/profile.jsp").forward(request, response);
     }
 
     // ── POST ─────────────────────────────────────────────────────────────
     @Override
+    // Hàm xử lý khi người dùng bấm Submit ở 1 trong 2 form (Cập nhật thông tin HOẶC Đổi mật khẩu)
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(request);
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -67,8 +73,10 @@ public class ProfileServlet extends BaseServlet {
 
         request.setCharacterEncoding("UTF-8");
         try {
+            // Lấy biến action để xem người dùng đang gửi Form nào lên
             String action = request.getParameter("action");
 
+            // Lấy thông tin người dùng từ DB để chuẩn bị cập nhật
             Optional<User> userOpt = userDAO.findById(currentUser.getId());
             if (userOpt.isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/login");
@@ -76,9 +84,10 @@ public class ProfileServlet extends BaseServlet {
             }
             User user = userOpt.get();
 
-            // ── update_profile ───────────────────────────────────────────
+            // ── LUỒNG 1: XỬ LÝ FORM CẬP NHẬT THÔNG TIN CÁ NHÂN ───────────────────────────────────────────
             if ("update_profile".equals(action)) {
 
+                // Lấy các dữ liệu từ form gửi lên
                 String fullName        = request.getParameter("fullName");
                 String phone           = request.getParameter("phone");
                 String identityNumber  = request.getParameter("identityNumber");
@@ -124,22 +133,25 @@ public class ProfileServlet extends BaseServlet {
                 user.setGender(gender);
                 user.setPermanentAddress(permanentAddress);
 
-                // Avatar upload
+                // --- XỬ LÝ UPLOAD ẢNH ĐẠI DIỆN ---
                 Part filePart = request.getPart("avatar");
                 if (filePart != null && filePart.getSize() > 0) {
+                    // Xác định thư mục lưu ảnh trên Server
                     String uploadPath = getServletContext().getRealPath("")
                             + File.separator + "uploads" + File.separator + "avatars";
                     File uploadDir = new File(uploadPath);
                     if (!uploadDir.exists()) uploadDir.mkdirs();
 
+                    // Tạo tên file ngẫu nhiên bằng UUID để chống trùng tên
                     String fileName = UUID.randomUUID() + "_" + extractFileName(filePart);
                     filePart.write(uploadPath + File.separator + fileName);
                     user.setAvatarUrl("/uploads/avatars/" + fileName);
                 }
 
+                // Cập nhật thông tin xuống Database
                 userDAO.updateProfile(user);
 
-                // Sync session
+                // --- ĐỒNG BỘ LẠI SESSION (Để góc phải trên cùng cập nhật tên và ảnh ngay lập tức) ---
                 currentUser.setFullName(user.getFullName());
                 currentUser.setAvatarUrl(user.getAvatarUrl());
                 currentUser.setInitials(UserSessionDTO.extractInitials(user.getFullName()));
@@ -149,43 +161,51 @@ public class ProfileServlet extends BaseServlet {
                 setFlashMessage(request, "success", "Cập nhật thông tin hồ sơ thành công!");
                 response.sendRedirect(request.getContextPath() + "/profile");
 
-            // ── change_password ──────────────────────────────────────────
+            // ── LUỒNG 2: XỬ LÝ FORM ĐỔI MẬT KHẨU ──────────────────────────────────────────
             } else if ("change_password".equals(action)) {
 
+                // Lấy mật khẩu cũ và mới từ form
                 String currentPassword = request.getParameter("currentPassword");
                 String newPassword     = request.getParameter("newPassword");
                 String confirmPassword = request.getParameter("confirmPassword");
 
+                // Kiểm tra mật khẩu mới có đủ mạnh không
                 if (!PasswordValidator.isValid(newPassword)) {
                     setFlashMessage(request, "error",
                         "Mật khẩu mới không đạt chuẩn bảo mật (cần ít nhất 8 ký tự, có chữ hoa, chữ số và ký tự đặc biệt).");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
+                // Kiểm tra 2 ô mật khẩu mới có khớp nhau không
                 if (!newPassword.equals(confirmPassword)) {
                     setFlashMessage(request, "error", "Xác nhận mật khẩu mới không khớp!");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
+                // Kiểm tra xem có trùng mật khẩu cũ không
                 if (newPassword.equals(currentPassword)) {
                     setFlashMessage(request, "error", "Mật khẩu mới không được trùng với mật khẩu cũ.");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
+                // Quan trọng nhất: Kiểm tra mật khẩu HIỆN TẠI (cũ) nhập vào có đúng không
                 if (!PasswordUtil.verify(currentPassword, user.getPasswordHash())) {
                     setFlashMessage(request, "error", "Mật khẩu hiện tại không chính xác!");
                     response.sendRedirect(request.getContextPath() + "/profile");
                     return;
                 }
 
+                // Nếu mọi thứ hợp lệ -> Băm mật khẩu mới và lưu xuống Database
                 userDAO.updatePassword(user.getId(), PasswordUtil.hash(newPassword));
 
+                // Cập nhật session (đánh dấu đã đổi mật khẩu nếu là đăng nhập lần đầu)
                 if (currentUser.isFirstLogin()) {
                     currentUser.setFirstLogin(false);
                     HttpSession session = request.getSession(false);
                     if (session != null) session.setAttribute("currentUser", currentUser);
                 }
 
+                // Báo thành công và tải lại trang
                 setFlashMessage(request, "success", "Đổi mật khẩu thành công!");
                 response.sendRedirect(request.getContextPath() + "/profile");
 
@@ -199,7 +219,7 @@ public class ProfileServlet extends BaseServlet {
             response.sendRedirect(request.getContextPath() + "/profile");
         }
     }
-
+    //validate đuôi dẫn ảnh
     // ── helpers ──────────────────────────────────────────────────────────
     private String extractFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
