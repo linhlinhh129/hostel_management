@@ -23,18 +23,18 @@ public class InvoiceDetailServlet extends BaseServlet {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         String[] parts = pathInfo.split("/");
         if (parts.length < 2) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         try {
             int invoiceId = Integer.parseInt(parts[1]);
             UserSessionDTO user = getCurrentUser(req);
             InvoiceDetailDTO invoice = invoiceService.getInvoiceDetail(user.getId(), invoiceId);
-            
+
             if (parts.length == 3 && "edit".equals(parts[2])) {
                 req.setAttribute("invoice", invoice);
                 req.getRequestDispatcher("/WEB-INF/views/manager/invoices/edit.jsp").forward(req, resp);
@@ -68,7 +68,7 @@ public class InvoiceDetailServlet extends BaseServlet {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         String[] parts = pathInfo.split("/");
         if (parts.length == 3 && "edit".equals(parts[2])) {
             try {
@@ -93,7 +93,7 @@ public class InvoiceDetailServlet extends BaseServlet {
                 int invoiceId = Integer.parseInt(parts[1]);
                 UserSessionDTO user = getCurrentUser(req);
                 String status = req.getParameter("status");
-                
+
                 invoiceService.updateStatus(user.getId(), invoiceId, status);
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices/" + invoiceId);
             } catch (Exception e) {

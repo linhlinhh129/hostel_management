@@ -571,6 +571,11 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        if (!ValidationUtil.isValidFullName(fullName)) {
+            setFlashMessage(req, "danger", "Họ và tên chỉ được chứa chữ cái và khoảng trắng, không được chứa số hoặc ký tự đặc biệt.");
+            resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
+            return;
+        }
         if (!ValidationUtil.isValidVnPhone(phone)) {
             setFlashMessage(req, "danger", "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);

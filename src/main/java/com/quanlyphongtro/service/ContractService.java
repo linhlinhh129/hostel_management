@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service;
+
 import com.quanlyphongtro.model.Room;
 import java.time.LocalDate;
 
@@ -9,6 +10,10 @@ import java.util.Map;
 
 public interface ContractService {
     List<Contract> getContractsByManager(int managerId, String searchName);
+
+    List<Contract> getContractsByManager(int managerId, String searchName, String expiryStatus);
+
+    int countExpiringContracts(int managerId);
 
     Contract getContractDetail(int contractId, int managerId);
 

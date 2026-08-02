@@ -86,6 +86,11 @@
                     <span class="kpi-value"><fmt:formatNumber value="${totalTenants}" groupingUsed="true"/></span>
                     <span class="kpi-trend"><c:out value="${activeContracts}"/> hợp đồng hiệu lực</span>
                 </div>
+                <a href="${ctx}/manager/contracts?expiryStatus=expiring" class="kpi-surface-card ${expiringContractsCount > 0 ? 'highlight-warning' : ''}" style="text-decoration:none;color:inherit;cursor:pointer;">
+                    <span class="kpi-label">Hợp đồng sắp hết hạn</span>
+                    <span class="kpi-value text-warning"><c:out value="${expiringContractsCount != null ? expiringContractsCount : 0}"/></span>
+                    <span class="kpi-trend">Trong 30 ngày tới →</span>
+                </a>
                 <div class="kpi-surface-card ${overdueInvoices > 0 ? 'highlight-danger' : ''}">
                     <span class="kpi-label">Hóa đơn quá hạn</span>
                     <span class="kpi-value"><fmt:formatNumber value="${overdueInvoices}" groupingUsed="true"/></span>

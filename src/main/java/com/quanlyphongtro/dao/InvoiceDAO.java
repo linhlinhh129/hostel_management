@@ -52,7 +52,8 @@ public class InvoiceDAO extends BaseDAO {
         String sql = "SELECT r.room_id, r.facility_id, r.status, COALESCE(r.tenant_id, c.tenant_id) AS tenant_id, c.contract_id, r.room_fee, f.electricity_price, f.water_price, f.internet_fee, f.service_fee "
                 +
                 "FROM rooms r INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = r.room_id AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY created_at DESC) " +
+                "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = r.room_id AND status = 'ACTIVE' AND deleted_at IS NULL ORDER BY created_at DESC) "
+                +
                 "WHERE r.code = ? AND f.manager_id = ? AND r.deleted_at IS NULL AND f.deleted_at IS NULL";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -97,19 +98,21 @@ public class InvoiceDAO extends BaseDAO {
         int month = Integer.parseInt(billingPeriod.substring(4, 6));
 
         String sql = "SELECT DISTINCT r.room_id, r.code, u.full_name AS tenant_name " +
-                     "FROM rooms r " +
-                     "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                     "INNER JOIN contracts c ON r.room_id = c.room_id AND c.status = 'ACTIVE' AND c.deleted_at IS NULL " +
-                     "LEFT JOIN users u ON c.tenant_id = u.user_id " +
-                     "WHERE f.manager_id = ? " +
-                     "  AND r.status = 'OCCUPIED' " +
-                     "  AND r.deleted_at IS NULL " +
-                     "  AND f.deleted_at IS NULL " +
-                     "  AND NOT EXISTS (SELECT 1 FROM invoices i WHERE i.room_id = r.room_id AND i.deleted_at IS NULL AND i.code LIKE '%-' + ?) " +
-                     "  AND EXISTS (SELECT 1 FROM meter_readings mr WHERE mr.room_id = r.room_id AND mr.deleted_at IS NULL AND YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ?) " +
-                     "ORDER BY r.code ASC";
+                "FROM rooms r " +
+                "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
+                "INNER JOIN contracts c ON r.room_id = c.room_id AND c.status = 'ACTIVE' AND c.deleted_at IS NULL " +
+                "LEFT JOIN users u ON c.tenant_id = u.user_id " +
+                "WHERE f.manager_id = ? " +
+                "  AND r.status = 'OCCUPIED' " +
+                "  AND r.deleted_at IS NULL " +
+                "  AND f.deleted_at IS NULL " +
+                "  AND NOT EXISTS (SELECT 1 FROM invoices i WHERE i.room_id = r.room_id AND i.deleted_at IS NULL AND i.code LIKE '%-' + ?) "
+                +
+                "  AND EXISTS (SELECT 1 FROM meter_readings mr WHERE mr.room_id = r.room_id AND mr.deleted_at IS NULL AND YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ?) "
+                +
+                "ORDER BY r.code ASC";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, managerId);
             ps.setString(2, billingPeriod);
             ps.setInt(3, year);
@@ -383,7 +386,8 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> findByIdAndRoomId(int id, int roomId) {
         String sql = "SELECT i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, mr.electric_img, mr.water_img, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, mr.electric_img, mr.water_img, "
+                +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -655,7 +659,8 @@ public class InvoiceDAO extends BaseDAO {
                     ps.setInt(paramIndex++, year);
                     ps.setInt(paramIndex++, month);
                     ps.setString(paramIndex++, "%-" + billingPeriod);
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
             ps.setInt(paramIndex++, offset);
             ps.setInt(paramIndex++, limit);
@@ -774,7 +779,8 @@ public class InvoiceDAO extends BaseDAO {
                     ps.setInt(paramIndex++, year);
                     ps.setInt(paramIndex++, month);
                     ps.setString(paramIndex++, "%-" + billingPeriod);
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -965,9 +971,11 @@ public class InvoiceDAO extends BaseDAO {
                         Timestamp updated = rs.getTimestamp("updated_at");
                         if (updated != null) {
                             dto.setUpdatedAt(
-                                    updated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                                    updated.toLocalDateTime()
+                                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
                         }
-                    } catch (Exception ignore) {}
+                    } catch (Exception ignore) {
+                    }
                     dto.setUpdatedByName("");
 
                     return dto;
@@ -1069,7 +1077,8 @@ public class InvoiceDAO extends BaseDAO {
                 psMeter.setInt(1, invoice.getInvoiceId());
                 psMeter.executeUpdate();
             } catch (Exception e) {
-                logger.error("Failed to update meter reading status to UPDATED for invoiceId=" + invoice.getInvoiceId(), e);
+                logger.error("Failed to update meter reading status to UPDATED for invoiceId=" + invoice.getInvoiceId(),
+                        e);
             }
         }
     }

@@ -48,23 +48,39 @@ public class ContractDAO extends BaseDAO {
         return contract;
     }
 
-    public List<Contract> findAllByManagerId(int managerId, String searchName) {
+    public List<Contract> findAllByManagerId(int managerId, String searchName, String expiryStatus) {
         StringBuilder sql = new StringBuilder("SELECT c.* FROM dbo.contracts c " +
                 "JOIN dbo.rooms r ON c.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
                 "WHERE f.manager_id = ? AND c.deleted_at IS NULL ");
 
+        List<Object> params = new ArrayList<>();
+        params.add(managerId);
+
         if (searchName != null && !searchName.trim().isEmpty()) {
             sql.append(" AND c.tenant_full_name LIKE ? ");
+            params.add("%" + searchName.trim() + "%");
+        }
+
+        if (expiryStatus != null && !expiryStatus.trim().isEmpty()) {
+            String st = expiryStatus.trim().toLowerCase();
+            if ("expiring".equals(st)) {
+                sql.append(" AND c.status = 'ACTIVE' AND c.end_date <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) AND c.end_date >= CAST(GETDATE() AS DATE) ");
+            } else if ("overdue".equals(st)) {
+                sql.append(" AND c.status = 'ACTIVE' AND c.end_date < CAST(GETDATE() AS DATE) ");
+            } else if ("active".equals(st)) {
+                sql.append(" AND c.status = 'ACTIVE' AND c.end_date > DATEADD(day, 30, CAST(GETDATE() AS DATE)) ");
+            } else if ("inactive".equals(st)) {
+                sql.append(" AND c.status = 'INACTIVE' ");
+            }
         }
         sql.append(" ORDER BY c.created_at DESC");
 
         List<Contract> contracts = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            ps.setInt(1, managerId);
-            if (searchName != null && !searchName.trim().isEmpty()) {
-                ps.setString(2, "%" + searchName.trim() + "%");
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
             }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -75,6 +91,30 @@ public class ContractDAO extends BaseDAO {
             logger.error("findAllByManagerId failed for managerId={}", managerId, e);
         }
         return contracts;
+    }
+
+    public List<Contract> findAllByManagerId(int managerId, String searchName) {
+        return findAllByManagerId(managerId, searchName, null);
+    }
+
+    public int countExpiringContracts(int managerId) {
+        String sql = "SELECT COUNT(*) FROM dbo.contracts c " +
+                "JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE f.manager_id = ? AND c.deleted_at IS NULL AND c.status = 'ACTIVE' " +
+                "AND c.end_date <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) AND c.end_date >= CAST(GETDATE() AS DATE)";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, managerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("countExpiringContracts failed for managerId={}", managerId, e);
+        }
+        return 0;
     }
 
     public List<Room> getAvailableRooms(int managerId) {

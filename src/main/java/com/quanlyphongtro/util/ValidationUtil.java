@@ -10,6 +10,19 @@ public class ValidationUtil {
     // Regex cho CCCD Việt Nam: 12 số
     private static final Pattern VN_IDENTITY_PATTERN = Pattern.compile("^[0-9]{12}$");
 
+    // Regex cho Họ và tên: Chỉ bao gồm chữ cái (có dấu tiếng Việt) và khoảng trắng
+    private static final Pattern VN_NAME_PATTERN = Pattern.compile("^[\\p{L}\\s]+$", Pattern.UNICODE_CHARACTER_CLASS);
+
+    /**
+     * Kiểm tra Họ tên hợp lệ (chỉ bao gồm chữ cái và khoảng trắng, không chứa số hoặc ký tự đặc biệt).
+     */
+    public static boolean isValidFullName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        return VN_NAME_PATTERN.matcher(name.trim()).matches();
+    }
+
     /**
      * Kiểm tra người dùng đã đủ 18 tuổi hay chưa.
      */

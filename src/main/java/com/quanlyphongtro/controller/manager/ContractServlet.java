@@ -1,4 +1,5 @@
 package com.quanlyphongtro.controller.manager;
+
 import com.quanlyphongtro.util.ValidationUtil;
 
 import com.quanlyphongtro.controller.BaseServlet;
@@ -65,20 +66,27 @@ public class ContractServlet extends BaseServlet {
     private void showList(HttpServletRequest req, HttpServletResponse resp, int managerId)
             throws ServletException, IOException {
         String searchName = req.getParameter("searchName");
-        List<Contract> contracts = contractService.getContractsByManager(managerId, searchName);
+        String expiryStatus = req.getParameter("expiryStatus");
+        List<Contract> contracts = contractService.getContractsByManager(managerId, searchName, expiryStatus);
         req.setAttribute("contracts", contracts);
         req.setAttribute("searchName", searchName);
+        req.setAttribute("expiryStatus", expiryStatus);
         req.getRequestDispatcher("/WEB-INF/views/manager/contracts/list.jsp").forward(req, resp);
     }
 
     private void showCreateForm(HttpServletRequest req, HttpServletResponse resp, int managerId)
             throws ServletException, IOException {
-        req.setAttribute("availableRooms", contractService.getAvailableRooms(managerId));
-        String roomIdParam = req.getParameter("roomId");
-        if (roomIdParam != null && !roomIdParam.trim().isEmpty()) {
-            req.setAttribute("preselectedRoomId", roomIdParam.trim());
+        try {
+            req.setAttribute("availableRooms", contractService.getAvailableRooms(managerId));
+            String roomIdParam = req.getParameter("roomId");
+            if (roomIdParam != null && !roomIdParam.trim().isEmpty()) {
+                req.setAttribute("preselectedRoomId", roomIdParam.trim());
+            }
+            req.getRequestDispatcher("/WEB-INF/views/manager/contracts/create.jsp").forward(req, resp);
+        } catch (Exception e) {
+            logger.error("Failed to load create contract form for managerId={}", managerId, e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi khi tải trang tạo hợp đồng");
         }
-        req.getRequestDispatcher("/WEB-INF/views/manager/contracts/create.jsp").forward(req, resp);
     }
 
     private void showDetail(HttpServletRequest req, HttpServletResponse resp, int managerId)
@@ -157,7 +165,7 @@ public class ContractServlet extends BaseServlet {
                 contract.setTenantIdentityIssuePlace(req.getParameter("tenantIdentityIssuePlace"));
                 contract.setTenantPhone(req.getParameter("tenantPhone"));
                 contract.setAmountInWords(req.getParameter("amountInWords"));
-                
+
                 String signedDateStr = req.getParameter("signedDate");
                 if (signedDateStr != null && !signedDateStr.trim().isEmpty()) {
                     try {
@@ -166,7 +174,7 @@ public class ContractServlet extends BaseServlet {
                         logger.warn("Failed to parse signedDate: {}", signedDateStr);
                     }
                 }
-                
+
                 String startDateStr = req.getParameter("startDate");
                 if (startDateStr != null && !startDateStr.trim().isEmpty()) {
                     try {
@@ -175,7 +183,7 @@ public class ContractServlet extends BaseServlet {
                         logger.warn("Failed to parse startDate: {}", startDateStr);
                     }
                 }
-                
+
                 String endDateStr = req.getParameter("endDate");
                 if (endDateStr != null && !endDateStr.trim().isEmpty()) {
                     try {
@@ -198,7 +206,8 @@ public class ContractServlet extends BaseServlet {
                     throw new IllegalArgumentException("Vui lòng chọn ngày kết thúc hợp đồng hợp lệ.");
                 }
 
-                if (contract.getEndDate().isBefore(contract.getStartDate()) || contract.getEndDate().isEqual(contract.getStartDate())) {
+                if (contract.getEndDate().isBefore(contract.getStartDate())
+                        || contract.getEndDate().isEqual(contract.getStartDate())) {
                     throw new IllegalArgumentException("Ngày hết hạn hợp đồng phải sau ngày bắt đầu hợp đồng.");
                 }
                 if (contract.getStartDate().isBefore(contract.getSignedDate())) {
@@ -211,14 +220,29 @@ public class ContractServlet extends BaseServlet {
                     if (contract.getTenantIdentityIssueDate().isAfter(LocalDate.now())) {
                         throw new IllegalArgumentException("Ngày cấp CCCD không thể ở tương lai.");
                     }
-                    if (contract.getTenantDob() != null && !contract.getTenantIdentityIssueDate().isAfter(contract.getTenantDob())) {
+                    if (contract.getTenantDob() != null
+                            && !contract.getTenantIdentityIssueDate().isAfter(contract.getTenantDob())) {
                         throw new IllegalArgumentException("Ngày cấp CCCD phải sau ngày sinh của người thuê.");
                     }
                 }
 
+                if (contract.getTenantFullName() == null || contract.getTenantFullName().trim().isEmpty()) {
+                    throw new IllegalArgumentException("Họ và tên người thuê không được để trống.");
+                }
+                if (!ValidationUtil.isValidFullName(contract.getTenantFullName())) {
+                    throw new IllegalArgumentException(
+                            "Họ và tên chỉ được chứa chữ cái và khoảng trắng, không được chứa số hoặc ký tự đặc biệt.");
+                }
+
+                if (contract.getTenantPhone() == null || contract.getTenantPhone().trim().isEmpty()) {
+                    throw new IllegalArgumentException("Số điện thoại không được để trống.");
+                }
                 if (!ValidationUtil.isValidVnPhone(contract.getTenantPhone())) {
                     throw new IllegalArgumentException(
                             "Số điện thoại không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
+                }
+                if (contract.getTenantIdentityNumber() == null || contract.getTenantIdentityNumber().trim().isEmpty()) {
+                    throw new IllegalArgumentException("CCCD không được để trống.");
                 }
                 if (!ValidationUtil.isValidVnIdentity(contract.getTenantIdentityNumber())) {
                     throw new IllegalArgumentException("Số CCCD không hợp lệ (phải gồm 12 chữ số).");
@@ -228,12 +252,12 @@ public class ContractServlet extends BaseServlet {
 
                 try {
                     AuditLogHelper.log(auditLogDAO, req,
-                        "contracts",
-                        contract.getContractId(),
-                        "CREATE",
-                        null,
-                        contract.getCode(),
-                        user.getId());
+                            "contracts",
+                            contract.getContractId(),
+                            "CREATE",
+                            null,
+                            contract.getCode(),
+                            user.getId());
                 } catch (Exception ex) {
                     logger.warn("AuditLog failed after contract create id={}", contract.getContractId(), ex);
                 }
@@ -356,10 +380,11 @@ public class ContractServlet extends BaseServlet {
         boolean confirmReactivate = "true".equals(req.getParameter("confirmReactivate"));
 
         try {
-            String loginLink = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/login";
+            String loginLink = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort()
+                    + req.getContextPath() + "/login";
             Map<String, Object> result = contractService.addTenantFromContract(
-                contractId, roomId, fullName, phone, email, identityNumber, permanentAddress, gender, dobStr, contractStartDateStr, confirmReactivate, currentUser.getId(), loginLink
-            );
+                    contractId, roomId, fullName, phone, email, identityNumber, permanentAddress, gender, dobStr,
+                    contractStartDateStr, confirmReactivate, currentUser.getId(), loginLink);
 
             if ("REACTIVATE_CONFIRM".equals(result.get("status"))) {
                 req.setAttribute("showReactivateConfirmation", true);
@@ -373,15 +398,20 @@ public class ContractServlet extends BaseServlet {
             int newUserId = (Integer) result.get("userId");
 
             try {
-                AuditLogHelper.log(auditLogDAO, req, "users", newUserId, userExists ? "REACTIVATE" : "CREATE", null, email.trim(), currentUser.getId());
+                AuditLogHelper.log(auditLogDAO, req, "users", newUserId, userExists ? "REACTIVATE" : "CREATE", null,
+                        email.trim(), currentUser.getId());
             } catch (Exception ex) {
                 logger.warn("AuditLog failed after tenant create", ex);
             }
 
             if (userExists) {
-                setFlashMessage(req, "success", "Kích hoạt lại tài khoản người thuê cũ thành công! Đã gửi mật khẩu tạm thời mới vào email " + email.trim() + ".");
+                setFlashMessage(req, "success",
+                        "Kích hoạt lại tài khoản người thuê cũ thành công! Đã gửi mật khẩu tạm thời mới vào email "
+                                + email.trim() + ".");
             } else {
-                setFlashMessage(req, "success", "Tạo tài khoản người thuê thành công! Đã gửi thông tin tài khoản và mật khẩu tạm thời vào email " + email.trim() + ".");
+                setFlashMessage(req, "success",
+                        "Tạo tài khoản người thuê thành công! Đã gửi thông tin tài khoản và mật khẩu tạm thời vào email "
+                                + email.trim() + ".");
             }
             resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contractId);
 
@@ -457,7 +487,8 @@ public class ContractServlet extends BaseServlet {
         String contractIdStr = req.getParameter("contractId");
         String newEndDateStr = req.getParameter("newEndDate");
 
-        if (contractIdStr == null || contractIdStr.trim().isEmpty() || newEndDateStr == null || newEndDateStr.trim().isEmpty()) {
+        if (contractIdStr == null || contractIdStr.trim().isEmpty() || newEndDateStr == null
+                || newEndDateStr.trim().isEmpty()) {
             setFlashMessage(req, "error", "Thiếu tham số bắt buộc.");
             resp.sendRedirect(req.getContextPath() + "/manager/contracts");
             return;
@@ -475,14 +506,17 @@ public class ContractServlet extends BaseServlet {
         try {
             LocalDate newEndDate = LocalDate.parse(newEndDateStr.trim());
             contractService.extendContract(contractId, newEndDate, user.getId());
-            
+
             try {
-                AuditLogHelper.log(auditLogDAO, req, "contracts", contractId, "UPDATE", "Extend Contract", "New End Date: " + newEndDate, user.getId());
+                AuditLogHelper.log(auditLogDAO, req, "contracts", contractId, "UPDATE", "Extend Contract",
+                        "New End Date: " + newEndDate, user.getId());
             } catch (Exception ex) {
                 logger.warn("AuditLog failed after extend contract", ex);
             }
-            
+
             setFlashMessage(req, "success", "Gia hạn hợp đồng thành công!");
+        } catch (java.time.format.DateTimeParseException e) {
+            setFlashMessage(req, "error", "Ngày kết thúc mới không đúng định dạng (YYYY-MM-DD).");
         } catch (IllegalArgumentException e) {
             setFlashMessage(req, "error", e.getMessage());
         } catch (Exception e) {

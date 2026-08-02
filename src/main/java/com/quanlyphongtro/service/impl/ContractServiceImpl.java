@@ -26,7 +26,12 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public List<Contract> getContractsByManager(int managerId, String searchName) {
-        List<Contract> contracts = contractDAO.findAllByManagerId(managerId, searchName);
+        return getContractsByManager(managerId, searchName, null);
+    }
+
+    @Override
+    public List<Contract> getContractsByManager(int managerId, String searchName, String expiryStatus) {
+        List<Contract> contracts = contractDAO.findAllByManagerId(managerId, searchName, expiryStatus);
         for (Contract c : contracts) {
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
@@ -34,6 +39,11 @@ public class ContractServiceImpl implements ContractService {
             f.ifPresent(c::setFacility);
         }
         return contracts;
+    }
+
+    @Override
+    public int countExpiringContracts(int managerId) {
+        return contractDAO.countExpiringContracts(managerId);
     }
 
     @Override
@@ -87,13 +97,24 @@ public class ContractServiceImpl implements ContractService {
         if (contract.getTenantFullName() == null || contract.getTenantFullName().trim().isEmpty()) {
             throw new Exception("Tên người thuê không được để trống.");
         }
+        if (!ValidationUtil.isValidFullName(contract.getTenantFullName())) {
+            throw new Exception(
+                    "Tên người thuê chỉ được chứa chữ cái và khoảng trắng, không được chứa số hoặc ký tự đặc biệt.");
+        }
         if (contract.getTenantIdentityNumber() == null || contract.getTenantIdentityNumber().trim().isEmpty()) {
             throw new Exception("CCCD không được để trống.");
         }
-        // Freeze current room fee and facility service prices into contract snapshot fields
+        if (contract.getTenantPhone() == null || contract.getTenantPhone().trim().isEmpty()) {
+            throw new Exception("Số điện thoại không được để trống.");
+        }
+        // Freeze current room fee and facility service prices into contract snapshot
+        // fields
         Facility facility = facilityOpt.get();
         contract.setRoomFee(room.getRoomFee());
-        contract.setDepositAmount(room.getDepositAmount() != null && room.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) > 0 ? room.getDepositAmount() : room.getRoomFee());
+        contract.setDepositAmount(
+                room.getDepositAmount() != null && room.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) > 0
+                        ? room.getDepositAmount()
+                        : room.getRoomFee());
         contract.setElectricityPrice(facility.getElectricityPrice());
         contract.setWaterPrice(facility.getWaterPrice());
         contract.setInternetFee(facility.getInternetFee());
@@ -171,6 +192,10 @@ public class ContractServiceImpl implements ContractService {
         // Validate inputs
         if (fullName == null || fullName.trim().isEmpty()) {
             throw new IllegalArgumentException("Họ tên không được để trống.");
+        }
+        if (!ValidationUtil.isValidFullName(fullName)) {
+            throw new IllegalArgumentException(
+                    "Họ tên chỉ được chứa chữ cái và khoảng trắng, không được chứa số hoặc ký tự đặc biệt.");
         }
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Email không được để trống.");
