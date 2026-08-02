@@ -53,10 +53,10 @@
                       <label style="display:block; font-size:13px; font-weight:600; color:var(--hms-text-muted); margin-bottom:8px;">Trạng thái thời hạn</label>
                       <select name="expiryStatus" class="form-select">
                         <option value="" ${empty expiryStatus ? 'selected' : ''}>Tất cả trạng thái</option>
-                        <option value="active" ${expiryStatus == 'active' ? 'selected' : ''}>🟢 Còn hiệu lực</option>
-                        <option value="expiring" ${expiryStatus == 'expiring' ? 'selected' : ''}>🟡 Sắp hết hạn (<= 30 ngày)</option>
-                        <option value="overdue" ${expiryStatus == 'overdue' ? 'selected' : ''}>🔴 Đã quá hạn</option>
-                        <option value="inactive" ${expiryStatus == 'inactive' ? 'selected' : ''}>⚪ Hết hiệu lực</option>
+                        <option value="active" ${expiryStatus == 'active' ? 'selected' : ''}>Còn hiệu lực</option>
+                        <option value="expiring" ${expiryStatus == 'expiring' ? 'selected' : ''}>Sắp hết hạn (<= 30 ngày)</option>
+                        <option value="overdue" ${expiryStatus == 'overdue' ? 'selected' : ''}>Đã quá hạn</option>
+                        <option value="inactive" ${expiryStatus == 'inactive' ? 'selected' : ''}>Hết hiệu lực</option>
                       </select>
                     </div>
                   </div>
@@ -121,13 +121,13 @@
                                     <span class="badge-hms badge-neutral">Hết hiệu lực</span>
                                   </c:when>
                                   <c:when test="${c.expired}">
-                                    <span class="badge bg-danger text-white px-2 py-1" style="font-size:0.8rem" title="Quá hạn ${c.daysOverdue} ngày">🔴 Đã quá hạn (${c.daysOverdue} ngày)</span>
+                                    <span class="badge bg-danger text-white px-2 py-1" style="font-size:0.8rem" title="Quá hạn ${c.daysOverdue} ngày">Đã quá hạn (${c.daysOverdue} ngày)</span>
                                   </c:when>
                                   <c:when test="${c.expiringSoon}">
-                                    <span class="badge bg-warning text-dark px-2 py-1" style="font-size:0.8rem" title="Còn ${c.daysUntilExpiry} ngày">🟡 Sắp hết hạn (Còn ${c.daysUntilExpiry} ngày)</span>
+                                    <span class="badge bg-warning text-dark px-2 py-1" style="font-size:0.8rem" title="Còn ${c.daysUntilExpiry} ngày">Sắp hết hạn (Còn ${c.daysUntilExpiry} ngày)</span>
                                   </c:when>
                                   <c:otherwise>
-                                    <span class="badge-hms badge-success">🟢 Còn hiệu lực</span>
+                                    <span class="badge-hms badge-success">Còn hiệu lực</span>
                                   </c:otherwise>
                                 </c:choose>
                               </td>
