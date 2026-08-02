@@ -16,6 +16,8 @@ public class MeterReading {
     private LocalDateTime deletedAt;
     private String waterImg;
     private String electricImg;
+    private Integer electricUsage;
+    private Integer waterUsage;
 
     public MeterReading() {}
 
@@ -54,4 +56,10 @@ public class MeterReading {
 
     public String getElectricImg() { return electricImg; }
     public void setElectricImg(String electricImg) { this.electricImg = electricImg; }
+
+    public Integer getElectricUsage() { return electricUsage; }
+    public void setElectricUsage(Integer electricUsage) { this.electricUsage = electricUsage; }
+
+    public Integer getWaterUsage() { return waterUsage; }
+    public void setWaterUsage(Integer waterUsage) { this.waterUsage = waterUsage; }
 }

@@ -41,9 +41,9 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                 int meterId = Integer.parseInt(meterIdStr);
                 MeterStatusDTO reading = meterReadingService.getReadingForEdit(meterId);
                 if (reading != null) {
-                    if (reading.isInvoicePaid()) {
+                    if (!reading.isEditable()) {
                         HttpSession session = request.getSession();
-                        session.setAttribute("flashMessage", "Không thể sửa vì hóa đơn kỳ này đã thanh toán.");
+                        session.setAttribute("flashMessage", "Không thể sửa vì hóa đơn đã thanh toán hoặc đã quá 5 ngày.");
                         session.setAttribute("flashType", "error");
                         response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                         return;
@@ -132,8 +132,8 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                     return;
                 }
-                if (oldReading.isInvoicePaid()) {
-                    session.setAttribute("flashMessage", "Hóa đơn đã được thanh toán, không thể chỉnh sửa.");
+                if (!oldReading.isEditable()) {
+                    session.setAttribute("flashMessage", "Bản ghi đã bị khóa (Hóa đơn đã thanh toán hoặc quá 5 ngày).");
                     session.setAttribute("flashType", "error");
                     response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
                     return;

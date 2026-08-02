@@ -153,6 +153,14 @@ public class MeterStatusDTO {
         this.invoicePaid = invoicePaid;
     }
 
+    public boolean isEditable() {
+        if (this.invoicePaid) return false;
+        if (this.updatedAt == null) return true;
+        long diffInMillies = Math.abs(System.currentTimeMillis() - this.updatedAt.getTime());
+        long diffDays = java.util.concurrent.TimeUnit.DAYS.convert(diffInMillies, java.util.concurrent.TimeUnit.MILLISECONDS);
+        return diffDays <= 5;
+    }
+
     public String getElectricStatus() {
         return electricStatus;
     }

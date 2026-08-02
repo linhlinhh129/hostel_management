@@ -314,16 +314,30 @@ public class InvoiceDAO extends BaseDAO {
                 }
             }
 
-            if (i.getNewElectricReading() != null && i.getOldElectricReading() != null
-                    && i.getElectricityPrice() != null) {
-                int used = i.getNewElectricReading() - i.getOldElectricReading();
-                i.setElectricAmount(i.getElectricityPrice().multiply(new BigDecimal(used)));
+            if (i.getElectricityPrice() != null) {
+                if (hasColumn(rs, "db_electric_usage") && rs.getObject("db_electric_usage") != null) {
+                    int used = rs.getInt("db_electric_usage");
+                    i.setElectricAmount(i.getElectricityPrice().multiply(new BigDecimal(used)));
+                } else if (i.getNewElectricReading() != null && i.getOldElectricReading() != null) {
+                    int used = Math.max(0, i.getNewElectricReading() - i.getOldElectricReading());
+                    i.setElectricAmount(i.getElectricityPrice().multiply(new BigDecimal(used)));
+                } else {
+                    i.setElectricAmount(BigDecimal.ZERO);
+                }
             } else {
                 i.setElectricAmount(BigDecimal.ZERO);
             }
-            if (i.getNewWaterReading() != null && i.getOldWaterReading() != null && i.getWaterPrice() != null) {
-                int used = i.getNewWaterReading() - i.getOldWaterReading();
-                i.setWaterAmount(i.getWaterPrice().multiply(new BigDecimal(used)));
+
+            if (i.getWaterPrice() != null) {
+                if (hasColumn(rs, "db_water_usage") && rs.getObject("db_water_usage") != null) {
+                    int used = rs.getInt("db_water_usage");
+                    i.setWaterAmount(i.getWaterPrice().multiply(new BigDecimal(used)));
+                } else if (i.getNewWaterReading() != null && i.getOldWaterReading() != null) {
+                    int used = Math.max(0, i.getNewWaterReading() - i.getOldWaterReading());
+                    i.setWaterAmount(i.getWaterPrice().multiply(new BigDecimal(used)));
+                } else {
+                    i.setWaterAmount(BigDecimal.ZERO);
+                }
             } else {
                 i.setWaterAmount(BigDecimal.ZERO);
             }
@@ -354,7 +368,7 @@ public class InvoiceDAO extends BaseDAO {
 
     public List<Invoice> findByRoomId(int roomId) {
         String sql = "SELECT i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, mr.status AS meter_status, " +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -383,7 +397,7 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> findByIdAndRoomId(int id, int roomId) {
         String sql = "SELECT i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, mr.status AS meter_status, mr.electric_img, mr.water_img, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, mr.status AS meter_status, mr.electric_img, mr.water_img, " +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -458,7 +472,7 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> getCurrentInvoiceByRoomId(int roomId) {
         String sql = "SELECT TOP 1 i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, " +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -795,7 +809,7 @@ public class InvoiceDAO extends BaseDAO {
                 "u.email AS tenant_email, " +
                 "f.name AS facility_name, f.address AS facility_address, " +
                 "c.start_date AS contract_start_date, c.end_date AS contract_end_date, c.code AS contract_code, " +
-                "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_img, mr_curr.water_img, "
+                "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_usage AS db_electric_usage, mr_curr.water_usage AS db_water_usage, mr_curr.electric_img, mr_curr.water_img, "
                 +
                 "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, "
                 +
@@ -866,8 +880,17 @@ public class InvoiceDAO extends BaseDAO {
                     dto.setNewWaterReading(nw);
                     dto.setOldWaterReading(ow);
 
-                    dto.setElectricUsage(Math.max(0, ne - oe));
-                    dto.setWaterUsage(Math.max(0, nw - ow));
+                    if (hasColumn(rs, "db_electric_usage") && rs.getObject("db_electric_usage") != null) {
+                        dto.setElectricUsage(rs.getInt("db_electric_usage"));
+                    } else {
+                        dto.setElectricUsage(Math.max(0, ne - oe));
+                    }
+
+                    if (hasColumn(rs, "db_water_usage") && rs.getObject("db_water_usage") != null) {
+                        dto.setWaterUsage(rs.getInt("db_water_usage"));
+                    } else {
+                        dto.setWaterUsage(Math.max(0, nw - ow));
+                    }
 
                     dto.setElectricUnitPrice(rs.getBigDecimal("electricity_price"));
                     dto.setWaterUnitPrice(rs.getBigDecimal("water_price"));

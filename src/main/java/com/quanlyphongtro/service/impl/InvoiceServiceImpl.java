@@ -128,13 +128,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         int oldElectric = oldMeter != null ? oldMeter.getElectric() : 0;
         int oldWater = oldMeter != null ? oldMeter.getWater() : 0;
 
-        if (currentMeter.getElectric() < oldElectric)
-            throw new IllegalArgumentException("Chỉ số điện mới nhỏ hơn chỉ số điện cũ.");
-        if (currentMeter.getWater() < oldWater)
-            throw new IllegalArgumentException("Chỉ số nước mới nhỏ hơn chỉ số nước cũ.");
+        int electricUsage = currentMeter.getElectricUsage() != null ? currentMeter.getElectricUsage() : (currentMeter.getElectric() - oldElectric);
+        int waterUsage = currentMeter.getWaterUsage() != null ? currentMeter.getWaterUsage() : (currentMeter.getWater() - oldWater);
 
-        int electricUsage = currentMeter.getElectric() - oldElectric;
-        int waterUsage = currentMeter.getWater() - oldWater;
+        if (electricUsage < 0)
+            throw new IllegalArgumentException("Chỉ số điện (tiêu thụ) bị âm.");
+        if (waterUsage < 0)
+            throw new IllegalArgumentException("Chỉ số nước (tiêu thụ) bị âm.");
 
         BigDecimal electricAmount = roomSnap.electricityPrice.multiply(new BigDecimal(electricUsage));
         BigDecimal waterAmount = roomSnap.waterPrice.multiply(new BigDecimal(waterUsage));
@@ -280,8 +280,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         int oldElectric = oldMeter != null ? oldMeter.getElectric() : 0;
         int oldWater = oldMeter != null ? oldMeter.getWater() : 0;
 
-        if (currentMeter.getElectric() < oldElectric) throw new IllegalArgumentException("Chỉ số điện bị âm.");
-        if (currentMeter.getWater() < oldWater) throw new IllegalArgumentException("Chỉ số nước bị âm.");
+        int electricUsage = currentMeter.getElectricUsage() != null ? currentMeter.getElectricUsage() : (currentMeter.getElectric() - oldElectric);
+        int waterUsage = currentMeter.getWaterUsage() != null ? currentMeter.getWaterUsage() : (currentMeter.getWater() - oldWater);
+
+        if (electricUsage < 0) throw new IllegalArgumentException("Chỉ số điện bị âm.");
+        if (waterUsage < 0) throw new IllegalArgumentException("Chỉ số nước bị âm.");
 
         Map<String, Object> result = new HashMap<>();
         result.put("roomFee", roomSnap.roomFee);

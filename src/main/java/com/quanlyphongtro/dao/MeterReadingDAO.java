@@ -27,10 +27,18 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append("    prev_mr.water AS previousWaterReading, ");
         sqlBuilder.append("    curr_mr.electric AS currentElectricReading, ");
         sqlBuilder.append("    curr_mr.water AS currentWaterReading, ");
+        sqlBuilder.append("    curr_mr.electric_usage AS electricUsage, ");
+        sqlBuilder.append("    curr_mr.water_usage AS waterUsage, ");
         sqlBuilder.append("    curr_mr.updated_at AS updatedAt, ");
         sqlBuilder.append("    curr_mr.meter_id AS meterId, ");
         sqlBuilder.append("    curr_mr.electric_img AS electricImg, ");
         sqlBuilder.append("    curr_mr.water_img AS waterImg, ");
+        sqlBuilder.append("    curr_mr.electric_status AS electricStatus, ");
+        sqlBuilder.append("    curr_mr.electric_old_final AS electricOldFinal, ");
+        sqlBuilder.append("    curr_mr.electric_new_start AS electricNewStart, ");
+        sqlBuilder.append("    curr_mr.water_status AS waterStatus, ");
+        sqlBuilder.append("    curr_mr.water_old_final AS waterOldFinal, ");
+        sqlBuilder.append("    curr_mr.water_new_start AS waterNewStart, ");
         sqlBuilder.append("    u.full_name AS updatedByName, ");
         sqlBuilder.append("    CASE WHEN curr_mr.meter_id IS NOT NULL THEN 'DA_CAP_NHAT' ELSE 'CHUA_CAP_NHAT' END AS status, ");
         sqlBuilder.append("    CASE WHEN inv.status = 'PAID' THEN 1 ELSE 0 END AS invoicePaid ");
@@ -104,6 +112,20 @@ public class MeterReadingDAO extends BaseDAO {
                     
                     int currWater = rs.getInt("currentWaterReading");
                     if (!rs.wasNull()) dto.setCurrentWaterReading(currWater);
+                    
+                    int elecUsage = rs.getInt("electricUsage");
+                    if (!rs.wasNull()) dto.setElectricUsage(elecUsage);
+                    
+                    int waterUsage = rs.getInt("waterUsage");
+                    if (!rs.wasNull()) dto.setWaterUsage(waterUsage);
+                    
+                    dto.setElectricStatus(rs.getString("electricStatus"));
+                    int eOld = rs.getInt("electricOldFinal"); if (!rs.wasNull()) dto.setElectricOldFinal(eOld);
+                    int eNew = rs.getInt("electricNewStart"); if (!rs.wasNull()) dto.setElectricNewStart(eNew);
+                    
+                    dto.setWaterStatus(rs.getString("waterStatus"));
+                    int wOld = rs.getInt("waterOldFinal"); if (!rs.wasNull()) dto.setWaterOldFinal(wOld);
+                    int wNew = rs.getInt("waterNewStart"); if (!rs.wasNull()) dto.setWaterNewStart(wNew);
                     
                     dto.setUpdatedAt(rs.getTimestamp("updatedAt"));
                     dto.setStatus(rs.getString("status"));
@@ -329,6 +351,8 @@ public class MeterReadingDAO extends BaseDAO {
         m.setDeletedAt(toLocalDateTime(rs, "deleted_at"));
         m.setWaterImg(rs.getString("water_img"));
         m.setElectricImg(rs.getString("electric_img"));
+        m.setElectricUsage(getInteger(rs, "electric_usage"));
+        m.setWaterUsage(getInteger(rs, "water_usage"));
         return m;
     }
 

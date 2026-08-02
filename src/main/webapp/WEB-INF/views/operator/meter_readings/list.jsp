@@ -90,10 +90,8 @@
                                                                     <c:choose>
                                                                         <c:when
                                                                             test="${not empty item.currentElectricReading}">
-                                                                            <span
-                                                                                style="font-weight:600; color:var(--hms-ink)">
-                                                                                <c:out
-                                                                                    value="${item.currentElectricReading}" />
+                                                                            <span style="font-weight:600; color:var(--hms-ink)">
+                                                                                <c:out value="${item.currentElectricReading}" />
                                                                             </span>
                                                                         </c:when>
                                                                         <c:otherwise>-</c:otherwise>
@@ -103,10 +101,8 @@
                                                                     <c:choose>
                                                                         <c:when
                                                                             test="${not empty item.currentWaterReading}">
-                                                                            <span
-                                                                                style="font-weight:600; color:var(--hms-ink)">
-                                                                                <c:out
-                                                                                    value="${item.currentWaterReading}" />
+                                                                            <span style="font-weight:600; color:var(--hms-ink)">
+                                                                                <c:out value="${item.currentWaterReading}" />
                                                                             </span>
                                                                         </c:when>
                                                                         <c:otherwise>-</c:otherwise>

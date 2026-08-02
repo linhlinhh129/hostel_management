@@ -110,10 +110,8 @@
                                                                     <c:choose>
                                                                         <c:when
                                                                             test="${not empty item.currentElectricReading}">
-                                                                            <span
-                                                                                style="font-weight:600; color:var(--hms-ink)">
-                                                                                <c:out
-                                                                                    value="${item.currentElectricReading}" />
+                                                                            <span style="font-weight:600; color:var(--hms-ink)">
+                                                                                <c:out value="${item.currentElectricReading}" />
                                                                             </span>
                                                                         </c:when>
                                                                         <c:otherwise>-</c:otherwise>
@@ -123,10 +121,8 @@
                                                                     <c:choose>
                                                                         <c:when
                                                                             test="${not empty item.currentWaterReading}">
-                                                                            <span
-                                                                                style="font-weight:600; color:var(--hms-ink)">
-                                                                                <c:out
-                                                                                    value="${item.currentWaterReading}" />
+                                                                            <span style="font-weight:600; color:var(--hms-ink)">
+                                                                                <c:out value="${item.currentWaterReading}" />
                                                                             </span>
                                                                         </c:when>
                                                                         <c:otherwise>-</c:otherwise>
@@ -157,8 +153,8 @@
                                                                 <td>
                                                                     <c:if test="${item.status == 'DA_CAP_NHAT'}">
                                                                         <c:choose>
-                                                                            <c:when test="${item.invoicePaid}">
-                                                                                <span class="badge-hms badge-success" title="Hóa đơn tháng này đã thanh toán, không thể sửa" style="margin-right: 4px;">🔒 Đã thanh toán</span>
+                                                                            <c:when test="${!item.editable}">
+                                                                                <span class="badge-hms badge-success" title="Không thể sửa (Hóa đơn đã thanh toán hoặc đã quá 5 ngày)" style="margin-right: 4px;">🔒 Đã khóa sửa</span>
                                                                             </c:when>
                                                                             <c:otherwise>
                                                                                 <a href="${ctx}/operator/meter-readings/update?meterId=${item.meterId}"
@@ -173,8 +169,16 @@
                                                                             data-room="${item.roomCode}"
                                                                             data-prevelectric="${item.previousElectricReading}"
                                                                             data-currelectric="${item.currentElectricReading}"
+                                                                            data-electricusage="${item.electricUsage != null ? item.electricUsage : 0}"
+                                                                            data-electricstatus="${item.electricStatus}"
+                                                                            data-electricoldfinal="${item.electricOldFinal}"
+                                                                            data-electricnewstart="${item.electricNewStart}"
                                                                             data-prevwater="${item.previousWaterReading}"
                                                                             data-currwater="${item.currentWaterReading}"
+                                                                            data-waterusage="${item.waterUsage != null ? item.waterUsage : 0}"
+                                                                            data-waterstatus="${item.waterStatus}"
+                                                                            data-wateroldfinal="${item.waterOldFinal}"
+                                                                            data-waternewstart="${item.waterNewStart}"
                                                                             data-electricimg="${item.electricImg}"
                                                                             data-waterimg="${item.waterImg}"
                                                                             data-updatedby="${item.updatedByName}">
@@ -218,11 +222,11 @@
                                                                 <span class="text-muted">Kỳ này:</span>
                                                                 <span class="fw-bold" id="modalCurrElectric"></span>
                                                             </div>
-                                                            <div
-                                                                class="d-flex justify-content-between border-top pt-2 mt-2">
+                                                            <div id="modalElectricFormulaContainer" class="text-muted" style="display:none; font-size: 0.8rem; background: #fff; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--hms-border-soft);">
+                                                            </div>
+                                                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
                                                                 <span class="text-muted">Tiêu thụ:</span>
-                                                                <span class="fw-bold text-danger"><span
-                                                                        id="modalConsumeElectric"></span> kWh</span>
+                                                                <span class="fw-bold text-danger"><span id="modalConsumeElectric"></span> kWh</span>
                                                             </div>
                                                             <div class="mt-3 text-center">
                                                                 <img id="modalElectricImg" src="" alt="Ảnh công tơ điện"
@@ -244,11 +248,11 @@
                                                                 <span class="text-muted">Kỳ này:</span>
                                                                 <span class="fw-bold" id="modalCurrWater"></span>
                                                             </div>
-                                                            <div
-                                                                class="d-flex justify-content-between border-top pt-2 mt-2">
+                                                            <div id="modalWaterFormulaContainer" class="text-muted" style="display:none; font-size: 0.8rem; background: #fff; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--hms-border-soft);">
+                                                            </div>
+                                                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
                                                                 <span class="text-muted">Tiêu thụ:</span>
-                                                                <span class="fw-bold text-primary"><span
-                                                                        id="modalConsumeWater"></span> khối</span>
+                                                                <span class="fw-bold text-primary"><span id="modalConsumeWater"></span> khối</span>
                                                             </div>
                                                             <div class="mt-3 text-center">
                                                                 <img id="modalWaterImg" src="" alt="Ảnh công tơ nước"
@@ -282,8 +286,17 @@
                         var room = btn.getAttribute('data-room');
                         var prevE = parseInt(btn.getAttribute('data-prevelectric')) || 0;
                         var currE = parseInt(btn.getAttribute('data-currelectric')) || 0;
+                        var usageE = parseInt(btn.getAttribute('data-electricusage')) || 0;
+                        var eStatus = btn.getAttribute('data-electricstatus');
+                        var eOld = parseInt(btn.getAttribute('data-electricoldfinal')) || 0;
+                        var eNew = parseInt(btn.getAttribute('data-electricnewstart')) || 0;
+                        
                         var prevW = parseInt(btn.getAttribute('data-prevwater')) || 0;
                         var currW = parseInt(btn.getAttribute('data-currwater')) || 0;
+                        var usageW = parseInt(btn.getAttribute('data-waterusage')) || 0;
+                        var wStatus = btn.getAttribute('data-waterstatus');
+                        var wOld = parseInt(btn.getAttribute('data-wateroldfinal')) || 0;
+                        var wNew = parseInt(btn.getAttribute('data-waternewstart')) || 0;
                         var electricImg = btn.getAttribute('data-electricimg');
                         var waterImg = btn.getAttribute('data-waterimg');
                         var updatedBy = btn.getAttribute('data-updatedby');
@@ -291,10 +304,32 @@
                         document.getElementById('modalRoomCode').textContent = room;
                         document.getElementById('modalPrevElectric').textContent = prevE;
                         document.getElementById('modalCurrElectric').textContent = currE;
-                        document.getElementById('modalConsumeElectric').textContent = currE - prevE;
+                        document.getElementById('modalConsumeElectric').textContent = usageE;
                         document.getElementById('modalPrevWater').textContent = prevW;
                         document.getElementById('modalCurrWater').textContent = currW;
-                        document.getElementById('modalConsumeWater').textContent = currW - prevW;
+                        document.getElementById('modalConsumeWater').textContent = usageW;
+
+                        var eFC = document.getElementById('modalElectricFormulaContainer');
+                        if (eStatus === 'REPLACED') {
+                            eFC.style.display = 'block';
+                            eFC.innerHTML = '<strong>Trạng thái: Thay công tơ</strong><br>Công thức tính tiêu thụ: <br><i>(Tháo ra: ' + eOld + ' - Kỳ trước: ' + prevE + ') + (Kỳ này: ' + currE + ' - Lắp vào: ' + eNew + ')</i>';
+                        } else if (eStatus === 'ROLLOVER') {
+                            eFC.style.display = 'block';
+                            eFC.innerHTML = '<strong>Trạng thái: Quay vòng công tơ</strong><br>Công thức tính tiêu thụ: <br><i>(10000 - Kỳ trước: ' + prevE + ') + Kỳ này: ' + currE + '</i>';
+                        } else {
+                            eFC.style.display = 'none';
+                        }
+
+                        var wFC = document.getElementById('modalWaterFormulaContainer');
+                        if (wStatus === 'REPLACED') {
+                            wFC.style.display = 'block';
+                            wFC.innerHTML = '<strong>Trạng thái: Thay công tơ</strong><br>Công thức tính tiêu thụ: <br><i>(Tháo ra: ' + wOld + ' - Kỳ trước: ' + prevW + ') + (Kỳ này: ' + currW + ' - Lắp vào: ' + wNew + ')</i>';
+                        } else if (wStatus === 'ROLLOVER') {
+                            wFC.style.display = 'block';
+                            wFC.innerHTML = '<strong>Trạng thái: Quay vòng công tơ</strong><br>Công thức tính tiêu thụ: <br><i>(10000 - Kỳ trước: ' + prevW + ') + Kỳ này: ' + currW + '</i>';
+                        } else {
+                            wFC.style.display = 'none';
+                        }
                         document.getElementById('modalUpdatedBy').textContent = updatedBy || 'N/A';
 
                         var eImg = document.getElementById('modalElectricImg');
