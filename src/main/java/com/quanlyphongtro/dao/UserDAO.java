@@ -253,7 +253,8 @@ public class UserDAO extends BaseDAO {
         }
 
         String selectSql = "SELECT u.user_id, u.username, u.full_name, u.email, u.phone, u.status," +
-            " r.room_id, r.code AS room_code, r.contract_start_date" +
+            " r.room_id, r.code AS room_code, " +
+            " COALESCE(r.contract_start_date, (SELECT TOP 1 c.start_date FROM dbo.contracts c WHERE c.tenant_id = u.user_id AND c.deleted_at IS NULL ORDER BY CASE WHEN c.status = 'ACTIVE' THEN 0 ELSE 1 END, c.created_at DESC)) AS contract_start_date" +
             " FROM dbo.users u" +
             " LEFT JOIN dbo.rooms r ON r.tenant_id = u.user_id AND r.deleted_at IS NULL" +
             whereClause.toString() +
@@ -296,7 +297,8 @@ public class UserDAO extends BaseDAO {
      */
     public Map<String, Object> getTenantDetail(int tenantId) {
         Map<String, Object> tenant = null;
-        String tenantSql = "SELECT u.*, r.room_id, r.code AS room_code, r.contract_start_date, " +
+        String tenantSql = "SELECT u.*, r.room_id, r.code AS room_code, " +
+                "COALESCE(r.contract_start_date, (SELECT TOP 1 c.start_date FROM dbo.contracts c WHERE c.tenant_id = u.user_id AND c.deleted_at IS NULL ORDER BY CASE WHEN c.status = 'ACTIVE' THEN 0 ELSE 1 END, c.created_at DESC)) AS contract_start_date, " +
                 "(SELECT TOP 1 contract_id FROM dbo.contracts WHERE tenant_id = u.user_id AND deleted_at IS NULL ORDER BY CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, created_at DESC) AS contract_id " +
                 "FROM dbo.users u " +
                 "LEFT JOIN dbo.rooms r ON u.user_id = r.tenant_id " +

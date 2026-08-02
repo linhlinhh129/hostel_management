@@ -594,7 +594,7 @@ public class ContractDAO extends BaseDAO {
 
     public boolean extendContractTransaction(int contractId, LocalDate newEndDate, Integer tenantId, int roomId) {
         String updContract = "UPDATE dbo.contracts SET end_date = ?, status = 'ACTIVE', updated_at = GETDATE() WHERE contract_id = ?";
-        String updRoom = "UPDATE dbo.rooms SET contract_end_date = ?, tenant_id = ?, status = 'OCCUPIED', updated_at = GETDATE() WHERE room_id = ?";
+        String updRoom = "UPDATE dbo.rooms SET contract_start_date = (SELECT start_date FROM dbo.contracts WHERE contract_id = ?), contract_end_date = ?, tenant_id = ?, status = 'OCCUPIED', updated_at = GETDATE() WHERE room_id = ?";
         String updUser = "UPDATE dbo.users SET status = 'ACTIVE', updated_at = GETDATE() WHERE user_id = ?";
 
         Connection conn = null;
@@ -611,13 +611,14 @@ public class ContractDAO extends BaseDAO {
 
             // 2. Update room
             try (PreparedStatement ps = conn.prepareStatement(updRoom)) {
-                ps.setDate(1, Date.valueOf(newEndDate));
+                ps.setInt(1, contractId);
+                ps.setDate(2, Date.valueOf(newEndDate));
                 if (tenantId != null) {
-                    ps.setInt(2, tenantId);
+                    ps.setInt(3, tenantId);
                 } else {
-                    ps.setNull(2, Types.INTEGER);
+                    ps.setNull(3, Types.INTEGER);
                 }
-                ps.setInt(3, roomId);
+                ps.setInt(4, roomId);
                 ps.executeUpdate();
             }
 
