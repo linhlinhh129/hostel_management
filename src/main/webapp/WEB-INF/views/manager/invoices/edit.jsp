@@ -48,7 +48,7 @@
 
               <div class="col-md-6">
                 <label class="form-label fw-bold">Phí khác (VNĐ)</label>
-                <input type="number" class="form-control" name="otherFee" value="<c:out value="${invoice.otherFee}"/>" step="1000">
+                <input type="number" class="form-control" name="otherFee" value="<c:out value="${invoice.otherFee}"/>" step="1000" max="50000000">
               </div>
 
               <div class="col-12">

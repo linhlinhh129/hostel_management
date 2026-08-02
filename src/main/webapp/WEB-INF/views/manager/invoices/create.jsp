@@ -29,143 +29,143 @@
 
               <div class="data-surface p-4" style="max-width: 800px;margin:0 auto">
 
-                  <form action="${ctx}/manager/invoices" method="post" id="createInvoiceForm">
-                    <input type="hidden" name="action" value="create">
-                    <input type="hidden" name="csrfToken" value="${csrfToken}">
+                <form action="${ctx}/manager/invoices" method="post" id="createInvoiceForm">
+                  <input type="hidden" name="action" value="create">
+                  <input type="hidden" name="csrfToken" value="${csrfToken}">
 
-                    <div class="row g-4">
-                      <div class="col-md-6">
-                        <label class="form-label fw-bold">Mã phòng <span class="text-danger">*</span></label>
-                        <select class="form-select" name="roomCode" id="roomCodeSelect" required>
-                          <option value="">-- Chọn mã phòng --</option>
-                          <c:set var="foundPrefilled" value="false" />
-                          <c:forEach var="r" items="${availableRooms}">
-                            <c:if test="${not empty prefilledRoomCode and prefilledRoomCode == r.code}">
-                              <c:set var="foundPrefilled" value="true" />
-                            </c:if>
-                            <option value="${r.code}" <c:if test="${prefilledRoomCode == r.code}">selected</c:if>>
-                              Phòng
-                              <c:out value="${r.code}" />
-                            </option>
-                          </c:forEach>
-                          <c:if test="${not empty prefilledRoomCode and !foundPrefilled}">
-                            <option value="${prefilledRoomCode}" selected>
-                              Phòng
-                              <c:out value="${prefilledRoomCode}" />
-                            </option>
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Mã phòng <span class="text-danger">*</span></label>
+                      <select class="form-select" name="roomCode" id="roomCodeSelect" required>
+                        <option value="">-- Chọn mã phòng --</option>
+                        <c:set var="foundPrefilled" value="false" />
+                        <c:forEach var="r" items="${availableRooms}">
+                          <c:if test="${not empty prefilledRoomCode and prefilledRoomCode == r.code}">
+                            <c:set var="foundPrefilled" value="true" />
                           </c:if>
-                        </select>
-                        <c:if test="${empty availableRooms}">
-                          <small class="text-warning d-block mt-1 fw-bold">
-                            ⚠ Không tìm thấy phòng nào hợp lệ để tạo hóa đơn.
-                          </small>
+                          <option value="${r.code}" <c:if test="${prefilledRoomCode == r.code}">selected</c:if>>
+                            Phòng
+                            <c:out value="${r.code}" />
+                          </option>
+                        </c:forEach>
+                        <c:if test="${not empty prefilledRoomCode and !foundPrefilled}">
+                          <option value="${prefilledRoomCode}" selected>
+                            Phòng
+                            <c:out value="${prefilledRoomCode}" />
+                          </option>
                         </c:if>
-                        <small id="debtHint" class="text-muted mt-1 d-block"></small>
+                      </select>
+                      <c:if test="${empty availableRooms}">
+                        <small class="text-warning d-block mt-1 fw-bold">
+                          ⚠ Không tìm thấy phòng nào hợp lệ để tạo hóa đơn.
+                        </small>
+                      </c:if>
+                      <small id="debtHint" class="text-muted mt-1 d-block"></small>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Kỳ hóa đơn (YYYYMM)</label>
+                      <input type="text" class="form-control bg-light" name="billingPeriod" id="billingPeriodInput"
+                        readonly
+                        value="<c:out value='${param.billingPeriod != null ? param.billingPeriod : defaultBillingPeriod}'/>">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Hạn thanh toán <span class="text-danger">*</span></label>
+                      <input type="date" class="form-control" name="dueDate" required
+                        value="<c:out value='${param.dueDate}'/>">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Phí khác (VNĐ)</label>
+                      <input type="number" class="form-control" name="otherFee" id="otherFeeInput"
+                        value="<c:choose><c:when test='${not empty param.otherFee}'><c:out value='${param.otherFee}'/></c:when><c:otherwise>0</c:otherwise></c:choose>"
+                        step="1000" max="50000000">
+                    </div>
+
+                    <div class="col-12">
+                      <label class="form-label fw-bold">Ghi chú</label>
+                      <textarea class="form-control" name="note" rows="3" maxlength="1000"
+                        placeholder="Ghi chú thêm nếu có..."><c:out value='${param.note}'/></textarea>
+                      <div class="form-text text-muted">Tối đa 1000 ký tự.</div>
+                    </div>
+                    <div class="col-12 mt-4" id="invoicePreviewSection" style="display:none;">
+                      <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">Chi Tiết Hóa Đơn (Tạm Tính)</h5>
+                      <div class="row g-3">
+                        <div class="col-md-3">
+                          <label class="form-label text-muted">Tiền phòng</label>
+                          <input type="text" class="form-control bg-light" id="previewRoomFee" readonly>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label text-muted">Phí dịch vụ chung</label>
+                          <input type="text" class="form-control bg-light" id="previewServiceFee" readonly>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label text-muted">Tiền mạng (Internet)</label>
+                          <input type="text" class="form-control bg-light" id="previewInternetFee" readonly>
+                        </div>
                       </div>
 
-                      <div class="col-md-6">
-                        <label class="form-label fw-bold">Kỳ hóa đơn (YYYYMM)</label>
-                        <input type="text" class="form-control bg-light" name="billingPeriod" id="billingPeriodInput"
-                          readonly
-                          value="<c:out value='${param.billingPeriod != null ? param.billingPeriod : defaultBillingPeriod}'/>">
+                      <div class="row g-3 mt-1">
+                        <div class="col-md-3">
+                          <label class="form-label text-muted">Chỉ số Điện</label>
+                          <div class="input-group">
+                            <span class="input-group-text bg-light text-muted" id="previewOldElectric"
+                              title="Chỉ số cũ">0</span>
+                            <input type="text" class="form-control bg-light text-center" id="previewNewElectric"
+                              title="Chỉ số mới" readonly>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label text-muted">Đơn giá điện</label>
+                          <input type="text" class="form-control bg-light" id="previewElectricPrice" readonly>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label text-muted">Chỉ số Nước</label>
+                          <div class="input-group">
+                            <span class="input-group-text bg-light text-muted" id="previewOldWater"
+                              title="Chỉ số cũ">0</span>
+                            <input type="text" class="form-control bg-light text-center" id="previewNewWater"
+                              title="Chỉ số mới" readonly>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label text-muted">Đơn giá nước</label>
+                          <input type="text" class="form-control bg-light" id="previewWaterPrice" readonly>
+                        </div>
                       </div>
 
-                      <div class="col-md-6">
-                        <label class="form-label fw-bold">Hạn thanh toán <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" name="dueDate" required
-                          value="<c:out value='${param.dueDate}'/>">
-                      </div>
-
-                      <div class="col-md-6">
-                        <label class="form-label fw-bold">Phí khác (VNĐ)</label>
-                        <input type="number" class="form-control" name="otherFee" id="otherFeeInput"
-                          value="<c:choose><c:when test='${not empty param.otherFee}'><c:out value='${param.otherFee}'/></c:when><c:otherwise>0</c:otherwise></c:choose>"
-                          step="1000">
-                      </div>
-
-                      <div class="col-12">
-                        <label class="form-label fw-bold">Ghi chú</label>
-                        <textarea class="form-control" name="note" rows="3" maxlength="1000"
-                          placeholder="Ghi chú thêm nếu có..."><c:out value='${param.note}'/></textarea>
-                        <div class="form-text text-muted">Tối đa 1000 ký tự.</div>
-                      </div>
-                      <div class="col-12 mt-4" id="invoicePreviewSection" style="display:none;">
-                        <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">Chi Tiết Hóa Đơn (Tạm Tính)</h5>
+                      <div id="previewMeterImages" class="mt-4 pt-3 border-top" style="display:none;">
+                        <h6 class="fw-bold mb-3" style="color: var(--hms-text-primary);">Ảnh chỉ số điện nước</h6>
                         <div class="row g-3">
-                          <div class="col-md-3">
-                            <label class="form-label text-muted">Tiền phòng</label>
-                            <input type="text" class="form-control bg-light" id="previewRoomFee" readonly>
-                          </div>
-                          <div class="col-md-3">
-                            <label class="form-label text-muted">Phí dịch vụ chung</label>
-                            <input type="text" class="form-control bg-light" id="previewServiceFee" readonly>
-                          </div>
-                          <div class="col-md-3">
-                            <label class="form-label text-muted">Tiền mạng (Internet)</label>
-                            <input type="text" class="form-control bg-light" id="previewInternetFee" readonly>
-                          </div>
-                        </div>
-
-                        <div class="row g-3 mt-1">
-                          <div class="col-md-3">
-                            <label class="form-label text-muted">Chỉ số Điện</label>
-                            <div class="input-group">
-                              <span class="input-group-text bg-light text-muted" id="previewOldElectric"
-                                title="Chỉ số cũ">0</span>
-                              <input type="text" class="form-control bg-light text-center" id="previewNewElectric"
-                                title="Chỉ số mới" readonly>
+                          <div class="col-md-6" id="electricImgCol" style="display:none;">
+                            <div class="border rounded p-2 text-center bg-light">
+                              <div class="fw-bold small mb-2 text-muted">Ảnh công tơ điện</div>
+                              <img id="previewElectricImg" src="" alt="Ảnh công tơ điện" class="img-fluid rounded"
+                                style="max-height:180px; object-fit:contain; cursor:zoom-in; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                                onclick="showFullImage(this.src)">
                             </div>
                           </div>
-                          <div class="col-md-3">
-                            <label class="form-label text-muted">Đơn giá điện</label>
-                            <input type="text" class="form-control bg-light" id="previewElectricPrice" readonly>
-                          </div>
-                          <div class="col-md-3">
-                            <label class="form-label text-muted">Chỉ số Nước</label>
-                            <div class="input-group">
-                              <span class="input-group-text bg-light text-muted" id="previewOldWater"
-                                title="Chỉ số cũ">0</span>
-                              <input type="text" class="form-control bg-light text-center" id="previewNewWater"
-                                title="Chỉ số mới" readonly>
-                            </div>
-                          </div>
-                          <div class="col-md-3">
-                            <label class="form-label text-muted">Đơn giá nước</label>
-                            <input type="text" class="form-control bg-light" id="previewWaterPrice" readonly>
-                          </div>
-                        </div>
-
-                        <div id="previewMeterImages" class="mt-4 pt-3 border-top" style="display:none;">
-                          <h6 class="fw-bold mb-3" style="color: var(--hms-text-primary);">Ảnh chỉ số điện nước</h6>
-                          <div class="row g-3">
-                            <div class="col-md-6" id="electricImgCol" style="display:none;">
-                              <div class="border rounded p-2 text-center bg-light">
-                                <div class="fw-bold small mb-2 text-muted">Ảnh công tơ điện</div>
-                                <img id="previewElectricImg" src="" alt="Ảnh công tơ điện" class="img-fluid rounded"
-                                  style="max-height:180px; object-fit:contain; cursor:zoom-in; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
-                                  onclick="showFullImage(this.src)">
-                              </div>
-                            </div>
-                            <div class="col-md-6" id="waterImgCol" style="display:none;">
-                              <div class="border rounded p-2 text-center bg-light">
-                                <div class="fw-bold small mb-2 text-muted">Ảnh công tơ nước</div>
-                                <img id="previewWaterImg" src="" alt="Ảnh công tơ nước" class="img-fluid rounded"
-                                  style="max-height:180px; object-fit:contain; cursor:zoom-in; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
-                                  onclick="showFullImage(this.src)">
-                              </div>
+                          <div class="col-md-6" id="waterImgCol" style="display:none;">
+                            <div class="border rounded p-2 text-center bg-light">
+                              <div class="fw-bold small mb-2 text-muted">Ảnh công tơ nước</div>
+                              <img id="previewWaterImg" src="" alt="Ảnh công tơ nước" class="img-fluid rounded"
+                                style="max-height:180px; object-fit:contain; cursor:zoom-in; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
+                                onclick="showFullImage(this.src)">
                             </div>
                           </div>
                         </div>
                       </div>
-
-                      <div id="previewError" class="alert alert-danger mt-3" style="display:none; border-radius:8px;">
-                      </div>
                     </div>
 
-                    <div class="mt-4 pt-3 border-top d-flex gap-2">
-                      <button type="submit" class="btn-mintlify-primary">Tạo Hóa Đơn</button>
-                      <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">Hủy bỏ</a>
+                    <div id="previewError" class="alert alert-danger mt-3" style="display:none; border-radius:8px;">
                     </div>
+                  </div>
+
+                  <div class="mt-4 pt-3 border-top d-flex gap-2">
+                    <button type="submit" class="btn-mintlify-primary">Tạo Hóa Đơn</button>
+                    <a href="${ctx}/manager/invoices" class="btn-mintlify-secondary text-decoration-none">Hủy bỏ</a>
+                  </div>
               </div>
 
 
