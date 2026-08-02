@@ -26,7 +26,6 @@ public interface InvoiceService {
     void createInvoice(int managerId, String roomCode, String billingPeriod, String dueDate, String otherFee, String note, int createdBy) throws Exception;
     void updateInvoice(int managerId, int invoiceId, String dueDateStr, String otherFeeStr, String note) throws Exception;
     void updateStatus(int managerId, int invoiceId, String status) throws Exception;
-    BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId);
     
     Map<String, Object> getInvoicePreview(int managerId, String roomCode, String billingPeriod) throws Exception;
 }

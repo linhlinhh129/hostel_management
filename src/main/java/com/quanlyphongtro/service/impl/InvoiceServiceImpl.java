@@ -250,10 +250,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId) {
-        return invoiceDAO.getUnpaidDebtByRoomCode(roomCode, managerId);
-    }
-    @Override
     public Map<String, Object> getInvoicePreview(int managerId, String roomCode, String billingPeriod) throws Exception {
         InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
         if (roomSnap == null) {
