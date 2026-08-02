@@ -28,8 +28,6 @@ public class InvoiceServlet extends BaseServlet {
         String action = req.getParameter("action");
         if ("create".equals(action)) {
             showCreateForm(req, resp);
-        } else if ("getDebt".equals(action)) {
-            handleGetDebt(req, resp);
         } else if ("getInvoicePreview".equals(action)) {
             handleGetInvoicePreview(req, resp);
         } else if ("getAvailableRooms".equals(action)) {
@@ -37,23 +35,6 @@ public class InvoiceServlet extends BaseServlet {
         } else {
             showList(req, resp);
         }
-    }
-
-    private void handleGetDebt(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        UserSessionDTO user = getCurrentUser(req);
-        if (user == null || (!"MANAGER".equals(user.getRole()) && !"ADMIN".equals(user.getRole()))) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-        String roomCode = req.getParameter("roomCode");
-        BigDecimal debt = BigDecimal.ZERO;
-        if (roomCode != null && !roomCode.trim().isEmpty()) {
-            debt = invoiceService.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
-            if (debt == null) debt = BigDecimal.ZERO;
-        }
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write("{\"debt\":" + debt + "}");
     }
 
     private void handleGetInvoicePreview(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -64,12 +45,13 @@ public class InvoiceServlet extends BaseServlet {
         }
         String roomCode = req.getParameter("roomCode");
         String billingPeriod = req.getParameter("billingPeriod");
-        
+
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        
+
         try {
-            java.util.Map<String, Object> preview = invoiceService.getInvoicePreview(user.getId(), roomCode, billingPeriod);
+            java.util.Map<String, Object> preview = invoiceService.getInvoicePreview(user.getId(), roomCode,
+                    billingPeriod);
             StringBuilder json = new StringBuilder("{");
             json.append("\"roomFee\":").append(preview.get("roomFee")).append(",");
             json.append("\"serviceFee\":").append(preview.get("serviceFee")).append(",");
@@ -81,8 +63,10 @@ public class InvoiceServlet extends BaseServlet {
             json.append("\"oldWater\":").append(preview.get("oldWater")).append(",");
             json.append("\"newWater\":").append(preview.get("newWater")).append(",");
             json.append("\"meterId\":").append(preview.get("meterId")).append(",");
-            json.append("\"electricImg\":\"").append(preview.get("electricImg") != null ? preview.get("electricImg") : "").append("\",");
-            json.append("\"waterImg\":\"").append(preview.get("waterImg") != null ? preview.get("waterImg") : "").append("\"");
+            json.append("\"electricImg\":\"")
+                    .append(preview.get("electricImg") != null ? preview.get("electricImg") : "").append("\",");
+            json.append("\"waterImg\":\"").append(preview.get("waterImg") != null ? preview.get("waterImg") : "")
+                    .append("\"");
             json.append("}");
             resp.getWriter().write(json.toString());
         } catch (Exception e) {
@@ -108,12 +92,14 @@ public class InvoiceServlet extends BaseServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         try {
-            List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(), billingPeriod.trim());
+            List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(),
+                    billingPeriod.trim());
             StringBuilder json = new StringBuilder("[");
             for (int i = 0; i < availableRooms.size(); i++) {
                 RoomDTO r = availableRooms.get(i);
                 json.append("{\"code\":\"").append(r.getCode()).append("\"}");
-                if (i < availableRooms.size() - 1) json.append(",");
+                if (i < availableRooms.size() - 1)
+                    json.append(",");
             }
             json.append("]");
             resp.getWriter().write(json.toString());
@@ -133,14 +119,17 @@ public class InvoiceServlet extends BaseServlet {
             String keyword = req.getParameter("keyword");
             String status = req.getParameter("status");
             String billingPeriod = req.getParameter("billingPeriod");
-            
+
             int page = 1;
             int size = 10;
             try {
-                if (req.getParameter("page") != null) page = Integer.parseInt(req.getParameter("page"));
-            } catch (NumberFormatException e) {}
+                if (req.getParameter("page") != null)
+                    page = Integer.parseInt(req.getParameter("page"));
+            } catch (NumberFormatException e) {
+            }
 
-            List<InvoiceListItemDTO> invoices = invoiceService.getInvoices(user.getId(), keyword, status, billingPeriod, page, size);
+            List<InvoiceListItemDTO> invoices = invoiceService.getInvoices(user.getId(), keyword, status, billingPeriod,
+                    page, size);
             int total = invoiceService.countInvoices(user.getId(), keyword, status, billingPeriod);
             int totalPages = (int) Math.ceil((double) total / size);
 
@@ -180,8 +169,6 @@ public class InvoiceServlet extends BaseServlet {
             req.setAttribute("defaultBillingPeriod", billingPeriod);
 
             if (roomCode != null && !roomCode.trim().isEmpty()) {
-                BigDecimal previousDebt = invoiceService.getUnpaidDebtByRoomCode(roomCode.trim(), user.getId());
-                req.setAttribute("previousDebt", previousDebt);
                 req.setAttribute("prefilledRoomCode", roomCode.trim());
             }
         } catch (Exception e) {
@@ -203,26 +190,31 @@ public class InvoiceServlet extends BaseServlet {
             String note = req.getParameter("note");
 
             try {
-                invoiceService.createInvoice(user.getId(), roomCode, billingPeriod, dueDate, otherFee, note, user.getId());
+                invoiceService.createInvoice(user.getId(), roomCode, billingPeriod, dueDate, otherFee, note,
+                        user.getId());
                 resp.sendRedirect(req.getContextPath() + "/manager/invoices");
             } catch (IllegalArgumentException e) {
                 req.setAttribute("errorMessage", e.getMessage());
                 req.setAttribute("prefilledRoomCode", roomCode);
                 try {
-                    List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(), billingPeriod);
+                    List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(),
+                            billingPeriod);
                     req.setAttribute("availableRooms", availableRooms);
                     req.setAttribute("defaultBillingPeriod", billingPeriod);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
                 req.getRequestDispatcher("/WEB-INF/views/manager/invoices/create.jsp").forward(req, resp);
             } catch (Exception e) {
                 e.printStackTrace();
                 req.setAttribute("errorMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
                 req.setAttribute("prefilledRoomCode", roomCode);
                 try {
-                    List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(), billingPeriod);
+                    List<RoomDTO> availableRooms = invoiceService.getAvailableRoomsForInvoice(user.getId(),
+                            billingPeriod);
                     req.setAttribute("availableRooms", availableRooms);
                     req.setAttribute("defaultBillingPeriod", billingPeriod);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
                 req.getRequestDispatcher("/WEB-INF/views/manager/invoices/create.jsp").forward(req, resp);
             }
         } else {

@@ -94,7 +94,7 @@ KHI Ban quản lý chọn mã phòng, THE SYSTEM SHALL kiểm tra phòng tồn t
 
 KHI Ban quản lý chọn kỳ hạn hóa đơn, THE SYSTEM SHALL sử dụng kỳ hạn đó để tạo hóa đơn cho phòng được chọn.
 
-KHI Ban quản lý nhập phí khác, THE SYSTEM SHALL kiểm tra phí khác lớn hơn hoặc bằng 0.
+KHI Ban quản lý nhập phí khác, THE SYSTEM SHALL kiểm tra phí khác không nhỏ hơn âm tiền phòng cố định và không vượt quá 50,000,000 VNĐ.
 
 KHI Ban quản lý tạo hóa đơn với dữ liệu hợp lệ, THE SYSTEM SHALL tự động truy xuất các dữ liệu cần thiết từ các bảng liên quan để tính hóa đơn.
 
@@ -106,7 +106,7 @@ KHI mã phòng không tồn tại, THE SYSTEM SHALL trả về HTTP 404 với m�
 
 KHI hạn thanh toán nhỏ hơn ngày hiện tại, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_DUE_DATE`.
 
-KHI phí khác nhỏ hơn 0, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_OTHER_FEE`.
+KHI phí khác không hợp lệ, THE SYSTEM SHALL trả về lỗi HTTP 400 và thông báo phù hợp (VD: "Phí khác không được vượt quá 50.000.000 VNĐ" hoặc "Phí khác không được nhỏ hơn âm tiền phòng").
 
 **Quy tắc sinh mã hóa đơn**:Mã hóa đơn được hệ thống tự động sinh theo định dạng: `INV-{roomCode}-{billingPeriod}`Ví dụ: `INV-HN0101-202606`
 
@@ -246,7 +246,7 @@ KHI chỉ số nước mới nhỏ hơn chỉ số nước cũ, THE SYSTEM SHALL
 
 KHI hạn thanh toán nhỏ hơn ngày hiện tại, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_DUE_DATE`.
 
-KHI phí khác nhỏ hơn 0, THE SYSTEM SHALL trả về HTTP 400 với mã lỗi `INVALID_OTHER_FEE`.
+KHI phí khác không hợp lệ, THE SYSTEM SHALL trả về lỗi HTTP 400 và thông báo phù hợp (VD: "Phí khác không được vượt quá 50.000.000 VNĐ" hoặc "Phí khác không được nhỏ hơn âm tiền phòng").
 
 ## 3.6 In / Xuất PDF hóa đơn
 
@@ -337,7 +337,7 @@ KHI hệ thống triển khai hàm hoặc luồng mới thay thế cho các hàm
 | --- | --- | --- |
 | `roomCode` | Không rỗng, phòng tồn tại | Phòng không hợp lệ |
 | `billingPeriod` | Format hợp lệ | Yêu cầu định dạng kỳ hạn |
-| `otherFee` | Số thực lớn hơn hoặc bằng 0 | Không đúng định dạng số lượng/phí |
+| `otherFee` | Số trong khoảng từ âm tiền phòng đến 50,000,000 | Phí khác không được nhỏ hơn âm tiền phòng / vượt quá 50.000.000 VNĐ |
 | Logic | Phòng chưa có Hóa đơn trong kỳ | `IllegalArgumentException` (Phòng đã có hóa đơn trong kỳ này) |
 | Liên kết | Lấy tự động chỉ số điện/nước cũ/mới, giá dịch vụ | Báo lỗi nếu chưa nhập điện/nước cho kỳ |
 
@@ -348,7 +348,7 @@ KHI hệ thống triển khai hàm hoặc luồng mới thay thế cho các hàm
 | Form param | Điều kiện hợp lệ | Lỗi trả về (`errorMessage`) |
 | --- | --- | --- |
 | `dueDate` | Không rỗng, date hợp lệ | Ngày hết hạn không hợp lệ |
-| `otherFee` | Số hợp lệ | Không thể parse số tiền / phí |
+| `otherFee` | Số trong khoảng từ âm tiền phòng đến 50,000,000 | Phí khác không được nhỏ hơn âm tiền phòng / vượt quá 50.000.000 VNĐ |
 | Trạng thái | Chỉ cho phép khi hóa đơn chưa thanh toán hoàn tất | Báo lỗi nếu cố cập nhật lúc đã `PAID` |
 
 ---

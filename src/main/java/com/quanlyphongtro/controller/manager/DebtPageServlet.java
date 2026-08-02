@@ -19,12 +19,13 @@ import java.util.Optional;
 
 @WebServlet("/manager/debts")
 public class DebtPageServlet extends HttpServlet {
-    
+
     private final DebtService debtService = new DebtServiceImpl();
     private static final int PAGE_SIZE = 10;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -45,25 +46,28 @@ public class DebtPageServlet extends HttpServlet {
         }
     }
 
-    private void handleList(HttpServletRequest request, HttpServletResponse response, int managerId) throws ServletException, IOException {
+    private void handleList(HttpServletRequest request, HttpServletResponse response, int managerId)
+            throws ServletException, IOException {
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
-        
+
         int page = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
             try {
                 page = Integer.parseInt(pageParam);
-                if (page < 1) page = 1;
-            } catch (NumberFormatException ignored) {}
+                if (page < 1)
+                    page = 1;
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         List<DebtListItemDTO> debts = debtService.getDebts(managerId, keyword, status, page, PAGE_SIZE);
         int totalPages = debtService.getTotalPages(managerId, keyword, status, PAGE_SIZE);
         // Tính totalRecords: các trang trước đầy, trang cuối = số thực tế
         int totalRecords = totalPages > 0
-            ? (totalPages - 1) * PAGE_SIZE + (page == totalPages ? debts.size() : PAGE_SIZE)
-            : 0;
+                ? (totalPages - 1) * PAGE_SIZE + (page == totalPages ? debts.size() : PAGE_SIZE)
+                : 0;
 
         request.setAttribute("debts", debts);
         request.setAttribute("currentPage", page);
@@ -75,7 +79,8 @@ public class DebtPageServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/manager/debts/index.jsp").forward(request, response);
     }
 
-    private void handleDetail(HttpServletRequest request, HttpServletResponse response, int managerId) throws ServletException, IOException {
+    private void handleDetail(HttpServletRequest request, HttpServletResponse response, int managerId)
+            throws ServletException, IOException {
         String idParam = request.getParameter("id");
         if (idParam == null || idParam.isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/manager/debts");
@@ -85,7 +90,7 @@ public class DebtPageServlet extends HttpServlet {
         try {
             int invoiceId = Integer.parseInt(idParam);
             Optional<DebtDetailDTO> optDebt = debtService.getDebtDetail(managerId, invoiceId);
-            
+
             if (optDebt.isPresent()) {
                 request.setAttribute("debt", optDebt.get());
                 request.getRequestDispatcher("/WEB-INF/views/manager/debts/detail.jsp").forward(request, response);
@@ -94,12 +99,14 @@ public class DebtPageServlet extends HttpServlet {
                 com.quanlyphongtro.dto.InvoiceDetailDTO invoiceDTO = invoiceDAO.findById(managerId, invoiceId);
                 if (invoiceDTO != null) {
                     request.getSession().setAttribute("flashType", "info");
-                    request.getSession().setAttribute("flashMessage", "Hóa đơn " + invoiceDTO.getInvoiceCode() + " chưa quá hạn thanh toán. Công nợ chỉ quản lý các hóa đơn đã quá hạn.");
+                    request.getSession().setAttribute("flashMessage", "Hóa đơn " + invoiceDTO.getInvoiceCode()
+                            + " chưa quá hạn thanh toán. Công nợ chỉ quản lý các hóa đơn đã quá hạn.");
                     response.sendRedirect(request.getContextPath() + "/manager/invoices/" + invoiceId);
                     return;
                 }
                 request.getSession().setAttribute("flashType", "error");
-                request.getSession().setAttribute("flashMessage", "Không tìm thấy công nợ hoặc không thuộc quyền quản lý");
+                request.getSession().setAttribute("flashMessage",
+                        "Không tìm thấy công nợ hoặc không thuộc quyền quản lý");
                 response.sendRedirect(request.getContextPath() + "/manager/debts");
             }
         } catch (NumberFormatException e) {
@@ -115,7 +122,8 @@ public class DebtPageServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -136,7 +144,8 @@ public class DebtPageServlet extends HttpServlet {
         }
     }
 
-    private void handleRemind(HttpServletRequest request, HttpServletResponse response, int managerId) throws ServletException, IOException {
+    private void handleRemind(HttpServletRequest request, HttpServletResponse response, int managerId)
+            throws ServletException, IOException {
         String idParam = request.getParameter("id");
         if (idParam == null || idParam.isEmpty()) {
             request.getSession().setAttribute("flashType", "error");
@@ -147,7 +156,8 @@ public class DebtPageServlet extends HttpServlet {
 
         try {
             int invoiceId = Integer.parseInt(idParam);
-            response.sendRedirect(request.getContextPath() + "/manager/notifications/send-debt-reminder?invoiceId=" + invoiceId);
+            response.sendRedirect(
+                    request.getContextPath() + "/manager/notifications/send-debt-reminder?invoiceId=" + invoiceId);
         } catch (NumberFormatException e) {
             request.getSession().setAttribute("flashType", "error");
             request.getSession().setAttribute("flashMessage", "ID công nợ không hợp lệ.");

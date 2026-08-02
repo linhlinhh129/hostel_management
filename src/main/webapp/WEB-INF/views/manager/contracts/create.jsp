@@ -75,8 +75,8 @@
                   <input type="text" name="tenantIdentityNumber" value="<c:out value="${contract.tenantIdentityNumber}"/>" class="form-control" required placeholder="Số thẻ căn cước"/>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label">Số điện thoại</label>
-                  <input type="text" name="tenantPhone" value="<c:out value="${contract.tenantPhone}"/>" class="form-control" placeholder="09xxxxxxxxx"/>
+                  <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                  <input type="text" name="tenantPhone" value="<c:out value="${contract.tenantPhone}"/>" class="form-control" required placeholder="09xxxxxxxxx"/>
                 </div>
               </div>
 

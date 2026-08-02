@@ -257,25 +257,89 @@ public class Contract {
         return endDate != null ? endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
     }
 
-    public java.math.BigDecimal getRoomFee() { return roomFee; }
-    public void setRoomFee(java.math.BigDecimal roomFee) { this.roomFee = roomFee; }
+    public java.math.BigDecimal getRoomFee() {
+        return roomFee;
+    }
 
-    public java.math.BigDecimal getDepositAmount() { return depositAmount; }
-    public void setDepositAmount(java.math.BigDecimal depositAmount) { this.depositAmount = depositAmount; }
+    public void setRoomFee(java.math.BigDecimal roomFee) {
+        this.roomFee = roomFee;
+    }
 
-    public java.math.BigDecimal getElectricityPrice() { return electricityPrice; }
-    public void setElectricityPrice(java.math.BigDecimal electricityPrice) { this.electricityPrice = electricityPrice; }
+    public java.math.BigDecimal getDepositAmount() {
+        return depositAmount;
+    }
 
-    public java.math.BigDecimal getWaterPrice() { return waterPrice; }
-    public void setWaterPrice(java.math.BigDecimal waterPrice) { this.waterPrice = waterPrice; }
+    public void setDepositAmount(java.math.BigDecimal depositAmount) {
+        this.depositAmount = depositAmount;
+    }
 
-    public java.math.BigDecimal getInternetFee() { return internetFee; }
-    public void setInternetFee(java.math.BigDecimal internetFee) { this.internetFee = internetFee; }
+    public java.math.BigDecimal getElectricityPrice() {
+        return electricityPrice;
+    }
 
-    public java.math.BigDecimal getServiceFee() { return serviceFee; }
-    public void setServiceFee(java.math.BigDecimal serviceFee) { this.serviceFee = serviceFee; }
+    public void setElectricityPrice(java.math.BigDecimal electricityPrice) {
+        this.electricityPrice = electricityPrice;
+    }
+
+    public java.math.BigDecimal getWaterPrice() {
+        return waterPrice;
+    }
+
+    public void setWaterPrice(java.math.BigDecimal waterPrice) {
+        this.waterPrice = waterPrice;
+    }
+
+    public java.math.BigDecimal getInternetFee() {
+        return internetFee;
+    }
+
+    public void setInternetFee(java.math.BigDecimal internetFee) {
+        this.internetFee = internetFee;
+    }
+
+    public java.math.BigDecimal getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(java.math.BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
+    }
 
     public String getFormattedStartDate() {
         return startDate != null ? startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+    }
+
+    public boolean isExpired() {
+        return "ACTIVE".equals(status) && endDate != null && endDate.isBefore(LocalDate.now());
+    }
+
+    public boolean getExpired() {
+        return isExpired();
+    }
+
+    public boolean isExpiringSoon() {
+        if (!"ACTIVE".equals(status) || endDate == null) {
+            return false;
+        }
+        LocalDate now = LocalDate.now();
+        return !endDate.isBefore(now) && !endDate.isAfter(now.plusDays(30));
+    }
+
+    public boolean getExpiringSoon() {
+        return isExpiringSoon();
+    }
+
+    public long getDaysUntilExpiry() {
+        if (endDate == null) {
+            return 0;
+        }
+        return java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), endDate);
+    }
+
+    public long getDaysOverdue() {
+        if (endDate == null) {
+            return 0;
+        }
+        return java.time.temporal.ChronoUnit.DAYS.between(endDate, LocalDate.now());
     }
 }

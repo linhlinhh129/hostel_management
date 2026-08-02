@@ -96,12 +96,21 @@ public class InvoiceServiceImpl implements InvoiceService {
         BigDecimal manualOtherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
         BigDecimal otherFee = manualOtherFee;
 
+        BigDecimal maxFee = new BigDecimal("50000000");
+        if (otherFee.compareTo(maxFee) > 0) {
+            throw new IllegalArgumentException("Phí khác không được vượt quá 50.000.000 VNĐ.");
+        }
+
         InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
         if (roomSnap == null) {
             throw new IllegalArgumentException("Phòng không tồn tại hoặc bạn không có quyền quản lý phòng này.");
         }
         if (!"OCCUPIED".equals(roomSnap.status) || !roomSnap.hasTenant) {
             throw new IllegalArgumentException("Không thể tạo hóa đơn cho phòng trống hoặc phòng chưa có người thuê.");
+        }
+
+        if (otherFee.compareTo(roomSnap.roomFee.negate()) < 0) {
+            throw new IllegalArgumentException("Phí khác không được nhỏ hơn âm tiền phòng (" + roomSnap.roomFee.negate() + " VNĐ).");
         }
 
         String year = billingPeriod.substring(0, 4);
@@ -189,8 +198,16 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         BigDecimal otherFee = new BigDecimal(otherFeeStr != null && !otherFeeStr.isEmpty() ? otherFeeStr : "0");
 
+        BigDecimal maxFee = new BigDecimal("50000000");
+        if (otherFee.compareTo(maxFee) > 0) {
+            throw new IllegalArgumentException("Phí khác không được vượt quá 50.000.000 VNĐ.");
+        }
+
         InvoiceDAO.InvoicePriceSnapshot snap = invoiceDAO.getInvoicePriceSnapshot(invoiceId);
         if (snap != null) {
+            if (otherFee.compareTo(snap.roomFee.negate()) < 0) {
+                throw new IllegalArgumentException("Phí khác không được nhỏ hơn âm tiền phòng (" + snap.roomFee.negate() + " VNĐ).");
+            }
             if (snap.readingDate != null && dueDate.isBefore(snap.readingDate)) {
                 throw new IllegalArgumentException(
                         "Hạn thanh toán không thể trước ngày chốt số điện nước (" + snap.readingDate + ").");
@@ -249,10 +266,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
     }
 
-    @Override
-    public BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId) {
-        return invoiceDAO.getUnpaidDebtByRoomCode(roomCode, managerId);
-    }
     @Override
     public Map<String, Object> getInvoicePreview(int managerId, String roomCode, String billingPeriod) throws Exception {
         InvoiceDAO.InvoiceRoomSnapshot roomSnap = invoiceDAO.getRoomSnapshotForInvoice(roomCode, managerId);
