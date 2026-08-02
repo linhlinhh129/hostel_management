@@ -29,30 +29,6 @@
 
               <div class="data-surface p-4" style="max-width: 800px;margin:0 auto">
 
-                <%-- Cảnh báo tiền nợ cũ --%>
-                  <div id="debtAlertContainer" class="alert alert-warning align-items-start gap-2 mb-4"
-                    style="border-radius:8px;background:#fff8e1;border:1px solid #ffd54f;color:#7c5c00; display: ${previousDebt != null and previousDebt > 0 ? 'flex' : 'none'};">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px">
-                      <path
-                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
-                      </path>
-                      <line x1="12" y1="9" x2="12" y2="13"></line>
-                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    <div>
-                      <strong>Phòng <span id="debtRoomCodeDisplay">
-                          <c:out value="${prefilledRoomCode}" />
-                        </span> còn nợ:</strong>
-                      <span id="debtAmountDisplay"
-                        style="font-size:1.05rem;font-weight:700;color:#e65100;margin-left:6px">
-                        <fmt:formatNumber value="${previousDebt}" pattern="#,##0" /> đ
-                      </span>
-                      <br>
-                      <small>Số tiền này đã được tự động cộng vào <strong>Phí khác</strong> của hóa đơn mới.</small>
-                    </div>
-                  </div>
-
                   <form action="${ctx}/manager/invoices" method="post" id="createInvoiceForm">
                     <input type="hidden" name="action" value="create">
                     <input type="hidden" name="csrfToken" value="${csrfToken}">
@@ -103,14 +79,8 @@
                       <div class="col-md-6">
                         <label class="form-label fw-bold">Phí khác (VNĐ)</label>
                         <input type="number" class="form-control" name="otherFee" id="otherFeeInput"
-                          value="<c:choose><c:when test='${not empty param.otherFee}'><c:out value='${param.otherFee}'/></c:when><c:when test='${previousDebt != null}'>${previousDebt}</c:when><c:otherwise>0</c:otherwise></c:choose>"
+                          value="<c:choose><c:when test='${not empty param.otherFee}'><c:out value='${param.otherFee}'/></c:when><c:otherwise>0</c:otherwise></c:choose>"
                           step="1000">
-                        <small id="debtNoticeSmall" class="text-warning fw-bold mt-1"
-                          style="display:${previousDebt != null and previousDebt > 0 ? 'block' : 'none'}">
-                          ⚠ Đã bao gồm tiền nợ cũ: <span id="debtNoticeAmount">
-                            <fmt:formatNumber value="${previousDebt}" pattern="#,##0" /> đ
-                          </span>
-                        </small>
                       </div>
 
                       <div class="col-12">
@@ -241,58 +211,11 @@
             var ctx = '<c:out value="${ctx}"/>';
             var roomCodeSelect = document.getElementById('roomCodeSelect');
             var otherFeeInput = document.getElementById('otherFeeInput');
-            var debtAlertContainer = document.getElementById('debtAlertContainer');
-            var debtAmountDisplay = document.getElementById('debtAmountDisplay');
-            var debtRoomCodeDisplay = document.getElementById('debtRoomCodeDisplay');
-            var debtNoticeSmall = document.getElementById('debtNoticeSmall');
-            var debtNoticeAmount = document.getElementById('debtNoticeAmount');
-
             var userModifiedOtherFee = ${ not empty param.otherFee ?'true': 'false'};
             if (otherFeeInput) {
               otherFeeInput.addEventListener('input', function () {
                 userModifiedOtherFee = true;
               });
-            }
-
-            function updateDebtForRoom(roomCode) {
-              if (!roomCode) {
-                if (debtAlertContainer) debtAlertContainer.style.display = 'none';
-                if (debtNoticeSmall) debtNoticeSmall.style.display = 'none';
-                if (otherFeeInput && !userModifiedOtherFee) otherFeeInput.value = '0';
-                return;
-              }
-
-              fetch(ctx + '/manager/invoices?action=getDebt&roomCode=' + encodeURIComponent(roomCode))
-                .then(function (res) {
-                  if (!res.ok) throw new Error('Network error');
-                  return res.json();
-                })
-                .then(function (data) {
-                  var debt = data.debt || 0;
-                  if (debt > 0) {
-                    if (debtAlertContainer) {
-                      debtAlertContainer.style.display = 'flex';
-                      if (debtAmountDisplay) debtAmountDisplay.textContent = new Intl.NumberFormat('vi-VN').format(debt) + ' đ';
-                      if (debtRoomCodeDisplay) debtRoomCodeDisplay.textContent = roomCode;
-                    }
-                    if (otherFeeInput && !userModifiedOtherFee) {
-                      otherFeeInput.value = debt;
-                    }
-                    if (debtNoticeSmall) {
-                      debtNoticeSmall.style.display = 'block';
-                      if (debtNoticeAmount) debtNoticeAmount.textContent = new Intl.NumberFormat('vi-VN').format(debt) + ' đ';
-                    }
-                  } else {
-                    if (debtAlertContainer) debtAlertContainer.style.display = 'none';
-                    if (debtNoticeSmall) debtNoticeSmall.style.display = 'none';
-                    if (otherFeeInput && !userModifiedOtherFee) {
-                      otherFeeInput.value = '0';
-                    }
-                  }
-                })
-                .catch(function (err) {
-                  console.error('Lỗi khi lấy thông tin nợ cũ:', err);
-                });
             }
 
             var billingPeriodInput = document.getElementById('billingPeriodInput');
@@ -385,7 +308,6 @@
                 userModifiedOtherFee = false;
                 var roomCode = roomCodeSelect.value.trim();
                 var bp = billingPeriodInput ? billingPeriodInput.value.trim() : '';
-                updateDebtForRoom(roomCode);
                 updateInvoicePreview(roomCode, bp);
               });
             }
@@ -420,9 +342,8 @@
             }
 
 
-            // Tự động kiểm tra nợ cũ nếu đã chọn sẵn mã phòng khi vào trang
+            // Tự động kiểm tra nếu đã chọn sẵn mã phòng khi vào trang
             if (roomCodeSelect && roomCodeSelect.value.trim()) {
-              updateDebtForRoom(roomCodeSelect.value.trim());
               if (billingPeriodInput && billingPeriodInput.value.trim().length === 6) {
                 updateInvoicePreview(roomCodeSelect.value.trim(), billingPeriodInput.value.trim());
               }

@@ -176,61 +176,6 @@ public class InvoiceDAO extends BaseDAO {
         return null;
     }
 
-    public Integer getMeterIdByInvoiceId(int invoiceId) throws SQLException {
-        String sql = "SELECT meter_id FROM invoices WHERE invoice_id = ? AND deleted_at IS NULL";
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, invoiceId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    int mId = rs.getInt("meter_id");
-                    if (!rs.wasNull())
-                        return mId;
-                }
-            }
-        }
-        return null;
-    }
-
-    public void softDeleteInvoiceWithMeter(int invoiceId, Integer meterId, String meterStatus) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = DatabaseUtil.getConnection();
-            conn.setAutoCommit(false);
-
-            String deleteInvoiceSql = "UPDATE invoices SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE invoice_id = ?";
-            try (PreparedStatement ps = conn.prepareStatement(deleteInvoiceSql)) {
-                ps.setInt(1, invoiceId);
-                ps.executeUpdate();
-            }
-
-            if (meterId != null && ("INCORRECT".equals(meterStatus) || "REPORTED".equals(meterStatus))) {
-                String deleteMeterSql = "UPDATE meter_readings SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE meter_id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(deleteMeterSql)) {
-                    ps.setInt(1, meterId);
-                    ps.executeUpdate();
-                }
-            }
-
-            conn.commit();
-        } catch (Exception e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ignored) {
-                }
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException ignored) {
-                }
-            }
-        }
-    }
 
     // --- Methods from HEAD (Tenant / Room specific) ---
 
@@ -1019,35 +964,6 @@ public class InvoiceDAO extends BaseDAO {
         }
     }
 
-    /**
-     * Tính tổng tiền còn nợ (chưa thanh toán) của một phòng theo mã phòng.
-     * Tiền nợ = tổng (total_amount - paid_amount) của các hóa đơn UNPAID/OVERDUE.
-     */
-    public BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId) {
-        String sql = "SELECT COALESCE(SUM(i.total_amount - COALESCE((" +
-                "  SELECT SUM(p.payment_amount) FROM payments p " +
-                "  WHERE p.invoice_id = i.invoice_id AND p.status = 'SUCCESS' AND p.deleted_at IS NULL" +
-                "), 0)), 0) " +
-                "FROM invoices i " +
-                "INNER JOIN rooms r ON i.room_id = r.room_id " +
-                "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-                "WHERE r.code = ? AND f.manager_id = ? " +
-                "AND i.status IN ('UNPAID', 'OVERDUE') AND i.deleted_at IS NULL";
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, roomCode);
-            ps.setInt(2, managerId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    BigDecimal debt = rs.getBigDecimal(1);
-                    return debt != null ? debt : BigDecimal.ZERO;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("getUnpaidDebtByRoomCode failed for roomCode={}", roomCode, e);
-        }
-        return BigDecimal.ZERO;
-    }
 
     public void update(Invoice invoice) throws SQLException {
         String sql = "UPDATE invoices SET due_date = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() "
