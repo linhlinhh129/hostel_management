@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service.impl;
+
 import com.quanlyphongtro.dao.RequestDAO;
 
 import com.quanlyphongtro.dao.NotificationDAO;
@@ -25,7 +26,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<Notification> getNotificationsForTenant(int roomId, int facilityId, String keyword, int page, int pageSize) {
+    public List<Notification> getNotificationsForTenant(int roomId, int facilityId, String keyword, int page,
+            int pageSize) {
         return notificationDAO.findForTenant(roomId, facilityId, keyword, page, pageSize);
     }
 
@@ -92,16 +94,17 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public int countManagerNotifications(Integer managerId, String tab, String type,
-                                         Integer filterFacilityId, String keyword) {
+            Integer filterFacilityId, String keyword) {
         return notificationDAO.countManagerNotifications(managerId, tab, type, filterFacilityId, keyword);
     }
 
     @Override
     public List<Map<String, Object>> getManagerNotifications(Integer managerId, String tab, String type,
-                                                             Integer filterFacilityId, String keyword,
-                                                             int page, int pageSize) {
+            Integer filterFacilityId, String keyword,
+            int page, int pageSize) {
         int offset = (page - 1) * pageSize;
-        return notificationDAO.getManagerNotifications(managerId, tab, type, filterFacilityId, keyword, offset, pageSize);
+        return notificationDAO.getManagerNotifications(managerId, tab, type, filterFacilityId, keyword, offset,
+                pageSize);
     }
 
     @Override
@@ -116,15 +119,15 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<Map<String, Object>> getReportedIncorrectInvoices(Integer managerId,
-                                                                   Integer filterFacilityId,
-                                                                   String keyword) {
+            Integer filterFacilityId,
+            String keyword) {
         return notificationDAO.getReportedIncorrectInvoices(managerId, filterFacilityId, keyword);
     }
 
     @Override
     public boolean sendNotification(String title, String content, String recipientType,
-                                    Integer recipientId, Integer facilityIdForRoom,
-                                    Integer createdBy) throws AccessDeniedException {
+            Integer recipientId, Integer facilityIdForRoom,
+            Integer createdBy) throws AccessDeniedException {
         if (title == null || title.isBlank() || content == null || content.isBlank()
                 || recipientType == null) {
             throw new IllegalArgumentException("Tiêu đề, nội dung và loại đối tượng nhận không được để trống.");
@@ -153,7 +156,8 @@ public class NotificationServiceImpl implements NotificationService {
             case "ROOM":
                 if (recipientId == null)
                     throw new IllegalArgumentException("Vui lòng chọn phòng nhận thông báo.");
-                // Bước 1: kiểm tra phòng có thuộc cơ sở manager quản lý không (bỏ điều kiện tenant)
+                // Bước 1: kiểm tra phòng có thuộc cơ sở manager quản lý không (bỏ điều kiện
+                // tenant)
                 Integer verifiedFacilityId = notificationDAO.verifyRoomManagerAndGetFacilityId(recipientId, createdBy);
                 if (verifiedFacilityId == null) {
                     // Phân biệt: phòng không thuộc cơ sở vs phòng không có tenant
@@ -161,7 +165,8 @@ public class NotificationServiceImpl implements NotificationService {
                     if (facilityIdOfRoom == null) {
                         throw new IllegalArgumentException("Phòng không tồn tại.");
                     }
-                    // Phòng tồn tại nhưng không có tenant → verifyRoomManagerAndGetFacilityId trả null
+                    // Phòng tồn tại nhưng không có tenant → verifyRoomManagerAndGetFacilityId trả
+                    // null
                     // Thử lại không có điều kiện tenant để phân biệt lỗi quyền vs lỗi tenant
                     if (!notificationDAO.verifyFacilityManager(facilityIdOfRoom, createdBy)) {
                         throw new AccessDeniedException("Bạn không có quyền gửi thông báo đến phòng này.");
@@ -176,8 +181,9 @@ public class NotificationServiceImpl implements NotificationService {
                 throw new IllegalArgumentException("Loại đối tượng nhận không hợp lệ: " + recipientType);
         }
 
-        String code = notificationDAO.generateCode(targetType);  // generateCode maps FACILITY→FAC, ROOM→ROOM
-        // CHECK CONSTRAINT: khi target_type='ROOM' thì facility_id phải NULL; khi 'FACILITY' thì room_id phải NULL
+        String code = notificationDAO.generateCode(targetType); // generateCode maps FACILITY→FAC, ROOM→ROOM
+        // CHECK CONSTRAINT: khi target_type='ROOM' thì facility_id phải NULL; khi
+        // 'FACILITY' thì room_id phải NULL
         Integer insertFacilityId = "ROOM".equals(targetType) ? null : facilityId;
         Integer insertRoomId = "FACILITY".equals(targetType) ? null : roomId;
         int id = notificationDAO.insertNotificationAndGetId(code, title, content, targetType,
@@ -189,7 +195,8 @@ public class NotificationServiceImpl implements NotificationService {
     public Map<String, Object> getNotificationDetail(int notificationId, Integer managerId)
             throws AccessDeniedException {
         Map<String, Object> notification = notificationDAO.getNotificationDetail(notificationId);
-        if (notification == null) return null;
+        if (notification == null)
+            return null;
 
         // Kiểm tra quyền: manager chỉ được xem thông báo do mình tạo
         // hoặc thông báo gửi đến cơ sở/phòng mà mình phụ trách
@@ -209,8 +216,6 @@ public class NotificationServiceImpl implements NotificationService {
         return notification;
     }
 
-
-
     @Override
     public Map<String, Object> getInvoiceDetailsForSendOperator(int invoiceId, Integer managerId)
             throws AccessDeniedException {
@@ -219,7 +224,8 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0
+                && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền truy cập hóa đơn này.");
 
         return invoice;
@@ -232,13 +238,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public boolean sendOperatorRequest(int invoiceId, int operatorId, String title, String content,
-                                       Integer managerId) throws AccessDeniedException {
+            Integer managerId) throws AccessDeniedException {
         Map<String, Object> invoice = notificationDAO.getInvoiceDetailsForSendOperator(invoiceId);
         if (invoice == null)
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0
+                && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền gửi yêu cầu cho hóa đơn này.");
 
         // Lấy meterId từ bảng invoices qua verify details
@@ -262,7 +269,8 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0
+                && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền truy cập hóa đơn này.");
 
         return invoice;
@@ -276,7 +284,8 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalArgumentException("Hóa đơn không tồn tại.");
 
         Object invManagerId = invoice.get("managerId");
-        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0 && !managerId.equals(invManagerId))
+        if (invManagerId != null && invManagerId instanceof Integer && ((Integer) invManagerId) > 0
+                && !managerId.equals(invManagerId))
             throw new AccessDeniedException("Bạn không có quyền gửi nhắc nợ cho hóa đơn này.");
 
         Integer roomId = (Integer) invoice.get("roomId");

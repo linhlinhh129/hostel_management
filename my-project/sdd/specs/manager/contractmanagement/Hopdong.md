@@ -71,9 +71,9 @@ Tiền Internet: **[internet_fee] đ/người/tháng**
 
 Tiền dịch vụ: **[service_fee] đ/người/tháng**
 
-Bên B đặt cọc cho bên A số tiền là: **3.000.000 đ**
+Bên B đặt cọc cho bên A số tiền là: **2.000.000 đ**
 
-Bằng chữ: **Ba triệu đồng chẵn**
+Bằng chữ: **Hai triệu đồng chẵn**
 
 - Tiền cọc sẽ được hoàn trả đầy đủ cho bên thuê khi hợp đồng này kết thúc và bên thuê hoàn trả đầy đủ chi phí thuê, bao gồm tiền phòng, điện, nước, phí dịch vụ và các chi phí khác liên quan.
 
@@ -117,7 +117,7 @@ Bằng chữ: **Ba triệu đồng chẵn**
 
 - Hai bên phải tạo điều kiện cho nhau thực hiện hợp đồng.
 
-- Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất.
+- Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất. Thời điểm chấm dứt hợp đồng bắt buộc phải rơi vào ngày cuối cùng của tháng lịch và bàn giao lại phòng vào ngày mùng 1 đầu tháng kế tiếp. Trong trường hợp Bên thuê tự ý dọn đi trước ngày cuối tháng, hợp đồng vẫn tính là có hiệu lực đến hết tháng đó; Bên thuê không được hoàn lại tiền nhà cho những ngày không sử dụng và phải thanh toán toàn bộ tiền điện, nước phát sinh tính đến ngày dọn đi thực tế.
 
 - Trường hợp xảy ra tranh chấp hoặc một bên vi phạm hợp đồng thì hai bên cùng nhau giải quyết tranh chấp. Nếu không giải quyết được thì yêu cầu cơ quan có thẩm quyền giải quyết.
 

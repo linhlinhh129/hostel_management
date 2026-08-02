@@ -1,231 +1,342 @@
-
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:set var="pageTitle" value="Chi tiết Hợp đồng ${contract.code} - BQL"/>
-<c:set var="pageRole" value="MANAGER"/>
-<c:set var="activeMenu" value="contracts"/>
-<jsp:include page="/WEB-INF/views/layout/head.jsp"/>
+  <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+    <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+      <c:set var="ctx" value="${pageContext.request.contextPath}" />
+      <c:set var="pageTitle" value="Chi tiết Hợp đồng ${contract.code} - BQL" />
+      <c:set var="pageRole" value="MANAGER" />
+      <c:set var="activeMenu" value="contracts" />
+      <jsp:include page="/WEB-INF/views/layout/head.jsp" />
 
 
 
-<body>
-<div class="app-shell">
-  <jsp:include page="/WEB-INF/views/layout/sidebar.jsp"/>
-  <div class="sidebar-overlay"></div>
-  <div class="main-wrapper">
-    <jsp:include page="/WEB-INF/views/layout/topbar.jsp"/>
-    <main class="page-content">
-      <jsp:include page="/WEB-INF/views/layout/alerts.jsp"/>
+      <body>
+        <div class="app-shell">
+          <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
+          <div class="sidebar-overlay"></div>
+          <div class="main-wrapper">
+            <jsp:include page="/WEB-INF/views/layout/topbar.jsp" />
+            <main class="page-content">
+              <jsp:include page="/WEB-INF/views/layout/alerts.jsp" />
 
-      <div class="page-header hero-sky-gradient" style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem;display:block">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-          <div>
-            <h1>Chi tiết Hợp đồng: <c:out value="${contract.code}"/></h1>
-            <p>Thuộc cơ sở: <span class="fw-bold"><c:out value="${contract.room.code}"/></span></p>
+              <div class="page-header hero-sky-gradient"
+                style="border-radius:var(--hms-radius-lg);margin-bottom:1.75rem;display:block">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+                  <div>
+                    <h1>Chi tiết Hợp đồng:
+                      <c:out value="${contract.code}" />
+                    </h1>
+                    <p>Thuộc cơ sở: <span class="fw-bold">
+                        <c:out value="${contract.room.code}" />
+                      </span></p>
+                  </div>
+                  <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none"
+                    style="position:relative;z-index:1;flex-shrink:0;align-self:flex-start">← Danh sách</a>
+                </div>
+                <div
+                  style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;position:relative;z-index:1;justify-content:flex-end">
+                  <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
+                    <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}"
+                      class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2"
+                      style="padding:8px 16px;font-weight:500">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                      </svg>
+                      Tạo tài khoản người thuê
+                    </a>
+                  </c:if>
+                  <c:if test="${contract.status == 'INACTIVE'}">
+                    <form action="${ctx}/manager/contracts/delete?id=${contract.contractId}" method="post"
+                      style="display:inline;margin:0"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?')">
+                      <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                      <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2"
+                        style="padding:8px 16px;font-weight:500;height:38px;border-radius:var(--hms-radius-full,9999px)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        Xóa hợp đồng
+                      </button>
+                    </form>
+                  </c:if>
+                  <c:if test="${contract.status == 'ACTIVE' || contract.status == 'INACTIVE'}">
+                    <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+                      style="padding:8px 16px;font-weight:500;height:38px;border-radius:var(--hms-radius-full,9999px);border-color:var(--hms-primary-color,#10b981);color:var(--hms-primary-color,#10b981)"
+                      data-bs-toggle="modal" data-bs-target="#extendContractModal">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                      Gia hạn hợp đồng
+                    </button>
+                  </c:if>
+                  <button onclick="window.print()" class="btn-mintlify-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      style="margin-right:6px">
+                      <polyline points="6 9 6 2 18 2 18 9" />
+                      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                      <rect x="6" y="14" width="12" height="8" />
+                    </svg>
+                    In Hợp Đồng / Lưu PDF
+                  </button>
+                </div>
+              </div>
+
+              <div class="document-viewer-wrapper mt-4">
+                <!-- A4 Document embedded visually inside the dashboard -->
+                <div class="a4-container">
+                  <div class="text-center mb-4">
+                    <h4 class="mb-1">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
+                    <h5 class="mb-2"><u>Độc lập - Tự do - Hạnh phúc</u></h5>
+                  </div>
+
+                  <h3 class="text-center mt-4 mb-4">HỢP ĐỒNG THUÊ PHÒNG TRỌ</h3>
+
+                  <p>Hôm nay, ngày <strong>
+                      <c:out value="${contract.signedDay}" />/
+                      <c:out value="${contract.signedMonth}" />/
+                      <c:out value="${contract.signedYear}" />
+                    </strong>, tại địa chỉ: <strong>
+                      <c:out value="${contract.facility.address}" />
+                    </strong></p>
+                  <p>Chúng tôi gồm:</p>
+
+                  <div class="mt-3 mb-3">
+                    <p class="text-bold">1. Đại diện bên cho thuê phòng trọ (Bên A)</p>
+                    <p>Ông/Bà: <strong>
+                        <c:out value="${contract.manager.fullName}" />
+                      </strong></p>
+                    <p>Sinh ngày: <strong>
+                        <fmt:parseDate value="${contract.manager.dob}" pattern="yyyy-MM-dd" var="parsedManagerDob"
+                          type="date" />
+                        <fmt:formatDate value="${parsedManagerDob}" pattern="dd/MM/yyyy" />
+                      </strong></p>
+                    <p>CMND/CCCD số: <strong>
+                        <c:out value="${contract.manager.identityNumber}" />
+                      </strong>, cấp tại: <strong>Cục Cảnh sát quản lý hành chính về trật tự xã hội</strong></p>
+                    <p>Số điện thoại: <strong>
+                        <c:out value="${contract.manager.phone}" />
+                      </strong></p>
+                  </div>
+
+                  <div class="mb-3">
+                    <p class="text-bold">2. Bên thuê phòng trọ (Bên B)</p>
+                    <p>Ông/Bà: <strong>
+                        <c:out value="${contract.tenantFullName}" />
+                      </strong></p>
+                    <p>Sinh ngày: <strong>
+                        <fmt:parseDate value="${contract.tenantDob}" pattern="yyyy-MM-dd" var="parsedTenantDob"
+                          type="date" />
+                        <fmt:formatDate value="${parsedTenantDob}" pattern="dd/MM/yyyy" />
+                      </strong></p>
+                    <p>Nơi đăng ký hộ khẩu thường trú: <strong>
+                        <c:out value="${contract.tenantPermanentAddress}" />
+                      </strong></p>
+                    <p>Số CMND/CCCD: <strong>
+                        <c:out value="${contract.tenantIdentityNumber}" />
+                      </strong>, cấp ngày <strong>
+                        <fmt:parseDate value="${contract.tenantIdentityIssueDate}" pattern="yyyy-MM-dd"
+                          var="parsedIssueDate" type="date" />
+                        <fmt:formatDate value="${parsedIssueDate}" pattern="dd/MM/yyyy" />
+                      </strong>, tại <strong>
+                        <c:out value="${contract.tenantIdentityIssuePlace}" />
+                      </strong></p>
+                    <p>Số điện thoại: <strong>
+                        <c:out value="${contract.tenantPhone}" />
+                      </strong></p>
+                  </div>
+
+                  <p>Sau khi bàn bạc trên tinh thần dân chủ, hai bên cùng có lợi, cùng thống nhất như sau:</p>
+
+                  <p class="text-bold mt-4" style="text-decoration: underline">Điều 1: Nội dung thuê phòng</p>
+                  <p>Bên A đồng ý cho bên B thuê 01 phòng ở tại địa chỉ: <strong>
+                      <c:out value="${contract.facility.address}" />
+                    </strong></p>
+                  <p>Trong phòng gồm có:</p>
+                  <ul>
+                    <li>01 bình nóng lạnh</li>
+                    <li>01 máy điều hòa và 01 điều khiển</li>
+                    <li>01 tủ quần áo</li>
+                    <li>01 tủ bếp</li>
+                    <li>01 giường ngủ</li>
+                    <li>01 bàn học và ghế tựa</li>
+                    <li>Thiết bị vệ sinh</li>
+                    <li>Đèn chiếu sáng đầy đủ</li>
+                  </ul>
+
+                  <p class="text-bold mt-4" style="text-decoration: underline">Điều 2: Giá thuê và hình thức thanh toán
+                  </p>
+                  <p>Giá thuê: <strong>
+                      <fmt:formatNumber value="${contract.room.roomFee}" pattern="#,##0" /> đ/tháng
+                    </strong></p>
+                  <p>Bằng chữ: <strong>
+                      <c:out value="${contract.amountInWords}" />
+                    </strong></p>
+                  <p>Phòng số: <strong>
+                      <c:out value="${contract.room.roomLabel}" />
+                    </strong></p>
+                  <p>Tầng: <strong>
+                      <c:out value="${contract.room.floorLabel}" />
+                    </strong></p>
+                  <p>Hình thức thanh toán: Tiền mặt hoặc chuyển khoản vào đầu tháng, từ ngày 01 đến ngày 05 hàng tháng.
+                  </p>
+                  <p>Hợp đồng có giá trị kể từ <strong>
+                      <fmt:parseDate value="${contract.startDate}" pattern="yyyy-MM-dd" var="parsedStartDate"
+                        type="date" />
+                      <fmt:formatDate value="${parsedStartDate}" pattern="dd/MM/yyyy" />
+                    </strong> đến <strong>
+                      <fmt:parseDate value="${contract.endDate}" pattern="yyyy-MM-dd" var="parsedEndDate" type="date" />
+                      <fmt:formatDate value="${parsedEndDate}" pattern="dd/MM/yyyy" />
+                    </strong></p>
+                  <p>Tiền điện: <strong>
+                      <fmt:formatNumber value="${contract.facility.electricityPrice}" pattern="#,##0" /> đ/số
+                    </strong>, tính theo chỉ số công tơ, thanh toán vào cuối các tháng.</p>
+                  <p>Tiền nước: <strong>
+                      <fmt:formatNumber value="${contract.facility.waterPrice != null && contract.facility.waterPrice > 0 ? contract.facility.waterPrice : 25000}" pattern="#,##0" /> đ/m³
+                    </strong>, tính theo chỉ số đồng hồ nước, thanh toán vào cuối các tháng.</p>
+                  <p>Tiền Internet: <strong>
+                      <fmt:formatNumber value="${contract.facility.internetFee}" pattern="#,##0" /> đ/người/tháng
+                    </strong></p>
+                  <p>Tiền dịch vụ: <strong>
+                      <fmt:formatNumber value="${contract.facility.serviceFee}" pattern="#,##0" /> đ/người/tháng
+                    </strong></p>
+                  <p style="font-style: italic; color: #4b5563; margin-top: 4px; margin-bottom: 12px; font-size: 0.95em;">
+                    <em>* <strong>Điều khoản đi kèm:</strong> Đơn giá điện và đơn giá nước nêu trên có thể được điều chỉnh tăng hoặc giảm căn cứ theo quyết định thay đổi biểu giá của cơ quan Nhà nước có thẩm quyền hoặc đơn vị cung cấp (EVN, Công ty cấp nước sạch) và phải thông báo trước cho Bên thuê ít nhất 15 ngày.</em>
+                  </p>
+                  <p>Bên B đặt cọc cho bên A số tiền là: <strong>
+                      <fmt:formatNumber value="${contract.room.depositAmount}" pattern="#,##0" /> đ
+                    </strong></p>
+                  <ul>
+                    <li>Tiền cọc sẽ được hoàn trả đầy đủ cho bên thuê khi hợp đồng này kết thúc và bên thuê hoàn trả đầy
+                      đủ chi phí thuê, bao gồm tiền phòng, điện, nước, phí dịch vụ và các chi phí khác liên quan.</li>
+                    <li>Trường hợp bên B hủy hợp đồng trước thời hạn, bên B sẽ không được hoàn trả số tiền đã đặt cọc.
+                    </li>
+                  </ul>
+
+                  <p class="text-bold mt-4" style="text-decoration: underline">Điều 3: Trách nhiệm của các bên</p>
+                  <p class="text-bold">Trách nhiệm của bên A</p>
+                  <ul>
+                    <li>Tạo mọi điều kiện thuận lợi để bên B thực hiện theo hợp đồng.</li>
+                    <li>Cung cấp nguồn điện, nước, wifi cho bên B sử dụng.</li>
+                    <li>Hướng dẫn bên B chấp hành đúng các quy định của địa phương.</li>
+                  </ul>
+                  <p class="text-bold mt-2">Trách nhiệm của bên B</p>
+                  <ul>
+                    <li>Thanh toán đầy đủ các khoản tiền theo đúng thỏa thuận, đúng thời hạn từ ngày 01 đến ngày 05 hàng
+                      tháng. Nếu nộp muộn kể từ ngày đến hạn, mỗi ngày muộn sẽ tính bằng 1% giá trị tiền phòng/tháng,
+                      mọi trường hợp khác cần sự đồng ý của bên A.</li>
+                    <li>Bảo quản các trang thiết bị và cơ sở vật chất của bên A trang bị ban đầu. Nếu làm hỏng phải sửa
+                      chữa, nếu mất mát phải đền bù.</li>
+                    <li>Không được tự ý sửa chữa, cải tạo cơ sở vật chất, tuyệt đối không khoan đục tường khi chưa được
+                      sự đồng ý của bên A. Nếu phát hiện tự ý khoan đục sẽ phạt <strong>500.000 đ/lần</strong>. Trường
+                      hợp tự ý khoan đục vào đường điện gây cháy nổ thì bên B phải hoàn toàn chịu trách nhiệm với những
+                      thiệt hại do việc khoan đục gây ra.</li>
+                    <li>Giữ gìn vệ sinh trong và ngoài khuôn viên của phòng trọ.</li>
+                    <li>Tự bảo quản đồ đạc và phương tiện đi lại của mình.</li>
+                    <li>Bên B phải chấp hành mọi quy định của pháp luật Nhà nước và quy định của địa phương.</li>
+                    <li>Nếu bên B cho khách ở qua đêm thì phải báo và được sự đồng ý của chủ nhà, đồng thời phải chịu
+                      trách nhiệm về các hành vi vi phạm pháp luật của khách trong thời gian ở lại.</li>
+                    <li>Bên B không được cờ bạc, buôn bán, tàng trữ ma túy, các chất cấm mà Nhà nước quy định. Bên B
+                      phải tuân thủ các quy định về phòng cháy, chữa cháy, giữ gìn vệ sinh chung. Không được đánh nhau,
+                      cãi nhau, chửi nhau hoặc gây mất trật tự an ninh trong khu vực cư trú.</li>
+                    <li>Chỉ được sử dụng bếp điện đun nấu trong khuôn viên phòng ở.</li>
+                  </ul>
+
+                  <p class="text-bold mt-4" style="text-decoration: underline">Điều 4: Trách nhiệm chung</p>
+                  <ul>
+                    <li>Hai bên phải tạo điều kiện cho nhau thực hiện hợp đồng.</li>
+                    <li>Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất
+                      30 ngày và hai bên phải có sự thống nhất. Thời điểm chấm dứt hợp đồng bắt buộc phải rơi vào ngày
+                      cuối cùng của tháng lịch và bàn giao lại phòng vào ngày mùng 1 đầu tháng kế tiếp. Trong trường hợp
+                      Bên thuê tự ý dọn đi trước ngày cuối tháng, hợp đồng vẫn tính là có hiệu lực đến hết tháng đó; Bên
+                      thuê không được hoàn lại tiền nhà cho những ngày không sử dụng và phải thanh toán toàn bộ tiền
+                      điện, nước phát sinh tính đến ngày dọn đi thực tế.</li>
+                    <li>Trường hợp xảy ra tranh chấp hoặc một bên vi phạm hợp đồng thì hai bên cùng nhau giải quyết
+                      tranh chấp. Nếu không giải quyết được thì yêu cầu cơ quan có thẩm quyền giải quyết.</li>
+                    <li>Hợp đồng được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản.</li>
+                  </ul>
+
+                  <div class="d-flex justify-content-between"
+                    style="display: flex; justify-content: space-around; margin-top: 80px; padding-bottom: 50px;">
+                    <div class="text-center">
+                      <p class="text-bold">ĐẠI DIỆN BÊN B</p>
+                      <p><em>(Ký, ghi rõ họ tên)</em></p>
+                      <br /><br /><br /><br />
+                      <p><strong>
+                          <c:out value="${contract.tenantFullName}" />
+                        </strong></p>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-bold">ĐẠI DIỆN BÊN A</p>
+                      <p><em>(Ký, ghi rõ họ tên)</em></p>
+                      <br /><br /><br /><br />
+                      <p><strong>
+                          <c:out value="${contract.manager.fullName}" />
+                        </strong></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </main>
           </div>
-          <a href="${ctx}/manager/contracts" class="btn-mintlify-secondary text-decoration-none" style="position:relative;z-index:1;flex-shrink:0;align-self:flex-start">← Danh sách</a>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;position:relative;z-index:1;justify-content:flex-end">
-          <c:if test="${empty contract.tenantId or contract.tenantId <= 0}">
-            <a href="${ctx}/manager/contracts/add-tenant?contractId=${contract.contractId}" class="btn-mintlify-secondary text-decoration-none d-inline-flex align-items-center gap-2" style="padding:8px 16px;font-weight:500">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-              </svg>
-              Tạo tài khoản người thuê
-            </a>
-          </c:if>
-          <c:if test="${contract.status == 'INACTIVE'}">
-            <form action="${ctx}/manager/contracts/delete?id=${contract.contractId}" method="post" style="display:inline;margin:0"
-                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa hợp đồng này không?')">
-              <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-              <button type="submit" class="btn btn-outline-danger d-inline-flex align-items-center gap-2" style="padding:8px 16px;font-weight:500;height:38px;border-radius:var(--hms-radius-full,9999px)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-                Xóa hợp đồng
-              </button>
-            </form>
-          </c:if>
-          <c:if test="${contract.status == 'ACTIVE' || contract.status == 'INACTIVE'}">
-            <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-2" style="padding:8px 16px;font-weight:500;height:38px;border-radius:var(--hms-radius-full,9999px);border-color:var(--hms-primary-color,#10b981);color:var(--hms-primary-color,#10b981)" data-bs-toggle="modal" data-bs-target="#extendContractModal">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              Gia hạn hợp đồng
-            </button>
-          </c:if>
-          <button onclick="window.print()" class="btn-mintlify-primary">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px">
-              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
-            </svg>
-            In Hợp Đồng / Lưu PDF
-          </button>
-        </div>
-      </div>
 
-      <div class="document-viewer-wrapper mt-4">
-        <!-- A4 Document embedded visually inside the dashboard -->
-        <div class="a4-container">
-          <div class="text-center mb-4">
-            <h4 class="mb-1">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
-            <h5 class="mb-2"><u>Độc lập - Tự do - Hạnh phúc</u></h5>
-          </div>
-
-          <h3 class="text-center mt-4 mb-4">HỢP ĐỒNG THUÊ PHÒNG TRỌ</h3>
-          
-          <p>Hôm nay, ngày <strong><c:out value="${contract.signedDay}"/>/<c:out value="${contract.signedMonth}"/>/<c:out value="${contract.signedYear}"/></strong>, tại địa chỉ: <strong><c:out value="${contract.facility.address}"/></strong></p>
-          <p>Chúng tôi gồm:</p>
-          
-          <div class="mt-3 mb-3">
-            <p class="text-bold">1. Đại diện bên cho thuê phòng trọ (Bên A)</p>
-            <p>Ông/Bà: <strong><c:out value="${contract.manager.fullName}"/></strong></p>
-            <p>Sinh ngày: <strong>
-              <fmt:parseDate value="${contract.manager.dob}" pattern="yyyy-MM-dd" var="parsedManagerDob" type="date" />
-              <fmt:formatDate value="${parsedManagerDob}" pattern="dd/MM/yyyy" />
-            </strong></p>
-            <p>CMND/CCCD số: <strong><c:out value="${contract.manager.identityNumber}"/></strong>, cấp tại: <strong>Cục Cảnh sát quản lý hành chính về trật tự xã hội</strong></p>
-            <p>Số điện thoại: <strong><c:out value="${contract.manager.phone}"/></strong></p>
-          </div>
-
-          <div class="mb-3">
-            <p class="text-bold">2. Bên thuê phòng trọ (Bên B)</p>
-            <p>Ông/Bà: <strong><c:out value="${contract.tenantFullName}"/></strong></p>
-            <p>Sinh ngày: <strong>
-              <fmt:parseDate value="${contract.tenantDob}" pattern="yyyy-MM-dd" var="parsedTenantDob" type="date" />
-              <fmt:formatDate value="${parsedTenantDob}" pattern="dd/MM/yyyy" />
-            </strong></p>
-            <p>Nơi đăng ký hộ khẩu thường trú: <strong><c:out value="${contract.tenantPermanentAddress}"/></strong></p>
-            <p>Số CMND/CCCD: <strong><c:out value="${contract.tenantIdentityNumber}"/></strong>, cấp ngày <strong>
-              <fmt:parseDate value="${contract.tenantIdentityIssueDate}" pattern="yyyy-MM-dd" var="parsedIssueDate" type="date" />
-              <fmt:formatDate value="${parsedIssueDate}" pattern="dd/MM/yyyy" />
-            </strong>, tại <strong><c:out value="${contract.tenantIdentityIssuePlace}"/></strong></p>
-            <p>Số điện thoại: <strong><c:out value="${contract.tenantPhone}"/></strong></p>
-          </div>
-
-          <p>Sau khi bàn bạc trên tinh thần dân chủ, hai bên cùng có lợi, cùng thống nhất như sau:</p>
-
-          <p class="text-bold mt-4" style="text-decoration: underline">Điều 1: Nội dung thuê phòng</p>
-          <p>Bên A đồng ý cho bên B thuê 01 phòng ở tại địa chỉ: <strong><c:out value="${contract.facility.address}"/></strong></p>
-          <p>Trong phòng gồm có:</p>
-          <ul>
-            <li>01 bình nóng lạnh</li>
-            <li>01 máy điều hòa và 01 điều khiển</li>
-            <li>01 tủ quần áo</li>
-            <li>01 tủ bếp</li>
-            <li>01 giường ngủ</li>
-            <li>01 bàn học và ghế tựa</li>
-            <li>Thiết bị vệ sinh</li>
-            <li>Đèn chiếu sáng đầy đủ</li>
-          </ul>
-          
-          <p class="text-bold mt-4" style="text-decoration: underline">Điều 2: Giá thuê và hình thức thanh toán</p>
-          <p>Giá thuê: <strong><fmt:formatNumber value="${contract.room.roomFee}" pattern="#,##0"/> đ/tháng</strong></p>
-          <p>Bằng chữ: <strong><c:out value="${contract.amountInWords}"/></strong></p>
-          <p>Phòng số: <strong><c:out value="${contract.room.roomLabel}"/></strong></p>
-          <p>Tầng: <strong><c:out value="${contract.room.floorLabel}"/></strong></p>
-          <p>Hình thức thanh toán: Tiền mặt hoặc chuyển khoản vào đầu tháng, từ ngày 01 đến ngày 05 hàng tháng.</p>
-          <p>Hợp đồng có giá trị kể từ <strong>
-            <fmt:parseDate value="${contract.startDate}" pattern="yyyy-MM-dd" var="parsedStartDate" type="date" />
-            <fmt:formatDate value="${parsedStartDate}" pattern="dd/MM/yyyy" />
-          </strong> đến <strong>
-            <fmt:parseDate value="${contract.endDate}" pattern="yyyy-MM-dd" var="parsedEndDate" type="date" />
-            <fmt:formatDate value="${parsedEndDate}" pattern="dd/MM/yyyy" />
-          </strong></p>
-          <p>Tiền điện: <strong><fmt:formatNumber value="${contract.facility.electricityPrice}" pattern="#,##0"/> đ/số</strong>, tính theo chỉ số công tơ, thanh toán vào cuối các tháng.</p>
-          <p>Tiền Internet: <strong><fmt:formatNumber value="${contract.facility.internetFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
-          <p>Tiền dịch vụ: <strong><fmt:formatNumber value="${contract.facility.serviceFee}" pattern="#,##0"/> đ/người/tháng</strong></p>
-          <p>Bên B đặt cọc cho bên A số tiền là: <strong><fmt:formatNumber value="${contract.room.depositAmount}" pattern="#,##0"/> đ</strong></p>
-          <ul>
-            <li>Tiền cọc sẽ được hoàn trả đầy đủ cho bên thuê khi hợp đồng này kết thúc và bên thuê hoàn trả đầy đủ chi phí thuê, bao gồm tiền phòng, điện, nước, phí dịch vụ và các chi phí khác liên quan.</li>
-            <li>Trường hợp bên B hủy hợp đồng trước thời hạn, bên B sẽ không được hoàn trả số tiền đã đặt cọc.</li>
-          </ul>
-          
-          <p class="text-bold mt-4" style="text-decoration: underline">Điều 3: Trách nhiệm của các bên</p>
-          <p class="text-bold">Trách nhiệm của bên A</p>
-          <ul>
-            <li>Tạo mọi điều kiện thuận lợi để bên B thực hiện theo hợp đồng.</li>
-            <li>Cung cấp nguồn điện, nước, wifi cho bên B sử dụng.</li>
-            <li>Hướng dẫn bên B chấp hành đúng các quy định của địa phương.</li>
-          </ul>
-          <p class="text-bold mt-2">Trách nhiệm của bên B</p>
-          <ul>
-            <li>Thanh toán đầy đủ các khoản tiền theo đúng thỏa thuận, đúng thời hạn từ ngày 01 đến ngày 05 hàng tháng. Nếu nộp muộn quá 03 ngày kể từ ngày đến hạn, mỗi ngày muộn sẽ tính bằng 1% giá trị tiền phòng/tháng, mọi trường hợp khác cần sự đồng ý của bên A.</li>
-            <li>Bảo quản các trang thiết bị và cơ sở vật chất của bên A trang bị ban đầu. Nếu làm hỏng phải sửa chữa, nếu mất mát phải đền bù.</li>
-            <li>Không được tự ý sửa chữa, cải tạo cơ sở vật chất, tuyệt đối không khoan đục tường khi chưa được sự đồng ý của bên A. Nếu phát hiện tự ý khoan đục sẽ phạt <strong>500.000 đ/lần</strong>. Trường hợp tự ý khoan đục vào đường điện gây cháy nổ thì bên B phải hoàn toàn chịu trách nhiệm với những thiệt hại do việc khoan đục gây ra.</li>
-            <li>Giữ gìn vệ sinh trong và ngoài khuôn viên của phòng trọ.</li>
-            <li>Tự bảo quản đồ đạc và phương tiện đi lại của mình.</li>
-            <li>Bên B phải chấp hành mọi quy định của pháp luật Nhà nước và quy định của địa phương.</li>
-            <li>Nếu bên B cho khách ở qua đêm thì phải báo và được sự đồng ý của chủ nhà, đồng thời phải chịu trách nhiệm về các hành vi vi phạm pháp luật của khách trong thời gian ở lại.</li>
-            <li>Bên B không được cờ bạc, buôn bán, tàng trữ ma túy, các chất cấm mà Nhà nước quy định. Bên B phải tuân thủ các quy định về phòng cháy, chữa cháy, giữ gìn vệ sinh chung. Không được đánh nhau, cãi nhau, chửi nhau hoặc gây mất trật tự an ninh trong khu vực cư trú.</li>
-            <li>Chỉ được sử dụng bếp điện đun nấu trong khuôn viên phòng ở.</li>
-          </ul>
-
-          <p class="text-bold mt-4" style="text-decoration: underline">Điều 4: Trách nhiệm chung</p>
-          <ul>
-            <li>Hai bên phải tạo điều kiện cho nhau thực hiện hợp đồng.</li>
-            <li>Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất.</li>
-            <li>Trường hợp xảy ra tranh chấp hoặc một bên vi phạm hợp đồng thì hai bên cùng nhau giải quyết tranh chấp. Nếu không giải quyết được thì yêu cầu cơ quan có thẩm quyền giải quyết.</li>
-            <li>Hợp đồng được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản.</li>
-          </ul>
-
-          <div class="d-flex justify-content-between" style="display: flex; justify-content: space-around; margin-top: 80px; padding-bottom: 50px;">
-            <div class="text-center">
-              <p class="text-bold">ĐẠI DIỆN BÊN B</p>
-              <p><em>(Ký, ghi rõ họ tên)</em></p>
-              <br/><br/><br/><br/>
-              <p><strong><c:out value="${contract.tenantFullName}"/></strong></p>
+        <!-- Extend Contract Modal -->
+        <div class="modal fade" id="extendContractModal" tabindex="-1" aria-labelledby="extendContractModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content"
+              style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+              <form action="${ctx}/manager/contracts/extend" method="post">
+                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                <input type="hidden" name="contractId" value="${contract.contractId}" />
+                <div class="modal-header" style="border-bottom: 1px dashed var(--hms-border-soft); padding: 20px;">
+                  <h5 class="modal-title" id="extendContractModalLabel"
+                    style="font-weight: 700; color: var(--hms-text);">Gia hạn hợp đồng</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                  <div class="mb-3">
+                    <label class="form-label"
+                      style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Mã hợp đồng</label>
+                    <input type="text" class="form-control" value="${contract.code}" readonly
+                      style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label"
+                      style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Ngày hết hạn hiện
+                      tại</label>
+                    <input type="text" class="form-control" value="${contract.formattedEndDate}" readonly
+                      style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label required"
+                      style="font-weight: 600; font-size: 13px; color: var(--hms-text);">Ngày hết hạn mới <span
+                        class="text-danger">*</span></label>
+                    <input type="date" name="newEndDate" class="form-control" required min="${contract.endDate}"
+                      style="border-color: var(--hms-border);" />
+                  </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px dashed var(--hms-border-soft); padding: 20px;">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    style="border-radius: 20px; padding: 6px 20px;">Hủy</button>
+                  <button type="submit" class="btn btn-primary"
+                    style="background-color: var(--hms-primary-color, #10b981); border: none; border-radius: 20px; padding: 6px 20px;">Xác
+                    nhận gia hạn</button>
+                </div>
+              </form>
             </div>
-            <div class="text-center">
-              <p class="text-bold">ĐẠI DIỆN BÊN A</p>
-              <p><em>(Ký, ghi rõ họ tên)</em></p>
-              <br/><br/><br/><br/>
-              <p><strong><c:out value="${contract.manager.fullName}"/></strong></p>
-            </div>
           </div>
         </div>
-      </div>
 
-    </main>
-  </div>
-</div>
+        <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
+      </body>
 
-<!-- Extend Contract Modal -->
-<div class="modal fade" id="extendContractModal" tabindex="-1" aria-labelledby="extendContractModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-      <form action="${ctx}/manager/contracts/extend" method="post">
-        <input type="hidden" name="csrfToken" value="${csrfToken}"/>
-        <input type="hidden" name="contractId" value="${contract.contractId}"/>
-        <div class="modal-header" style="border-bottom: 1px dashed var(--hms-border-soft); padding: 20px;">
-          <h5 class="modal-title" id="extendContractModalLabel" style="font-weight: 700; color: var(--hms-text);">Gia hạn hợp đồng</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body" style="padding: 24px;">
-          <div class="mb-3">
-            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Mã hợp đồng</label>
-            <input type="text" class="form-control" value="${contract.code}" readonly style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--hms-text-muted);">Ngày hết hạn hiện tại</label>
-            <input type="text" class="form-control" value="${contract.formattedEndDate}" readonly style="background-color: var(--hms-bg-soft); border-color: var(--hms-border-soft);" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label required" style="font-weight: 600; font-size: 13px; color: var(--hms-text);">Ngày hết hạn mới <span class="text-danger">*</span></label>
-            <input type="date" name="newEndDate" class="form-control" required min="${contract.endDate}" style="border-color: var(--hms-border);" />
-          </div>
-        </div>
-        <div class="modal-footer" style="border-top: 1px dashed var(--hms-border-soft); padding: 20px;">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 20px; padding: 6px 20px;">Hủy</button>
-          <button type="submit" class="btn btn-primary" style="background-color: var(--hms-primary-color, #10b981); border: none; border-radius: 20px; padding: 6px 20px;">Xác nhận gia hạn</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
-</body>
-</html>
+      </html>

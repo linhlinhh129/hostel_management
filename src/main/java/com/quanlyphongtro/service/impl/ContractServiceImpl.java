@@ -1,4 +1,5 @@
 package com.quanlyphongtro.service.impl;
+
 import com.quanlyphongtro.util.ValidationUtil;
 import java.time.format.DateTimeFormatter;
 
@@ -26,10 +27,11 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public List<Contract> getContractsByManager(int managerId, String searchName) {
         List<Contract> contracts = contractDAO.findAllByManagerId(managerId, searchName);
-        // Map room details if necessary
         for (Contract c : contracts) {
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
         }
         return contracts;
     }
@@ -41,6 +43,8 @@ public class ContractServiceImpl implements ContractService {
             Contract c = opt.get();
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
             return c;
         }
         return null;
@@ -86,9 +90,14 @@ public class ContractServiceImpl implements ContractService {
         if (contract.getTenantIdentityNumber() == null || contract.getTenantIdentityNumber().trim().isEmpty()) {
             throw new Exception("CCCD không được để trống.");
         }
-        if (contract.getSignedDate() == null || contract.getStartDate() == null || contract.getEndDate() == null) {
-            throw new Exception("Ngày tháng ký/bắt đầu/kết thúc không được để trống.");
-        }
+        // Freeze current room fee and facility service prices into contract snapshot fields
+        Facility facility = facilityOpt.get();
+        contract.setRoomFee(room.getRoomFee());
+        contract.setDepositAmount(room.getDepositAmount() != null && room.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) > 0 ? room.getDepositAmount() : room.getRoomFee());
+        contract.setElectricityPrice(facility.getElectricityPrice());
+        contract.setWaterPrice(facility.getWaterPrice());
+        contract.setInternetFee(facility.getInternetFee());
+        contract.setServiceFee(facility.getServiceFee());
 
         int id = contractDAO.create(contract);
         if (id <= 0) {
@@ -96,7 +105,11 @@ public class ContractServiceImpl implements ContractService {
         }
         contract.setContractId(id);
 
-        // Cập nhật trạng thái phòng sang OCCUPIED
+        // Cập nhật trạng thái phòng sang OCCUPIED & tự động đảm bảo tiền cọc bằng tiền
+        // phòng
+        if (room.getDepositAmount() == null || room.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            room.setDepositAmount(room.getRoomFee());
+        }
         room.setStatus("OCCUPIED");
         room.setContractStartDate(contract.getStartDate());
         room.setContractEndDate(contract.getEndDate());
@@ -112,6 +125,8 @@ public class ContractServiceImpl implements ContractService {
         for (Contract c : contracts) {
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
         }
         return contracts;
     }
@@ -123,6 +138,8 @@ public class ContractServiceImpl implements ContractService {
             Contract c = opt.get();
             Optional<Room> r = roomDAO.findById(c.getRoomId());
             r.ifPresent(c::setRoom);
+            Optional<Facility> f = roomDAO.findFacilityByRoomId(c.getRoomId());
+            f.ifPresent(c::setFacility);
             return c;
         }
         return null;
@@ -255,7 +272,8 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public void extendContract(int contractId, LocalDate newEndDate, int managerId) throws Exception {
         Contract contract = contractDAO.findByIdAndManagerId(contractId, managerId)
-                .orElseThrow(() -> new IllegalArgumentException("Hợp đồng không tồn tại hoặc bạn không có quyền gia hạn."));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Hợp đồng không tồn tại hoặc bạn không có quyền gia hạn."));
 
         if (contract.getDeletedAt() != null) {
             throw new IllegalArgumentException("Không thể gia hạn hợp đồng đã xóa.");
@@ -266,7 +284,8 @@ public class ContractServiceImpl implements ContractService {
         }
 
         if (newEndDate.isBefore(contract.getEndDate()) || newEndDate.isEqual(contract.getEndDate())) {
-            throw new IllegalArgumentException("Ngày hết hạn mới phải sau ngày hết hạn hiện tại (" + contract.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
+            throw new IllegalArgumentException("Ngày hết hạn mới phải sau ngày hết hạn hiện tại ("
+                    + contract.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
         }
 
         if (newEndDate.isBefore(LocalDate.now())) {
@@ -275,13 +294,15 @@ public class ContractServiceImpl implements ContractService {
 
         // Chặn nếu đã kết thúc hợp đồng quá 7 ngày
         if ("INACTIVE".equals(contract.getStatus()) && contract.getEndDate().plusDays(7).isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Hợp đồng này đã kết thúc quá 7 ngày. Vui lòng tạo hợp đồng mới thay vì gia hạn.");
+            throw new IllegalArgumentException(
+                    "Hợp đồng này đã kết thúc quá 7 ngày. Vui lòng tạo hợp đồng mới thay vì gia hạn.");
         }
 
         // Chặn nếu có hợp đồng ACTIVE khác đang tồn tại cho phòng này
         Optional<Contract> activeContractOpt = contractDAO.findActiveContractByRoomId(contract.getRoomId());
         if (activeContractOpt.isPresent() && activeContractOpt.get().getContractId() != contractId) {
-            throw new IllegalArgumentException("Phòng này hiện đã có hợp đồng hoạt động khác (" + activeContractOpt.get().getCode() + "). Không thể gia hạn hợp đồng cũ.");
+            throw new IllegalArgumentException("Phòng này hiện đã có hợp đồng hoạt động khác ("
+                    + activeContractOpt.get().getCode() + "). Không thể gia hạn hợp đồng cũ.");
         }
 
         // Chặn nếu phòng đã được bàn giao cho người khác thuê
@@ -289,11 +310,13 @@ public class ContractServiceImpl implements ContractService {
         if (roomOpt.isPresent()) {
             Room room = roomOpt.get();
             if (room.getTenantId() != null && !room.getTenantId().equals(contract.getTenantId())) {
-                throw new IllegalArgumentException("Phòng này hiện đã được thuê bởi người khác, không thể gia hạn hợp đồng cũ.");
+                throw new IllegalArgumentException(
+                        "Phòng này hiện đã được thuê bởi người khác, không thể gia hạn hợp đồng cũ.");
             }
         }
 
-        boolean success = contractDAO.extendContractTransaction(contractId, newEndDate, contract.getTenantId(), contract.getRoomId());
+        boolean success = contractDAO.extendContractTransaction(contractId, newEndDate, contract.getTenantId(),
+                contract.getRoomId());
         if (!success) {
             throw new Exception("Lỗi cập nhật cơ sở dữ liệu khi gia hạn hợp đồng.");
         }

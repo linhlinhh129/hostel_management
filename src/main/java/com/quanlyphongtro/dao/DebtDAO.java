@@ -21,20 +21,21 @@ public class DebtDAO extends BaseDAO {
         List<DebtListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, " +
-            "u.user_id AS tenant_id, u.full_name AS tenant_name, u.phone AS tenant_phone, " +
+            "COALESCE(i.tenant_id, c.tenant_id, r.tenant_id) AS tenant_id, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
             "f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
             "i.total_amount, i.room_fee, i.due_date, i.status, " +
             "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount, " +
             "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
-            "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+            "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
+            "LEFT JOIN users u ON u.user_id = i.tenant_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
             "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
         
         sql.append("ORDER BY i.due_date ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
@@ -134,13 +135,14 @@ public class DebtDAO extends BaseDAO {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(1) FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
-            "LEFT JOIN users u ON r.tenant_id = u.user_id " +
+            "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
+            "LEFT JOIN users u ON u.user_id = i.tenant_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
             "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR u.full_name LIKE ?) ");
+            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
         }
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -168,7 +170,7 @@ public class DebtDAO extends BaseDAO {
 
     public Optional<DebtDetailDTO> findDebtDetail(int managerId, int invoiceId) {
         String sql = "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, " +
-            "COALESCE(u.user_id, c.tenant_id) AS tenant_id, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, u.email AS tenant_email, " +
+            "COALESCE(i.tenant_id, c.tenant_id, r.tenant_id) AS tenant_id, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, u.email AS tenant_email, " +
             "f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
             "c.start_date AS contract_start_date, c.end_date AS contract_end_date, " +
             "i.room_fee, " +
@@ -184,8 +186,8 @@ public class DebtDAO extends BaseDAO {
             "FROM invoices i " +
             "INNER JOIN rooms r ON i.room_id = r.room_id " +
             "LEFT JOIN meter_readings m_new ON i.meter_id = m_new.meter_id " +
-            "LEFT JOIN contracts c ON c.contract_id = (SELECT TOP 1 contract_id FROM contracts WHERE room_id = i.room_id ORDER BY CASE WHEN CAST(i.created_at AS DATE) BETWEEN start_date AND end_date THEN 0 ELSE 1 END, CASE WHEN status = 'ACTIVE' THEN 0 ELSE 1 END, CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC) " +
-            "LEFT JOIN users u ON COALESCE(c.tenant_id, r.tenant_id) = u.user_id " +
+            "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
+            "LEFT JOIN users u ON u.user_id = i.tenant_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
             "WHERE i.deleted_at IS NULL AND i.invoice_id = ? AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE)))";
 

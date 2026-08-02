@@ -105,11 +105,12 @@
               </h4>
 
               <div class="mb-3">
-                <label class="form-label">Giá thuê (bằng số)</label>
+                <label class="form-label">Giá thuê & Tiền cọc (bằng số)</label>
                 <div class="input-group">
                   <input type="text" id="roomFeeDisplay" class="form-control fw-bold text-dark" placeholder="Tự động nạp theo phòng chọn" readonly style="background-color: #f8fafc;" />
-                  <span class="input-group-text">đ / tháng</span>
+                  <span class="input-group-text">đ / tháng (Tiền cọc bằng Giá thuê)</span>
                 </div>
+                <small class="form-text text-muted">Tiền đặt cọc được hệ thống tự động gán bằng đúng giá thuê 1 tháng của phòng.</small>
               </div>
 
               <div class="mb-3">

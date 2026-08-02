@@ -363,6 +363,14 @@ BEGIN
 
 		status                     NVARCHAR(20) NOT NULL DEFAULT 'ACTIVE',--'ACTIVE','INACTIVE'
 
+		-- Frozen price snapshot fields at signing time
+		room_fee                   DECIMAL(18,2) NULL,
+		deposit_amount             DECIMAL(18,2) NULL,
+		electricity_price          DECIMAL(10,2) NULL,
+		water_price                DECIMAL(10,2) NULL,
+		internet_fee               DECIMAL(10,2) NULL,
+		service_fee                DECIMAL(10,2) NULL,
+
 		created_by                 INT NULL,
 		created_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),
 		updated_at                 DATETIME2 NOT NULL DEFAULT GETDATE(),

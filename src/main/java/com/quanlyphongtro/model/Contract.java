@@ -1,4 +1,5 @@
 package com.quanlyphongtro.model;
+
 import java.time.format.DateTimeFormatter;
 
 import java.time.LocalDate;
@@ -30,6 +31,14 @@ public class Contract {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
+
+    // Snapshot price fields (frozen upon contract signing)
+    private java.math.BigDecimal roomFee;
+    private java.math.BigDecimal depositAmount;
+    private java.math.BigDecimal electricityPrice;
+    private java.math.BigDecimal waterPrice;
+    private java.math.BigDecimal internetFee;
+    private java.math.BigDecimal serviceFee;
 
     // Additional fields for convenience
     private Room room;
@@ -247,6 +256,24 @@ public class Contract {
     public String getFormattedEndDate() {
         return endDate != null ? endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
     }
+
+    public java.math.BigDecimal getRoomFee() { return roomFee; }
+    public void setRoomFee(java.math.BigDecimal roomFee) { this.roomFee = roomFee; }
+
+    public java.math.BigDecimal getDepositAmount() { return depositAmount; }
+    public void setDepositAmount(java.math.BigDecimal depositAmount) { this.depositAmount = depositAmount; }
+
+    public java.math.BigDecimal getElectricityPrice() { return electricityPrice; }
+    public void setElectricityPrice(java.math.BigDecimal electricityPrice) { this.electricityPrice = electricityPrice; }
+
+    public java.math.BigDecimal getWaterPrice() { return waterPrice; }
+    public void setWaterPrice(java.math.BigDecimal waterPrice) { this.waterPrice = waterPrice; }
+
+    public java.math.BigDecimal getInternetFee() { return internetFee; }
+    public void setInternetFee(java.math.BigDecimal internetFee) { this.internetFee = internetFee; }
+
+    public java.math.BigDecimal getServiceFee() { return serviceFee; }
+    public void setServiceFee(java.math.BigDecimal serviceFee) { this.serviceFee = serviceFee; }
 
     public String getFormattedStartDate() {
         return startDate != null ? startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";

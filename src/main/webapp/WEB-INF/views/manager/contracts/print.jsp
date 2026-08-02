@@ -97,8 +97,10 @@
       <div class="field-row">2.4. Tiền cọc giữ phòng: Bên B đã giao cho Bên A số tiền cọc là <strong><fmt:formatNumber value="${contract.room != null ? contract.room.depositAmount : 0}" pattern="#,##0"/> VNĐ</strong>.</div>
       <div class="field-row">2.5. Các khoản chi phí dịch vụ hàng tháng:</div>
       <div class="ps-3">
-        - Tiền điện: Tính theo chỉ số đồng hồ công tơ thực tế.<br/>
-        - Tiền nước, internet, rác thải & vệ sinh chung: Theo biểu giá niêm yết của cơ sở.
+        - Tiền điện: <fmt:formatNumber value="${contract.facility != null && contract.facility.electricityPrice != null ? contract.facility.electricityPrice : 0}" pattern="#,##0"/> VNĐ/số, tính theo chỉ số đồng hồ công tơ thực tế.<br/>
+        - Tiền nước: <fmt:formatNumber value="${contract.facility != null && contract.facility.waterPrice != null && contract.facility.waterPrice > 0 ? contract.facility.waterPrice : 25000}" pattern="#,##0"/> VNĐ/m³, tính theo chỉ số đồng hồ nước thực tế.<br/>
+        - Tiền internet, rác thải & vệ sinh chung: Theo biểu giá niêm yết của cơ sở.<br/>
+        <em style="font-size: 0.9em; color: #444;">* <u>Điều khoản đi kèm</u>: Đơn giá điện và đơn giá nước nêu trên có thể được điều chỉnh tăng hoặc giảm căn cứ theo quyết định thay đổi biểu giá của cơ quan Nhà nước có thẩm quyền hoặc đơn vị cung cấp (EVN, Công ty cấp nước sạch) và phải thông báo trước cho Bên thuê ít nhất 15 ngày.</em>
       </div>
       <div class="field-row">2.6. Quy định thanh toán: Bên B thanh toán tiền phòng và dịch vụ định kỳ từ ngày 01 đến ngày 05 hàng tháng.</div>
     </div>
@@ -125,7 +127,7 @@
     <div class="section-header">ĐIỀU 4: ĐIỀU KHOẢN CHUNG</div>
     <div class="ps-3 mb-2">
       <div class="field-row">- Hai bên cam kết thực hiện đúng và đầy đủ các điều khoản đã ghi trong Hợp đồng.</div>
-      <div class="field-row">- Trường hợp chấm dứt hợp đồng trước thời hạn, bên muốn chấm dứt phải thông báo trước ít nhất 30 ngày. Nếu Bên B đơn phương hủy hợp đồng trước hạn sẽ không được hoàn lại tiền cọc.</div>
+      <div class="field-row">- Một trong hai bên muốn chấm dứt hợp đồng trước thời hạn thì phải báo trước cho bên kia ít nhất 30 ngày và hai bên phải có sự thống nhất. Thời điểm chấm dứt hợp đồng bắt buộc phải rơi vào ngày cuối cùng của tháng lịch và bàn giao lại phòng vào ngày mùng 1 đầu tháng kế tiếp. Trong trường hợp Bên thuê tự ý dọn đi trước ngày cuối tháng, hợp đồng vẫn tính là có hiệu lực đến hết tháng đó; Bên thuê không được hoàn lại tiền nhà cho những ngày không sử dụng và phải thanh toán toàn bộ tiền điện, nước phát sinh tính đến ngày dọn đi thực tế. Nếu Bên B đơn phương hủy hợp đồng trước hạn sẽ không được hoàn lại tiền cọc.</div>
       <div class="field-row">- Hợp đồng này được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản để làm căn cứ thực hiện.</div>
     </div>
 

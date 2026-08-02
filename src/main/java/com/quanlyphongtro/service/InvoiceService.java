@@ -6,6 +6,7 @@ import com.quanlyphongtro.model.Invoice;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.quanlyphongtro.dto.RoomDTO;
@@ -26,4 +27,6 @@ public interface InvoiceService {
     void updateInvoice(int managerId, int invoiceId, String dueDateStr, String otherFeeStr, String note) throws Exception;
     void updateStatus(int managerId, int invoiceId, String status) throws Exception;
     BigDecimal getUnpaidDebtByRoomCode(String roomCode, int managerId);
+    
+    Map<String, Object> getInvoicePreview(int managerId, String roomCode, String billingPeriod) throws Exception;
 }

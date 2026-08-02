@@ -1,4 +1,5 @@
 package com.quanlyphongtro.dao;
+
 import com.quanlyphongtro.model.Room;
 import com.quanlyphongtro.model.Facility;
 import com.quanlyphongtro.model.User;
@@ -104,9 +105,14 @@ public class ContractDAO extends BaseDAO {
 
     public Optional<Contract> findByIdAndManagerId(int contractId, int managerId) {
         String sql = "SELECT c.*, " +
-                "r.code as r_code, r.room_fee as r_fee, " +
-                "f.address as f_address, f.electricity_price as f_elec, f.internet_fee as f_net, f.service_fee as f_svc, "
-                +
+                "COALESCE(c.room_fee, r.room_fee) as contract_room_fee, " +
+                "COALESCE(c.deposit_amount, r.deposit_amount, r.room_fee) as contract_deposit_amount, " +
+                "COALESCE(c.electricity_price, f.electricity_price) as contract_elec, " +
+                "COALESCE(c.water_price, f.water_price) as contract_water, " +
+                "COALESCE(c.internet_fee, f.internet_fee) as contract_net, " +
+                "COALESCE(c.service_fee, f.service_fee) as contract_svc, " +
+                "r.code as r_code, " +
+                "f.address as f_address, " +
                 "m.full_name as m_name, m.dob as m_dob, m.identity_number as m_id_num, m.phone as m_phone " +
                 "FROM dbo.contracts c " +
                 "JOIN dbo.rooms r ON c.room_id = r.room_id " +
@@ -123,14 +129,16 @@ public class ContractDAO extends BaseDAO {
 
                     Room room = new Room();
                     room.setCode(rs.getString("r_code"));
-                    room.setRoomFee(rs.getBigDecimal("r_fee"));
+                    room.setRoomFee(rs.getBigDecimal("contract_room_fee"));
+                    room.setDepositAmount(rs.getBigDecimal("contract_deposit_amount"));
                     contract.setRoom(room);
 
                     Facility facility = new Facility();
                     facility.setAddress(rs.getString("f_address"));
-                    facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
-                    facility.setInternetFee(rs.getBigDecimal("f_net"));
-                    facility.setServiceFee(rs.getBigDecimal("f_svc"));
+                    facility.setElectricityPrice(rs.getBigDecimal("contract_elec"));
+                    facility.setWaterPrice(rs.getBigDecimal("contract_water"));
+                    facility.setInternetFee(rs.getBigDecimal("contract_net"));
+                    facility.setServiceFee(rs.getBigDecimal("contract_svc"));
                     contract.setFacility(facility);
 
                     User managerObj = new User();
@@ -166,10 +174,22 @@ public class ContractDAO extends BaseDAO {
     }
 
     public int create(Contract contract) {
-        // Tự động sửa lỗi Database NOT NULL cho tenant_id để cứu sinh viên
+        // Tự động kiểm tra và thêm cột Snapshot giá nếu CSDL chưa có
         try (Connection conn = DatabaseUtil.getConnection();
                 Statement stmt = conn.createStatement()) {
             stmt.execute("ALTER TABLE dbo.contracts ALTER COLUMN tenant_id INT NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'room_fee') IS NULL ALTER TABLE dbo.contracts ADD room_fee DECIMAL(18,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'deposit_amount') IS NULL ALTER TABLE dbo.contracts ADD deposit_amount DECIMAL(18,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'electricity_price') IS NULL ALTER TABLE dbo.contracts ADD electricity_price DECIMAL(10,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'water_price') IS NULL ALTER TABLE dbo.contracts ADD water_price DECIMAL(10,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'internet_fee') IS NULL ALTER TABLE dbo.contracts ADD internet_fee DECIMAL(10,2) NULL;");
+            stmt.execute(
+                    "IF COL_LENGTH('dbo.contracts', 'service_fee') IS NULL ALTER TABLE dbo.contracts ADD service_fee DECIMAL(10,2) NULL;");
         } catch (Exception ignored) {
             // Lỗi do không có quyền hoặc đã alter rồi thì bỏ qua
         }
@@ -177,8 +197,9 @@ public class ContractDAO extends BaseDAO {
         String sql = "INSERT INTO dbo.contracts (code, room_id, tenant_id, tenant_full_name, tenant_dob, " +
                 "tenant_permanent_address, tenant_identity_number, tenant_identity_issue_date, " +
                 "tenant_identity_issue_place, tenant_phone, amount_in_words, signed_date, start_date, " +
-                "end_date, status, created_by) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "end_date, status, created_by, room_fee, deposit_amount, electricity_price, water_price, internet_fee, service_fee) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, contract.getCode());
@@ -226,6 +247,14 @@ public class ContractDAO extends BaseDAO {
                 ps.setNull(16, Types.INTEGER);
             }
 
+            // Frozen price snapshot fields
+            ps.setBigDecimal(17, contract.getRoomFee());
+            ps.setBigDecimal(18, contract.getDepositAmount());
+            ps.setBigDecimal(19, contract.getElectricityPrice());
+            ps.setBigDecimal(20, contract.getWaterPrice());
+            ps.setBigDecimal(21, contract.getInternetFee());
+            ps.setBigDecimal(22, contract.getServiceFee());
+
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -261,9 +290,14 @@ public class ContractDAO extends BaseDAO {
 
     public Optional<Contract> findByIdAndTenantId(int contractId, int tenantId) {
         String sql = "SELECT c.*, " +
-                "r.code as r_code, r.room_fee as r_fee, r.deposit_amount as r_deposit, " +
-                "f.address as f_address, f.electricity_price as f_elec, f.water_price as f_water, f.internet_fee as f_net, f.service_fee as f_svc, "
-                +
+                "COALESCE(c.room_fee, r.room_fee) as contract_room_fee, " +
+                "COALESCE(c.deposit_amount, r.deposit_amount, r.room_fee) as contract_deposit_amount, " +
+                "COALESCE(c.electricity_price, f.electricity_price) as contract_elec, " +
+                "COALESCE(c.water_price, f.water_price) as contract_water, " +
+                "COALESCE(c.internet_fee, f.internet_fee) as contract_net, " +
+                "COALESCE(c.service_fee, f.service_fee) as contract_svc, " +
+                "r.code as r_code, " +
+                "f.address as f_address, " +
                 "m.full_name as m_name, m.dob as m_dob, m.identity_number as m_id_num, m.phone as m_phone " +
                 "FROM dbo.contracts c " +
                 "JOIN dbo.rooms r ON c.room_id = r.room_id " +
@@ -280,16 +314,16 @@ public class ContractDAO extends BaseDAO {
 
                     Room room = new Room();
                     room.setCode(rs.getString("r_code"));
-                    room.setRoomFee(rs.getBigDecimal("r_fee"));
-                    room.setDepositAmount(rs.getBigDecimal("r_deposit"));
+                    room.setRoomFee(rs.getBigDecimal("contract_room_fee"));
+                    room.setDepositAmount(rs.getBigDecimal("contract_deposit_amount"));
                     contract.setRoom(room);
 
                     Facility facility = new Facility();
                     facility.setAddress(rs.getString("f_address"));
-                    facility.setElectricityPrice(rs.getBigDecimal("f_elec"));
-                    facility.setWaterPrice(rs.getBigDecimal("f_water"));
-                    facility.setInternetFee(rs.getBigDecimal("f_net"));
-                    facility.setServiceFee(rs.getBigDecimal("f_svc"));
+                    facility.setElectricityPrice(rs.getBigDecimal("contract_elec"));
+                    facility.setWaterPrice(rs.getBigDecimal("contract_water"));
+                    facility.setInternetFee(rs.getBigDecimal("contract_net"));
+                    facility.setServiceFee(rs.getBigDecimal("contract_svc"));
                     contract.setFacility(facility);
 
                     User managerObj = new User();
@@ -522,19 +556,19 @@ public class ContractDAO extends BaseDAO {
         String updContract = "UPDATE dbo.contracts SET end_date = ?, status = 'ACTIVE', updated_at = GETDATE() WHERE contract_id = ?";
         String updRoom = "UPDATE dbo.rooms SET contract_end_date = ?, tenant_id = ?, status = 'OCCUPIED', updated_at = GETDATE() WHERE room_id = ?";
         String updUser = "UPDATE dbo.users SET status = 'ACTIVE', updated_at = GETDATE() WHERE user_id = ?";
-        
+
         Connection conn = null;
         try {
             conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false);
-            
+
             // 1. Update contract
             try (PreparedStatement ps = conn.prepareStatement(updContract)) {
                 ps.setDate(1, Date.valueOf(newEndDate));
                 ps.setInt(2, contractId);
                 ps.executeUpdate();
             }
-            
+
             // 2. Update room
             try (PreparedStatement ps = conn.prepareStatement(updRoom)) {
                 ps.setDate(1, Date.valueOf(newEndDate));
@@ -546,7 +580,7 @@ public class ContractDAO extends BaseDAO {
                 ps.setInt(3, roomId);
                 ps.executeUpdate();
             }
-            
+
             // 3. Update user if tenantId is not null
             if (tenantId != null) {
                 try (PreparedStatement ps = conn.prepareStatement(updUser)) {
@@ -554,18 +588,25 @@ public class ContractDAO extends BaseDAO {
                     ps.executeUpdate();
                 }
             }
-            
+
             conn.commit();
             return true;
         } catch (Exception e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (Exception ignored) {}
+                try {
+                    conn.rollback();
+                } catch (Exception ignored) {
+                }
             }
             logger.error("extendContractTransaction failed for contractId={}", contractId, e);
             return false;
         } finally {
             if (conn != null) {
-                try { conn.setAutoCommit(true); conn.close(); } catch (Exception ignored) {}
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (Exception ignored) {
+                }
             }
         }
     }
