@@ -48,6 +48,11 @@ public class ContractDAO extends BaseDAO {
         return contract;
     }
 
+    /**
+     * TRUY VẤN DANH SÁCH HỢP ĐỒNG THEO QUẢN LÝ
+     * Thực thi câu lệnh SQL SELECT kết nối 3 bảng contracts, rooms, facilities.
+     * Hỗ trợ lọc theo tên người thuê và trạng thái thời hạn (sắp hết hạn trong 30 ngày, đã quá hạn...).
+     */
     public List<Contract> findAllByManagerId(int managerId, String searchName, String expiryStatus) {
         StringBuilder sql = new StringBuilder("SELECT c.* FROM dbo.contracts c " +
                 "JOIN dbo.rooms r ON c.room_id = r.room_id " +
@@ -57,11 +62,13 @@ public class ContractDAO extends BaseDAO {
         List<Object> params = new ArrayList<>();
         params.add(managerId);
 
+        // Lọc theo từ khóa họ tên người thuê
         if (searchName != null && !searchName.trim().isEmpty()) {
             sql.append(" AND c.tenant_full_name LIKE ? ");
             params.add("%" + searchName.trim() + "%");
         }
 
+        // Lọc theo trạng thái thời hạn (expiring: hết hạn trong 30 ngày, overdue: đã quá hạn...)
         if (expiryStatus != null && !expiryStatus.trim().isEmpty()) {
             String st = expiryStatus.trim().toLowerCase();
             if ("expiring".equals(st)) {

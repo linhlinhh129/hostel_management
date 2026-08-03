@@ -86,13 +86,19 @@ public class ManagerTicketsServlet extends BaseServlet {
         }
     }
 
+    /**
+     * DANH SÁCH YÊU CẦU / SỰ CỐ (GET /manager/tickets)
+     * Lấy danh sách sự cố/báo hỏng từ cư dân hoặc nhân viên vận hành gửi lên.
+     */
     private void handleList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập Manager
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
+        // 2. Đọc bộ lọc loại yêu cầu (TENANT / OPERATOR), từ khóa tìm kiếm và trạng thái
         String type = req.getParameter("type");
         if (type == null || type.trim().isEmpty()) {
             type = "TENANT";
@@ -113,18 +119,22 @@ public class ManagerTicketsServlet extends BaseServlet {
         }
         int pageSize = 10;
 
+        // 3. Gọi Service đếm tổng số lượng và lấy danh sách yêu cầu sự cố
         int totalTickets = requestService.countManagerTickets(currentUser.getId(), type, status, keyword);
         List<Map<String, Object>> tickets = requestService.getManagerTickets(currentUser.getId(), type, status, keyword,
                 page, pageSize);
 
+        // 4. Tính tổng số trang
         int totalPages = totalTickets > 0 ? (int) Math.ceil((double) totalTickets / pageSize) : 1;
 
+        // 5. Đóng gói dữ liệu kết quả
         Map<String, Object> pageObj = new HashMap<>();
         pageObj.put("items", tickets);
         pageObj.put("total", totalTickets);
         pageObj.put("page", page);
         pageObj.put("totalPages", totalPages);
 
+        // 6. Gửi dữ liệu sang View list.jsp để hiển thị
         req.setAttribute("page", pageObj);
         req.setAttribute("keyword", keyword);
         req.setAttribute("filterStatus", status);
@@ -133,8 +143,13 @@ public class ManagerTicketsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/tickets/list.jsp").forward(req, resp);
     }
 
+    /**
+     * XEM CHI TIẾT YÊU CẦU SỰ CỐ (GET /manager/tickets/{id})
+     * Lấy thông tin chi tiết sự cố, hình ảnh đính kèm và lịch sử xử lý.
+     */
     private void handleDetail(int ticketId, HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -143,6 +158,7 @@ public class ManagerTicketsServlet extends BaseServlet {
 
         Map<String, Object> ticket = null;
 
+        // 2. Lấy thông tin chi tiết ticket sự cố từ Service
         try {
             ticket = requestService.getManagerTicketDetail(ticketId, currentUser.getId());
         } catch (AccessDeniedException e) {
@@ -157,6 +173,7 @@ public class ManagerTicketsServlet extends BaseServlet {
             return;
         }
 
+        // 3. Đóng gói và chuyển hướng sang detail.jsp
         req.setAttribute("ticket", ticket);
         req.getRequestDispatcher("/WEB-INF/views/manager/tickets/detail.jsp").forward(req, resp);
     }

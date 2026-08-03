@@ -231,25 +231,33 @@ public class DependentDAO extends BaseDAO {
         return 0;
     }
 
+    /**
+     * THÊM NGƯỜI PHỤ THUỘC MỚI VÀO CSDL
+     * Thực thi câu lệnh SQL INSERT chèn 1 bản ghi mới vào bảng dbo.dependents.
+     */
     public boolean addDependent(int tenantId, String fullName, String relationship, String phone, String gender, LocalDate dob, String identityNumber) {
         String sql = "INSERT INTO dbo.dependents (tenant_id, full_name, relationship, phone, gender, dob, identity_number, created_at, updated_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, tenantId);
-            ps.setString(2, fullName);
-            ps.setString(3, relationship);
-            ps.setString(4, phone);
-            ps.setString(5, gender);
-            ps.setDate(6, dob != null ? Date.valueOf(dob) : null);
-            ps.setString(7, identityNumber);
-            return ps.executeUpdate() > 0;
+            ps.setInt(1, tenantId);              // ID người thuê chính
+            ps.setString(2, fullName);          // Họ và tên
+            ps.setString(3, relationship);      // Mối quan hệ (Con, Vợ/Chồng...)
+            ps.setString(4, phone);             // Số điện thoại
+            ps.setString(5, gender);            // Giới tính
+            ps.setDate(6, dob != null ? Date.valueOf(dob) : null); // Ngày sinh
+            ps.setString(7, identityNumber);    // Số CCCD/CMND
+            return ps.executeUpdate() > 0;      // Trả về true nếu chèn thành công 1 dòng
         } catch (Exception e) {
             logger.error("addDependent failed", e);
             return false;
         }
     }
 
+    /**
+     * CẬP NHẬT THÔNG TIN NGƯỜI PHỤ THUỘC
+     * Thực thi SQL UPDATE chỉnh sửa các thông tin người phụ thuộc theo ID.
+     */
     public boolean updateDependent(int dependentId, String fullName, String relationship, String phone, String gender, LocalDate dob, String identityNumber) {
         String updateSql = "UPDATE dbo.dependents SET full_name = ?, relationship = ?, phone = ?, gender = ?, dob = ?, identity_number = ?, updated_at = GETDATE() WHERE dependent_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -261,19 +269,23 @@ public class DependentDAO extends BaseDAO {
             ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
             ps.setString(6, identityNumber);
             ps.setInt(7, dependentId);
-            return ps.executeUpdate() > 0;
+            return ps.executeUpdate() > 0;      // Trả về true nếu update thành công 1 dòng
         } catch (Exception e) {
             logger.error("updateDependent failed", e);
             return false;
         }
     }
 
+    /**
+     * XÓA MỀM NGƯỜI PHỤ THUỘC (SOFT DELETE)
+     * Đánh dấu deleted_at = GETDATE() để không hiển thị trên giao diện nhưng vẫn giữ dữ liệu lịch sử.
+     */
     public boolean deleteDependent(int dependentId) {
         String sql = "UPDATE dbo.dependents SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE dependent_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, dependentId);
-            return ps.executeUpdate() > 0;
+            return ps.executeUpdate() > 0;      // Trả về true nếu đánh dấu xóa thành công
         } catch (Exception e) {
             logger.error("deleteDependent failed", e);
             return false;

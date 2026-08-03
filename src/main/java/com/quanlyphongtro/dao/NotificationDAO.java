@@ -48,11 +48,16 @@ public class NotificationDAO extends BaseDAO {
             "LEFT JOIN dbo.users u ON u.user_id = n.created_by " +
             "WHERE n.deleted_at IS NULL AND n.target_type = 'ALL'";
 
+    /**
+     * TRUY VẤN TẤT CẢ THÔNG BÁO CHUNG
+     * Lấy danh sách thông báo gửi toàn bộ cư dân có phân trang và tìm kiếm.
+     */
     public List<Notification> findAll(String keyword, int page, int pageSize) {
         List<Notification> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(BASE_SELECT);
         List<Object> params = new ArrayList<>();
 
+        // Tìm kiếm theo từ khóa mã thông báo, tiêu đề hoặc nội dung
         if (keyword != null && !keyword.isBlank()) {
             sql.append(" AND (n.code LIKE ? OR n.title LIKE ? OR n.content LIKE ?)");
             String kw = "%" + keyword.trim() + "%";
@@ -82,6 +87,10 @@ public class NotificationDAO extends BaseDAO {
         return findForTenant(roomId, facilityId, null, page, pageSize);
     }
 
+    /**
+     * LẤY THÔNG BÁO CHO CƯ DÂN / NGƯỜI THUÊ
+     * Lọc các thông báo gửi toàn hệ thống (ALL), gửi cho cơ sở (FACILITY), hoặc gửi riêng cho phòng này (ROOM).
+     */
     public List<Notification> findForTenant(int roomId, int facilityId, String keyword, int page, int pageSize) {
         List<Notification> list = new ArrayList<>();
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();

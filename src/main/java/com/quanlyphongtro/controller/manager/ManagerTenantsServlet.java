@@ -177,13 +177,19 @@ public class ManagerTenantsServlet extends BaseServlet {
         resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
+    /**
+     * LẤY DANH SÁCH NGƯỜI THUÊ (GET /manager/tenants)
+     * Đọc tham số tìm kiếm/lọc, gọi Service để đếm và phân trang, sau đó chuyển dữ liệu sang list.jsp.
+     */
     private void handleList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
+        // 2. Đọc bộ lọc tìm kiếm & phân trang
         String keyword = req.getParameter("keyword");
         String status = req.getParameter("status");
         int page = 1;
@@ -197,17 +203,21 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
         int pageSize = 10;
 
+        // 3. Gọi Service đếm tổng số lượng và lấy danh sách người thuê từ CSDL
         int totalCount = tenantService.countTenants(currentUser.getId(), keyword, status);
         List<Map<String, Object>> tenants = tenantService.getTenants(currentUser.getId(), keyword, status, page, pageSize);
 
+        // 4. Tính toán số trang
         int totalPages = totalCount > 0 ? (int) Math.ceil((double) totalCount / pageSize) : 1;
 
+        // 5. Đóng gói dữ liệu phân trang
         Map<String, Object> pageObj = new HashMap<>();
         pageObj.put("items", tenants);
         pageObj.put("total", totalCount);
         pageObj.put("page", page);
         pageObj.put("totalPages", totalPages);
 
+        // 6. Gửi dữ liệu sang View list.jsp để vẽ giao diện
         req.setAttribute("page", pageObj);
         req.setAttribute("keyword", keyword);
         req.setAttribute("selectedStatus", status);
@@ -215,7 +225,12 @@ public class ManagerTenantsServlet extends BaseServlet {
         req.getRequestDispatcher("/WEB-INF/views/manager/tenants/list.jsp").forward(req, resp);
     }
 
+    /**
+     * XEM CHI TIẾT NGƯỜI THUÊ (GET /manager/tenants/{id})
+     * Lấy thông tin cá nhân người thuê + danh sách người phụ thuộc và đẩy sang detail.jsp.
+     */
     private void handleDetail(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -225,6 +240,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         Map<String, Object> tenant = null;
         List<Map<String, Object>> dependents = null;
 
+        // 2. Lấy thông tin người thuê và danh sách người phụ thuộc từ Service
         try {
             tenant = tenantService.getTenantDetail(tenantId, currentUser.getId());
             if (tenant != null) {
@@ -242,18 +258,25 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        // 3. Đóng gói dữ liệu và chuyển hướng sang detail.jsp
         req.setAttribute("tenant", tenant);
         req.setAttribute("dependents", dependents);
         req.getRequestDispatcher("/WEB-INF/views/manager/tenants/detail.jsp").forward(req, resp);
     }
 
+    /**
+     * THÊM NGƯỜI PHỤ THUỘC (POST /manager/tenants/{id}/dependents/add)
+     * Đọc thông tin từ form, kiểm tra hợp lệ và lưu vào bảng dependents.
+     */
     private void handleAddDependent(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
+        // 2. Đọc các tham số gửi từ form modal thêm người phụ thuộc
         String fullName = req.getParameter("fullName");
         String relationship = req.getParameter("relationship");
         String phone = req.getParameter("phone");
@@ -261,12 +284,14 @@ public class ManagerTenantsServlet extends BaseServlet {
         String dobStr = req.getParameter("dob");
         String identityNumber = req.getParameter("identityNumber");
 
+        // 3. Kiểm tra các trường bắt buộc (Họ tên và Quan hệ)
         if (fullName == null || relationship == null || fullName.trim().isEmpty() || relationship.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Họ tên và Quan hệ là bắt buộc.");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
             return;
         }
 
+        // 4. Kiểm tra định dạng số điện thoại (nếu có nhập)
         if (phone != null && !phone.trim().isEmpty()) {
             if (!ValidationUtil.isValidVnPhone(phone)) {
                 setFlashMessage(req, "danger", "Số điện thoại người phụ thuộc không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
@@ -274,6 +299,7 @@ public class ManagerTenantsServlet extends BaseServlet {
                 return;
             }
         }
+        // 5. Kiểm tra định dạng CCCD 12 số (nếu có nhập)
         if (identityNumber != null && !identityNumber.trim().isEmpty()) {
             if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
                 setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 12 chữ số).");
@@ -282,6 +308,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
         }
 
+        // 6. Kiểm tra ngày sinh (không được ở tương lai)
         LocalDate dob = null;
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
@@ -298,6 +325,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
         }
 
+        // 7. Gọi Service lưu thông tin người phụ thuộc vào DB
         try {
             boolean success = tenantService.addDependent(tenantId, currentUser.getId(), fullName, relationship, phone, gender, dob, identityNumber);
             if (success) {
@@ -318,6 +346,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             setFlashMessage(req, "danger", "Lỗi thêm người phụ thuộc: " + e.getMessage());
         }
 
+        // 8. Quay lại trang chi tiết người thuê
         resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
     }
 
@@ -368,16 +397,23 @@ public class ManagerTenantsServlet extends BaseServlet {
         resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
     }
 
+    /**
+     * KẾT THÚC THUÊ (POST /manager/tenants/{id}/end-rental)
+     * Gọi Transaction giải phóng phòng, vô hiệu hóa tài khoản và chốt hợp đồng.
+     */
     private void handleEndRental(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
+        // 2. Gọi Service thực thi Transaction kết thúc hợp đồng thuê
         boolean success = tenantService.endRental(tenantId);
         if (success) {
             try {
+                // 3. Ghi vết lịch sử quản trị
                 AuditLogHelper.log(auditLogDAO, req, "users", tenantId, "UPDATE", "ACTIVE", "INACTIVE (End Rental)", currentUser.getId());
             } catch (Exception ex) {
                 logger.warn("AuditLog failed after end rental", ex);
@@ -387,10 +423,16 @@ public class ManagerTenantsServlet extends BaseServlet {
             setFlashMessage(req, "danger", "Lỗi kết thúc thuê.");
         }
 
+        // 4. Chuyển hướng lại trang chi tiết người thuê
         resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
     }
 
+    /**
+     * CHI TIẾT NGƯỜI PHỤ THUỘC (GET /manager/dependents/{id})
+     * Lấy thông tin cá nhân của người phụ thuộc + Tên người thuê chính tương ứng.
+     */
     private void handleDependentDetail(int dependentId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -399,6 +441,7 @@ public class ManagerTenantsServlet extends BaseServlet {
 
         Map<String, Object> dependent = null;
         try {
+            // 2. Lấy chi tiết người phụ thuộc từ Service
             dependent = tenantService.getDependentDetail(dependentId, currentUser.getId());
         } catch (Exception e) {
             logger.error("Failed to query dependent detail", e);
@@ -409,17 +452,24 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        // 3. Chuyển sang View dependent-detail.jsp
         req.setAttribute("dependent", dependent);
         req.getRequestDispatcher("/WEB-INF/views/manager/dependents/detail.jsp").forward(req, resp);
     }
 
+    /**
+     * SỬA THÔNG TIN NGƯỜI PHỤ THUỘC (POST /manager/dependents/{id}/edit)
+     * Đọc các thông tin chỉnh sửa, kiểm tra hợp lệ và lưu vào CSDL.
+     */
     private void handleEditDependentSubmit(int dependentId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
+        // 2. Đọc các tham số gửi từ form
         String fullName = req.getParameter("fullName");
         String relationship = req.getParameter("relationship");
         String phone = req.getParameter("phone");
@@ -428,6 +478,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         String tenantIdStr = req.getParameter("tenantId");
         String identityNumber = req.getParameter("identityNumber");
 
+        // 3. Kiểm tra thông tin bắt buộc
         if (fullName == null || relationship == null || fullName.trim().isEmpty() || relationship.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Họ tên và Quan hệ là bắt buộc.");
             if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
@@ -438,6 +489,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        // 4. Kiểm tra định dạng số điện thoại
         if (phone != null && !phone.trim().isEmpty()) {
             if (!ValidationUtil.isValidVnPhone(phone)) {
                 setFlashMessage(req, "danger", "Số điện thoại người phụ thuộc không hợp lệ (chỉ chấp nhận số điện thoại di động Việt Nam gồm 10 số).");
@@ -449,6 +501,7 @@ public class ManagerTenantsServlet extends BaseServlet {
                 return;
             }
         }
+        // 5. Kiểm tra CCCD 12 số
         if (identityNumber != null && !identityNumber.trim().isEmpty()) {
             if (!ValidationUtil.isValidVnIdentity(identityNumber)) {
                 setFlashMessage(req, "danger", "Số CMND/CCCD người phụ thuộc không hợp lệ (phải gồm 12 chữ số).");
@@ -461,6 +514,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
         }
 
+        // 6. Kiểm tra ngày sinh hợp lệ
         LocalDate dob = null;
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
@@ -500,6 +554,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        // 7. Gọi Service cập nhật thông tin người phụ thuộc trong DB
         try {
             boolean success = tenantService.editDependent(dependentId, currentUser.getId(), fullName, relationship, phone, gender, dob, identityNumber);
             if (success) {
@@ -522,6 +577,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             setFlashMessage(req, "danger", "Lỗi cập nhật người phụ thuộc: " + e.getMessage());
         }
 
+        // 8. Chuyển hướng lại trang chi tiết
         if (tenantIdStr != null && !tenantIdStr.isEmpty()) {
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantIdStr);
         } else {
@@ -529,13 +585,19 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
     }
 
+    /**
+     * SỬA THÔNG TIN NGƯỜI THUÊ (POST /manager/tenants/{id}/edit)
+     * Đọc form thông tin cá nhân người thuê, kiểm tra các quy tắc và lưu vào DB.
+     */
     private void handleEditTenantSubmit(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
+        // 2. Đọc các trường dữ liệu từ form modal
         String fullName = req.getParameter("fullName");
         String phone = req.getParameter("phone");
         String email = req.getParameter("email");
@@ -544,6 +606,7 @@ public class ManagerTenantsServlet extends BaseServlet {
         String gender = req.getParameter("gender");
         String dobStr = req.getParameter("dob");
 
+        // 3. Kiểm tra các trường bắt buộc
         if (fullName == null || phone == null || email == null || identityNumber == null ||
             fullName.trim().isEmpty() || phone.trim().isEmpty() || email.trim().isEmpty() || identityNumber.trim().isEmpty()) {
             setFlashMessage(req, "danger", "Vui lòng nhập đầy đủ các trường bắt buộc.");
@@ -551,6 +614,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        // 4. Kiểm tra định dạng họ tên, số điện thoại và CCCD 12 số
         if (!ValidationUtil.isValidFullName(fullName)) {
             setFlashMessage(req, "danger", "Họ và tên chỉ được chứa chữ cái và khoảng trắng, không được chứa số hoặc ký tự đặc biệt.");
             resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
@@ -567,6 +631,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
+        // 5. Kiểm tra tuổi từ 18 trở lên
         LocalDate dob = null;
         if (dobStr != null && !dobStr.trim().isEmpty()) {
             try {
@@ -583,6 +648,7 @@ public class ManagerTenantsServlet extends BaseServlet {
             }
         }
 
+        // 6. Gọi Service chỉnh sửa thông tin người thuê
         try {
             boolean success = tenantService.editTenant(tenantId, currentUser.getId(), fullName, phone, email, identityNumber, permanentAddress, gender, dob);
             if (success) {
@@ -605,9 +671,14 @@ public class ManagerTenantsServlet extends BaseServlet {
             setFlashMessage(req, "danger", "Lỗi cập nhật người thuê: " + e.getMessage());
         }
 
+        // 7. Quay lại trang chi tiết người thuê
         resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
     }
 
+    /**
+     * XÓA MỀM NGƯỜI THUÊ (POST /manager/tenants/{id}/delete)
+     * Đánh dấu deleted_at = GETDATE() ẩn khỏi danh sách.
+     */
     private void handleSoftDelete(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
@@ -630,6 +701,10 @@ public class ManagerTenantsServlet extends BaseServlet {
         resp.sendRedirect(req.getContextPath() + "/manager/tenants");
     }
 
+    /**
+     * KHÓA TÀI KHOẢN NGƯỜI THUÊ (POST /manager/tenants/{id}/lock)
+     * Đổi trạng thái status thành LOCKED ngăn đăng nhập ứng dụng.
+     */
     private void handleLockAccount(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
@@ -657,6 +732,10 @@ public class ManagerTenantsServlet extends BaseServlet {
         }
     }
 
+    /**
+     * MỞ KHÓA TÀI KHOẢN NGƯỜI THUÊ (POST /manager/tenants/{id}/unlock)
+     * Đổi trạng thái status thành ACTIVE và xóa đếm mật khẩu sai.
+     */
     private void handleUnlockAccount(int tenantId, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {

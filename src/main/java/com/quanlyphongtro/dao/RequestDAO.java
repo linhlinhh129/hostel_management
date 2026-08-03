@@ -52,8 +52,12 @@ public class RequestDAO extends BaseDAO {
         return r;
     }
 
-    // ==================== HEAD (OPERATOR) METHODS ====================
+    // ==================== HEAD (OPERATOR / MANAGER) METHODS ====================
 
+    /**
+     * TRUY VẤN SỰ CỐ / YÊU CẦU THEO ID
+     * Lấy thông tin chi tiết sự cố, thông tin người gửi, tên phòng và cơ sở phát sinh sự cố.
+     */
     public Request getRequestById(int requestId) {
         String sql = "SELECT rq.*, u.full_name AS sender_name, " +
                 "COALESCE(r_tenant.code, r_title.code) AS room_code, " +
@@ -84,6 +88,10 @@ public class RequestDAO extends BaseDAO {
         return null;
     }
 
+    /**
+     * CẬP NHẬT TRẠNG THÁI SỰ CỐ (PENDING -> IN_PROGRESS -> RESOLVED / REJECTED)
+     * Cập nhật trạng thái mới, ID nhân viên được phân công và lý do từ chối (nếu có).
+     */
     public boolean updateRequestStatus(int requestId, String newStatus, String expectedOldStatus, Integer staffId,
             String rejectReason) {
         String sql = "UPDATE requests SET status = ?, assigned_staff_id = ?, rejection_reason = ?, updated_at = GETDATE() "

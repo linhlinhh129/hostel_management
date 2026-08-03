@@ -67,13 +67,19 @@ public class ManagerNotificationsServlet extends BaseServlet {
         }
     }
 
+    /**
+     * DANH SÁCH THÔNG BÁO (GET /manager/notifications)
+     * Lấy toàn bộ thông tin thông báo chung, nhắc nợ, sự cố từ cư dân/cơ sở gửi tới Manager.
+     */
     private void handleList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Kiểm tra đăng nhập Manager
         UserSessionDTO currentUser = getCurrentUser(req);
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
+        // 2. Đọc bộ lọc từ khóa, cơ sở và tab hiển thị
         String keyword = req.getParameter("keyword");
         String facilityIdStr = req.getParameter("facilityId");
         Integer filterFacilityId = null;
@@ -106,6 +112,7 @@ public class ManagerNotificationsServlet extends BaseServlet {
             type = "received";
         }
 
+        // 3. Gọi Service lấy danh sách thông báo và các hóa đơn báo sai
         int totalCount = notificationService.countManagerNotifications(currentUser.getId(), tab, type, filterFacilityId,
                 keyword);
         List<Map<String, Object>> notifications = notificationService.getManagerNotifications(currentUser.getId(), tab,
@@ -116,14 +123,17 @@ public class ManagerNotificationsServlet extends BaseServlet {
         List<Map<String, Object>> incorrectInvoices = notificationService
                 .getReportedIncorrectInvoices(currentUser.getId(), filterFacilityId, keyword);
 
+        // 4. Tính toán phân trang
         int totalPages = totalCount > 0 ? (int) Math.ceil((double) totalCount / pageSize) : 1;
 
+        // 5. Đóng gói dữ liệu kết quả
         Map<String, Object> pageObj = new HashMap<>();
         pageObj.put("items", notifications);
         pageObj.put("total", totalCount);
         pageObj.put("page", page);
         pageObj.put("totalPages", totalPages);
 
+        // 6. Gửi dữ liệu sang View list.jsp
         req.setAttribute("page", pageObj);
         req.setAttribute("keyword", keyword);
         req.setAttribute("assignedFacilities", assignedFacilities);

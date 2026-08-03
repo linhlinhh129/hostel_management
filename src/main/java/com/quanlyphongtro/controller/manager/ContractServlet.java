@@ -63,25 +63,40 @@ public class ContractServlet extends BaseServlet {
         }
     }
 
+    /**
+     * HIỂN THỊ DANH SÁCH HỢP ĐỒNG (GET /manager/contracts)
+     * Lấy danh sách hợp đồng thuộc quyền quản lý của Manager, có lọc theo tên/trạng thái.
+     */
     private void showList(HttpServletRequest req, HttpServletResponse resp, int managerId)
             throws ServletException, IOException {
+        // 1. Đọc bộ lọc tìm kiếm theo tên khách hoặc trạng thái hợp đồng (sắp hết hạn/còn hạn)
         String searchName = req.getParameter("searchName");
         String expiryStatus = req.getParameter("expiryStatus");
+
+        // 2. Gọi Service truy vấn CSDL lấy danh sách hợp đồng
         List<Contract> contracts = contractService.getContractsByManager(managerId, searchName, expiryStatus);
+
+        // 3. Đóng gói dữ liệu và chuyển hướng tới list.jsp
         req.setAttribute("contracts", contracts);
         req.setAttribute("searchName", searchName);
         req.setAttribute("expiryStatus", expiryStatus);
         req.getRequestDispatcher("/WEB-INF/views/manager/contracts/list.jsp").forward(req, resp);
     }
 
+    /**
+     * FORM TẠO HỢP ĐỒNG MỚI (GET /manager/contracts/create)
+     * Lấy danh sách các phòng còn trống (AVAILABLE) để hiển thị trong ô chọn phòng.
+     */
     private void showCreateForm(HttpServletRequest req, HttpServletResponse resp, int managerId)
             throws ServletException, IOException {
         try {
+            // 1. Lấy danh sách phòng chưa ai thuê thuộc cơ sở quản lý
             req.setAttribute("availableRooms", contractService.getAvailableRooms(managerId));
             String roomIdParam = req.getParameter("roomId");
             if (roomIdParam != null && !roomIdParam.trim().isEmpty()) {
                 req.setAttribute("preselectedRoomId", roomIdParam.trim());
             }
+            // 2. Chuyển tới giao diện tạo hợp đồng create.jsp
             req.getRequestDispatcher("/WEB-INF/views/manager/contracts/create.jsp").forward(req, resp);
         } catch (Exception e) {
             logger.error("Failed to load create contract form for managerId={}", managerId, e);
@@ -89,15 +104,22 @@ public class ContractServlet extends BaseServlet {
         }
     }
 
+    /**
+     * XEM CHI TIẾT HỢP ĐỒNG (GET /manager/contracts/detail)
+     * Lấy toàn bộ điều khoản, thông tin phòng và thông tin người thuê để hiển thị.
+     */
     private void showDetail(HttpServletRequest req, HttpServletResponse resp, int managerId)
             throws ServletException, IOException {
         try {
+            // 1. Đọc ID hợp đồng từ tham số URL
             int id = Integer.parseInt(req.getParameter("id"));
+            // 2. Gọi Service lấy chi tiết hợp đồng
             Contract contract = contractService.getContractDetail(id, managerId);
             if (contract == null) {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hợp đồng");
                 return;
             }
+            // 3. Đưa thông tin hợp đồng sang detail.jsp
             req.setAttribute("contract", contract);
             req.getRequestDispatcher("/WEB-INF/views/manager/contracts/detail.jsp").forward(req, resp);
         } catch (NumberFormatException e) {
@@ -105,6 +127,10 @@ public class ContractServlet extends BaseServlet {
         }
     }
 
+    /**
+     * IN HỢP ĐỒNG (GET /manager/contracts/print)
+     * Đẩy dữ liệu hợp đồng sang trang print.jsp sẵn sàng in ra khổ giấy A4.
+     */
     private void showPrint(HttpServletRequest req, HttpServletResponse resp, int managerId)
             throws ServletException, IOException {
         try {
