@@ -43,8 +43,8 @@ public class TenantInvoiceServlet extends BaseServlet {
 
             if (pathInfo == null || pathInfo.equals("/")) {
                 // List
-                List<Invoice> invoices = invoiceService.getInvoicesByRoomId(roomId);
-                BigDecimal unpaidTotal = invoiceService.getUnpaidTotal(roomId);
+                List<Invoice> invoices = invoiceService.getInvoicesByRoomId(roomId, currentUser.getId());
+                BigDecimal unpaidTotal = invoiceService.getUnpaidTotal(roomId, currentUser.getId());
                 
                 PaymentDAO paymentDAO = new PaymentDAO();
                 for (Invoice inv : invoices) {

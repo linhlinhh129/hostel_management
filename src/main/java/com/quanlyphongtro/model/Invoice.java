@@ -1,4 +1,5 @@
 package com.quanlyphongtro.model;
+
 import java.util.Date;
 import java.sql.Timestamp;
 
@@ -39,6 +40,7 @@ public class Invoice {
     private BigDecimal electricAmount;
     private BigDecimal waterAmount;
     private BigDecimal lateFee;
+    private Integer overdueDays;
     private String billingPeriod; // Example: "Tháng 05/2026"
     // Transient from JOIN
     private String roomCodeCache;
@@ -47,126 +49,340 @@ public class Invoice {
     private String electricImg;
     private String waterImg;
 
-    public String getElectricImg() { return electricImg; }
-    public void setElectricImg(String electricImg) { this.electricImg = electricImg; }
+    private String electricStatus;
+    private Integer electricOldFinal;
+    private Integer electricNewStart;
+    private Integer electricUsage;
 
-    public String getWaterImg() { return waterImg; }
-    public void setWaterImg(String waterImg) { this.waterImg = waterImg; }
+    private String waterStatus;
+    private Integer waterOldFinal;
+    private Integer waterNewStart;
+    private Integer waterUsage;
 
-    public String getMeterReadingStatus() { return meterReadingStatus; }
-    public void setMeterReadingStatus(String meterReadingStatus) { this.meterReadingStatus = meterReadingStatus; }
-    public boolean isMeterReported() { return "REPORTED".equalsIgnoreCase(meterReadingStatus); }
+    public String getElectricImg() {
+        return electricImg;
+    }
+
+    public void setElectricImg(String electricImg) {
+        this.electricImg = electricImg;
+    }
+
+    public String getWaterImg() {
+        return waterImg;
+    }
+
+    public void setWaterImg(String waterImg) {
+        this.waterImg = waterImg;
+    }
+
+    public String getMeterReadingStatus() {
+        return meterReadingStatus;
+    }
+
+    public void setMeterReadingStatus(String meterReadingStatus) {
+        this.meterReadingStatus = meterReadingStatus;
+    }
+
+    public boolean isMeterReported() {
+        return "REPORTED".equalsIgnoreCase(meterReadingStatus);
+    }
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public Invoice() {}
+    public Invoice() {
+    }
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Integer getId() {
+        return id;
+    }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-    public Integer getInvoiceId() { return id; }
-    public void setInvoiceId(Integer invoiceId) { this.id = invoiceId; }
+    public Integer getInvoiceId() {
+        return id;
+    }
 
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
+    public void setInvoiceId(Integer invoiceId) {
+        this.id = invoiceId;
+    }
 
-    public Integer getRoomId() { return roomId; }
-    public void setRoomId(Integer roomId) { this.roomId = roomId; }
+    public String getCode() {
+        return code;
+    }
 
-    public Integer getMeterId() { return meterId; }
-    public void setMeterId(Integer meterId) { this.meterId = meterId; }
+    public void setCode(String code) {
+        this.code = code;
+    }
 
-    public LocalDate getDueDate() { return dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+    public Integer getRoomId() {
+        return roomId;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setRoomId(Integer roomId) {
+        this.roomId = roomId;
+    }
 
-    public BigDecimal getOtherFee() { return otherFee; }
-    public void setOtherFee(BigDecimal otherFee) { this.otherFee = otherFee; }
+    public Integer getMeterId() {
+        return meterId;
+    }
 
-    public BigDecimal getRoomFee() { return roomFee; }
-    public void setRoomFee(BigDecimal roomFee) { this.roomFee = roomFee; }
+    public void setMeterId(Integer meterId) {
+        this.meterId = meterId;
+    }
 
-    public BigDecimal getElectricityPrice() { return electricityPrice; }
-    public void setElectricityPrice(BigDecimal electricityPrice) { this.electricityPrice = electricityPrice; }
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
 
-    public BigDecimal getWaterPrice() { return waterPrice; }
-    public void setWaterPrice(BigDecimal waterPrice) { this.waterPrice = waterPrice; }
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
 
-    public BigDecimal getInternetFee() { return internetFee; }
-    public void setInternetFee(BigDecimal internetFee) { this.internetFee = internetFee; }
+    public String getStatus() {
+        return status;
+    }
 
-    public BigDecimal getServiceFee() { return serviceFee; }
-    public void setServiceFee(BigDecimal serviceFee) { this.serviceFee = serviceFee; }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public BigDecimal getOtherFee() {
+        return otherFee;
+    }
 
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
+    public void setOtherFee(BigDecimal otherFee) {
+        this.otherFee = otherFee;
+    }
 
-    public Integer getCreatedBy() { return createdBy; }
-    public void setCreatedBy(Integer createdBy) { this.createdBy = createdBy; }
+    public BigDecimal getRoomFee() {
+        return roomFee;
+    }
 
-    public Integer getContractId() { return contractId; }
-    public void setContractId(Integer contractId) { this.contractId = contractId; }
+    public void setRoomFee(BigDecimal roomFee) {
+        this.roomFee = roomFee;
+    }
 
-    public Integer getTenantId() { return tenantId; }
-    public void setTenantId(Integer tenantId) { this.tenantId = tenantId; }
+    public BigDecimal getElectricityPrice() {
+        return electricityPrice;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setElectricityPrice(BigDecimal electricityPrice) {
+        this.electricityPrice = electricityPrice;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public BigDecimal getWaterPrice() {
+        return waterPrice;
+    }
 
-    public LocalDateTime getDeletedAt() { return deletedAt; }
-    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+    public void setWaterPrice(BigDecimal waterPrice) {
+        this.waterPrice = waterPrice;
+    }
 
-    public boolean isDeleted() { return deletedAt != null; }
+    public BigDecimal getInternetFee() {
+        return internetFee;
+    }
+
+    public void setInternetFee(BigDecimal internetFee) {
+        this.internetFee = internetFee;
+    }
+
+    public BigDecimal getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public Integer getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Integer createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Integer getContractId() {
+        return contractId;
+    }
+
+    public void setContractId(Integer contractId) {
+        this.contractId = contractId;
+    }
+
+    public Integer getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Integer tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Integer getOverdueDays() { return overdueDays; }
+    public void setOverdueDays(Integer overdueDays) { this.overdueDays = overdueDays; }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
 
     // Backward compatibility for JSP fmt:formatDate
     public Date getCreatedAtAsDate() {
-        if (createdAt == null) return null;
+        if (createdAt == null)
+            return null;
         return Timestamp.valueOf(createdAt);
     }
 
     public Date getUpdatedAtAsDate() {
-        if (updatedAt == null) return null;
+        if (updatedAt == null)
+            return null;
         return Timestamp.valueOf(updatedAt);
     }
 
-    public Integer getOldElectricReading() { return oldElectricReading; }
-    public void setOldElectricReading(Integer oldElectricReading) { this.oldElectricReading = oldElectricReading; }
+    public Integer getOldElectricReading() {
+        return oldElectricReading;
+    }
 
-    public Integer getNewElectricReading() { return newElectricReading; }
-    public void setNewElectricReading(Integer newElectricReading) { this.newElectricReading = newElectricReading; }
+    public void setOldElectricReading(Integer oldElectricReading) {
+        this.oldElectricReading = oldElectricReading;
+    }
 
-    public Integer getOldWaterReading() { return oldWaterReading; }
-    public void setOldWaterReading(Integer oldWaterReading) { this.oldWaterReading = oldWaterReading; }
+    public Integer getNewElectricReading() {
+        return newElectricReading;
+    }
 
-    public Integer getNewWaterReading() { return newWaterReading; }
-    public void setNewWaterReading(Integer newWaterReading) { this.newWaterReading = newWaterReading; }
+    public void setNewElectricReading(Integer newElectricReading) {
+        this.newElectricReading = newElectricReading;
+    }
 
-    public BigDecimal getElectricAmount() { return electricAmount; }
-    public void setElectricAmount(BigDecimal electricAmount) { this.electricAmount = electricAmount; }
+    public Integer getOldWaterReading() {
+        return oldWaterReading;
+    }
 
-    public BigDecimal getWaterAmount() { return waterAmount; }
-    public void setWaterAmount(BigDecimal waterAmount) { this.waterAmount = waterAmount; }
+    public void setOldWaterReading(Integer oldWaterReading) {
+        this.oldWaterReading = oldWaterReading;
+    }
 
-    public BigDecimal getLateFee() { return lateFee; }
-    public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
+    public Integer getNewWaterReading() {
+        return newWaterReading;
+    }
 
-    public String getBillingPeriod() { return billingPeriod; }
-    public void setBillingPeriod(String billingPeriod) { this.billingPeriod = billingPeriod; }
+    public void setNewWaterReading(Integer newWaterReading) {
+        this.newWaterReading = newWaterReading;
+    }
 
-    public String getRoomCodeCache() { return roomCodeCache; }
-    public void setRoomCodeCache(String roomCodeCache) { this.roomCodeCache = roomCodeCache; }
+    public BigDecimal getElectricAmount() {
+        return electricAmount;
+    }
 
-    public boolean isHasPendingPayment() { return hasPendingPayment; }
-    public void setHasPendingPayment(boolean hasPendingPayment) { this.hasPendingPayment = hasPendingPayment; }
+    public void setElectricAmount(BigDecimal electricAmount) {
+        this.electricAmount = electricAmount;
+    }
+
+    public BigDecimal getWaterAmount() {
+        return waterAmount;
+    }
+
+    public void setWaterAmount(BigDecimal waterAmount) {
+        this.waterAmount = waterAmount;
+    }
+
+    public BigDecimal getLateFee() {
+        return lateFee;
+    }
+
+    public void setLateFee(BigDecimal lateFee) {
+        this.lateFee = lateFee;
+    }
+
+    public String getBillingPeriod() {
+        return billingPeriod;
+    }
+
+    public void setBillingPeriod(String billingPeriod) {
+        this.billingPeriod = billingPeriod;
+    }
+
+    public String getRoomCodeCache() {
+        return roomCodeCache;
+    }
+
+    public void setRoomCodeCache(String roomCodeCache) {
+        this.roomCodeCache = roomCodeCache;
+    }
+
+    public String getElectricStatus() { return electricStatus; }
+    public void setElectricStatus(String electricStatus) { this.electricStatus = electricStatus; }
+
+    public Integer getElectricOldFinal() { return electricOldFinal; }
+    public void setElectricOldFinal(Integer electricOldFinal) { this.electricOldFinal = electricOldFinal; }
+
+    public Integer getElectricNewStart() { return electricNewStart; }
+    public void setElectricNewStart(Integer electricNewStart) { this.electricNewStart = electricNewStart; }
+
+    public Integer getElectricUsage() { return electricUsage; }
+    public void setElectricUsage(Integer electricUsage) { this.electricUsage = electricUsage; }
+
+    public String getWaterStatus() { return waterStatus; }
+    public void setWaterStatus(String waterStatus) { this.waterStatus = waterStatus; }
+
+    public Integer getWaterOldFinal() { return waterOldFinal; }
+    public void setWaterOldFinal(Integer waterOldFinal) { this.waterOldFinal = waterOldFinal; }
+
+    public Integer getWaterNewStart() { return waterNewStart; }
+    public void setWaterNewStart(Integer waterNewStart) { this.waterNewStart = waterNewStart; }
+
+    public Integer getWaterUsage() { return waterUsage; }
+    public void setWaterUsage(Integer waterUsage) { this.waterUsage = waterUsage; }
+
+    public boolean isHasPendingPayment() {
+        return hasPendingPayment;
+    }
+
+    public void setHasPendingPayment(boolean hasPendingPayment) {
+        this.hasPendingPayment = hasPendingPayment;
+    }
 
     // Helpers for View
     public String getDueDateLabel() {
@@ -182,16 +398,22 @@ public class Invoice {
     }
 
     public String getStatusBadgeClass() {
-        if (hasPendingPayment) return "badge-info";
-        if (StatusConstant.INVOICE_PAID.equals(status)) return "badge-success";
-        if (StatusConstant.INVOICE_OVERDUE.equals(status)) return "badge-danger";
+        if (hasPendingPayment)
+            return "badge-info";
+        if (StatusConstant.INVOICE_PAID.equals(status))
+            return "badge-success";
+        if (StatusConstant.INVOICE_OVERDUE.equals(status))
+            return "badge-danger";
         return "badge-warning";
     }
 
     public String getStatusLabel() {
-        if (hasPendingPayment) return "Chờ duyệt";
-        if (StatusConstant.INVOICE_PAID.equals(status)) return "Đã thanh toán";
-        if (StatusConstant.INVOICE_OVERDUE.equals(status)) return "Quá hạn";
+        if (hasPendingPayment)
+            return "Chờ duyệt";
+        if (StatusConstant.INVOICE_PAID.equals(status))
+            return "Đã thanh toán";
+        if (StatusConstant.INVOICE_OVERDUE.equals(status))
+            return "Quá hạn";
         return "Chưa thanh toán";
     }
 

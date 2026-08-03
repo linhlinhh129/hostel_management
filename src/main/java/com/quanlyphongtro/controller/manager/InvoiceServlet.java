@@ -62,6 +62,17 @@ public class InvoiceServlet extends BaseServlet {
             json.append("\"newElectric\":").append(preview.get("newElectric")).append(",");
             json.append("\"oldWater\":").append(preview.get("oldWater")).append(",");
             json.append("\"newWater\":").append(preview.get("newWater")).append(",");
+            
+            json.append("\"electricUsage\":").append(preview.get("electricUsage")).append(",");
+            json.append("\"waterUsage\":").append(preview.get("waterUsage")).append(",");
+            
+            json.append("\"electricStatus\":\"").append(preview.get("electricStatus") != null ? preview.get("electricStatus") : "NORMAL").append("\",");
+            json.append("\"electricOldFinal\":").append(preview.get("electricOldFinal") != null ? preview.get("electricOldFinal") : "null").append(",");
+            json.append("\"electricNewStart\":").append(preview.get("electricNewStart") != null ? preview.get("electricNewStart") : "null").append(",");
+            
+            json.append("\"waterStatus\":\"").append(preview.get("waterStatus") != null ? preview.get("waterStatus") : "NORMAL").append("\",");
+            json.append("\"waterOldFinal\":").append(preview.get("waterOldFinal") != null ? preview.get("waterOldFinal") : "null").append(",");
+            json.append("\"waterNewStart\":").append(preview.get("waterNewStart") != null ? preview.get("waterNewStart") : "null").append(",");
             json.append("\"meterId\":").append(preview.get("meterId")).append(",");
             json.append("\"electricImg\":\"")
                     .append(preview.get("electricImg") != null ? preview.get("electricImg") : "").append("\",");

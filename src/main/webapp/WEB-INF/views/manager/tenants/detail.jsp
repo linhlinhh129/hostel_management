@@ -341,20 +341,6 @@
                   <form method="post" action="${ctx}/manager/tenants/${tenant.id}/end-rental"
                     onsubmit="return confirm('Bạn có chắc muốn kết thúc hợp đồng thuê của ${tenant.fullName}? Thao tác này không thể hoàn tác.')">
                     <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                    <div class="row g-3">
-                      <div class="col-md-6 col-lg-4">
-                        <label for="endDate" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="endDate" name="endDate" required>
-                      </div>
-                    </div>
-                    <script>
-                      document.addEventListener('DOMContentLoaded', function() {
-                        const endDateInput = document.getElementById('endDate');
-                        if (endDateInput && !endDateInput.value) {
-                          endDateInput.value = new Date().toISOString().split('T')[0];
-                        }
-                      });
-                    </script>
                     <div class="mt-3">
                       <button type="submit" class="btn btn-warning fw-semibold">
                         Xác nhận kết thúc thuê

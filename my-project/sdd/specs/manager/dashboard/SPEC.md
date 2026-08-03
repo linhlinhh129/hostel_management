@@ -32,6 +32,10 @@ As a Manager, I want to xem tổng tiền đã thu trong tháng hiện tại, s�
 
 As a Manager, I want to thấy được danh sách 5 sự cố mới gửi gần nhất và thống kê số lượng sự cố theo trạng thái so that tôi chủ động sắp xếp thời gian đi tới các phòng tương ứng để xử lý sửa chữa.
 
+### **Story 4 (Happy Path)**
+
+As a Manager, I want to thấy được số lượng hợp đồng thuê sắp hết hạn trong 30 ngày tới và có đường dẫn xem chi tiết so that tôi chủ động liên hệ cư dân đôn đốc gia hạn hoặc tái ký hợp đồng.
+
 ---
 
 ## **3. Acceptance Criteria (EARS)**
@@ -39,6 +43,10 @@ As a Manager, I want to thấy được danh sách 5 sự cố mới gửi gần
 ### **Thống kê hoạt động**
 
 WHEN Manager views Dashboard THE SYSTEM SHALL load and calculate room counts, occupied counts, resident counts, and occupancy rate.
+
+### **Thống kê hợp đồng sắp hết hạn**
+
+WHEN Manager views Dashboard THE SYSTEM SHALL count active contracts expiring within the next 30 days (`expiringContractsCount`) AND display a clickable KPI card redirecting to `/manager/contracts?expiryStatus=expiring`.
 
 ### **Thống kê tài chính**
 
@@ -74,6 +82,7 @@ WHEN Manager views Dashboard THE SYSTEM SHALL count tickets in each status group
 | `pendingTickets`, `sentNotifications` | `int` | `stats` từ `DashboardService` | Đếm sự cố chờ xử lý và thông báo đã gửi |
 | `occupancyRate` | `int` | `stats` từ `DashboardService` | Tỷ lệ lấp đầy (%) |
 | `activeContracts`, `unpaidInvoices`, `overdueInvoices`, `pendingPayments` | `int` | `stats` từ `DashboardService` | Thống kê hợp đồng và hóa đơn |
+| `expiringContractsCount` | `int` | `ContractService.countExpiringContracts(managerId)` | Thống kê số lượng hợp đồng sắp hết hạn trong 30 ngày tới |
 | `monthlyRevenue`, `totalOutstanding` | `BigDecimal` | `stats` từ `DashboardService` | Thống kê doanh thu và nợ tồn đọng |
 | `ticketCountNew`, `ticketCountInProgress`, `ticketCountDone`, `ticketCountRejected` | `int` | `stats` từ `DashboardService` | Phân loại số lượng sự cố theo trạng thái |
 | `recentTickets` | `List<Map<String, Object>>`| `stats` từ `DashboardService` | Danh sách 5 sự cố mới gửi gần nhất |

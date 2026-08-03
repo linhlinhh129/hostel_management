@@ -55,10 +55,10 @@ public class TenantDashboardServlet extends BaseServlet {
             req.setAttribute("facilityName", facilityOpt.map(Facility::getName).orElse("N/A"));
 
             // KPI
-            BigDecimal unpaidAmount = invoiceService.getUnpaidTotal(room.getId());
+            BigDecimal unpaidAmount = invoiceService.getUnpaidTotal(room.getId(), currentUser.getId());
             req.setAttribute("unpaidAmount", unpaidAmount);
 
-            Optional<Invoice> currentInvoiceOpt = invoiceService.getCurrentInvoice(room.getId());
+            Optional<Invoice> currentInvoiceOpt = invoiceService.getCurrentInvoice(room.getId(), currentUser.getId());
             if (currentInvoiceOpt.isPresent()) {
                 req.setAttribute("currentInvoice", currentInvoiceOpt.get());
                 req.setAttribute("dueDateLabel", currentInvoiceOpt.get().getDueDateLabel());

@@ -88,8 +88,9 @@ public class NotificationDAO extends BaseDAO {
         String sql = "SELECT n.*, u.full_name AS created_by_name " +
                 "FROM dbo.notifications n " +
                 "LEFT JOIN dbo.users u ON u.user_id = n.created_by " +
+                "LEFT JOIN dbo.rooms r ON r.room_id = n.room_id " +
                 "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
-                "AND (n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?) OR (n.target_type = 'ROOM' AND n.room_id = ?)) "
+                "AND (n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?) OR (n.target_type = 'ROOM' AND n.room_id = ? AND (r.contract_start_date IS NULL OR CAST(n.sent_at AS DATE) >= r.contract_start_date))) "
                 +
                 (hasKeyword ? "AND (n.title LIKE ? OR n.content LIKE ?) " : "") +
                 "ORDER BY n.sent_at DESC, n.created_at DESC " +
@@ -123,11 +124,12 @@ public class NotificationDAO extends BaseDAO {
 
     public int countForTenant(int roomId, int facilityId, String keyword) {
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
-        String sql = "SELECT COUNT(*) FROM dbo.notifications " +
-                "WHERE status = 'SENT' AND deleted_at IS NULL " +
-                "AND (target_type = 'ALL' OR (target_type = 'FACILITY' AND facility_id = ?) OR (target_type = 'ROOM' AND room_id = ?)) "
+        String sql = "SELECT COUNT(*) FROM dbo.notifications n " +
+                "LEFT JOIN dbo.rooms r ON r.room_id = n.room_id " +
+                "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
+                "AND (n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?) OR (n.target_type = 'ROOM' AND n.room_id = ? AND (r.contract_start_date IS NULL OR CAST(n.sent_at AS DATE) >= r.contract_start_date))) "
                 +
-                (hasKeyword ? "AND (title LIKE ? OR content LIKE ?)" : "");
+                (hasKeyword ? "AND (n.title LIKE ? OR n.content LIKE ?)" : "");
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             int idx = 1;
@@ -152,8 +154,9 @@ public class NotificationDAO extends BaseDAO {
     public Optional<Notification> findByIdForTenant(int id, int roomId, int facilityId) {
         String sql = "SELECT n.*, u.full_name AS created_by_name FROM dbo.notifications n " +
                 "LEFT JOIN dbo.users u ON u.user_id = n.created_by " +
+                "LEFT JOIN dbo.rooms r ON r.room_id = n.room_id " +
                 "WHERE n.notification_id = ? AND n.status = 'SENT' AND n.deleted_at IS NULL " +
-                "AND (n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?) OR (n.target_type = 'ROOM' AND n.room_id = ?))";
+                "AND (n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?) OR (n.target_type = 'ROOM' AND n.room_id = ? AND (r.contract_start_date IS NULL OR CAST(n.sent_at AS DATE) >= r.contract_start_date)))";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -174,11 +177,12 @@ public class NotificationDAO extends BaseDAO {
         if (lastReadTime == null)
             return countForTenant(roomId, facilityId);
 
-        String sql = "SELECT COUNT(*) FROM dbo.notifications " +
-                "WHERE status = 'SENT' AND deleted_at IS NULL " +
-                "AND (target_type = 'ALL' OR (target_type = 'FACILITY' AND facility_id = ?) OR (target_type = 'ROOM' AND room_id = ?)) "
+        String sql = "SELECT COUNT(*) FROM dbo.notifications n " +
+                "LEFT JOIN dbo.rooms r ON r.room_id = n.room_id " +
+                "WHERE n.status = 'SENT' AND n.deleted_at IS NULL " +
+                "AND (n.target_type = 'ALL' OR (n.target_type = 'FACILITY' AND n.facility_id = ?) OR (n.target_type = 'ROOM' AND n.room_id = ? AND (r.contract_start_date IS NULL OR CAST(n.sent_at AS DATE) >= r.contract_start_date))) "
                 +
-                "AND (sent_at > ? OR created_at > ?)";
+                "AND (n.sent_at > ? OR n.created_at > ?)";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, facilityId);

@@ -43,6 +43,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public List<Invoice> getInvoicesByRoomId(int roomId, int tenantId) {
+        return invoiceDAO.findByRoomId(roomId, tenantId);
+    }
+
+    @Override
     public Optional<Invoice> getInvoiceById(int invoiceId, int roomId) {
         return invoiceDAO.findByIdAndRoomId(invoiceId, roomId);
     }
@@ -53,8 +58,18 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public BigDecimal getUnpaidTotal(int roomId, int tenantId) {
+        return invoiceDAO.getUnpaidTotalByRoomId(roomId, tenantId);
+    }
+
+    @Override
     public Optional<Invoice> getCurrentInvoice(int roomId) {
         return invoiceDAO.getCurrentInvoiceByRoomId(roomId);
+    }
+
+    @Override
+    public Optional<Invoice> getCurrentInvoice(int roomId, int tenantId) {
+        return invoiceDAO.getCurrentInvoiceByRoomId(roomId, tenantId);
     }
 
     @Override
@@ -309,9 +324,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         result.put("newElectric", currentMeter.getElectric());
         result.put("oldWater", oldWater);
         result.put("newWater", currentMeter.getWater());
-        result.put("electricImg", currentMeter.getElectricImg());
-        result.put("waterImg", currentMeter.getWaterImg());
-        result.put("meterId", currentMeter.getMeterId());
+        result.put("electricUsage", electricUsage);
+        result.put("waterUsage", waterUsage);
+        result.put("electricStatus", currentMeter.getElectricStatus());
+        result.put("electricOldFinal", currentMeter.getElectricOldFinal());
+        result.put("electricNewStart", currentMeter.getElectricNewStart());
+        result.put("waterStatus", currentMeter.getWaterStatus());
+        result.put("waterOldFinal", currentMeter.getWaterOldFinal());
+        result.put("waterNewStart", currentMeter.getWaterNewStart());
 
         return result;
     }
