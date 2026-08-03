@@ -309,9 +309,14 @@ public class InvoiceServiceImpl implements InvoiceService {
         result.put("newElectric", currentMeter.getElectric());
         result.put("oldWater", oldWater);
         result.put("newWater", currentMeter.getWater());
-        result.put("electricImg", currentMeter.getElectricImg());
-        result.put("waterImg", currentMeter.getWaterImg());
-        result.put("meterId", currentMeter.getMeterId());
+        result.put("electricUsage", electricUsage);
+        result.put("waterUsage", waterUsage);
+        result.put("electricStatus", currentMeter.getElectricStatus());
+        result.put("electricOldFinal", currentMeter.getElectricOldFinal());
+        result.put("electricNewStart", currentMeter.getElectricNewStart());
+        result.put("waterStatus", currentMeter.getWaterStatus());
+        result.put("waterOldFinal", currentMeter.getWaterOldFinal());
+        result.put("waterNewStart", currentMeter.getWaterNewStart());
 
         return result;
     }

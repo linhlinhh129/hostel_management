@@ -114,7 +114,11 @@
                               title="Chỉ số cũ">0</span>
                             <input type="text" class="form-control bg-light text-center" id="previewNewElectric"
                               title="Chỉ số mới" readonly>
+                            <span class="input-group-text bg-light text-primary fw-bold" id="previewElectricUsage"
+                              title="Lượng tiêu thụ">0</span>
                           </div>
+                          <div id="electricCalcHint" class="small text-danger mt-1"
+                            style="display:none; line-height: 1.2;"></div>
                         </div>
                         <div class="col-md-3">
                           <label class="form-label text-muted">Đơn giá điện</label>
@@ -127,7 +131,11 @@
                               title="Chỉ số cũ">0</span>
                             <input type="text" class="form-control bg-light text-center" id="previewNewWater"
                               title="Chỉ số mới" readonly>
+                            <span class="input-group-text bg-light text-primary fw-bold" id="previewWaterUsage"
+                              title="Lượng tiêu thụ">0</span>
                           </div>
+                          <div id="waterCalcHint" class="small text-danger mt-1"
+                            style="display:none; line-height: 1.2;"></div>
                         </div>
                         <div class="col-md-3">
                           <label class="form-label text-muted">Đơn giá nước</label>
@@ -248,11 +256,43 @@
 
                   document.getElementById('previewOldElectric').textContent = data.oldElectric;
                   document.getElementById('previewNewElectric').value = data.newElectric;
+                  if (data.electricStatus === 'REPLACED' || data.electricStatus === 'ROLLOVER') {
+                    document.getElementById('previewElectricUsage').innerHTML = data.electricUsage + ' <span class="text-danger fw-bold ms-1" title="Có tính toán đặc biệt">*</span>';
+                  } else {
+                    document.getElementById('previewElectricUsage').textContent = data.electricUsage;
+                  }
                   document.getElementById('previewElectricPrice').value = formatMoney(data.electricityPrice);
+
+                  var electricHint = document.getElementById('electricCalcHint');
+                  if (data.electricStatus === 'REPLACED') {
+                    electricHint.style.display = 'block';
+                    electricHint.textContent = 'Đã thay đồng hồ: (' + data.electricOldFinal + ' - ' + data.oldElectric + ') + (' + data.newElectric + ' - ' + data.electricNewStart + ') = ' + data.electricUsage;
+                  } else if (data.electricStatus === 'ROLLOVER') {
+                    electricHint.style.display = 'block';
+                    electricHint.textContent = 'Tràn vòng đồng hồ: (Tối đa - ' + data.oldElectric + ') + ' + data.newElectric + ' = ' + data.electricUsage;
+                  } else {
+                    electricHint.style.display = 'none';
+                  }
 
                   document.getElementById('previewOldWater').textContent = data.oldWater;
                   document.getElementById('previewNewWater').value = data.newWater;
+                  if (data.waterStatus === 'REPLACED' || data.waterStatus === 'ROLLOVER') {
+                    document.getElementById('previewWaterUsage').innerHTML = data.waterUsage + ' <span class="text-danger fw-bold ms-1" title="Có tính toán đặc biệt">*</span>';
+                  } else {
+                    document.getElementById('previewWaterUsage').textContent = data.waterUsage;
+                  }
                   document.getElementById('previewWaterPrice').value = formatMoney(data.waterPrice);
+
+                  var waterHint = document.getElementById('waterCalcHint');
+                  if (data.waterStatus === 'REPLACED') {
+                    waterHint.style.display = 'block';
+                    waterHint.textContent = 'Đã thay đồng hồ: (' + data.waterOldFinal + ' - ' + data.oldWater + ') + (' + data.newWater + ' - ' + data.waterNewStart + ') = ' + data.waterUsage;
+                  } else if (data.waterStatus === 'ROLLOVER') {
+                    waterHint.style.display = 'block';
+                    waterHint.textContent = 'Tràn vòng đồng hồ: (Tối đa - ' + data.oldWater + ') + ' + data.newWater + ' = ' + data.waterUsage;
+                  } else {
+                    waterHint.style.display = 'none';
+                  }
 
                   currentPreviewMeterId = data.meterId;
                   currentInvoiceData = data;
@@ -295,10 +335,14 @@
                   document.getElementById('previewInternetFee').value = '';
                   document.getElementById('previewOldElectric').textContent = '0';
                   document.getElementById('previewNewElectric').value = '';
+                  document.getElementById('previewElectricUsage').textContent = '0';
                   document.getElementById('previewElectricPrice').value = '';
+                  document.getElementById('electricCalcHint').style.display = 'none';
                   document.getElementById('previewOldWater').textContent = '0';
                   document.getElementById('previewNewWater').value = '';
+                  document.getElementById('previewWaterUsage').textContent = '0';
                   document.getElementById('previewWaterPrice').value = '';
+                  document.getElementById('waterCalcHint').style.display = 'none';
                   document.getElementById('previewMeterImages').style.display = 'none';
                 });
             }

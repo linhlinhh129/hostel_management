@@ -179,7 +179,6 @@ public class InvoiceDAO extends BaseDAO {
         return null;
     }
 
-
     // --- Methods from HEAD (Tenant / Room specific) ---
 
     private Invoice mapRow(ResultSet rs) throws SQLException {
@@ -205,14 +204,19 @@ public class InvoiceDAO extends BaseDAO {
 
         // Lấy phí chậm nộp từ DB nếu đã thanh toán, nếu chưa thì tính runtime
         BigDecimal lateFee = BigDecimal.ZERO;
+        Integer overdueDays = 0;
         LocalDate dueDate = i.getDueDate();
 
         if ("PAID".equals(i.getStatus())) {
             if (hasColumn(rs, "late_fee")) {
                 try {
                     BigDecimal dbLateFee = rs.getBigDecimal("late_fee");
-                    if (dbLateFee != null)
+                    if (dbLateFee != null) {
                         lateFee = dbLateFee;
+                        if (lateFee.compareTo(BigDecimal.ZERO) > 0 && i.getRoomFee() != null && i.getRoomFee().compareTo(BigDecimal.ZERO) > 0) {
+                            overdueDays = lateFee.divide(i.getRoomFee().multiply(new BigDecimal("0.01")), RoundingMode.HALF_UP).intValue();
+                        }
+                    }
                 } catch (SQLException ignore) {
                 }
             }
@@ -230,6 +234,7 @@ public class InvoiceDAO extends BaseDAO {
                 }
                 if (endDate.isAfter(dueDate)) {
                     long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
+                    overdueDays = (int) daysLate;
                     lateFee = i.getRoomFee()
                             .multiply(new BigDecimal("0.01"))
                             .multiply(new BigDecimal(daysLate))
@@ -242,6 +247,7 @@ public class InvoiceDAO extends BaseDAO {
             }
         }
         i.setLateFee(lateFee);
+        i.setOverdueDays(overdueDays);
 
         if (hasColumn(rs, "old_electric")) {
             i.setOldElectricReading(getInteger(rs, "old_electric"));
@@ -316,7 +322,8 @@ public class InvoiceDAO extends BaseDAO {
 
     public List<Invoice> findByRoomId(int roomId) {
         String sql = "SELECT i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, mr.status AS meter_status, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, mr.status AS meter_status, "
+                +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -345,7 +352,8 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> findByIdAndRoomId(int id, int roomId) {
         String sql = "SELECT i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, mr.status AS meter_status, mr.electric_img, mr.water_img, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, mr.status AS meter_status, mr.electric_img, mr.water_img, "
+                +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -420,7 +428,8 @@ public class InvoiceDAO extends BaseDAO {
 
     public Optional<Invoice> getCurrentInvoiceByRoomId(int roomId) {
         String sql = "SELECT TOP 1 i.*, " +
-                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, " +
+                "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, "
+                +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
                 +
                 "  COALESCE((SELECT TOP 1 water FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_water, "
@@ -759,7 +768,7 @@ public class InvoiceDAO extends BaseDAO {
                 "u.email AS tenant_email, " +
                 "f.name AS facility_name, f.address AS facility_address, " +
                 "c.start_date AS contract_start_date, c.end_date AS contract_end_date, c.code AS contract_code, " +
-                "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_usage AS db_electric_usage, mr_curr.water_usage AS db_water_usage, mr_curr.electric_img, mr_curr.water_img, "
+                "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_usage AS db_electric_usage, mr_curr.water_usage AS db_water_usage, mr_curr.electric_img, mr_curr.water_img, mr_curr.electric_status, mr_curr.electric_old_final, mr_curr.electric_new_start, mr_curr.water_status, mr_curr.water_old_final, mr_curr.water_new_start, "
                 +
                 "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, "
                 +
@@ -840,6 +849,20 @@ public class InvoiceDAO extends BaseDAO {
                         dto.setWaterUsage(rs.getInt("db_water_usage"));
                     } else {
                         dto.setWaterUsage(Math.max(0, nw - ow));
+                    }
+
+                    if (hasColumn(rs, "electric_status")) {
+                        dto.setElectricStatus(rs.getString("electric_status"));
+                        dto.setElectricOldFinal(
+                                rs.getObject("electric_old_final") != null ? rs.getInt("electric_old_final") : null);
+                        dto.setElectricNewStart(
+                                rs.getObject("electric_new_start") != null ? rs.getInt("electric_new_start") : null);
+
+                        dto.setWaterStatus(rs.getString("water_status"));
+                        dto.setWaterOldFinal(
+                                rs.getObject("water_old_final") != null ? rs.getInt("water_old_final") : null);
+                        dto.setWaterNewStart(
+                                rs.getObject("water_new_start") != null ? rs.getInt("water_new_start") : null);
                     }
 
                     dto.setElectricUnitPrice(rs.getBigDecimal("electricity_price"));
@@ -993,7 +1016,6 @@ public class InvoiceDAO extends BaseDAO {
             }
         }
     }
-
 
     public void update(Invoice invoice) throws SQLException {
         String sql = "UPDATE invoices SET due_date = ?, other_fee = ?, total_amount = ?, note = ?, updated_at = GETDATE() "
