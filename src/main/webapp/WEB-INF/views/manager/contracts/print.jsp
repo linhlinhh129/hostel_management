@@ -117,6 +117,7 @@
       <div class="field-row mt-2"><strong>3.2. Trách nhiệm của Bên B:</strong></div>
       <div class="ps-3">
         - Thanh toán tiền phòng và các khoản phí dịch vụ đầy đủ, đúng hạn từ ngày 01 đến 05 hàng tháng.<br/>
+        - Khi hóa đơn hàng tháng được ban hành, Bên B có thời hạn từ 01 đến 05 ngày để kiểm tra, đối soát và phản hồi cho Bên A nếu có sai sót. Quá 05 ngày, Bên A không xử lý khiếu nại và được bãi trừ mọi trách nhiệm.<br/>
         - Giữ gìn, bảo quản tài sản, thiết bị trong phòng. Không tự ý cải tạo, sửa chữa khi chưa có sự đồng ý của Bên A.<br/>
         - Tuân thủ quy định phòng cháy chữa cháy, giữ gìn an ninh trật tự và vệ sinh chung.<br/>
         - Không tàng trữ chất cấm, cờ bạc, hoặc thực hiện hành vi vi phạm pháp luật trong khu vực trọ.

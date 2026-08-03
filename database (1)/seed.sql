@@ -30,22 +30,22 @@ BEGIN TRY
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'mn03112005@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'mn03112005@gmail.com', @pwd, N'MANAGER', N'Nguyễn Minh Nhật', N'mn03112005@gmail.com', N'0900000002', N'ACTIVE', NULL, 0, N'001241000001', '2001-02-15', N'FEMALE', N'Cầu Giấy, Hà Nội');
+    VALUES (N'mn03112005@gmail.com', @pwd, N'MANAGER', N'Nguyễn Minh Nhật', N'mn03112005@gmail.com', N'0900000002', N'ACTIVE', NULL, 1, N'001241000001', '2001-02-15', N'FEMALE', N'Cầu Giấy, Hà Nội');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'buidinhyt@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'buidinhyt@gmail.com', @pwd, N'MANAGER', N'Bùi Đỉnh', N'buidinhyt@gmail.com', N'0862158523', N'ACTIVE', NULL, 0, N'011201000001', '2005-10-27', N'MALE', N'Ninh Bình');
+    VALUES (N'buidinhyt@gmail.com', @pwd, N'MANAGER', N'Bùi Đỉnh', N'buidinhyt@gmail.com', N'0862158523', N'ACTIVE', NULL, 1, N'011201000001', '2005-10-27', N'MALE', N'Ninh Bình');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'atu02378@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'atu02378@gmail.com', @pwd, N'OPERATOR', N'Phạm Anh Tú (Atus)', N'atu02378@gmail.com', N'0900000004', N'ACTIVE', NULL, 0, N'001201050001', '2005-01-15', N'MALE', N'Mê Linh, Hà Nội');
+    VALUES (N'atu02378@gmail.com', @pwd, N'OPERATOR', N'Phạm Anh Tú (Atus)', N'atu02378@gmail.com', N'0900000004', N'ACTIVE', NULL, 1, N'001201050001', '2005-01-15', N'MALE', N'Mê Linh, Hà Nội');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'huynguyenn1108@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'huynguyenn1108@gmail.com', @pwd, N'OPERATOR', N'Nguyễn Công Huy', N'huynguyenn1108@gmail.com', N'0900000005', N'ACTIVE', NULL, 0, N'001201000301', '2006-01-15', N'FEMALE', N'Đống Đa, Hà Nội');
+    VALUES (N'huynguyenn1108@gmail.com', @pwd, N'OPERATOR', N'Nguyễn Công Huy', N'huynguyenn1108@gmail.com', N'0900000005', N'ACTIVE', NULL, 1, N'001201000301', '2006-01-15', N'FEMALE', N'Đống Đa, Hà Nội');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'lethithuylinhtl12@gmail.com')
@@ -623,72 +623,5 @@ GO
 
 
 
-USE HostelManagement;
-GO
 
-BEGIN TRANSACTION;
 
-BEGIN TRY
-    -- 1. Khai báo tên / thông tin người thuê cần xóa
-    DECLARE @TargetName NVARCHAR(100) = N'Nguyễn Tiến Quốc';
-
-    -- 2. Tìm danh sách User ID liên quan
-    DECLARE @UserIDs TABLE (user_id INT);
-    INSERT INTO @UserIDs (user_id)
-    SELECT user_id FROM dbo.users 
-    WHERE full_name = @TargetName 
-       OR username = @TargetName 
-       OR identity_number = @TargetName;
-
-    -- 3. Tìm danh sách Hợp đồng và Phòng liên quan
-    DECLARE @ContractIDs TABLE (contract_id INT, room_id INT);
-    INSERT INTO @ContractIDs (contract_id, room_id)
-    SELECT contract_id, room_id FROM dbo.contracts 
-    WHERE tenant_full_name = @TargetName 
-       OR tenant_identity_number = @TargetName 
-       OR tenant_id IN (SELECT user_id FROM @UserIDs);
-
-    -- 4. Giải phóng phòng trọ (Đưa về trạng thái AVAILABLE và gỡ thông tin người thuê)
-    UPDATE dbo.rooms
-    SET tenant_id = NULL,
-        status = 'AVAILABLE',
-        contract_start_date = NULL,
-        contract_end_date = NULL,
-        updated_at = GETDATE()
-    WHERE room_id IN (SELECT room_id FROM @ContractIDs)
-       OR tenant_id IN (SELECT user_id FROM @UserIDs);
-
-    -- 5. Xóa dữ liệu Thanh toán (payments) liên quan
-    DELETE FROM dbo.payments
-    WHERE contract_id IN (SELECT contract_id FROM @ContractIDs)
-       OR tenant_id IN (SELECT user_id FROM @UserIDs);
-
-    -- 6. Xóa dữ liệu Hóa đơn (invoices) liên quan
-    DELETE FROM dbo.invoices
-    WHERE contract_id IN (SELECT contract_id FROM @ContractIDs)
-       OR tenant_id IN (SELECT user_id FROM @UserIDs);
-
-    -- 7. Xóa Yêu cầu hỗ trợ (requests) gửi bởi người thuê
-    DELETE FROM dbo.requests
-    WHERE sender_id IN (SELECT user_id FROM @UserIDs);
-
-    -- 8. Xóa Người phụ thuộc (dependents)
-    DELETE FROM dbo.dependents
-    WHERE tenant_id IN (SELECT user_id FROM @UserIDs);
-
-    -- 9. Xóa Hợp đồng (contracts)
-    DELETE FROM dbo.contracts
-    WHERE contract_id IN (SELECT contract_id FROM @ContractIDs);
-
-    -- 10. Xóa Tài khoản cư dân (users)
-    DELETE FROM dbo.users
-    WHERE user_id IN (SELECT user_id FROM @UserIDs);
-
-    COMMIT TRANSACTION;
-    PRINT N'==> ĐÃ XÓA THÀNH CÔNG TOÀN BỘ DỮ LIỆU CỦA NGƯỜI THUÊ: ' + @TargetName;
-END TRY
-BEGIN CATCH
-    ROLLBACK TRANSACTION;
-    PRINT N'==> LỖI KHI XÓA DỮ LIỆU: ' + ERROR_MESSAGE();
-END CATCH;
-GO

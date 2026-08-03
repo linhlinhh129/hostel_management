@@ -252,6 +252,7 @@
                             <li>Thanh toán đầy đủ các khoản tiền theo đúng thỏa thuận, đúng thời hạn từ ngày 01 đến ngày
                               05 hàng tháng. Nếu nộp muộn kể từ ngày đến hạn, mỗi ngày muộn sẽ tính bằng 1% giá trị tiền
                               phòng/tháng, mọi trường hợp khác cần sự đồng ý của bên A.</li>
+                            <li>Khi hóa đơn dịch vụ hàng tháng được ban hành/tạo mới, bên B có thời hạn từ 01 đến 05 ngày kể từ ngày nhận thông báo hóa đơn để kiểm tra, đối soát thông tin và phản hồi lại cho bên A nếu phát hiện sai sót để kịp thời xử lý. Quá thời hạn 05 ngày nêu trên, bên A sẽ không tiếp nhận xử lý khiếu nại và được hoàn toàn bãi trừ mọi trách nhiệm liên quan đến hóa đơn đó.</li>
                             <li>Bảo quản các trang thiết bị và cơ sở vật chất của bên A trang bị ban đầu. Nếu làm hỏng
                               phải sửa chữa, nếu mất mát phải đền bù.</li>
                             <li>Không được tự ý sửa chữa, cải tạo cơ sở vật chất, tuyệt đối không khoan đục tường khi
