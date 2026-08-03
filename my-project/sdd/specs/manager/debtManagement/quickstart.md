@@ -2,14 +2,14 @@
 
 ## Prerequisites
 - A user account with the `Management Board` (`MANAGER`) role.
-- Existing invoices in the database with `status` = `UNPAID` or `OVERDUE`.
+- Existing invoices in the database with `status` = `UNPAID` or `OVERDUE` or `FROZEN`.
 
 ## Validation Scenarios
 
 ### Scenario 1: View Debt List
 1. Login as a Manager.
 2. Navigate to `GET /manager/debts`.
-3. Verify that the list only displays invoices with `UNPAID` or `OVERDUE` statuses.
+3. Verify that the list only displays invoices with `UNPAID` or `OVERDUE` or `FROZEN` statuses.
 4. Verify that the default sorting shows the oldest `dueDate` first.
 5. Verify that `Tổng tiền phải nộp` displays the original total amount (excluding the temporary late fee).
 6. Verify that the `temporaryLateFee` column calculates 1% of the room fee multiplied by the number of overdue days.

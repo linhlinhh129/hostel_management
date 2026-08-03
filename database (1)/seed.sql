@@ -30,22 +30,22 @@ BEGIN TRY
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'mn03112005@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'mn03112005@gmail.com', @pwd, N'MANAGER', N'Nguyễn Minh Nhật', N'mn03112005@gmail.com', N'0900000002', N'ACTIVE', NULL, 1, N'001241000001', '2001-02-15', N'FEMALE', N'Cầu Giấy, Hà Nội');
+    VALUES (N'mn03112005@gmail.com', @pwd, N'MANAGER', N'Nguyễn Minh Nhật', N'mn03112005@gmail.com', N'0900000002', N'ACTIVE', NULL, 0, N'001241000001', '2001-02-15', N'FEMALE', N'Cầu Giấy, Hà Nội');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'buidinhyt@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'buidinhyt@gmail.com', @pwd, N'MANAGER', N'Bùi Đỉnh', N'buidinhyt@gmail.com', N'0862158523', N'ACTIVE', NULL, 1, N'011201000001', '2005-10-27', N'MALE', N'Ninh Bình');
+    VALUES (N'buidinhyt@gmail.com', @pwd, N'MANAGER', N'Bùi Đỉnh', N'buidinhyt@gmail.com', N'0862158523', N'ACTIVE', NULL, 0, N'011201000001', '2005-10-27', N'MALE', N'Ninh Bình');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'atu02378@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'atu02378@gmail.com', @pwd, N'OPERATOR', N'Phạm Anh Tú (Atus)', N'atu02378@gmail.com', N'0900000004', N'ACTIVE', NULL, 1, N'001201050001', '2005-01-15', N'MALE', N'Mê Linh, Hà Nội');
+    VALUES (N'atu02378@gmail.com', @pwd, N'OPERATOR', N'Phạm Anh Tú (Atus)', N'atu02378@gmail.com', N'0900000004', N'ACTIVE', NULL, 0, N'001201050001', '2005-01-15', N'MALE', N'Mê Linh, Hà Nội');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'huynguyenn1108@gmail.com')
     INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, avatar_url, force_change_pass, identity_number, dob, gender, permanent_address)
-    VALUES (N'huynguyenn1108@gmail.com', @pwd, N'OPERATOR', N'Nguyễn Công Huy', N'huynguyenn1108@gmail.com', N'0900000005', N'ACTIVE', NULL, 1, N'001201000301', '2006-01-15', N'FEMALE', N'Đống Đa, Hà Nội');
+    VALUES (N'huynguyenn1108@gmail.com', @pwd, N'OPERATOR', N'Nguyễn Công Huy', N'huynguyenn1108@gmail.com', N'0900000005', N'ACTIVE', NULL, 0, N'001201000301', '2006-01-15', N'FEMALE', N'Đống Đa, Hà Nội');
 
 
     IF NOT EXISTS (SELECT 1 FROM dbo.users WHERE username = N'lethithuylinhtl12@gmail.com')

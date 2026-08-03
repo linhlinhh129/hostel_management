@@ -105,4 +105,38 @@ public class DebtServiceImpl implements DebtService {
             "INVOICE_REMINDER", title, content, "ROOM", debt.getFacilityId(), debt.getRoomId(), managerId
         );
     }
+
+    @Override
+    public void freezeDebt(int managerId, int invoiceId) throws Exception {
+        Optional<DebtDetailDTO> optDebt = debtDAO.findDebtDetail(managerId, invoiceId);
+        if (optDebt.isEmpty()) {
+            throw new Exception("Không tìm thấy công nợ hoặc không thuộc quyền quản lý");
+        }
+        DebtDetailDTO debt = optDebt.get();
+        if ("PAID".equals(debt.getStatus())) {
+            throw new Exception("Hóa đơn đã thanh toán không thể đóng băng");
+        }
+        if ("FROZEN".equals(debt.getStatus())) {
+            throw new Exception("Hóa đơn đã bị đóng băng trước đó");
+        }
+        if (!"OVERDUE".equals(debt.getStatus()) && debt.getLateFeePreview().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new Exception("Chỉ có thể đóng băng khi công nợ đã quá hạn và có phí trễ");
+        }
+
+        BigDecimal totalAmount = debt.getSubtotal().add(debt.getLateFeePreview());
+
+        String updateSql = "UPDATE invoices SET status = 'FROZEN', late_fee = ?, total_amount = ?, updated_at = GETDATE() WHERE invoice_id = ?";
+        try (java.sql.Connection conn = com.quanlyphongtro.util.DatabaseUtil.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(updateSql)) {
+            ps.setBigDecimal(1, debt.getLateFeePreview());
+            ps.setBigDecimal(2, totalAmount);
+            ps.setInt(3, invoiceId);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new Exception("Đóng băng công nợ thất bại");
+            }
+        } catch (java.sql.SQLException e) {
+            throw new Exception("Lỗi hệ thống khi đóng băng công nợ", e);
+        }
+    }
 }

@@ -69,7 +69,7 @@ public class TenantInvoiceServlet extends BaseServlet {
                         BigDecimal penaltyAmount = BigDecimal.ZERO;
                         BigDecimal totalAmountToPay = inv.getTotalAmount();
 
-                        if ("UNPAID".equals(inv.getStatus()) || "OVERDUE".equals(inv.getStatus())) {
+                        if ("UNPAID".equals(inv.getStatus()) || "OVERDUE".equals(inv.getStatus()) || "FROZEN".equals(inv.getStatus())) {
                             LocalDate dueDate = inv.getDueDate();
                             LocalDate today = LocalDate.now();
                             if (dueDate != null && today.isAfter(dueDate)) {

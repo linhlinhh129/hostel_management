@@ -86,5 +86,5 @@ src/main/
 
 - **Form Sửa (`update.jsp`):**
   - Luôn luôn hiển thị khối chọn "Lý do chỉ số bất thường" (Tuân thủ thuần JSP, loại bỏ xử lý ẩn/hiện bằng JS oninput).
-  - Sử dụng JS đơn giản để toggle (hiển thị/ẩn) các ô phụ trợ như "Số chốt cũ", "Số bắt đầu mới" chỉ khi người dùng chủ động chọn trạng thái `REPLACED`.
+  - Sử dụng JS đơn giản để toggle (hiển thị/ẩn) các ô phụ trợ như "Số tối đa" chỉ khi người dùng chủ động chọn trạng thái `ROLLOVER`.
   - Ô Giới hạn cho `ROLLOVER` được gán cứng `100000` và để dạng `readonly`.

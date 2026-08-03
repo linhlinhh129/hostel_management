@@ -14,6 +14,7 @@ public final class StatusConstant {
     public static final String INVOICE_UNPAID = "UNPAID";
     public static final String INVOICE_PAID = "PAID";
     public static final String INVOICE_OVERDUE = "OVERDUE";
+    public static final String INVOICE_FROZEN = "FROZEN";
 
     public static final String REQUEST_PENDING = "PENDING";
     public static final String REQUEST_ASSIGNED = "ASSIGNED";

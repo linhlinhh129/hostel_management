@@ -1668,6 +1668,11 @@ body {
   border-color: var(--hms-danger-border);
 }
 
+.badge-frozen {
+    background-color: #e0e7ff; /* indigo-100 */
+    color: #4338ca; /* indigo-700 */
+}
+
 .badge-info {
   background: var(--hms-info-bg);
   color: var(--hms-info);

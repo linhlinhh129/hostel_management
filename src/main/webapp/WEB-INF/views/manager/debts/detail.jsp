@@ -23,11 +23,28 @@
                 <div class="d-flex flex-column align-items-end gap-2" style="position:relative;z-index:1">
                     <a href="${ctx}/manager/debts" class="btn-mintlify-secondary text-decoration-none">← Danh sách</a>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <c:if test="${debt.status == 'OVERDUE'}">
+                            <form action="${ctx}/manager/debts" method="post" style="display:inline-block; margin:0;" onsubmit="return confirm('Bạn có chắc muốn đóng băng công nợ này? Phí trễ hạn sẽ được chốt tại mức hiện tại và không tăng thêm nữa.');">
+                                <input type="hidden" name="csrfToken" value="${csrfToken}">
+                                <input type="hidden" name="action" value="freeze">
+                                <input type="hidden" name="id" value="${debt.invoiceId}">
+                                <button type="submit" class="btn text-decoration-none text-white" style="background-color: #6366f1; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
+                                    Đóng băng
+                                </button>
+                            </form>
+                        </c:if>
                         <a href="${ctx}/manager/notifications/send-debt-reminder?invoiceId=${debt.invoiceId}" class="btn text-decoration-none text-white" style="background-color: #d97706; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
                             Nhắc nợ
                         </a>
                         <a href="${ctx}/manager/invoices/${debt.invoiceId}" class="btn-mintlify-primary text-decoration-none">Xem hóa đơn gốc</a>
-                        <span class="badge-hms badge-danger" style="font-size:0.9rem;padding:6px 14px">Quá hạn</span>
+                        <c:choose>
+                            <c:when test="${debt.status == 'FROZEN'}">
+                                <span class="badge-hms" style="background-color: #6366f1; color: white; font-size:0.9rem;padding:6px 14px">Đã đóng băng</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge-hms badge-danger" style="font-size:0.9rem;padding:6px 14px">Quá hạn</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </div>

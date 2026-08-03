@@ -20,12 +20,7 @@ public class MeterReading {
     private Integer waterUsage;
 
     private String electricStatus;
-    private Integer electricOldFinal;
-    private Integer electricNewStart;
-
     private String waterStatus;
-    private Integer waterOldFinal;
-    private Integer waterNewStart;
 
     public MeterReading() {}
 
@@ -74,18 +69,6 @@ public class MeterReading {
     public String getElectricStatus() { return electricStatus; }
     public void setElectricStatus(String electricStatus) { this.electricStatus = electricStatus; }
 
-    public Integer getElectricOldFinal() { return electricOldFinal; }
-    public void setElectricOldFinal(Integer electricOldFinal) { this.electricOldFinal = electricOldFinal; }
-
-    public Integer getElectricNewStart() { return electricNewStart; }
-    public void setElectricNewStart(Integer electricNewStart) { this.electricNewStart = electricNewStart; }
-
     public String getWaterStatus() { return waterStatus; }
     public void setWaterStatus(String waterStatus) { this.waterStatus = waterStatus; }
-
-    public Integer getWaterOldFinal() { return waterOldFinal; }
-    public void setWaterOldFinal(Integer waterOldFinal) { this.waterOldFinal = waterOldFinal; }
-
-    public Integer getWaterNewStart() { return waterNewStart; }
-    public void setWaterNewStart(Integer waterNewStart) { this.waterNewStart = waterNewStart; }
 }

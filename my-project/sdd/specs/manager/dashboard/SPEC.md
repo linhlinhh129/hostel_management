@@ -26,7 +26,7 @@ As a Manager, I want to xem tổng quan tỷ lệ lấp đầy phòng, số phò
 
 ### **Story 2 (Happy Path)**
 
-As a Manager, I want to xem tổng tiền đã thu trong tháng hiện tại, số lượng hóa đơn trễ hạn và tổng nợ tồn đọng chưa thu so that tôi kịp thời đôn đốc cư dân thanh toán tiền phòng.
+As a Manager, I want to xem tổng tiền đã thu trong tháng hiện tại, số lượng tất cả hóa đơn ở trạng thái `UNPAID`, `OVERDUE` và `FROZEN` so that tôi kịp thời đôn đốc cư dân thanh toán tiền phòng.
 
 ### **Story 3 (Happy Path)**
 
@@ -50,7 +50,7 @@ WHEN Manager views Dashboard THE SYSTEM SHALL count active contracts expiring wi
 
 ### **Thống kê tài chính**
 
-WHEN Manager views Dashboard THE SYSTEM SHALL sum paid invoices for the current month AND sum outstanding unpaid/overdue invoices.
+WHEN Manager views Dashboard THE SYSTEM SHALL sum paid invoices for the current month AND sum outstanding unpaid/overdue/frozen invoices.
 
 ### **Thống kê và Danh sách sự cố**
 

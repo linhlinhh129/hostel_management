@@ -139,6 +139,8 @@ public class DebtPageServlet extends HttpServlet {
         String action = request.getParameter("action");
         if ("remind".equals(action)) {
             handleRemind(request, response, currentUser.getId());
+        } else if ("freeze".equals(action)) {
+            handleFreeze(request, response, currentUser.getId());
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hành động không hợp lệ");
         }
@@ -162,6 +164,32 @@ public class DebtPageServlet extends HttpServlet {
             request.getSession().setAttribute("flashType", "error");
             request.getSession().setAttribute("flashMessage", "ID công nợ không hợp lệ.");
             response.sendRedirect(request.getContextPath() + "/manager/debts");
+        }
+    }
+
+    private void handleFreeze(HttpServletRequest request, HttpServletResponse response, int managerId) throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isEmpty()) {
+            request.getSession().setAttribute("flashType", "error");
+            request.getSession().setAttribute("flashMessage", "ID công nợ không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/manager/debts");
+            return;
+        }
+        
+        try {
+            int invoiceId = Integer.parseInt(idParam);
+            debtService.freezeDebt(managerId, invoiceId);
+            request.getSession().setAttribute("flashType", "success");
+            request.getSession().setAttribute("flashMessage", "Đóng băng công nợ thành công! Phí chậm nộp sẽ không tăng thêm.");
+            response.sendRedirect(request.getContextPath() + "/manager/debts?action=detail&id=" + invoiceId);
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("flashType", "error");
+            request.getSession().setAttribute("flashMessage", "ID công nợ không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/manager/debts");
+        } catch (Exception e) {
+            request.getSession().setAttribute("flashType", "error");
+            request.getSession().setAttribute("flashMessage", e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/manager/debts?action=detail&id=" + idParam);
         }
     }
 }

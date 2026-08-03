@@ -81,7 +81,8 @@
                             </td>
                             <td>
                               <c:out value="${invoice.electricUsage}" />
-                              <c:if test="${invoice.electricStatus eq 'REPLACED' or invoice.electricStatus eq 'ROLLOVER'}">
+                              <c:if
+                                test="${invoice.electricStatus eq 'REPLACED' or invoice.electricStatus eq 'ROLLOVER'}">
                                 <span class="text-danger fw-bold ms-1" title="Có tính toán đặc biệt">*</span>
                               </c:if>
                             </td>
@@ -153,7 +154,8 @@
                           </tr>
                           <c:if test="${invoice.lateFee != null and invoice.lateFee > 0}">
                             <tr style="background:#fff8e1">
-                              <td><strong>Phí chậm nộp</strong><span class="text-danger fw-bold ms-1" title="Có tính toán đặc biệt">*</span></td>
+                              <td><strong>Phí chậm nộp</strong><span class="text-danger fw-bold ms-1"
+                                  title="Có tính toán đặc biệt">*</span></td>
                               <td>-</td>
                               <td>-</td>
                               <td>-</td>
@@ -177,47 +179,59 @@
                       </table>
                     </div>
 
-                    <div class="mt-4">
-                      <strong>Ghi chú:</strong> <br />
-                      <c:out value="${invoice.note}" default="Không có ghi chú" />
-                    </div>
+                    <c:if test="${not empty invoice.note}">
+                      <div class="mt-4">
+                        <strong>Ghi chú:</strong> <br />
+                        <c:out value="${invoice.note}" />
+                      </div>
+                    </c:if>
 
-                    <c:if test="${invoice.electricStatus eq 'REPLACED' or invoice.electricStatus eq 'ROLLOVER' or invoice.waterStatus eq 'REPLACED' or invoice.waterStatus eq 'ROLLOVER' or (invoice.lateFee != null and invoice.lateFee > 0)}">
+                    <c:if
+                      test="${invoice.electricStatus eq 'ROLLOVER' or invoice.waterStatus eq 'ROLLOVER' or (invoice.lateFee != null and invoice.lateFee > 0)}">
                       <div class="mt-4 pt-4 border-top">
-                        <h5 class="fw-bold mb-3 text-danger" style="font-size: 1.1rem;"><i class="fas fa-info-circle me-1"></i> Chi tiết tính toán đặc biệt</h5>
+                        <h5 class="fw-bold mb-3 text-danger" style="font-size: 1.1rem;"><i
+                            class="fas fa-info-circle me-1"></i> Chi tiết tính toán đặc biệt</h5>
                         <div class="d-flex flex-column gap-2">
-                          <c:if test="${invoice.electricStatus eq 'REPLACED'}">
-                            <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
-                              <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">🔄</span> Đã thay đồng hồ điện</div>
-                              <div style="font-family: monospace; opacity: 0.9;">(${invoice.electricOldFinal} - ${invoice.oldElectricReading}) + (${invoice.newElectricReading} - ${invoice.electricNewStart}) = <strong>${invoice.electricUsage} kWh</strong></div>
-                            </div>
-                          </c:if>
+
                           <c:if test="${invoice.electricStatus eq 'ROLLOVER'}">
-                            <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
-                              <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">⏮</span> Tràn vòng đồng hồ điện</div>
-                              <div style="font-family: monospace; opacity: 0.9;">(Tối đa - ${invoice.oldElectricReading}) + ${invoice.newElectricReading} = <strong>${invoice.electricUsage} kWh</strong></div>
+                            <div class="p-3 w-100 text-start"
+                              style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
+                              <div style="font-weight: 600; margin-bottom: 4px;"><span
+                                  style="color: var(--hms-primary-dark); margin-right: 4px;">⏮</span> Tràn vòng đồng hồ
+                                điện</div>
+                              <div style="font-family: monospace; opacity: 0.9;">(Tối đa -
+                                ${invoice.oldElectricReading}) + ${invoice.newElectricReading} =
+                                <strong>${invoice.electricUsage} kWh</strong>
+                              </div>
                             </div>
                           </c:if>
 
-                          <c:if test="${invoice.waterStatus eq 'REPLACED'}">
-                            <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
-                              <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">🔄</span> Đã thay đồng hồ nước</div>
-                              <div style="font-family: monospace; opacity: 0.9;">(${invoice.waterOldFinal} - ${invoice.oldWaterReading}) + (${invoice.newWaterReading} - ${invoice.waterNewStart}) = <strong>${invoice.waterUsage} m³</strong></div>
-                            </div>
-                          </c:if>
+
                           <c:if test="${invoice.waterStatus eq 'ROLLOVER'}">
-                            <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
-                              <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">⏮</span> Tràn vòng đồng hồ nước</div>
-                              <div style="font-family: monospace; opacity: 0.9;">(Tối đa - ${invoice.oldWaterReading}) + ${invoice.newWaterReading} = <strong>${invoice.waterUsage} m³</strong></div>
+                            <div class="p-3 w-100 text-start"
+                              style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
+                              <div style="font-weight: 600; margin-bottom: 4px;"><span
+                                  style="color: var(--hms-primary-dark); margin-right: 4px;">⏮</span> Tràn vòng đồng hồ
+                                nước</div>
+                              <div style="font-family: monospace; opacity: 0.9;">(Tối đa - ${invoice.oldWaterReading}) +
+                                ${invoice.newWaterReading} = <strong>${invoice.waterUsage} m³</strong></div>
                             </div>
                           </c:if>
 
-                          <c:if test="${invoice.lateFee != null and invoice.lateFee > 0 and invoice.roomFee != null and invoice.roomFee > 0}">
+                          <c:if
+                            test="${invoice.lateFee != null and invoice.lateFee > 0 and invoice.roomFee != null and invoice.roomFee > 0}">
                             <c:set var="roomFeeDaily" value="${invoice.roomFee * 0.01}" />
-                            <fmt:parseNumber var="calcOverdueDays" value="${invoice.lateFee / roomFeeDaily}" integerOnly="true" />
-                            <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
-                              <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">⏰</span> Phí chậm nộp</div>
-                              <div style="font-family: monospace; opacity: 0.9;"><fmt:formatNumber value="${invoice.roomFee}" pattern="#,##0" />đ × 1% × ${calcOverdueDays} ngày = <strong><fmt:formatNumber value="${invoice.lateFee}" pattern="#,##0" /> đ</strong></div>
+                            <fmt:parseNumber var="calcOverdueDays" value="${invoice.lateFee / roomFeeDaily}"
+                              integerOnly="true" />
+                            <div class="p-3 w-100 text-start"
+                              style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
+                              <div style="font-weight: 600; margin-bottom: 4px;"> Phí chậm nộp</div>
+                              <div style="font-family: monospace; opacity: 0.9;">
+                                <fmt:formatNumber value="${invoice.roomFee}" pattern="#,##0" />đ × 1% ×
+                                ${calcOverdueDays} ngày = <strong>
+                                  <fmt:formatNumber value="${invoice.lateFee}" pattern="#,##0" /> đ
+                                </strong>
+                              </div>
                             </div>
                           </c:if>
                         </div>
@@ -322,6 +336,14 @@
                         <span class="fw-bold">
                           <c:out value="${invoice.contractPeriod}" default="Chưa có hợp đồng" />
                         </span>
+                        <c:choose>
+                            <c:when test="${invoice.status == 'OVERDUE'}">
+                                <span class="badge-hms badge-danger" style="font-size:0.9rem;padding:6px 14px">Quá hạn</span>
+                            </c:when>
+                            <c:when test="${invoice.status == 'FROZEN'}">
+                                <span class="badge-hms" style="background-color: #6366f1; color: white; font-size:0.9rem;padding:6px 14px">Đã đóng băng</span>
+                            </c:when>
+                        </c:choose>
                         <c:if test="${not empty invoice.contractCode}">
                           <span class="text-muted" style="font-size:0.8rem"> (Mã:
                             <c:out value="${invoice.contractCode}" />)

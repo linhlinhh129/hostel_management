@@ -9,7 +9,10 @@
 Trong hệ thống quản lý nhà trọ, công nợ là các hóa đơn chưa được thanh toán hoặc đã quá hạn thanh toán. Feature Quản lý công nợ không tạo ra một bảng công nợ riêng. Danh sách công nợ được hệ thống truy xuất trực tiếp từ bảng `invoices`. Một hóa đơn được xem là công nợ khi hóa đơn có trạng thái:
 
 - `UNPAID`: Chưa thanh toán
-- `OVERDUE`: Đã quá hạn thanh toán Khi Ban quản lý truy cập chức năng Quản lý công nợ, hệ thống sẽ lấy danh sách các hóa đơn có trạng thái `UNPAID` hoặc `OVERDUE`, sau đó kết nối dữ liệu với các bảng liên quan để hiển thị đầy đủ thông tin công nợ. Các bảng dữ liệu liên quan bao gồm:
+- `OVERDUE`: Đã quá hạn thanh toán
+- `FROZEN`: Đã bị đóng băng (chốt phí phạt)
+
+Khi Ban quản lý truy cập chức năng Quản lý công nợ, hệ thống sẽ lấy danh sách các hóa đơn có trạng thái `UNPAID`, `OVERDUE` hoặc `FROZEN`, sau đó kết nối dữ liệu với các bảng liên quan để hiển thị đầy đủ thông tin công nợ. Các bảng dữ liệu liên quan bao gồm:
 - `invoices`: Lưu thông tin hóa đơn, tổng tiền phải nộp, hạn thanh toán, trạng thái.
 - `rooms`: Lưu thông tin phòng, mã phòng.
 - `users`: Lưu thông tin người thuê.
@@ -86,9 +89,9 @@ Là Ban quản lý, tôi muốn có thể gửi nhắc nhở thanh toán cho cá
 
 ## 3.1 Xem danh sách công nợ
 
-KHI Ban quản lý truy cập màn hình Quản lý công nợ, THE SYSTEM SHALL truy xuất dữ liệu từ bảng `invoices`. KHI truy xuất danh sách công nợ, THE SYSTEM SHALL chỉ lấy các hóa đơn có trạng thái `UNPAID` hoặc `OVERDUE`.
+KHI Ban quản lý truy cập màn hình Quản lý công nợ, THE SYSTEM SHALL truy xuất dữ liệu từ bảng `invoices`. KHI truy xuất danh sách công nợ, THE SYSTEM SHALL chỉ lấy các hóa đơn có trạng thái `UNPAID`, `OVERDUE` hoặc `FROZEN`.
 
-**Quy tắc xác định công nợ:** Công nợ không được lưu ở một bảng riêng. Một bản ghi được xem là công nợ khi bản ghi đó nằm trong bảng `invoices` và có trạng thái `UNPAID` hoặc `OVERDUE`. Các hóa đơn có trạng thái `PAID` không hiển thị trong danh sách công nợ.
+**Quy tắc xác định công nợ:** Công nợ không được lưu ở một bảng riêng. Một bản ghi được xem là công nợ khi bản ghi đó nằm trong bảng `invoices` và có trạng thái `UNPAID`, `OVERDUE` hoặc `FROZEN`. Các hóa đơn có trạng thái `PAID` không hiển thị trong danh sách công nợ.
 
 **Logic truy vấn dữ liệu (Tham khảo)**:Danh sách công nợ được lấy từ bảng `invoices`, sau đó hệ thống join sang các bảng liên quan: `rooms` (mã phòng), `users` (người thuê), `facilities` (cơ sở), `payments` (thông tin thanh toán).
 
@@ -147,9 +150,9 @@ KHI danh sách công nợ được hiển thị, THE SYSTEM SHALL hiển thị c
 - Phí chậm nộp tạm tính
 - Trạng thái hóa đơn
 - Hành động xem chi tiết
-- Hành động nhắc nợ (chỉ hiển thị với hóa đơn quá hạn - OVERDUE)
+- Hành động đóng băng (chỉ hiển thị với hóa đơn quá hạn - OVERDUE)
 
-KHI không có hóa đơn nào có trạng thái `UNPAID` hoặc `OVERDUE`, THE SYSTEM SHALL hiển thị thông báo:
+KHI không có hóa đơn nào có trạng thái `UNPAID`, `OVERDUE` hoặc `FROZEN`, THE SYSTEM SHALL hiển thị thông báo:
 
 ```text
 Không có công nợ nào
@@ -235,7 +238,9 @@ Phí chậm nộp tạm tính = 2 * (3,000,000 * 0.01) = 60,000 đ
 Nếu giao dịch này bị Ban quản lý từ chối (`REJECTED`), THE SYSTEM SHALL tiếp tục tính phí chậm nộp dựa trên ngày hiện tại.
 Nếu giao dịch này được duyệt (`SUCCESS`), THE SYSTEM SHALL lưu cố định mức phí đã đóng băng này.
 
-KHI hóa đơn chuyển sang trạng thái `PAID`, THE SYSTEM SHALL tính toán lần cuối phí chậm nộp và lưu giá trị này vào cột `late_fee` của bảng `invoices`, đồng thời cập nhật `total_amount` cố định trong cơ sở dữ liệu.
+KHI hóa đơn chuyển sang trạng thái `FROZEN`, THE SYSTEM SHALL tính toán phí chậm nộp hiện tại và lưu giá trị này vào cột `late_fee` của bảng `invoices`, đồng thời cập nhật lại `total_amount` cố định trong cơ sở dữ liệu.
+
+KHI hóa đơn chuyển sang trạng thái `PAID` từ `OVERDUE` (chưa đóng băng), THE SYSTEM SHALL tính toán lần cuối phí chậm nộp và lưu giá trị này vào cột `late_fee` của bảng `invoices`, đồng thời cập nhật `total_amount` cố định. Nếu hóa đơn đang ở trạng thái `FROZEN` và chuyển sang `PAID`, phí chậm nộp đã được chốt trước đó và sẽ giữ nguyên.
 
 KHI Ban quản lý muốn thu phí chậm nộp, THE SYSTEM SHALL yêu cầu Ban quản lý tự nhập khoản phí này vào `Khoản phí khác` của hóa đơn.
 
@@ -249,12 +254,13 @@ Trạng thái công nợ chính là trạng thái của hóa đơn trong bảng 
 
 - `UNPAID`: Hóa đơn chưa thanh toán
 - `OVERDUE`: Hóa đơn chưa thanh toán và đã quá hạn
+- `FROZEN`: Hóa đơn đã bị đóng băng công nợ
 
-KHI Ban quản lý lọc theo trạng thái `UNPAID`, THE SYSTEM SHALL chỉ hiển thị các hóa đơn có trạng thái `UNPAID`. KHI Ban quản lý lọc theo trạng thái `OVERDUE`, THE SYSTEM SHALL chỉ hiển thị các hóa đơn có trạng thái `OVERDUE`. KHI Ban quản lý không chọn trạng thái, THE SYSTEM SHALL hiển thị tất cả hóa đơn có trạng thái `UNPAID` hoặc `OVERDUE`. KHI Ban quản lý truyền trạng thái khác `UNPAID` hoặc `OVERDUE`, THE SYSTEM SHALL từ chối yêu cầu và trả về HTTP 400 với mã lỗi `INVALID_DEBT_STATUS`.
+KHI Ban quản lý lọc theo trạng thái `UNPAID`, THE SYSTEM SHALL chỉ hiển thị các hóa đơn có trạng thái `UNPAID`. KHI Ban quản lý lọc theo trạng thái `OVERDUE`, THE SYSTEM SHALL chỉ hiển thị các hóa đơn có trạng thái `OVERDUE`. KHI Ban quản lý lọc theo trạng thái `FROZEN`, THE SYSTEM SHALL chỉ hiển thị các hóa đơn có trạng thái `FROZEN`. KHI Ban quản lý không chọn trạng thái, THE SYSTEM SHALL hiển thị tất cả hóa đơn có trạng thái `UNPAID`, `OVERDUE` hoặc `FROZEN`. KHI Ban quản lý truyền trạng thái khác `UNPAID`, `OVERDUE` hoặc `FROZEN`, THE SYSTEM SHALL từ chối yêu cầu và trả về HTTP 400 với mã lỗi `INVALID_DEBT_STATUS`.
 
 ## 3.10 Xem chi tiết hóa đơn nợ
 
-KHI Ban quản lý chọn một công nợ, THE SYSTEM SHALL mở màn hình chi tiết hóa đơn nợ. Chi tiết công nợ thực chất là chi tiết hóa đơn đang có trạng thái `UNPAID` hoặc `OVERDUE`. Hệ thống không lấy dữ liệu từ bảng công nợ riêng mà lấy từ: `invoices`, `rooms`, `users`, `facilities`, `payments`.
+KHI Ban quản lý chọn một công nợ, THE SYSTEM SHALL mở màn hình chi tiết hóa đơn nợ. Chi tiết công nợ thực chất là chi tiết hóa đơn đang có trạng thái `UNPAID`, `OVERDUE` hoặc `FROZEN`. Hệ thống không lấy dữ liệu từ bảng công nợ riêng mà lấy từ: `invoices`, `rooms`, `users`, `facilities`, `payments`.
 
 KHI chi tiết hóa đơn nợ được hiển thị, THE SYSTEM SHALL hiển thị các thông tin sau:
 

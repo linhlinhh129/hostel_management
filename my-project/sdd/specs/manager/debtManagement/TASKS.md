@@ -14,7 +14,7 @@
 
 ## Phase 3: User Story 1-6 & 8 - Danh sách Công nợ (Priority: P1) 🎯 MVP
 
-**Goal**: Hiển thị danh sách công nợ (hóa đơn UNPAID, OVERDUE), hiển thị đầy đủ thông tin (người thuê, phòng, số tiền, ngày nợ, phí phạt), và tính năng tìm kiếm/lọc.
+**Goal**: Hiển thị danh sách công nợ (hóa đơn UNPAID, OVERDUE, FROZEN), hiển thị đầy đủ thông tin (người thuê, phòng, số tiền, ngày nợ, phí phạt), và tính năng tìm kiếm/lọc.
 
 ### Implementation cho US1-6 & US8
 - [x] T003 [P] [US1] Tạo DTO `DebtListItemDTO` trong `src/main/java/com/quanlynhatro/dto/DebtListItemDTO.java`.

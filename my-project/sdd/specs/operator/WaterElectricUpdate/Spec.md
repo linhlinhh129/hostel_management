@@ -154,14 +154,10 @@ Bên cạnh đó, tính năng này còn hỗ trợ xử lý nghiệp vụ **Thay
 ### Request Form Data (POST)
 * `meterId` (number, bắt buộc)
 * `electric` (number, bắt buộc)
-* `electricStatus` (string: NORMAL, REPLACED, ROLLOVER)
-* `electricOldFinal` (number, bắt buộc nếu REPLACED)
-* `electricNewStart` (number, bắt buộc nếu REPLACED)
+* `electricStatus` (string: NORMAL, ROLLOVER)
 * `electricMaxLimit` (number, bắt buộc nếu ROLLOVER)
 * `water` (number, bắt buộc)
-* `waterStatus` (string: NORMAL, REPLACED, ROLLOVER)
-* `waterOldFinal` (number, bắt buộc nếu REPLACED)
-* `waterNewStart` (number, bắt buộc nếu REPLACED)
+* `waterStatus` (string: NORMAL, ROLLOVER)
 * `waterMaxLimit` (number, bắt buộc nếu ROLLOVER)
 * `electricMeterImage` (file, tùy chọn - nếu không gửi thì giữ ảnh cũ)
 * `waterMeterImage` (file, tùy chọn - nếu không gửi thì giữ ảnh cũ)
@@ -176,7 +172,7 @@ Bên cạnh đó, tính năng này còn hỗ trợ xử lý nghiệp vụ **Thay
 ## 5. Technical Constraints
 
 - Chỉ số điện và nước phải là số nguyên không âm.
-- Chỉ số mới mặc định phải lớn hơn hoặc bằng chỉ số kỳ trước. Trừ khi Trạng thái công tơ là `REPLACED` hoặc `ROLLOVER`.
+- Chỉ số mới mặc định phải lớn hơn hoặc bằng chỉ số kỳ trước. Trừ khi Trạng thái công tơ là `ROLLOVER`.
 - Chỉ chấp nhận file ảnh JPG, JPEG hoặc PNG.
 - Kích thước mỗi ảnh tối đa 5MB.
 - Thời gian phản hồi tối đa 500ms (P95).
@@ -192,14 +188,10 @@ Bên cạnh đó, tính năng này còn hỗ trợ xử lý nghiệp vụ **Thay
 |---------|-------------|----------|
 | meterId | Integer | Yes (Hidden) |
 | electric | Integer | Yes |
-| electricStatus | String | Yes (NORMAL, REPLACED, ROLLOVER) |
-| electricOldFinal | Integer | Nếu Status = REPLACED |
-| electricNewStart | Integer | Nếu Status = REPLACED |
+| electricStatus | String | Yes (NORMAL, ROLLOVER) |
 | electricMaxLimit | Integer | Nếu Status = ROLLOVER |
 | water | Integer | Yes |
-| waterStatus | String | Yes (NORMAL, REPLACED, ROLLOVER) |
-| waterOldFinal | Integer | Nếu Status = REPLACED |
-| waterNewStart | Integer | Nếu Status = REPLACED |
+| waterStatus | String | Yes (NORMAL, ROLLOVER) |
 | waterMaxLimit | Integer | Nếu Status = ROLLOVER |
 | electricMeterImage | File | No (Chỉ upload khi đổi ảnh) |
 | waterMeterImage | File | No (Chỉ upload khi đổi ảnh) |

@@ -69,7 +69,7 @@ public class TenantPaymentServlet extends BaseServlet {
             Invoice invoice = invOpt.get();
             BigDecimal baseAmount = invoice.getTotalAmount();
 
-            if (!"UNPAID".equals(invoice.getStatus()) && !"OVERDUE".equals(invoice.getStatus())) {
+            if (!"UNPAID".equals(invoice.getStatus()) && !"OVERDUE".equals(invoice.getStatus()) && !"FROZEN".equals(invoice.getStatus())) {
                 setFlashMessage(request, "error", "Hóa đơn này không thể thanh toán.");
                 response.sendRedirect(request.getContextPath() + "/tenant/invoices/" + invoiceId);
                 return;

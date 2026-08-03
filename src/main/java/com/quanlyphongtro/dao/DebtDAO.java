@@ -8,6 +8,7 @@ import java.math.RoundingMode;
 
 import com.quanlyphongtro.dto.DebtListItemDTO;
 import com.quanlyphongtro.dto.DebtDetailDTO;
+import com.quanlyphongtro.util.PenaltyCalculator;
 import com.quanlyphongtro.util.DatabaseUtil;
 
 import java.sql.*;
@@ -23,7 +24,7 @@ public class DebtDAO extends BaseDAO {
             "SELECT i.invoice_id, i.code AS invoice_code, r.room_id, r.code AS room_code, " +
             "COALESCE(i.tenant_id, c.tenant_id, r.tenant_id) AS tenant_id, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, COALESCE(u.phone, c.tenant_phone) AS tenant_phone, " +
             "f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
-            "i.total_amount, i.room_fee, i.due_date, i.status, " +
+            "i.total_amount, i.room_fee, i.due_date, i.status, i.late_fee, " +
             "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount, " +
             "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
             "FROM invoices i " +
@@ -31,7 +32,7 @@ public class DebtDAO extends BaseDAO {
             "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
             "LEFT JOIN users u ON u.user_id = i.tenant_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
+            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status IN ('OVERDUE', 'FROZEN') OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -75,24 +76,30 @@ public class DebtDAO extends BaseDAO {
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
                     
                     if (!"PAID".equals(invoiceStatus) && dueDate != null && roomFee != null) {
-                        LocalDate dueLocalDate = dueDate.toLocalDate();
-                        LocalDate endDate = LocalDate.now();
-                        Date pendingDate = rs.getDate("pending_payment_date");
-                        if (pendingDate != null && pendingDate.toLocalDate().isAfter(dueLocalDate)) {
-                            endDate = pendingDate.toLocalDate();
+                        BigDecimal lateFee = BigDecimal.ZERO;
+                        if ("FROZEN".equals(invoiceStatus)) {
+                            lateFee = rs.getBigDecimal("late_fee");
+                            if (lateFee == null) lateFee = BigDecimal.ZERO;
+                        } else {
+                            lateFee = PenaltyCalculator.calculateLateFee(roomFee, dueDate, rs.getDate("pending_payment_date"), LocalDate.now());
                         }
-                        if (endDate.isAfter(dueLocalDate)) {
-                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
-                            BigDecimal lateFee = roomFee.multiply(new BigDecimal("0.01"))
-                                                        .multiply(new BigDecimal(daysLate))
-                                                        .setScale(0, RoundingMode.HALF_UP);
+
+                        if (lateFee.compareTo(BigDecimal.ZERO) > 0) {
                             if (baseTotal != null) {
                                 baseTotal = baseTotal.add(lateFee);
                             } else {
                                 baseTotal = lateFee;
                             }
                             dto.setLateFeePreview(lateFee);
-                            dto.setOverdueDays((int) daysLate);
+                            
+                            // Estimate overdue days for UI
+                            LocalDate dueLocalDate = dueDate.toLocalDate();
+                            LocalDate endDate = LocalDate.now();
+                            Date pendingDate = rs.getDate("pending_payment_date");
+                            if (pendingDate != null && pendingDate.toLocalDate().isAfter(dueLocalDate)) {
+                                endDate = pendingDate.toLocalDate();
+                            }
+                            dto.setOverdueDays((int) ChronoUnit.DAYS.between(dueLocalDate, endDate));
                         } else {
                             dto.setLateFeePreview(BigDecimal.ZERO);
                             dto.setOverdueDays(0);
@@ -138,7 +145,7 @@ public class DebtDAO extends BaseDAO {
             "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
             "LEFT JOIN users u ON u.user_id = i.tenant_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
+            "WHERE i.deleted_at IS NULL AND f.manager_id = ? AND (i.status IN ('OVERDUE', 'FROZEN') OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE))) "
         );
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -179,7 +186,7 @@ public class DebtDAO extends BaseDAO {
             "m_new.water AS new_water, " +
             "(SELECT TOP 1 m_old.water FROM meter_readings m_old WHERE m_old.room_id = i.room_id AND m_old.reading_date < m_new.reading_date ORDER BY m_old.reading_date DESC) AS old_water, " +
             "i.electricity_price, i.water_price, " +
-            "i.service_fee, i.internet_fee, i.other_fee, i.total_amount, " +
+            "i.service_fee, i.internet_fee, i.other_fee, i.total_amount, i.late_fee, " +
             "i.due_date, i.status, i.note, i.created_at, i.created_by, i.updated_at, " +
             "(SELECT COALESCE(SUM(payment_amount), 0) FROM payments WHERE invoice_id = i.invoice_id AND status = 'SUCCESS' AND deleted_at IS NULL) AS paid_amount, " +
             "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = i.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date " +
@@ -189,7 +196,7 @@ public class DebtDAO extends BaseDAO {
             "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
             "LEFT JOIN users u ON u.user_id = i.tenant_id " +
             "INNER JOIN facilities f ON r.facility_id = f.facility_id " +
-            "WHERE i.deleted_at IS NULL AND i.invoice_id = ? AND f.manager_id = ? AND (i.status = 'OVERDUE' OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE)))";
+            "WHERE i.deleted_at IS NULL AND i.invoice_id = ? AND f.manager_id = ? AND (i.status IN ('OVERDUE', 'FROZEN') OR (i.status = 'UNPAID' AND i.due_date < CAST(GETDATE() AS DATE)))";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -257,25 +264,34 @@ public class DebtDAO extends BaseDAO {
                     dto.setInternetFee(rs.getBigDecimal("internet_fee"));
                     dto.setOtherFee(rs.getBigDecimal("other_fee"));
 
-                    // Tính phí chậm nộp runtime (1%/ngày × tiền phòng × số ngày quá hạn)
+                    // Tính phí chậm nộp runtime hoặc lấy từ DB nếu FROZEN
                     BigDecimal lateFee = BigDecimal.ZERO;
-                    Date dueDateSql = rs.getDate("due_date");
-                    if (dueDateSql != null && dto.getRoomFee() != null) {
-                        LocalDate dueLocalDate = dueDateSql.toLocalDate();
-                        LocalDate endDate = LocalDate.now();
-                        Date pendingDate = rs.getDate("pending_payment_date");
-                        if (pendingDate != null && pendingDate.toLocalDate().isAfter(dueLocalDate)) {
-                            endDate = pendingDate.toLocalDate();
+                    String invoiceStatus = rs.getString("status");
+                    if ("FROZEN".equals(invoiceStatus)) {
+                        lateFee = rs.getBigDecimal("late_fee");
+                        if (lateFee == null) lateFee = BigDecimal.ZERO;
+                        
+                        // Tính số ngày quá hạn ảo dựa trên số tiền phạt
+                        if (lateFee.compareTo(BigDecimal.ZERO) > 0 && dto.getRoomFee() != null && dto.getRoomFee().compareTo(BigDecimal.ZERO) > 0) {
+                            BigDecimal dailyFee = dto.getRoomFee().multiply(new BigDecimal("0.01"));
+                            int days = lateFee.divide(dailyFee, 0, RoundingMode.HALF_UP).intValue();
+                            dto.setOverdueDays(days);
                         }
-                        if (endDate.isAfter(dueLocalDate)) {
-                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
-                            lateFee = dto.getRoomFee()
-                                        .multiply(new BigDecimal("0.01"))
-                                        .multiply(new BigDecimal(daysLate))
-                                        .setScale(0, RoundingMode.HALF_UP);
-                            dto.setOverdueDays((int) daysLate);
-                        } else {
-                            dto.setOverdueDays(0);
+                    } else {
+                        Date dueDateSql = rs.getDate("due_date");
+                        if (dueDateSql != null && dto.getRoomFee() != null) {
+                            lateFee = PenaltyCalculator.calculateLateFee(dto.getRoomFee(), dueDateSql, rs.getDate("pending_payment_date"), LocalDate.now());
+                            if (lateFee.compareTo(BigDecimal.ZERO) > 0) {
+                                LocalDate dueLocalDate = dueDateSql.toLocalDate();
+                                LocalDate endDate = LocalDate.now();
+                                Date pendingDate = rs.getDate("pending_payment_date");
+                                if (pendingDate != null && pendingDate.toLocalDate().isAfter(dueLocalDate)) {
+                                    endDate = pendingDate.toLocalDate();
+                                }
+                                dto.setOverdueDays((int) ChronoUnit.DAYS.between(dueLocalDate, endDate));
+                            } else {
+                                dto.setOverdueDays(0);
+                            }
                         }
                     }
                     dto.setLateFeePreview(lateFee);
