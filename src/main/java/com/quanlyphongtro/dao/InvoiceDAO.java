@@ -798,7 +798,7 @@ public class InvoiceDAO extends BaseDAO {
                 "u.email AS tenant_email, " +
                 "f.name AS facility_name, f.address AS facility_address, " +
                 "c.start_date AS contract_start_date, c.end_date AS contract_end_date, c.code AS contract_code, " +
-                "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_usage AS db_electric_usage, mr_curr.water_usage AS db_water_usage, mr_curr.electric_img, mr_curr.water_img, mr_curr.electric_status, mr_curr.electric_old_final, mr_curr.electric_new_start, mr_curr.water_status, mr_curr.water_old_final, mr_curr.water_new_start, "
+                "mr_curr.electric AS new_electric, mr_curr.water AS new_water, mr_curr.electric_usage AS db_electric_usage, mr_curr.water_usage AS db_water_usage, mr_curr.electric_img, mr_curr.water_img, mr_curr.electric_status, mr_curr.water_status, "
                 +
                 "(SELECT TOP 1 electric FROM meter_readings mr_old WHERE mr_old.room_id = i.room_id AND mr_old.reading_date < mr_curr.reading_date ORDER BY mr_old.reading_date DESC) AS old_electric, "
                 +
@@ -883,16 +883,7 @@ public class InvoiceDAO extends BaseDAO {
 
                     if (hasColumn(rs, "electric_status")) {
                         dto.setElectricStatus(rs.getString("electric_status"));
-                        dto.setElectricOldFinal(
-                                rs.getObject("electric_old_final") != null ? rs.getInt("electric_old_final") : null);
-                        dto.setElectricNewStart(
-                                rs.getObject("electric_new_start") != null ? rs.getInt("electric_new_start") : null);
-
                         dto.setWaterStatus(rs.getString("water_status"));
-                        dto.setWaterOldFinal(
-                                rs.getObject("water_old_final") != null ? rs.getInt("water_old_final") : null);
-                        dto.setWaterNewStart(
-                                rs.getObject("water_new_start") != null ? rs.getInt("water_new_start") : null);
                     }
 
                     dto.setElectricUnitPrice(rs.getBigDecimal("electricity_price"));
