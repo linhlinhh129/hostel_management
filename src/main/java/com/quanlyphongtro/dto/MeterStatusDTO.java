@@ -19,7 +19,7 @@ public class MeterStatusDTO {
     private String updatedByName;
     private boolean invoicePaid;
 
-    // Metadata fields for Rollover and Replaced meters
+    // Metadata fields for Rollover meters
     private String electricStatus;
     private Integer electricMaxLimit;
     private Integer electricUsage;

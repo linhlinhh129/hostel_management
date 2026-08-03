@@ -258,17 +258,20 @@ KHI hóa đơn không tồn tại, THE SYSTEM SHALL trả về HTTP 404 với m�
 
 ## 3.7 Trạng thái hóa đơn
 
-Hệ thống quản lý 3 trạng thái của hóa đơn:
+Hệ thống quản lý 4 trạng thái của hóa đơn:
 
 - `UNPAID`: Hóa đơn chưa được thanh toán (Trạng thái mặc định khi vừa tạo).
 - `PAID`: Hóa đơn đã được xác nhận thanh toán thành công (Không cho phép điều chỉnh hóa đơn ở trạng thái này).
 - `OVERDUE`: Hóa đơn chưa thanh toán và đã quá hạn thanh toán.
+- `FROZEN`: Hóa đơn đã bị đóng băng công nợ (Phí chậm nộp được chốt cứng và không tăng thêm, nhưng vẫn có thể thanh toán).
 
 KHI hóa đơn chưa được thanh toán, THE SYSTEM SHALL gán trạng thái `UNPAID`.
 
 KHI hóa đơn đã được xác nhận thanh toán, THE SYSTEM SHALL gán trạng thái `PAID`.
 
 KHI hóa đơn chưa thanh toán và đã vượt quá hạn thanh toán, THE SYSTEM SHALL gán trạng thái `OVERDUE`.
+
+KHI Ban quản lý thực hiện đóng băng một hóa đơn `OVERDUE`, THE SYSTEM SHALL gán trạng thái `FROZEN`.
 
 ## 3.8 Phân quyền
 

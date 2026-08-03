@@ -41,10 +41,10 @@ public class RevenueDAO extends BaseDAO {
 
         String sql = "SELECT " +
             "SUM(CASE WHEN status = 'PAID' THEN total_amount ELSE 0 END) AS total_revenue, " +
-            "SUM(CASE WHEN status IN ('UNPAID', 'OVERDUE') THEN total_amount ELSE 0 END) AS total_outstanding, " +
+            "SUM(CASE WHEN status IN ('UNPAID', 'OVERDUE', 'FROZEN') THEN total_amount ELSE 0 END) AS total_outstanding, " +
             "COUNT(CASE WHEN status = 'PAID'   THEN 1 END) AS paid_count, " +
             "COUNT(CASE WHEN status = 'UNPAID' THEN 1 END) AS unpaid_count, " +
-            "COUNT(CASE WHEN status = 'OVERDUE' THEN 1 END) AS overdue_count, " +
+            "COUNT(CASE WHEN status IN ('OVERDUE', 'FROZEN') THEN 1 END) AS overdue_count, " +
             "COUNT(*) AS total_count " +
             "FROM dbo.invoices " +
             "WHERE deleted_at IS NULL AND MONTH(created_at) = ? AND YEAR(created_at) = ?";
@@ -84,10 +84,10 @@ public class RevenueDAO extends BaseDAO {
     private static final String FACILITY_REVENUE_SQL =
         "SELECT f.facility_id, f.code AS facility_code, f.name AS facility_name, " +
         "  COALESCE(SUM(CASE WHEN i.status = 'PAID' THEN i.total_amount ELSE 0 END), 0) AS total_revenue, " +
-        "  COALESCE(SUM(CASE WHEN i.status IN ('UNPAID', 'OVERDUE') THEN i.total_amount ELSE 0 END), 0) AS total_outstanding, " +
+        "  COALESCE(SUM(CASE WHEN i.status IN ('UNPAID', 'OVERDUE', 'FROZEN') THEN i.total_amount ELSE 0 END), 0) AS total_outstanding, " +
         "  COUNT(CASE WHEN i.status = 'PAID'   THEN 1 END) AS paid_count, " +
         "  COUNT(CASE WHEN i.status = 'UNPAID' THEN 1 END) AS unpaid_count, " +
-        "  COUNT(CASE WHEN i.status = 'OVERDUE' THEN 1 END) AS overdue_count, " +
+        "  COUNT(CASE WHEN i.status IN ('OVERDUE', 'FROZEN') THEN 1 END) AS overdue_count, " +
         "  COUNT(i.invoice_id) AS total_count " +
         "FROM dbo.facilities f " +
         "LEFT JOIN dbo.rooms r ON r.facility_id = f.facility_id AND r.deleted_at IS NULL " +
@@ -186,10 +186,10 @@ public class RevenueDAO extends BaseDAO {
         String sql = "SELECT " +
             "MONTH(created_at) AS m, YEAR(created_at) AS y, " +
             "COALESCE(SUM(CASE WHEN status = 'PAID'    THEN total_amount ELSE 0 END), 0) AS total_revenue, " +
-            "COALESCE(SUM(CASE WHEN status IN ('UNPAID', 'OVERDUE') THEN total_amount ELSE 0 END), 0) AS total_outstanding, " +
+            "COALESCE(SUM(CASE WHEN status IN ('UNPAID', 'OVERDUE', 'FROZEN') THEN total_amount ELSE 0 END), 0) AS total_outstanding, " +
             "COUNT(CASE WHEN status = 'PAID'    THEN 1 END) AS paid_count, " +
             "COUNT(CASE WHEN status = 'UNPAID'  THEN 1 END) AS unpaid_count, " +
-            "COUNT(CASE WHEN status = 'OVERDUE' THEN 1 END) AS overdue_count " +
+            "COUNT(CASE WHEN status IN ('OVERDUE', 'FROZEN') THEN 1 END) AS overdue_count " +
             "FROM dbo.invoices " +
             "WHERE deleted_at IS NULL AND created_at >= ? " +
             "GROUP BY YEAR(created_at), MONTH(created_at)";

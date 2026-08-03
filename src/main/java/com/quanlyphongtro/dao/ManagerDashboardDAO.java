@@ -79,7 +79,7 @@ public class ManagerDashboardDAO extends BaseDAO {
         String overdueInvoicesSql = "SELECT COUNT(*) FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status = 'OVERDUE'";
+                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status IN ('OVERDUE', 'FROZEN')";
 
         String pendingPaymentsSql = "SELECT COUNT(*) FROM dbo.payments p " +
                 "JOIN dbo.rooms r ON p.room_id = r.room_id " +
@@ -95,7 +95,7 @@ public class ManagerDashboardDAO extends BaseDAO {
         String totalOutstandingSql = "SELECT SUM(i.total_amount) FROM dbo.invoices i " +
                 "JOIN dbo.rooms r ON i.room_id = r.room_id " +
                 "JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
-                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status IN ('UNPAID', 'OVERDUE')";
+                "WHERE f.manager_id = ? AND i.deleted_at IS NULL AND i.status IN ('UNPAID', 'OVERDUE', 'FROZEN')";
 
         String ticketStatsSql = "SELECT req.status, COUNT(*) AS count FROM dbo.requests req " +
                 "JOIN dbo.users u ON req.sender_id = u.user_id " +

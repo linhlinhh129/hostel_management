@@ -41,7 +41,7 @@ Tính năng Dashboard cho Ban quản lý cung cấp màn hình chính khi Manage
 
 ### Financial Calculation Logic
 - **Monthly Revenue:** Sums up `total_amount` of invoices with status `'PAID'` created in the current month (`MONTH(created_at) = MONTH(GETDATE())`).
-- **Total Outstanding:** Sums up `total_amount` of invoices with status `'UNPAID'` or `'OVERDUE'`.
+- **Total Outstanding:** Sums up `total_amount` of invoices with status `'UNPAID'` or `'OVERDUE'` or `'FROZEN'`.
 
 ### Expiring Contracts Calculation
 - Calls `ContractService.countExpiringContracts(managerId)` to query active contracts ending within the next 30 days (`c.end_date <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) AND c.end_date >= CAST(GETDATE() AS DATE)`). Renders clickable KPI card linking to `/manager/contracts?expiryStatus=expiring`.

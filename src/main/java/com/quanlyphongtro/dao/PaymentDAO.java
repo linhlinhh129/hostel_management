@@ -19,6 +19,55 @@ import java.util.List;
 
 public class PaymentDAO extends BaseDAO {
 
+    private void buildPaymentSearchCondition(StringBuilder sql, String keyword, String status, String fromDate, String toDate, String month, String year) {
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND p.status = ? ");
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
+        }
+
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date >= ? ");
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            sql.append("AND p.payment_date <= ? ");
+        }
+
+        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+            sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
+        } else if (year != null && !year.trim().isEmpty()) {
+            sql.append("AND YEAR(p.payment_date) = ? ");
+        }
+    }
+
+    private int bindPaymentSearchParams(PreparedStatement ps, int paramIndex, String keyword, String status, String fromDate, String toDate, String month, String year) throws SQLException {
+        if (status != null && !status.trim().isEmpty()) {
+            ps.setString(paramIndex++, status);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String kw = "%" + keyword + "%";
+            ps.setString(paramIndex++, kw);
+            ps.setString(paramIndex++, kw);
+            ps.setString(paramIndex++, kw);
+        }
+
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            ps.setDate(paramIndex++, Date.valueOf(fromDate));
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            ps.setDate(paramIndex++, Date.valueOf(toDate));
+        }
+
+        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
+            ps.setInt(paramIndex++, Integer.parseInt(month));
+            ps.setInt(paramIndex++, Integer.parseInt(year));
+        } else if (year != null && !year.trim().isEmpty()) {
+            ps.setInt(paramIndex++, Integer.parseInt(year));
+        }
+        return paramIndex;
+    }
+
     public boolean insertPayment(String code, int invoiceId, int roomId, String status, LocalDate paymentDate,
             String method, BigDecimal amount, int createdBy) {
         String sql = "INSERT INTO dbo.payments (code, invoice_id, room_id, status, payment_date, payment_method, payment_amount, created_by) "
@@ -72,27 +121,7 @@ public class PaymentDAO extends BaseDAO {
                         +
                         "WHERE p.deleted_at IS NULL AND f.manager_id = ? ");
 
-        if (status != null && !status.trim().isEmpty()) {
-            sql.append("AND p.status = ? ");
-        }
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
-        }
-
-        // Lọc theo khoảng thời gian (fromDate - toDate)
-        if (fromDate != null && !fromDate.trim().isEmpty()) {
-            sql.append("AND p.payment_date >= ? ");
-        }
-        if (toDate != null && !toDate.trim().isEmpty()) {
-            sql.append("AND p.payment_date <= ? ");
-        }
-
-        // Lọc theo kỳ (tháng/năm)
-        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
-            sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
-        } else if (year != null && !year.trim().isEmpty()) {
-            sql.append("AND YEAR(p.payment_date) = ? ");
-        }
+        buildPaymentSearchCondition(sql, keyword, status, fromDate, toDate, month, year);
 
         sql.append("ORDER BY p.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
@@ -101,30 +130,7 @@ public class PaymentDAO extends BaseDAO {
 
             int paramIndex = 1;
             ps.setInt(paramIndex++, managerId);
-
-            if (status != null && !status.trim().isEmpty()) {
-                ps.setString(paramIndex++, status);
-            }
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                String kw = "%" + keyword + "%";
-                ps.setString(paramIndex++, kw);
-                ps.setString(paramIndex++, kw);
-                ps.setString(paramIndex++, kw);
-            }
-
-            if (fromDate != null && !fromDate.trim().isEmpty()) {
-                ps.setDate(paramIndex++, Date.valueOf(fromDate));
-            }
-            if (toDate != null && !toDate.trim().isEmpty()) {
-                ps.setDate(paramIndex++, Date.valueOf(toDate));
-            }
-
-            if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
-                ps.setInt(paramIndex++, Integer.parseInt(month));
-                ps.setInt(paramIndex++, Integer.parseInt(year));
-            } else if (year != null && !year.trim().isEmpty()) {
-                ps.setInt(paramIndex++, Integer.parseInt(year));
-            }
+            paramIndex = bindPaymentSearchParams(ps, paramIndex, keyword, status, fromDate, toDate, month, year);
 
             ps.setInt(paramIndex++, offset);
             ps.setInt(paramIndex++, limit);
@@ -174,57 +180,14 @@ public class PaymentDAO extends BaseDAO {
                         +
                         "WHERE p.deleted_at IS NULL AND f.manager_id = ? ");
 
-        if (status != null && !status.trim().isEmpty()) {
-            sql.append("AND p.status = ? ");
-        }
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (p.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
-        }
-
-        // Lọc theo khoảng thời gian (fromDate - toDate)
-        if (fromDate != null && !fromDate.trim().isEmpty()) {
-            sql.append("AND p.payment_date >= ? ");
-        }
-        if (toDate != null && !toDate.trim().isEmpty()) {
-            sql.append("AND p.payment_date <= ? ");
-        }
-
-        // Lọc theo kỳ (tháng/năm)
-        if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
-            sql.append("AND MONTH(p.payment_date) = ? AND YEAR(p.payment_date) = ? ");
-        } else if (year != null && !year.trim().isEmpty()) {
-            sql.append("AND YEAR(p.payment_date) = ? ");
-        }
+        buildPaymentSearchCondition(sql, keyword, status, fromDate, toDate, month, year);
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int paramIndex = 1;
             ps.setInt(paramIndex++, managerId);
-
-            if (status != null && !status.trim().isEmpty()) {
-                ps.setString(paramIndex++, status);
-            }
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                String kw = "%" + keyword + "%";
-                ps.setString(paramIndex++, kw);
-                ps.setString(paramIndex++, kw);
-                ps.setString(paramIndex++, kw);
-            }
-
-            if (fromDate != null && !fromDate.trim().isEmpty()) {
-                ps.setDate(paramIndex++, Date.valueOf(fromDate));
-            }
-            if (toDate != null && !toDate.trim().isEmpty()) {
-                ps.setDate(paramIndex++, Date.valueOf(toDate));
-            }
-
-            if (month != null && !month.trim().isEmpty() && year != null && !year.trim().isEmpty()) {
-                ps.setInt(paramIndex++, Integer.parseInt(month));
-                ps.setInt(paramIndex++, Integer.parseInt(year));
-            } else if (year != null && !year.trim().isEmpty()) {
-                ps.setInt(paramIndex++, Integer.parseInt(year));
-            }
+            bindPaymentSearchParams(ps, paramIndex, keyword, status, fromDate, toDate, month, year);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {

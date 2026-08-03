@@ -22,6 +22,7 @@
 * **Trạng thái công nợ hợp lệ**:
   * `UNPAID`: Hóa đơn chưa thanh toán[cite: 3].
   * `OVERDUE`: Hóa đơn chưa thanh toán và đã quá hạn so với `due_date`[cite: 3].
+  * `FROZEN`: Hóa đơn đã bị đóng băng công nợ, chốt phí phạt.
 * **Tính toán on-the-fly (Thời gian thực)**: Các chỉ số như *Số ngày nợ*, *Số tiền còn nợ*, và *Phí chậm nộp tạm tính* phải được tính toán trực tiếp khi chạy truy vấn, tuyệt đối không được lưu cứng vào database để tránh dư thừa và sai lệch dữ liệu[cite: 3].
 * **Thời gian ân hạn chậm nộp**: Quy định bất thành văn là phí chậm nộp chỉ bắt đầu được tạm tính nếu hóa đơn bị nộp muộn quá 03 ngày kể từ ngày đến hạn[cite: 3].
 * **Tỷ lệ phạt chậm nộp**: Được tính bằng $1\%$ giá trị tiền phòng/tháng cho mỗi ngày muộn sau thời gian ân hạn[cite: 3].
@@ -51,7 +52,7 @@
 <!-- Những điều bạn assume là đúng nhưng chưa confirm -->
 <!-- Mỗi assumption là một rủi ro nếu sai -->
 
-* **Giả định 1**: Hệ thống hiện tại không hỗ trợ thanh toán từng phần, nên tổng tiền đã thanh toán thành công đối với hóa đơn `UNPAID` hoặc `OVERDUE` luôn bằng 0[cite: 3]. *Rủi ro nếu sai:* Nếu có tính năng thanh toán từng phần, công thức tính số tiền còn nợ sẽ cần bổ sung hàm tính tổng `SUM(amount)` từ bảng `payments` một cách phức tạp hơn[cite: 3].
+* **Giả định 1**: Hệ thống hiện tại không hỗ trợ thanh toán từng phần, nên tổng tiền đã thanh toán thành công đối với hóa đơn `UNPAID`, `OVERDUE` hoặc `FROZEN` luôn bằng 0[cite: 3]. *Rủi ro nếu sai:* Nếu có tính năng thanh toán từng phần, công thức tính số tiền còn nợ sẽ cần bổ sung hàm tính tổng `SUM(amount)` từ bảng `payments` một cách phức tạp hơn[cite: 3].
 * **Giả định 2**: Giả định rằng mọi hóa đơn quá hạn đều gắn liền với một người thuê (`tenant_id`) còn hoạt động để có thể lấy được thông tin liên hệ (Họ tên, SĐT, Email) từ bảng `users`[cite: 3]. *Rủi ro nếu sai:* Nếu tài khoản người thuê đã bị xóa hoặc vô hiệu hóa trước khi thanh toán xong hóa đơn, hệ thống có thể bị lỗi khi `JOIN` dữ liệu hoặc hiển thị trống thông tin[cite: 3].
 
 ## 6. OPEN QUESTIONS (câu hỏi chưa có câu trả lời)

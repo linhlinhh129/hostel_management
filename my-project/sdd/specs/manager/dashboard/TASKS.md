@@ -10,7 +10,7 @@
 ### Task 1.1: SQL Query Optimizations (4 points)
 - [x] Write SQL queries to aggregate room occupancy and count vacant rooms
 - [x] Write SQL query to calculate monthly revenue based on PAID invoices in the current calendar month
-- [x] Write SQL query to calculate total outstanding debts (UNPAID + OVERDUE invoices)
+- [x] Write SQL query to calculate total outstanding debts (UNPAID + OVERDUE + FROZEN invoices)
 - [x] Write SQL query to group tickets by status and fetch the 5 most recent requests
 
 ---

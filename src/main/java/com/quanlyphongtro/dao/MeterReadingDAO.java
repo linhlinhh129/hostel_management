@@ -335,12 +335,8 @@ public class MeterReadingDAO extends BaseDAO {
         m.setWaterUsage(getInteger(rs, "water_usage"));
         
         if (hasColumn(rs, "electric_status")) m.setElectricStatus(rs.getString("electric_status"));
-        if (hasColumn(rs, "electric_old_final")) m.setElectricOldFinal(getInteger(rs, "electric_old_final"));
-        if (hasColumn(rs, "electric_new_start")) m.setElectricNewStart(getInteger(rs, "electric_new_start"));
         
         if (hasColumn(rs, "water_status")) m.setWaterStatus(rs.getString("water_status"));
-        if (hasColumn(rs, "water_old_final")) m.setWaterOldFinal(getInteger(rs, "water_old_final"));
-        if (hasColumn(rs, "water_new_start")) m.setWaterNewStart(getInteger(rs, "water_new_start"));
         
         return m;
     }

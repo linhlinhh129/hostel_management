@@ -97,11 +97,18 @@
                                                                 <fmt:formatDate value="${parsedDueDate}" pattern="dd/MM/yyyy" />
                                                             </td>
                                                             <td>
-                                                                <span class="badge-hms badge-danger">Quá hạn
-                                                                    <c:if test="${debt.overdueDays > 0}">
-                                                                        (${debt.overdueDays} ngày)
-                                                                    </c:if>
-                                                                </span>
+                                                                <c:choose>
+                                                                    <c:when test="${debt.status == 'FROZEN'}">
+                                                                        <span class="badge-hms" style="background-color: #6366f1; color: white;">Đã đóng băng</span>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <span class="badge-hms badge-danger">Quá hạn
+                                                                            <c:if test="${debt.overdueDays > 0}">
+                                                                                (${debt.overdueDays} ngày)
+                                                                            </c:if>
+                                                                        </span>
+                                                                    </c:otherwise>
+                                                                </c:choose>
                                                             </td>
                                                             <td class="d-none d-md-table-cell" style="white-space: nowrap;">
                                                                 <a href="${ctx}/manager/debts?action=detail&id=${debt.invoiceId}"

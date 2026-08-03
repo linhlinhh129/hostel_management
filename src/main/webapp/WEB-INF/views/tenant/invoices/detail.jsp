@@ -216,7 +216,7 @@
                                                 </div>
                                             </div>
                                         </c:if>
-                                        <c:if test="${invoice.electricStatus eq 'REPLACED' or invoice.electricStatus eq 'ROLLOVER' or invoice.waterStatus eq 'REPLACED' or invoice.waterStatus eq 'ROLLOVER' or overdueDays > 0}">
+                                        <c:if test="${invoice.electricStatus eq 'ROLLOVER' or invoice.waterStatus eq 'ROLLOVER' or overdueDays > 0}">
                                             <div class="widget-surface mb-3">
                                                 <div class="widget-surface-header d-flex align-items-center">
                                                     <i class="fas fa-info-circle text-danger me-2"></i>
@@ -224,12 +224,7 @@
                                                 </div>
                                                 <div class="widget-surface-body">
                                                     <div class="d-flex flex-column gap-2">
-                                                        <c:if test="${invoice.electricStatus eq 'REPLACED'}">
-                                                            <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
-                                                                <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">🔄</span> Đã thay đồng hồ điện</div>
-                                                                <div style="font-family: monospace; opacity: 0.9;">(${invoice.electricOldFinal} - ${invoice.oldElectricReading}) + (${invoice.newElectricReading} - ${invoice.electricNewStart}) = <strong>${invoice.electricUsage} kWh</strong></div>
-                                                            </div>
-                                                        </c:if>
+
                                                         <c:if test="${invoice.electricStatus eq 'ROLLOVER'}">
                                                             <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
                                                                 <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">⏮</span> Tràn vòng đồng hồ điện</div>
@@ -237,12 +232,7 @@
                                                             </div>
                                                         </c:if>
 
-                                                        <c:if test="${invoice.waterStatus eq 'REPLACED'}">
-                                                            <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
-                                                                <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">🔄</span> Đã thay đồng hồ nước</div>
-                                                                <div style="font-family: monospace; opacity: 0.9;">(${invoice.waterOldFinal} - ${invoice.oldWaterReading}) + (${invoice.newWaterReading} - ${invoice.waterNewStart}) = <strong>${invoice.waterUsage} m³</strong></div>
-                                                            </div>
-                                                        </c:if>
+
                                                         <c:if test="${invoice.waterStatus eq 'ROLLOVER'}">
                                                             <div class="p-3 w-100 text-start" style="background-color: var(--hms-primary-soft); border: 1px solid var(--hms-primary); border-radius: 8px; font-size: 0.9rem; color: var(--hms-primary-dark);">
                                                                 <div style="font-weight: 600; margin-bottom: 4px;"><span style="color: var(--hms-primary-dark); margin-right: 4px;">⏮</span> Tràn vòng đồng hồ nước</div>

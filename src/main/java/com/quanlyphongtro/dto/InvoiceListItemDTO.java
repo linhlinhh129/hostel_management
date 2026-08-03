@@ -51,6 +51,9 @@ public class InvoiceListItemDTO {
         } else if ("OVERDUE".equalsIgnoreCase(status)) {
             this.statusBadgeClass = "badge-hms badge-danger";
             this.statusLabel = "Quá hạn";
+        } else if ("FROZEN".equalsIgnoreCase(status)) {
+            this.statusBadgeClass = "badge-hms badge-frozen"; 
+            this.statusLabel = "Đã đóng băng";
         } else {
             this.statusBadgeClass = "badge-hms badge-warning";
             this.statusLabel = "Chưa thanh toán";

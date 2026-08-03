@@ -269,7 +269,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public void updateStatus(int managerId, int invoiceId, String status) throws Exception {
         InvoiceDetailDTO dto = getInvoiceDetail(managerId, invoiceId);
-        if (!"UNPAID".equals(status) && !"PAID".equals(status) && !"OVERDUE".equals(status)) {
+        if (!"UNPAID".equals(status) && !"PAID".equals(status) && !"OVERDUE".equals(status) && !"FROZEN".equals(status)) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ.");
         }
         invoiceDAO.updateStatus(invoiceId, status);
@@ -327,11 +327,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         result.put("electricUsage", electricUsage);
         result.put("waterUsage", waterUsage);
         result.put("electricStatus", currentMeter.getElectricStatus());
-        result.put("electricOldFinal", currentMeter.getElectricOldFinal());
-        result.put("electricNewStart", currentMeter.getElectricNewStart());
         result.put("waterStatus", currentMeter.getWaterStatus());
-        result.put("waterOldFinal", currentMeter.getWaterOldFinal());
-        result.put("waterNewStart", currentMeter.getWaterNewStart());
 
         return result;
     }

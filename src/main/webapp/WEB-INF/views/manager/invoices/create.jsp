@@ -90,7 +90,7 @@
                       <div class="form-text text-muted">Tối đa 1000 ký tự.</div>
                     </div>
                     <div class="col-12 mt-4" id="invoicePreviewSection" style="display:none;">
-                      <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">Chi Tiết Hóa Đơn (Tạm Tính)</h5>
+                      <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">Bảng Đối Soát Chi Phí</h5>
                       <div class="row g-3">
                         <div class="col-md-3">
                           <label class="form-label text-muted">Tiền phòng</label>
@@ -256,7 +256,7 @@
 
                   document.getElementById('previewOldElectric').textContent = data.oldElectric;
                   document.getElementById('previewNewElectric').value = data.newElectric;
-                  if (data.electricStatus === 'REPLACED' || data.electricStatus === 'ROLLOVER') {
+                  if (data.electricStatus === 'ROLLOVER') {
                     document.getElementById('previewElectricUsage').innerHTML = data.electricUsage + ' <span class="text-danger fw-bold ms-1" title="Có tính toán đặc biệt">*</span>';
                   } else {
                     document.getElementById('previewElectricUsage').textContent = data.electricUsage;
@@ -264,10 +264,7 @@
                   document.getElementById('previewElectricPrice').value = formatMoney(data.electricityPrice);
 
                   var electricHint = document.getElementById('electricCalcHint');
-                  if (data.electricStatus === 'REPLACED') {
-                    electricHint.style.display = 'block';
-                    electricHint.textContent = 'Đã thay đồng hồ: (' + data.electricOldFinal + ' - ' + data.oldElectric + ') + (' + data.newElectric + ' - ' + data.electricNewStart + ') = ' + data.electricUsage;
-                  } else if (data.electricStatus === 'ROLLOVER') {
+                  if (data.electricStatus === 'ROLLOVER') {
                     electricHint.style.display = 'block';
                     electricHint.textContent = 'Tràn vòng đồng hồ: (Tối đa - ' + data.oldElectric + ') + ' + data.newElectric + ' = ' + data.electricUsage;
                   } else {
@@ -276,7 +273,7 @@
 
                   document.getElementById('previewOldWater').textContent = data.oldWater;
                   document.getElementById('previewNewWater').value = data.newWater;
-                  if (data.waterStatus === 'REPLACED' || data.waterStatus === 'ROLLOVER') {
+                  if (data.waterStatus === 'ROLLOVER') {
                     document.getElementById('previewWaterUsage').innerHTML = data.waterUsage + ' <span class="text-danger fw-bold ms-1" title="Có tính toán đặc biệt">*</span>';
                   } else {
                     document.getElementById('previewWaterUsage').textContent = data.waterUsage;
@@ -284,10 +281,7 @@
                   document.getElementById('previewWaterPrice').value = formatMoney(data.waterPrice);
 
                   var waterHint = document.getElementById('waterCalcHint');
-                  if (data.waterStatus === 'REPLACED') {
-                    waterHint.style.display = 'block';
-                    waterHint.textContent = 'Đã thay đồng hồ: (' + data.waterOldFinal + ' - ' + data.oldWater + ') + (' + data.newWater + ' - ' + data.waterNewStart + ') = ' + data.waterUsage;
-                  } else if (data.waterStatus === 'ROLLOVER') {
+                  if (data.waterStatus === 'ROLLOVER') {
                     waterHint.style.display = 'block';
                     waterHint.textContent = 'Tràn vòng đồng hồ: (Tối đa - ' + data.oldWater + ') + ' + data.newWater + ' = ' + data.waterUsage;
                   } else {

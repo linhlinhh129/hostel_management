@@ -35,12 +35,7 @@ public class InvoiceDetailDTO {
     private BigDecimal waterAmount;
 
     private String electricStatus;
-    private Integer electricOldFinal;
-    private Integer electricNewStart;
-
     private String waterStatus;
-    private Integer waterOldFinal;
-    private Integer waterNewStart;
 
     private BigDecimal serviceFee;
     private BigDecimal internetFee;
@@ -265,44 +260,12 @@ public class InvoiceDetailDTO {
         this.electricStatus = electricStatus;
     }
 
-    public Integer getElectricOldFinal() {
-        return electricOldFinal;
-    }
-
-    public void setElectricOldFinal(Integer electricOldFinal) {
-        this.electricOldFinal = electricOldFinal;
-    }
-
-    public Integer getElectricNewStart() {
-        return electricNewStart;
-    }
-
-    public void setElectricNewStart(Integer electricNewStart) {
-        this.electricNewStart = electricNewStart;
-    }
-
     public String getWaterStatus() {
         return waterStatus;
     }
 
     public void setWaterStatus(String waterStatus) {
         this.waterStatus = waterStatus;
-    }
-
-    public Integer getWaterOldFinal() {
-        return waterOldFinal;
-    }
-
-    public void setWaterOldFinal(Integer waterOldFinal) {
-        this.waterOldFinal = waterOldFinal;
-    }
-
-    public Integer getWaterNewStart() {
-        return waterNewStart;
-    }
-
-    public void setWaterNewStart(Integer waterNewStart) {
-        this.waterNewStart = waterNewStart;
     }
 
     public BigDecimal getServiceFee() {
@@ -380,6 +343,9 @@ public class InvoiceDetailDTO {
         } else if ("OVERDUE".equalsIgnoreCase(status)) {
             this.statusBadgeClass = "badge-hms badge-danger";
             this.statusLabel = "Quá hạn";
+        } else if ("FROZEN".equalsIgnoreCase(status)) {
+            this.statusBadgeClass = "badge-hms badge-frozen"; 
+            this.statusLabel = "Đã đóng băng";
         } else {
             this.statusBadgeClass = "badge-hms badge-warning";
             this.statusLabel = "Chưa thanh toán";

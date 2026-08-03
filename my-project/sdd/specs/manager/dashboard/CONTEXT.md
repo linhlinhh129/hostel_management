@@ -34,7 +34,7 @@ Feature Dashboard cho Ban quản lý giúp Manager:
 * Dashboard lấy thông tin tổng hợp của cơ sở đầu tiên được phân quyền cho Manager nếu Manager quản lý nhiều cơ sở.
 * Các con số tài chính và vận hành phải phản ánh chính xác trạng thái thực tế trong database tại thời điểm tải trang.
 * Doanh thu tháng hiện tại (`monthlyRevenue`) chỉ tính trên các hóa đơn có trạng thái `PAID` và được tạo trong tháng/năm hiện tại.
-* Tổng nợ tồn đọng (`totalOutstanding`) là tổng giá trị của tất cả hóa đơn ở trạng thái `UNPAID` và `OVERDUE` thuộc cơ sở.
+* Tổng nợ tồn đọng (`totalOutstanding`) là tổng giá trị của tất cả hóa đơn ở trạng thái `UNPAID`, `OVERDUE` và `FROZEN` thuộc cơ sở.
 * Phân chia trạng thái sự cố hiển thị trên Dashboard:
   * Mới: Trạng thái `NEW` hoặc `PENDING`
   * Đang xử lý: Trạng thái `RECEIVED`, `ASSIGNED`, hoặc `IN_PROGRESS`

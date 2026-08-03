@@ -2,7 +2,7 @@
 
 ## 1. Technical Context
 - **Feature**: Quản lý công nợ (Debt Management).
-- **Core Strategy**: Không tạo bảng mới cho công nợ. Công nợ được xác định bằng các bản ghi trong bảng `invoices` có trạng thái `UNPAID` hoặc `OVERDUE`.
+- **Core Strategy**: Không tạo bảng mới cho công nợ. Công nợ được xác định bằng các bản ghi trong bảng `invoices` có trạng thái `UNPAID`, `OVERDUE` hoặc `FROZEN`.
 - **Architecture**: Servlet/JSP (MVC). Servlet `DebtPageServlet` gọi `DebtService` để lấy dữ liệu, sau đó chuyển tiếp sang các trang JSP. Tuân thủ tuyệt đối Core Principle I của Constitution.
 - **Dependencies**: Bảng `invoices`, `rooms`, `users`, `facilities`, `payments`.
 - **Unknowns**: None.
@@ -15,7 +15,7 @@
 
 ## 3. Data Model
 Sử dụng các bảng có sẵn, không tạo bảng mới:
-- **Thực thể gốc**: `invoices` (status = `UNPAID`, `OVERDUE`).
+- **Thực thể gốc**: `invoices` (status = `UNPAID`, `OVERDUE`, `FROZEN`).
 - **DTOs cần tạo**:
   - `DebtListItemDTO`: Chứa thông tin rút gọn (invoiceId, mã hóa đơn, mã phòng, tên người thuê, kỳ hóa đơn, tổng tiền (đã cộng phí chậm nộp), ngày đến hạn, số ngày nợ, phí chậm nộp tạm tính, trạng thái).
   - `DebtDetailDTO`: Chứa thông tin chi tiết hóa đơn, thông tin người thuê, số tiền tạm tính (đã bao gồm phí chậm nộp) và số tiền CÒN NỢ thực tế (Tổng đã gồm phí - Đã trả).
