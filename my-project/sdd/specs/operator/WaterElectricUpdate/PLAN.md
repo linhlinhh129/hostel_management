@@ -77,7 +77,7 @@ src/main/
 
 - **Service (`MeterReadingService.java`):**
   - Triển khai logic tính toán lượng tiêu thụ dựa trên công thức của Rollover và Replace.
-  - Đối với Rollover, ép cứng (hardcode) `maxLimit = 10000` để đảm bảo an toàn từ Backend, bỏ qua mọi thay đổi trái phép từ Frontend.
+  - Đối với Rollover, ép cứng (hardcode) `maxLimit = 100000` để đảm bảo an toàn từ Backend, bỏ qua mọi thay đổi trái phép từ Frontend.
 
 - **Servlet (`UpdateMeterReadingServlet.java`):**
   - Xử lý **POST**: Nhận tham số status, số chốt cũ, số bắt đầu mới. Giới hạn max limit sẽ bị bỏ qua ở backend.
@@ -87,4 +87,4 @@ src/main/
 - **Form Sửa (`update.jsp`):**
   - Luôn luôn hiển thị khối chọn "Lý do chỉ số bất thường" (Tuân thủ thuần JSP, loại bỏ xử lý ẩn/hiện bằng JS oninput).
   - Sử dụng JS đơn giản để toggle (hiển thị/ẩn) các ô phụ trợ như "Số chốt cũ", "Số bắt đầu mới" chỉ khi người dùng chủ động chọn trạng thái `REPLACED`.
-  - Ô Giới hạn cho `ROLLOVER` được gán cứng `10000` và để dạng `readonly`.
+  - Ô Giới hạn cho `ROLLOVER` được gán cứng `100000` và để dạng `readonly`.

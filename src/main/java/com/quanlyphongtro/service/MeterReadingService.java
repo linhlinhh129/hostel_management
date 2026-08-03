@@ -43,12 +43,8 @@ public class MeterReadingService {
         int prevElec = dto.getPreviousElectricReading() != null ? dto.getPreviousElectricReading() : 0;
         int currElec = dto.getCurrentElectricReading() != null ? dto.getCurrentElectricReading() : 0;
         String eStatus = dto.getElectricStatus();
-        if ("REPLACED".equals(eStatus)) {
-            int oldFinal = dto.getElectricOldFinal() != null ? dto.getElectricOldFinal() : prevElec;
-            int newStart = dto.getElectricNewStart() != null ? dto.getElectricNewStart() : 0;
-            dto.setElectricUsage((oldFinal - prevElec) + (currElec - newStart));
-        } else if ("ROLLOVER".equals(eStatus)) {
-            int maxLimit = 10000;
+        if ("ROLLOVER".equals(eStatus)) {
+            int maxLimit = 100000;
             dto.setElectricMaxLimit(maxLimit);
             dto.setElectricUsage((maxLimit - prevElec) + currElec);
         } else {
@@ -58,12 +54,8 @@ public class MeterReadingService {
         int prevWater = dto.getPreviousWaterReading() != null ? dto.getPreviousWaterReading() : 0;
         int currWater = dto.getCurrentWaterReading() != null ? dto.getCurrentWaterReading() : 0;
         String wStatus = dto.getWaterStatus();
-        if ("REPLACED".equals(wStatus)) {
-            int oldFinal = dto.getWaterOldFinal() != null ? dto.getWaterOldFinal() : prevWater;
-            int newStart = dto.getWaterNewStart() != null ? dto.getWaterNewStart() : 0;
-            dto.setWaterUsage((oldFinal - prevWater) + (currWater - newStart));
-        } else if ("ROLLOVER".equals(wStatus)) {
-            int maxLimit = 10000;
+        if ("ROLLOVER".equals(wStatus)) {
+            int maxLimit = 100000;
             dto.setWaterMaxLimit(maxLimit);
             dto.setWaterUsage((maxLimit - prevWater) + currWater);
         } else {

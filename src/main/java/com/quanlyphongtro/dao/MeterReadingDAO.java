@@ -34,11 +34,7 @@ public class MeterReadingDAO extends BaseDAO {
         sqlBuilder.append("    curr_mr.electric_img AS electricImg, ");
         sqlBuilder.append("    curr_mr.water_img AS waterImg, ");
         sqlBuilder.append("    curr_mr.electric_status AS electricStatus, ");
-        sqlBuilder.append("    curr_mr.electric_old_final AS electricOldFinal, ");
-        sqlBuilder.append("    curr_mr.electric_new_start AS electricNewStart, ");
         sqlBuilder.append("    curr_mr.water_status AS waterStatus, ");
-        sqlBuilder.append("    curr_mr.water_old_final AS waterOldFinal, ");
-        sqlBuilder.append("    curr_mr.water_new_start AS waterNewStart, ");
         sqlBuilder.append("    u.full_name AS updatedByName, ");
         sqlBuilder.append("    CASE WHEN curr_mr.meter_id IS NOT NULL THEN 'DA_CAP_NHAT' ELSE 'CHUA_CAP_NHAT' END AS status, ");
         sqlBuilder.append("    CASE WHEN inv.status = 'PAID' THEN 1 ELSE 0 END AS invoicePaid ");
@@ -120,12 +116,8 @@ public class MeterReadingDAO extends BaseDAO {
                     if (!rs.wasNull()) dto.setWaterUsage(waterUsage);
                     
                     dto.setElectricStatus(rs.getString("electricStatus"));
-                    int eOld = rs.getInt("electricOldFinal"); if (!rs.wasNull()) dto.setElectricOldFinal(eOld);
-                    int eNew = rs.getInt("electricNewStart"); if (!rs.wasNull()) dto.setElectricNewStart(eNew);
                     
                     dto.setWaterStatus(rs.getString("waterStatus"));
-                    int wOld = rs.getInt("waterOldFinal"); if (!rs.wasNull()) dto.setWaterOldFinal(wOld);
-                    int wNew = rs.getInt("waterNewStart"); if (!rs.wasNull()) dto.setWaterNewStart(wNew);
                     
                     dto.setUpdatedAt(rs.getTimestamp("updatedAt"));
                     dto.setStatus(rs.getString("status"));
@@ -150,9 +142,9 @@ public class MeterReadingDAO extends BaseDAO {
 
     public boolean insertMeterReading(MeterStatusDTO dto, int createdBy) {
         String sql = "INSERT INTO meter_readings (room_id, electric, water, reading_date, status, created_by, electric_img, water_img, " +
-                     "electric_usage, water_usage, electric_status, electric_old_final, electric_new_start, electric_max_limit, " +
-                     "water_status, water_old_final, water_new_start, water_max_limit) " +
-                     "VALUES (?, ?, ?, GETDATE(), 'UPDATED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     "electric_usage, water_usage, electric_status, electric_max_limit, " +
+                     "water_status, water_max_limit) " +
+                     "VALUES (?, ?, ?, GETDATE(), 'UPDATED', ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, dto.getRoomId());
@@ -170,14 +162,10 @@ public class MeterReadingDAO extends BaseDAO {
             ps.setInt(8, dto.getWaterUsage());
             
             ps.setString(9, dto.getElectricStatus() != null ? dto.getElectricStatus() : "NORMAL");
-            if (dto.getElectricOldFinal() != null) ps.setInt(10, dto.getElectricOldFinal()); else ps.setNull(10, Types.INTEGER);
-            if (dto.getElectricNewStart() != null) ps.setInt(11, dto.getElectricNewStart()); else ps.setNull(11, Types.INTEGER);
-            if (dto.getElectricMaxLimit() != null) ps.setInt(12, dto.getElectricMaxLimit()); else ps.setNull(12, Types.INTEGER);
+            if (dto.getElectricMaxLimit() != null) ps.setInt(10, dto.getElectricMaxLimit()); else ps.setNull(10, Types.INTEGER);
             
-            ps.setString(13, dto.getWaterStatus() != null ? dto.getWaterStatus() : "NORMAL");
-            if (dto.getWaterOldFinal() != null) ps.setInt(14, dto.getWaterOldFinal()); else ps.setNull(14, Types.INTEGER);
-            if (dto.getWaterNewStart() != null) ps.setInt(15, dto.getWaterNewStart()); else ps.setNull(15, Types.INTEGER);
-            if (dto.getWaterMaxLimit() != null) ps.setInt(16, dto.getWaterMaxLimit()); else ps.setNull(16, Types.INTEGER);
+            ps.setString(11, dto.getWaterStatus() != null ? dto.getWaterStatus() : "NORMAL");
+            if (dto.getWaterMaxLimit() != null) ps.setInt(12, dto.getWaterMaxLimit()); else ps.setNull(12, Types.INTEGER);
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -278,12 +266,8 @@ public class MeterReadingDAO extends BaseDAO {
                      "    m.electric_img AS electricImg, " +
                      "    m.water_img AS waterImg, " +
                      "    m.electric_status AS electricStatus, " +
-                     "    m.electric_old_final AS electricOldFinal, " +
-                     "    m.electric_new_start AS electricNewStart, " +
                      "    m.electric_max_limit AS electricMaxLimit, " +
                      "    m.water_status AS waterStatus, " +
-                     "    m.water_old_final AS waterOldFinal, " +
-                     "    m.water_new_start AS waterNewStart, " +
                      "    m.water_max_limit AS waterMaxLimit, " +
                      "    (SELECT TOP 1 electric FROM meter_readings prev " +
                      "     WHERE prev.room_id = m.room_id AND prev.reading_date < m.reading_date AND prev.deleted_at IS NULL " +
@@ -311,13 +295,9 @@ public class MeterReadingDAO extends BaseDAO {
                     dto.setWaterImg(rs.getString("waterImg"));
                     
                     dto.setElectricStatus(rs.getString("electricStatus"));
-                    int elecOldF = rs.getInt("electricOldFinal"); if (!rs.wasNull()) dto.setElectricOldFinal(elecOldF);
-                    int elecNewS = rs.getInt("electricNewStart"); if (!rs.wasNull()) dto.setElectricNewStart(elecNewS);
                     int elecMaxL = rs.getInt("electricMaxLimit"); if (!rs.wasNull()) dto.setElectricMaxLimit(elecMaxL);
 
                     dto.setWaterStatus(rs.getString("waterStatus"));
-                    int waterOldF = rs.getInt("waterOldFinal"); if (!rs.wasNull()) dto.setWaterOldFinal(waterOldF);
-                    int waterNewS = rs.getInt("waterNewStart"); if (!rs.wasNull()) dto.setWaterNewStart(waterNewS);
                     int waterMaxL = rs.getInt("waterMaxLimit"); if (!rs.wasNull()) dto.setWaterMaxLimit(waterMaxL);
                     
                     int prevElec = rs.getInt("previousElectricReading");
@@ -475,8 +455,8 @@ public class MeterReadingDAO extends BaseDAO {
 
     public boolean updateMeterReading(MeterStatusDTO dto) {
         String sql = "UPDATE meter_readings SET electric = ?, water = ?, electric_img = ?, water_img = ?, status = 'UPDATED', updated_at = GETDATE(), " +
-                     "electric_usage = ?, water_usage = ?, electric_status = ?, electric_old_final = ?, electric_new_start = ?, electric_max_limit = ?, " +
-                     "water_status = ?, water_old_final = ?, water_new_start = ?, water_max_limit = ? " +
+                     "electric_usage = ?, water_usage = ?, electric_status = ?, electric_max_limit = ?, " +
+                     "water_status = ?, water_max_limit = ? " +
                      "WHERE meter_id = ?";
         String updateInvoiceSql = 
             "UPDATE i SET " +
@@ -507,16 +487,12 @@ public class MeterReadingDAO extends BaseDAO {
                 ps.setInt(6, dto.getWaterUsage());
                 
                 ps.setString(7, dto.getElectricStatus() != null ? dto.getElectricStatus() : "NORMAL");
-                if (dto.getElectricOldFinal() != null) ps.setInt(8, dto.getElectricOldFinal()); else ps.setNull(8, Types.INTEGER);
-                if (dto.getElectricNewStart() != null) ps.setInt(9, dto.getElectricNewStart()); else ps.setNull(9, Types.INTEGER);
-                if (dto.getElectricMaxLimit() != null) ps.setInt(10, dto.getElectricMaxLimit()); else ps.setNull(10, Types.INTEGER);
+                if (dto.getElectricMaxLimit() != null) ps.setInt(8, dto.getElectricMaxLimit()); else ps.setNull(8, Types.INTEGER);
                 
-                ps.setString(11, dto.getWaterStatus() != null ? dto.getWaterStatus() : "NORMAL");
-                if (dto.getWaterOldFinal() != null) ps.setInt(12, dto.getWaterOldFinal()); else ps.setNull(12, Types.INTEGER);
-                if (dto.getWaterNewStart() != null) ps.setInt(13, dto.getWaterNewStart()); else ps.setNull(13, Types.INTEGER);
-                if (dto.getWaterMaxLimit() != null) ps.setInt(14, dto.getWaterMaxLimit()); else ps.setNull(14, Types.INTEGER);
+                ps.setString(9, dto.getWaterStatus() != null ? dto.getWaterStatus() : "NORMAL");
+                if (dto.getWaterMaxLimit() != null) ps.setInt(10, dto.getWaterMaxLimit()); else ps.setNull(10, Types.INTEGER);
                 
-                ps.setInt(15, dto.getMeterId());
+                ps.setInt(11, dto.getMeterId());
                 updated = ps.executeUpdate() > 0;
             }
             if (updated) {

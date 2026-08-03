@@ -21,14 +21,10 @@ public class MeterStatusDTO {
 
     // Metadata fields for Rollover and Replaced meters
     private String electricStatus;
-    private Integer electricOldFinal;
-    private Integer electricNewStart;
     private Integer electricMaxLimit;
     private Integer electricUsage;
 
     private String waterStatus;
-    private Integer waterOldFinal;
-    private Integer waterNewStart;
     private Integer waterMaxLimit;
     private Integer waterUsage;
     public MeterStatusDTO() {}
@@ -169,22 +165,6 @@ public class MeterStatusDTO {
         this.electricStatus = electricStatus;
     }
 
-    public Integer getElectricOldFinal() {
-        return electricOldFinal;
-    }
-
-    public void setElectricOldFinal(Integer electricOldFinal) {
-        this.electricOldFinal = electricOldFinal;
-    }
-
-    public Integer getElectricNewStart() {
-        return electricNewStart;
-    }
-
-    public void setElectricNewStart(Integer electricNewStart) {
-        this.electricNewStart = electricNewStart;
-    }
-
     public Integer getElectricMaxLimit() {
         return electricMaxLimit;
     }
@@ -207,22 +187,6 @@ public class MeterStatusDTO {
 
     public void setWaterStatus(String waterStatus) {
         this.waterStatus = waterStatus;
-    }
-
-    public Integer getWaterOldFinal() {
-        return waterOldFinal;
-    }
-
-    public void setWaterOldFinal(Integer waterOldFinal) {
-        this.waterOldFinal = waterOldFinal;
-    }
-
-    public Integer getWaterNewStart() {
-        return waterNewStart;
-    }
-
-    public void setWaterNewStart(Integer waterNewStart) {
-        this.waterNewStart = waterNewStart;
     }
 
     public Integer getWaterMaxLimit() {

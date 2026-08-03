@@ -85,39 +85,23 @@
                                 <label class="d-block mb-2" style="font-size: 14px; font-weight: 500; color: var(--color-ink);">
                                     ${empty meterId ? 'Số điện mới (kWh)' : 'Sửa thành số điện (kWh)'} <span class="text-danger">*</span>
                                 </label>
-                                <input type="number" id="newElectric" name="newElectric" class="mintlify-text-input shadow-sm" required min="0"
-                                       value="${currentElectricReading}" placeholder="${empty meterId ? 'Nhập số điện mới' : 'Sửa số điện'}">
+                                <input type="number" id="newElectric" name="newElectric" class="mintlify-text-input shadow-sm" required
+                                       min="0" max="99999" step="1"
+                                       value="${currentElectricReading}" placeholder="${empty meterId ? 'Nhập số điện mới (tối đa 5 chữ số)' : 'Sửa số điện (tối đa 5 chữ số)'}">
+                                <div id="electricWarning" class="text-danger small mt-1" style="display: none;">
+                                    <i class="fas fa-exclamation-circle"></i> Chỉ số điện không được vượt quá 99999 (tối đa 5 chữ số).
+                                </div>
                             </div>
                             
                             <div class="col-12" id="electricStatusBlock">
                                 <div class="p-3 bg-light rounded border mb-3">
-                                    <h6 class="mb-3" style="font-weight: 600; color: var(--color-ink);">Trường hợp bất thường (Nếu có)</h6>
-                                    <div class="row">
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label">Nguyên nhân bất thường <span class="text-danger">*</span></label>
-                                            <select name="electricStatus" id="electricStatus" class="form-select" onchange="toggleAnomalyFields('electric')">
-                                                <option value="NORMAL">-- Chọn lý do --</option>
-                                                <option value="REPLACED" ${electricStatus == 'REPLACED' ? 'selected' : ''}>Thay công tơ điện mới</option>
-                                                <option value="ROLLOVER" ${electricStatus == 'ROLLOVER' ? 'selected' : ''}>Công tơ chạy hết vòng (reset về 0)</option>
-                                            </select>
-                                        </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="electricStatus" id="electricStatus" value="ROLLOVER" ${electricStatus == 'ROLLOVER' ? 'checked' : ''}>
+                                        <label class="form-check-label fw-medium" for="electricStatus">
+                                            Công tơ điện chạy hết vòng (reset về 0)
+                                        </label>
                                     </div>
-                                    <div id="electricReplacedFields" style="display: none;" class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Số chốt cuối của công tơ cũ <span class="text-danger">*</span></label>
-                                            <input type="number" name="electricOldFinal" id="electricOldFinal" class="form-control" value="${electricOldFinal}">
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Số bắt đầu của công tơ mới <span class="text-danger">*</span></label>
-                                            <input type="number" name="electricNewStart" id="electricNewStart" class="form-control" value="${electricNewStart}">
-                                        </div>
-                                    </div>
-                                    <div id="electricRolloverFields" style="display: none;" class="row">
-                                        <div class="col-md-12 mb-2">
-                                            <label class="form-label">Giới hạn tối đa của công tơ <span class="text-danger">*</span></label>
-                                            <input type="number" name="electricMaxLimit" id="electricMaxLimit" class="form-control" value="10000" readonly style="background-color: #e9ecef;">
-                                        </div>
-                                    </div>
+                                    <input type="hidden" name="electricMaxLimit" value="100000">
                                 </div>
                             </div>
 
@@ -166,39 +150,23 @@
                                 <label class="d-block mb-2" style="font-size: 14px; font-weight: 500; color: var(--color-ink);">
                                     ${empty meterId ? 'Số nước mới (m³)' : 'Sửa thành số nước (m³)'} <span class="text-danger">*</span>
                                 </label>
-                                <input type="number" id="newWater" name="newWater" class="mintlify-text-input shadow-sm" required min="0"
-                                       value="${currentWaterReading}" placeholder="${empty meterId ? 'Nhập số nước mới' : 'Sửa số nước'}">
+                                <input type="number" id="newWater" name="newWater" class="mintlify-text-input shadow-sm" required
+                                       min="0" max="99999" step="1"
+                                       value="${currentWaterReading}" placeholder="${empty meterId ? 'Nhập số nước mới (tối đa 5 chữ số)' : 'Sửa số nước (tối đa 5 chữ số)'}">
+                                <div id="waterWarning" class="text-danger small mt-1" style="display: none;">
+                                    <i class="fas fa-exclamation-circle"></i> Chỉ số nước không được vượt quá 99999 (tối đa 5 chữ số).
+                                </div>
                             </div>
 
                             <div class="col-12" id="waterStatusBlock">
                                 <div class="p-3 bg-light rounded border mb-3">
-                                    <h6 class="mb-3" style="font-weight: 600; color: var(--color-ink);">Trường hợp bất thường (Nếu có)</h6>
-                                    <div class="row">
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label">Nguyên nhân bất thường <span class="text-danger">*</span></label>
-                                            <select name="waterStatus" id="waterStatus" class="form-select" onchange="toggleAnomalyFields('water')">
-                                                <option value="NORMAL">-- Chọn lý do --</option>
-                                                <option value="REPLACED" ${waterStatus == 'REPLACED' ? 'selected' : ''}>Thay công tơ nước mới</option>
-                                                <option value="ROLLOVER" ${waterStatus == 'ROLLOVER' ? 'selected' : ''}>Công tơ chạy hết vòng (reset về 0)</option>
-                                            </select>
-                                        </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="waterStatus" id="waterStatus" value="ROLLOVER" ${waterStatus == 'ROLLOVER' ? 'checked' : ''}>
+                                        <label class="form-check-label fw-medium" for="waterStatus">
+                                            Công tơ nước chạy hết vòng (reset về 0)
+                                        </label>
                                     </div>
-                                    <div id="waterReplacedFields" style="display: none;" class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Số chốt cuối của công tơ cũ <span class="text-danger">*</span></label>
-                                            <input type="number" name="waterOldFinal" id="waterOldFinal" class="form-control" value="${waterOldFinal}">
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <label class="form-label">Số bắt đầu của công tơ mới <span class="text-danger">*</span></label>
-                                            <input type="number" name="waterNewStart" id="waterNewStart" class="form-control" value="${waterNewStart}">
-                                        </div>
-                                    </div>
-                                    <div id="waterRolloverFields" style="display: none;" class="row">
-                                        <div class="col-md-12 mb-2">
-                                            <label class="form-label">Giới hạn tối đa của công tơ <span class="text-danger">*</span></label>
-                                            <input type="number" name="waterMaxLimit" id="waterMaxLimit" class="form-control" value="10000" readonly style="background-color: #e9ecef;">
-                                        </div>
-                                    </div>
+                                    <input type="hidden" name="waterMaxLimit" value="100000">
                                 </div>
                             </div>
 
@@ -241,34 +209,37 @@
     <script>
         const prevWater = ${not empty previousWaterReading ? previousWaterReading : 0};
 
-        function toggleAnomalyFields(type) {
-            let status = document.getElementById(type + 'Status').value;
-            let replacedFields = document.getElementById(type + 'ReplacedFields');
-            let rolloverFields = document.getElementById(type + 'RolloverFields');
-            
-            if (status === 'REPLACED') {
-                replacedFields.style.display = 'flex';
-                rolloverFields.style.display = 'none';
-                document.getElementById(type + 'OldFinal').required = true;
-                document.getElementById(type + 'NewStart').required = true;
-            } else if (status === 'ROLLOVER') {
-                replacedFields.style.display = 'none';
-                rolloverFields.style.display = 'block';
-                document.getElementById(type + 'OldFinal').required = false;
-                document.getElementById(type + 'NewStart').required = false;
-            } else {
-                replacedFields.style.display = 'none';
-                rolloverFields.style.display = 'none';
-                document.getElementById(type + 'OldFinal').required = false;
-                document.getElementById(type + 'NewStart').required = false;
-            }
-        }
 
-        // Initialize on load (for edit form)
-        window.addEventListener('DOMContentLoaded', () => {
-            toggleAnomalyFields('electric');
-            toggleAnomalyFields('water');
-        });
-    </script>
+        // Hiển thị cảnh báo real-time khi nhập sai
+    document.getElementById('newElectric').addEventListener('input', function() {
+        if (this.value.includes('.') || this.value.includes(',')) {
+            alert('Chỉ số không được chứa số thập phân.');
+            this.value = this.value.replace(/[.,]/g, '');
+        }
+        var val = parseInt(this.value, 10);
+        if (val < 0) {
+            alert('Chỉ số không được là số âm.');
+            this.value = '';
+        } else if (val > 99999) {
+            alert('Chỉ số điện không được vượt quá 99999 (tối đa 5 chữ số).');
+            this.value = 99999;
+        }
+    });
+
+    document.getElementById('newWater').addEventListener('input', function() {
+        if (this.value.includes('.') || this.value.includes(',')) {
+            alert('Chỉ số không được chứa số thập phân.');
+            this.value = this.value.replace(/[.,]/g, '');
+        }
+        var val = parseInt(this.value, 10);
+        if (val < 0) {
+            alert('Chỉ số không được là số âm.');
+            this.value = '';
+        } else if (val > 99999) {
+            alert('Chỉ số nước không được vượt quá 99999 (tối đa 5 chữ số).');
+            this.value = 99999;
+        }
+    });
+</script>
 </body>
 </html>
