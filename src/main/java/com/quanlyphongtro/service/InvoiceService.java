@@ -14,9 +14,12 @@ import com.quanlyphongtro.dto.RoomDTO;
 public interface InvoiceService {
     // Methods for Tenant/Room
     List<Invoice> getInvoicesByRoomId(int roomId);
+    List<Invoice> getInvoicesByRoomId(int roomId, int tenantId);
     Optional<Invoice> getInvoiceById(int invoiceId, int roomId);
     BigDecimal getUnpaidTotal(int roomId);
+    BigDecimal getUnpaidTotal(int roomId, int tenantId);
     Optional<Invoice> getCurrentInvoice(int roomId);
+    Optional<Invoice> getCurrentInvoice(int roomId, int tenantId);
     
     // Methods for Manager
     List<RoomDTO> getAvailableRoomsForInvoice(int managerId, String billingPeriod) throws Exception;

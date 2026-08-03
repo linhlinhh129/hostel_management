@@ -320,8 +320,8 @@ public class InvoiceDAO extends BaseDAO {
         return i;
     }
 
-    public List<Invoice> findByRoomId(int roomId) {
-        String sql = "SELECT i.*, " +
+    public List<Invoice> findByRoomId(int roomId, int tenantId) {
+        StringBuilder sql = new StringBuilder("SELECT i.*, " +
                 "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, mr.status AS meter_status, "
                 +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
@@ -333,21 +333,31 @@ public class InvoiceDAO extends BaseDAO {
                 +
                 "FROM invoices i " +
                 "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
-                "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
-                "ORDER BY i.created_at DESC";
+                "WHERE i.room_id = ? AND i.deleted_at IS NULL ");
+        if (tenantId > 0) {
+            sql.append("AND i.tenant_id = ? ");
+        }
+        sql.append("ORDER BY i.created_at DESC");
         List<Invoice> list = new ArrayList<>();
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             ps.setInt(1, roomId);
+            if (tenantId > 0) {
+                ps.setInt(2, tenantId);
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapRow(rs));
                 }
             }
         } catch (Exception e) {
-            logger.error("findByRoomId failed for roomId={}", roomId, e);
+            logger.error("findByRoomId failed for roomId={}, tenantId={}", roomId, tenantId, e);
         }
         return list;
+    }
+
+    public List<Invoice> findByRoomId(int roomId) {
+        return findByRoomId(roomId, 0);
     }
 
     public Optional<Invoice> findByIdAndRoomId(int id, int roomId) {
@@ -379,16 +389,22 @@ public class InvoiceDAO extends BaseDAO {
         return Optional.empty();
     }
 
-    public BigDecimal getUnpaidTotalByRoomId(int roomId) {
+    public BigDecimal getUnpaidTotalByRoomId(int roomId, int tenantId) {
         // Lấy tổng base amount + tính lateFee theo từng hóa đơn chưa thanh toán
-        String sql = "SELECT total_amount, room_fee, due_date, " +
+        StringBuilder sql = new StringBuilder("SELECT total_amount, room_fee, due_date, " +
                 "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = invoices.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
                 +
                 "FROM invoices " +
-                "WHERE room_id = ? AND status != 'PAID' AND deleted_at IS NULL";
+                "WHERE room_id = ? AND status != 'PAID' AND deleted_at IS NULL ");
+        if (tenantId > 0) {
+            sql.append("AND tenant_id = ? ");
+        }
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             ps.setInt(1, roomId);
+            if (tenantId > 0) {
+                ps.setInt(2, tenantId);
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 BigDecimal total = BigDecimal.ZERO;
                 LocalDate today = LocalDate.now();
@@ -421,13 +437,17 @@ public class InvoiceDAO extends BaseDAO {
                 return total;
             }
         } catch (Exception e) {
-            logger.error("getUnpaidTotalByRoomId failed for roomId={}", roomId, e);
+            logger.error("getUnpaidTotalByRoomId failed for roomId={}, tenantId={}", roomId, tenantId, e);
         }
         return BigDecimal.ZERO;
     }
 
-    public Optional<Invoice> getCurrentInvoiceByRoomId(int roomId) {
-        String sql = "SELECT TOP 1 i.*, " +
+    public BigDecimal getUnpaidTotalByRoomId(int roomId) {
+        return getUnpaidTotalByRoomId(roomId, 0);
+    }
+
+    public Optional<Invoice> getCurrentInvoiceByRoomId(int roomId, int tenantId) {
+        StringBuilder sql = new StringBuilder("SELECT TOP 1 i.*, " +
                 "  mr.electric AS new_electric, mr.water AS new_water, mr.electric_usage AS db_electric_usage, mr.water_usage AS db_water_usage, "
                 +
                 "  COALESCE((SELECT TOP 1 electric FROM meter_readings mr2 WHERE mr2.room_id = i.room_id AND mr2.reading_date < mr.reading_date ORDER BY mr2.reading_date DESC), 0) AS old_electric, "
@@ -439,20 +459,30 @@ public class InvoiceDAO extends BaseDAO {
                 +
                 "FROM invoices i " +
                 "LEFT JOIN meter_readings mr ON i.meter_id = mr.meter_id " +
-                "WHERE i.room_id = ? AND i.deleted_at IS NULL " +
-                "ORDER BY i.created_at DESC";
+                "WHERE i.room_id = ? AND i.deleted_at IS NULL ");
+        if (tenantId > 0) {
+            sql.append("AND i.tenant_id = ? ");
+        }
+        sql.append("ORDER BY i.created_at DESC");
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             ps.setInt(1, roomId);
+            if (tenantId > 0) {
+                ps.setInt(2, tenantId);
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));
                 }
             }
         } catch (Exception e) {
-            logger.error("getCurrentInvoiceByRoomId failed for roomId={}", roomId, e);
+            logger.error("getCurrentInvoiceByRoomId failed for roomId={}, tenantId={}", roomId, tenantId, e);
         }
         return Optional.empty();
+    }
+
+    public Optional<Invoice> getCurrentInvoiceByRoomId(int roomId) {
+        return getCurrentInvoiceByRoomId(roomId, 0);
     }
 
     public boolean updateStatus(int invoiceId, String status) {

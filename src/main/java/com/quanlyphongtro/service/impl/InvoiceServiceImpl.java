@@ -43,6 +43,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public List<Invoice> getInvoicesByRoomId(int roomId, int tenantId) {
+        return invoiceDAO.findByRoomId(roomId, tenantId);
+    }
+
+    @Override
     public Optional<Invoice> getInvoiceById(int invoiceId, int roomId) {
         return invoiceDAO.findByIdAndRoomId(invoiceId, roomId);
     }
@@ -53,8 +58,18 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public BigDecimal getUnpaidTotal(int roomId, int tenantId) {
+        return invoiceDAO.getUnpaidTotalByRoomId(roomId, tenantId);
+    }
+
+    @Override
     public Optional<Invoice> getCurrentInvoice(int roomId) {
         return invoiceDAO.getCurrentInvoiceByRoomId(roomId);
+    }
+
+    @Override
+    public Optional<Invoice> getCurrentInvoice(int roomId, int tenantId) {
+        return invoiceDAO.getCurrentInvoiceByRoomId(roomId, tenantId);
     }
 
     @Override
