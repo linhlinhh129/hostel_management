@@ -25,7 +25,8 @@
 ### Task 1.3: Controller Routing (4 points)
 - [x] Implement `ManagerDashboardServlet.java` mapping `/manager/dashboard`
 - [x] Extract active manager session and query stats
-- [x] Set request attributes matching the names expected by the frontend JSP
+- [x] Integrate `contractService.countExpiringContracts(managerId)` for counting contracts expiring within 30 days
+- [x] Set request attributes matching the names expected by the frontend JSP (`expiringContractsCount`)
 
 ---
 

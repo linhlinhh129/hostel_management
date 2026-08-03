@@ -58,7 +58,7 @@ WHEN Manager unlocks locked tenant account THE SYSTEM SHALL set status to `ACTIV
 
 ### **Kết thúc thuê phòng**
 
-WHEN Manager ends rental for an active tenant with valid end date THE SYSTEM SHALL set status to `INACTIVE` AND set room `tenant_id = NULL` to free the room.
+WHEN Manager confirms end rental for an active tenant THE SYSTEM SHALL set user status to `INACTIVE`, set room `tenant_id = NULL` and status to `AVAILABLE` to free the room, AND automatically update the contract actual end date to current date (`CAST(GETDATE() AS DATE)`).
 
 ---
 
@@ -109,7 +109,6 @@ WHEN Manager ends rental for an active tenant with valid end date THE SYSTEM SHA
 | Cố tình truy cập trang tạo mới người thuê | Redirect về `/manager/contracts` kèm thông báo báo lỗi |
 | Cập nhật trùng lặp email hoặc CCCD | Gán `error` message vào Session và redirect về trang chi tiết |
 | Số điện thoại (SĐT) hoặc CCCD sai định dạng | Gán `error` message và redirect về trang chi tiết |
-| Ngày trả phòng trước ngày ký hợp đồng | Gán `error` message và redirect về trang chi tiết |
 | Thao tác cư dân ngoài cơ sở quản lý | Trả về lỗi `403 Forbidden` |
 
 ---

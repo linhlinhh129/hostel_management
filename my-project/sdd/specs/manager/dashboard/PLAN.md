@@ -43,6 +43,9 @@ Tính năng Dashboard cho Ban quản lý cung cấp màn hình chính khi Manage
 - **Monthly Revenue:** Sums up `total_amount` of invoices with status `'PAID'` created in the current month (`MONTH(created_at) = MONTH(GETDATE())`).
 - **Total Outstanding:** Sums up `total_amount` of invoices with status `'UNPAID'` or `'OVERDUE'`.
 
+### Expiring Contracts Calculation
+- Calls `ContractService.countExpiringContracts(managerId)` to query active contracts ending within the next 30 days (`c.end_date <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) AND c.end_date >= CAST(GETDATE() AS DATE)`). Renders clickable KPI card linking to `/manager/contracts?expiryStatus=expiring`.
+
 ### Ticket Aggregation
 - Maps DB statuses (`PENDING`, `NEW`, `RECEIVED`, `ASSIGNED`, `IN_PROGRESS`, `DONE`, `REJECTED`) into 4 main categories displayed on the Dashboard dashboard metrics card.
 

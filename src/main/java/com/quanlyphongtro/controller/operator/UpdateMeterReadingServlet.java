@@ -194,13 +194,13 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             if ("NORMAL".equals(electricStatus) && newElectric < prevElectric) {
                 session.setAttribute("flashMessage", "Chỉ số điện không hợp lệ. Số mới (" + newElectric + ") không được nhỏ hơn số cũ (" + prevElectric + ").");
                 session.setAttribute("flashType", "error");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                redirectToUpdatePage(request, response, meterIdStr, roomCode);
                 return;
             }
             if ("NORMAL".equals(waterStatus) && newWater < prevWater) {
                 session.setAttribute("flashMessage", "Chỉ số nước không hợp lệ. Số mới (" + newWater + ") không được nhỏ hơn số cũ (" + prevWater + ").");
                 session.setAttribute("flashType", "error");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                redirectToUpdatePage(request, response, meterIdStr, roomCode);
                 return;
             }
 
@@ -212,13 +212,13 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                 if (electricPart == null || electricPart.getSize() == 0) {
                     session.setAttribute("flashMessage", "Vui lòng tải lên ảnh minh chứng công tơ điện.");
                     session.setAttribute("flashType", "error");
-                    response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                    redirectToUpdatePage(request, response, meterIdStr, roomCode);
                     return;
                 }
                 if (waterPart == null || waterPart.getSize() == 0) {
                     session.setAttribute("flashMessage", "Vui lòng tải lên ảnh minh chứng công tơ nước.");
                     session.setAttribute("flashType", "error");
-                    response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                    redirectToUpdatePage(request, response, meterIdStr, roomCode);
                     return;
                 }
             }
@@ -278,18 +278,28 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             } else {
                 session.setAttribute("flashMessage", "Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng thử lại.");
                 session.setAttribute("flashType", "error");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                redirectToUpdatePage(request, response, meterIdStr, roomCode);
             }
 
         } catch (NumberFormatException e) {
             session.setAttribute("flashMessage", "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.");
             session.setAttribute("flashType", "error");
-            response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+            redirectToUpdatePage(request, response, request.getParameter("meterId"), request.getParameter("roomCode"));
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("flashMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
             session.setAttribute("flashType", "error");
-            response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+            redirectToUpdatePage(request, response, request.getParameter("meterId"), request.getParameter("roomCode"));
+        }
+    }
+
+    private void redirectToUpdatePage(HttpServletRequest request, HttpServletResponse response, String meterIdStr, String roomCode) throws IOException {
+        if (meterIdStr != null && !meterIdStr.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?meterId=" + meterIdStr.trim());
+        } else if (roomCode != null && !roomCode.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode.trim());
+        } else {
+            response.sendRedirect(request.getContextPath() + "/operator/meter-readings/update");
         }
     }
 

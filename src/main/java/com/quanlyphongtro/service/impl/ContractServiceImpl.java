@@ -217,17 +217,17 @@ public class ContractServiceImpl implements ContractService {
             throw new IllegalArgumentException("Số CCCD không hợp lệ (phải gồm 12 chữ số).");
         }
 
-        String username = email.trim();
+        String idNum = identityNumber.trim();
         PersonnelDAO personnelDAO = new PersonnelDAO();
-        Integer existingUserId = contractDAO.getUserIdByUsername(username);
+        Integer existingUserId = contractDAO.getUserIdByIdentityNumber(idNum);
 
         if (personnelDAO.existsByPhone(phone.trim(), existingUserId)) {
             throw new IllegalArgumentException(
                     "Số điện thoại '" + phone.trim() + "' đã được sử dụng bởi tài khoản khác.");
         }
-        if (personnelDAO.existsByIdentityNumber(identityNumber.trim(), existingUserId)) {
+        if (personnelDAO.existsByEmail(email.trim(), existingUserId)) {
             throw new IllegalArgumentException(
-                    "Số CMND/CCCD '" + identityNumber.trim() + "' đã được sử dụng bởi tài khoản khác.");
+                    "Email '" + email.trim() + "' đã được sử dụng bởi tài khoản khác.");
         }
 
         String plainPassword = PasswordUtil.generateTempPassword();
@@ -241,7 +241,7 @@ public class ContractServiceImpl implements ContractService {
                 ? LocalDate.parse(contractStartDateStr)
                 : LocalDate.now();
 
-        Map<String, Object> existingUser = contractDAO.getUserRoleAndIdentityByUsername(username);
+        Map<String, Object> existingUser = contractDAO.getUserRoleAndIdentityByIdentityNumber(idNum);
         boolean userExists = false;
         int userId = 0;
 
@@ -249,14 +249,14 @@ public class ContractServiceImpl implements ContractService {
             userId = (Integer) existingUser.get("id");
             String existingRole = (String) existingUser.get("role");
             if (!"TENANT".equals(existingRole)) {
-                throw new IllegalArgumentException("Email/Tên đăng nhập đã tồn tại trong hệ thống với vai trò khác.");
+                throw new IllegalArgumentException("Số CMND/CCCD đã tồn tại trong hệ thống với vai trò khác.");
             }
 
             // Check active checks
             int activeCount = contractDAO.countActiveChecksForUser(userId);
             if (activeCount > 0) {
                 throw new IllegalArgumentException(
-                        "Email/Tên đăng nhập đã tồn tại trong hệ thống và đang hoạt động ở phòng/cơ sở khác.");
+                        "Số CMND/CCCD đã tồn tại trong hệ thống và đang hoạt động ở phòng/cơ sở khác.");
             }
 
             if (!confirmReactivate) {
@@ -275,11 +275,11 @@ public class ContractServiceImpl implements ContractService {
         }
 
         // Send email asynchronously
-        EmailService.sendTempPassword(email.trim(), fullName.trim(), username, plainPassword, loginLink);
+        EmailService.sendTempPassword(email.trim(), fullName.trim(), email.trim(), plainPassword, loginLink);
 
         result.put("status", "SUCCESS");
         result.put("userExists", userExists);
-        Integer finalId = contractDAO.getUserIdByUsername(username);
+        Integer finalId = contractDAO.getUserIdByIdentityNumber(idNum);
         result.put("userId", finalId != null ? finalId : 0);
         return result;
     }

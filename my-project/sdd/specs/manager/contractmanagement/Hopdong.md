@@ -71,9 +71,9 @@ Tiền Internet: **[internet_fee] đ/người/tháng**
 
 Tiền dịch vụ: **[service_fee] đ/người/tháng**
 
-Bên B đặt cọc cho bên A số tiền là: **2.000.000 đ**
+Bên B đặt cọc cho bên A số tiền là: **[deposit_amount] đ** (bằng giá thuê phòng 01 tháng)
 
-Bằng chữ: **Hai triệu đồng chẵn**
+Bằng chữ: **[deposit_amount_in_words]**
 
 - Tiền cọc sẽ được hoàn trả đầy đủ cho bên thuê khi hợp đồng này kết thúc và bên thuê hoàn trả đầy đủ chi phí thuê, bao gồm tiền phòng, điện, nước, phí dịch vụ và các chi phí khác liên quan.
 

@@ -375,26 +375,6 @@ public class ManagerTenantsServlet extends BaseServlet {
             return;
         }
 
-        String endDateStr = req.getParameter("endDate");
-        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
-            try {
-                LocalDate endDate = LocalDate.parse(endDateStr.trim());
-                Optional<Room> roomOpt = tenantService.getTenantRoom(tenantId);
-                if (roomOpt.isPresent() && roomOpt.get().getContractStartDate() != null) {
-                    LocalDate startDate = roomOpt.get().getContractStartDate();
-                    if (endDate.isBefore(startDate)) {
-                        setFlashMessage(req, "danger", "Ngày kết thúc thuê không thể trước ngày bắt đầu hợp đồng (" + startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
-                        resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
-                        return;
-                    }
-                }
-            } catch (Exception e) {
-                setFlashMessage(req, "danger", "Ngày kết thúc thuê không đúng định dạng (yyyy-MM-dd).");
-                resp.sendRedirect(req.getContextPath() + "/manager/tenants/" + tenantId);
-                return;
-            }
-        }
-
         boolean success = tenantService.endRental(tenantId);
         if (success) {
             try {

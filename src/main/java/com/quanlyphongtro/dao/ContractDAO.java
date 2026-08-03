@@ -65,7 +65,8 @@ public class ContractDAO extends BaseDAO {
         if (expiryStatus != null && !expiryStatus.trim().isEmpty()) {
             String st = expiryStatus.trim().toLowerCase();
             if ("expiring".equals(st)) {
-                sql.append(" AND c.status = 'ACTIVE' AND c.end_date <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) AND c.end_date >= CAST(GETDATE() AS DATE) ");
+                sql.append(
+                        " AND c.status = 'ACTIVE' AND c.end_date <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) AND c.end_date >= CAST(GETDATE() AS DATE) ");
             } else if ("overdue".equals(st)) {
                 sql.append(" AND c.status = 'ACTIVE' AND c.end_date < CAST(GETDATE() AS DATE) ");
             } else if ("active".equals(st)) {
@@ -429,6 +430,21 @@ public class ContractDAO extends BaseDAO {
         return null;
     }
 
+    public Integer getUserIdByIdentityNumber(String identityNumber) {
+        String sql = "SELECT user_id FROM dbo.users WHERE identity_number = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, identityNumber);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next())
+                    return rs.getInt("user_id");
+            }
+        } catch (Exception e) {
+            logger.error("getUserIdByIdentityNumber failed", e);
+        }
+        return null;
+    }
+
     public Map<String, Object> getUserRoleAndIdentityByUsername(String username) {
         Map<String, Object> user = null;
         String sql = "SELECT user_id, role, full_name, identity_number FROM dbo.users WHERE username = ? AND deleted_at IS NULL";
@@ -450,13 +466,34 @@ public class ContractDAO extends BaseDAO {
         return user;
     }
 
+    public Map<String, Object> getUserRoleAndIdentityByIdentityNumber(String identityNumber) {
+        Map<String, Object> user = null;
+        String sql = "SELECT user_id, role, full_name, identity_number, email FROM dbo.users WHERE identity_number = ? AND deleted_at IS NULL";
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, identityNumber);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    user = new HashMap<>();
+                    user.put("id", rs.getInt("user_id"));
+                    user.put("role", rs.getString("role"));
+                    user.put("fullName", rs.getString("full_name"));
+                    user.put("identityNumber", rs.getString("identity_number"));
+                    user.put("email", rs.getString("email"));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("getUserRoleAndIdentityByIdentityNumber failed", e);
+        }
+        return user;
+    }
+
     public int countActiveChecksForUser(int userId) {
         String activeCheckSql = "SELECT COUNT(*) FROM (" +
-                "SELECT contract_id FROM dbo.contracts WHERE tenant_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL "
-                +
-                "UNION ALL " +
+                "SELECT contract_id FROM dbo.contracts WHERE tenant_id = ? AND status = 'ACTIVE' AND deleted_at IS NULL " +
+                "UNION " +
                 "SELECT room_id FROM dbo.rooms WHERE tenant_id = ? AND deleted_at IS NULL" +
-                ") active_checks";
+                ") AS active_checks";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(activeCheckSql)) {
             ps.setInt(1, userId);
@@ -466,7 +503,7 @@ public class ContractDAO extends BaseDAO {
                     return rs.getInt(1);
             }
         } catch (Exception e) {
-            logger.error("countActiveChecksForUser failed", e);
+            logger.error("countActiveChecksForUser failed for userId={}", userId, e);
         }
         return 0;
     }
@@ -554,36 +591,52 @@ public class ContractDAO extends BaseDAO {
                 try {
                     conn.setAutoCommit(true);
                     conn.close();
-                } catch (Exception ignored) {
+                } catch (SQLException ignored) {
                 }
             }
         }
     }
 
     public Map<String, String> verifyContractForDelete(int contractId, int managerId) {
-        String checkSql = "SELECT status, code FROM dbo.contracts WHERE contract_id = ? AND created_by = ? AND deleted_at IS NULL";
+        Map<String, String> result = new HashMap<>();
+        String sql = "SELECT c.contract_id, c.code, c.status AS contract_status, " +
+                "r.room_id, r.code AS room_code, " +
+                "f.facility_id, f.name AS facility_name, f.manager_id " +
+                "FROM dbo.contracts c " +
+                "INNER JOIN dbo.rooms r ON c.room_id = r.room_id " +
+                "INNER JOIN dbo.facilities f ON r.facility_id = f.facility_id " +
+                "WHERE c.contract_id = ? AND c.deleted_at IS NULL";
+
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, contractId);
-            ps.setInt(2, managerId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Map<String, String> res = new HashMap<>();
-                    res.put("status", rs.getString("status"));
-                    res.put("code", rs.getString("code"));
-                    return res;
+                    int facilityManagerId = rs.getInt("manager_id");
+                    if (facilityManagerId != managerId) {
+                        result.put("status", "FORBIDDEN");
+                        result.put("message", "Bạn không có quyền xóa hợp đồng này.");
+                        return result;
+                    }
+                    result.put("status", "OK");
+                    result.put("contractCode", rs.getString("code"));
+                    result.put("roomCode", rs.getString("room_code"));
+                    result.put("contractStatus", rs.getString("contract_status"));
+                    return result;
                 }
             }
         } catch (Exception e) {
-            logger.error("verifyContractForDelete failed", e);
+            logger.error("verifyContractForDelete failed for contractId={}", contractId, e);
         }
-        return null;
+        result.put("status", "NOT_FOUND");
+        result.put("message", "Hợp đồng không tồn tại.");
+        return result;
     }
 
     public boolean softDeleteContract(int contractId) {
-        String deleteSql = "UPDATE dbo.contracts SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
+        String sql = "UPDATE dbo.contracts SET deleted_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, contractId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {

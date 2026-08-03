@@ -444,8 +444,8 @@ public class UserDAO extends BaseDAO {
                 ps.executeUpdate();
             }
 
-            // 3. Chuyển trạng thái Hợp đồng hiện tại thành INACTIVE
-            String sqlContract = "UPDATE dbo.contracts SET status = 'INACTIVE', updated_at = GETDATE() WHERE tenant_id = ? AND status = 'ACTIVE'";
+            // 3. Chuyển trạng thái Hợp đồng hiện tại thành INACTIVE và cập nhật end_date thành ngày hôm nay
+            String sqlContract = "UPDATE dbo.contracts SET status = 'INACTIVE', end_date = CAST(GETDATE() AS DATE), updated_at = GETDATE() WHERE tenant_id = ? AND status = 'ACTIVE'";
             try (PreparedStatement ps = conn.prepareStatement(sqlContract)) {
                 ps.setInt(1, tenantId);
                 ps.executeUpdate();

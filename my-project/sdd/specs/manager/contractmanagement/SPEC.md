@@ -425,13 +425,13 @@ Các trạng thái hợp đồng hợp lệ gồm:
 
 KHI Ban quản lý chọn chức năng Tạo tài khoản người thuê từ màn hình chi tiết hợp đồng, THE SYSTEM SHALL hiển thị form điền thông tin người thuê (kế thừa các thông tin có sẵn từ hợp đồng).
 
-KHI Ban quản lý submit form hợp lệ, THE SYSTEM SHALL kiểm tra tài khoản đã tồn tại hay chưa dựa trên Email, SĐT và CCCD.
+KHI Ban quản lý submit form hợp lệ, THE SYSTEM SHALL kiểm tra tài khoản người thuê cũ đã từng tồn tại trên hệ thống hay chưa dựa trên Số CMND/CCCD (dãy số định danh cá nhân duy nhất). Đồng thời kiểm tra SĐT và Email để tránh trùng lặp với người dùng khác.
 
-KHI tài khoản chưa tồn tại, THE SYSTEM SHALL tạo tài khoản mới với role TENANT, sinh mật khẩu tạm thời và gửi qua email.
+KHI tài khoản người thuê cũ đã từng tồn tại (trạng thái INACTIVE), THE SYSTEM SHALL hiển thị hộp thoại xác nhận kích hoạt lại (Reactivate).
 
-KHI tài khoản đã tồn tại nhưng bị vô hiệu hóa, THE SYSTEM SHALL hiển thị hộp thoại xác nhận kích hoạt lại (Reactivate).
+KHI Ban quản lý xác nhận kích hoạt lại, THE SYSTEM SHALL chuyển trạng thái tài khoản cũ thành ACTIVE, tự động cập nhật Email/SĐT mới (nếu có), sinh mật khẩu tạm thời mới và gửi qua email.
 
-KHI quá trình thêm người thuê thành công, THE SYSTEM SHALL cập nhật `tenant_id` vào hợp đồng và ghi AuditLog.
+KHI quá trình thêm người thuê thành công, THE SYSTEM SHALL cập nhật `tenant_id` vào hợp đồng, chuyển trạng thái phòng thành OCCUPIED và ghi AuditLog.
 
 ## 3.10 Xóa hợp đồng
 

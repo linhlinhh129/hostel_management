@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
@@ -37,9 +37,9 @@
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                   <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
-                Cảnh báo: Phát hiện Email của Người thuê cũ
+                Cảnh báo: Phát hiện số CMND/CCCD của Người thuê cũ
               </h5>
-              <p class="mb-2" style="font-size: 0.875rem;">Email này trùng khớp với tài khoản người thuê cũ đã ngưng thuê trên hệ thống:</p>
+              <p class="mb-2" style="font-size: 0.875rem;">Số CMND/CCCD này trùng khớp với tài khoản người thuê cũ đã ngưng thuê trên hệ thống:</p>
               <ul class="mb-3" style="font-size: 0.875rem; padding-left: 20px;">
                 <li><strong>Họ tên cũ:</strong> <c:out value="${existingUserFullName}"/></li>
                 <li><strong>Số CMND/CCCD cũ:</strong> <c:out value="${existingUserIdentity}"/></li>
