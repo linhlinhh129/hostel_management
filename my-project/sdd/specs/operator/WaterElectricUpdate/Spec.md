@@ -118,10 +118,11 @@ Bên cạnh đó, tính năng này còn hỗ trợ xử lý nghiệp vụ **Thay
 
 **WHEN** người dùng chọn "Công tơ quay vòng"
 **THE SYSTEM SHALL**
-- Tự động gán giới hạn công tơ `maxLimit` = 10000 ở phía Backend để tránh bị thay đổi từ Frontend.
-- Validate: `Chỉ số tháng trước` < 10000.
-- Validate: `Chỉ số cuối tháng (số mới)` < 10000.
-- Lưu trữ thông tin giới hạn 10000 vào cơ sở dữ liệu.
+- Tự động gán giới hạn công tơ `maxLimit` = 100000 ở phía Backend để tránh bị thay đổi từ Frontend.
+- Validate: `Chỉ số tháng trước` < 100000.
+- Validate: `Chỉ số cuối tháng (số mới)` <= 99999 (tối đa 5 chữ số), và phải là số nguyên không âm (>=0, không chứa dấu thập phân).
+- **Trải nghiệm người dùng (UX)**: Khi người dùng cố gắng nhập số lớn hơn `99999`, hệ thống (Frontend JS) sẽ tự động giới hạn lại số thành `99999` và hiển thị cảnh báo đỏ ngay bên dưới ô nhập: *"Chỉ số điện không được vượt quá 99999 (tối đa 5 chữ số)."*. Nếu nhập số thập phân hoặc số âm, hệ thống sẽ cảnh báo *"Chỉ số không được chứa số thập phân hoặc số âm"*.
+- Lưu trữ thông tin giới hạn 100000 vào cơ sở dữ liệu.
 
 ### AC05 – Validation ảnh
 

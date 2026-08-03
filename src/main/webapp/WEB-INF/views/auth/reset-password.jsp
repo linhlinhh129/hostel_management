@@ -19,8 +19,7 @@
                     <jsp:include page="/WEB-INF/views/layout/inline_alerts.jsp"/>
                 </div>
 
-                <form action="${ctx}/reset-password" method="post" class="auth-stagger-3"
-                      onsubmit="return validatePasswords(event)">
+                <form action="${ctx}/reset-password" method="post" class="auth-stagger-3">
                     <input type="hidden" name="token"     value="<c:out value='${resetToken}'/>"/>
                     <input type="hidden" name="csrfToken" value="${csrfToken}"/>
 
@@ -70,9 +69,7 @@
                         </div>
                     </div>
 
-                    <div class="pw-strength-track pw-strength-track--spaced">
-                        <div id="bar" class="pw-strength-bar"></div>
-                    </div>
+
 
                     <button type="submit" id="submitBtn"
                             class="btn btn-mintlify-primary w-100 auth-submit-btn">
@@ -94,38 +91,6 @@
 </div>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
 <script>
-document.getElementById('newPassword').addEventListener('input', function () {
-    var pw = this.value, s = 0;
-    if (pw.length >= 8)          s++;
-    if (pw.length >= 12)         s++;
-    if (/[A-Z]/.test(pw))        s++;
-    if (/[0-9]/.test(pw))        s++;
-    if (/[^A-Za-z0-9]/.test(pw)) s++;
-    var b = document.getElementById('bar');
-    b.style.width      = (s * 20) + '%';
-    b.style.background = ['','#dc2626','#d97706','#d97706','#059669','#059669'][s] || '#dc2626';
-});
-
-document.getElementById('confirmPassword').addEventListener('input', function () {
-    var match = this.value === document.getElementById('newPassword').value;
-    this.style.borderColor = this.value
-        ? (match ? 'var(--hms-accent)' : 'var(--hms-danger)')
-        : '';
-});
-
-function validatePasswords(event) {
-    if (document.getElementById('newPassword').value !==
-        document.getElementById('confirmPassword').value) {
-        alert('X\u00E1c nh\u1EADn m\u1EADt kh\u1EA9u kh\u00F4ng kh\u1EDBp.');
-        event.preventDefault();
-        return false;
-    }
-    var btn = document.getElementById('submitBtn');
-    btn.disabled  = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> \u0110ang x\u1EED l\u00FD...';
-    return true;
-}
-
 function togglePasswordVisibility(inputId, btn) {
     var input   = document.getElementById(inputId);
     var isText  = input.type === 'text';

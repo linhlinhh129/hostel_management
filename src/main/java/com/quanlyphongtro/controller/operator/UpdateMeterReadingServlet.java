@@ -58,13 +58,9 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                     request.setAttribute("currentWaterImg", reading.getWaterImg());
                     
                     request.setAttribute("electricStatus", reading.getElectricStatus());
-                    request.setAttribute("electricOldFinal", reading.getElectricOldFinal());
-                    request.setAttribute("electricNewStart", reading.getElectricNewStart());
                     request.setAttribute("electricMaxLimit", reading.getElectricMaxLimit());
                     
                     request.setAttribute("waterStatus", reading.getWaterStatus());
-                    request.setAttribute("waterOldFinal", reading.getWaterOldFinal());
-                    request.setAttribute("waterNewStart", reading.getWaterNewStart());
                     request.setAttribute("waterMaxLimit", reading.getWaterMaxLimit());
                 }
             } catch (NumberFormatException e) {
@@ -100,9 +96,16 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             operatorId = currentUser.getId();
         }
 
+        String errorUrl = request.getContextPath() + "/operator/meter-readings";
         try {
             String meterIdStr = request.getParameter("meterId");
             String roomCode = request.getParameter("roomCode");
+
+            if (meterIdStr != null && !meterIdStr.trim().isEmpty()) {
+                errorUrl = request.getContextPath() + "/operator/meter-readings/update?meterId=" + meterIdStr;
+            } else if (roomCode != null && !roomCode.trim().isEmpty()) {
+                errorUrl = request.getContextPath() + "/operator/meter-readings/update?roomCode=" + roomCode;
+            }
 
             if ((roomCode == null || roomCode.trim().isEmpty()) && (meterIdStr == null || meterIdStr.trim().isEmpty())) {
                 session.setAttribute("flashMessage", "Dữ liệu đầu vào không hợp lệ.");
@@ -180,27 +183,36 @@ public class UpdateMeterReadingServlet extends HttpServlet {
 
             // Get metadata
             String electricStatus = request.getParameter("electricStatus") != null && !request.getParameter("electricStatus").isEmpty() ? request.getParameter("electricStatus") : "NORMAL";
-            Integer electricOldFinal = request.getParameter("electricOldFinal") != null && !request.getParameter("electricOldFinal").isEmpty() ? Integer.parseInt(request.getParameter("electricOldFinal")) : null;
-            Integer electricNewStart = request.getParameter("electricNewStart") != null && !request.getParameter("electricNewStart").isEmpty() ? Integer.parseInt(request.getParameter("electricNewStart")) : null;
             Integer electricMaxLimit = request.getParameter("electricMaxLimit") != null && !request.getParameter("electricMaxLimit").isEmpty() ? Integer.parseInt(request.getParameter("electricMaxLimit")) : null;
 
             String waterStatus = request.getParameter("waterStatus") != null && !request.getParameter("waterStatus").isEmpty() ? request.getParameter("waterStatus") : "NORMAL";
-            Integer waterOldFinal = request.getParameter("waterOldFinal") != null && !request.getParameter("waterOldFinal").isEmpty() ? Integer.parseInt(request.getParameter("waterOldFinal")) : null;
-            Integer waterNewStart = request.getParameter("waterNewStart") != null && !request.getParameter("waterNewStart").isEmpty() ? Integer.parseInt(request.getParameter("waterNewStart")) : null;
             Integer waterMaxLimit = request.getParameter("waterMaxLimit") != null && !request.getParameter("waterMaxLimit").isEmpty() ? Integer.parseInt(request.getParameter("waterMaxLimit")) : null;
 
+            // Basic range validation
+            if (newElectric < 0 || newElectric > 99999) {
+                session.setAttribute("flashMessage", "Chỉ số điện không hợp lệ. Số mới không được âm và tối đa là 99999 (tối đa 5 chữ số).");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(errorUrl);
+                return;
+            }
+            if (newWater < 0 || newWater > 99999) {
+                session.setAttribute("flashMessage", "Chỉ số nước không hợp lệ. Số mới không được âm và tối đa là 99999 (tối đa 5 chữ số).");
+                session.setAttribute("flashType", "error");
+                response.sendRedirect(errorUrl);
+                return;
+            }
 
             // Validation AC02, AC03
             if ("NORMAL".equals(electricStatus) && newElectric < prevElectric) {
                 session.setAttribute("flashMessage", "Chỉ số điện không hợp lệ. Số mới (" + newElectric + ") không được nhỏ hơn số cũ (" + prevElectric + ").");
                 session.setAttribute("flashType", "error");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                response.sendRedirect(errorUrl);
                 return;
             }
             if ("NORMAL".equals(waterStatus) && newWater < prevWater) {
                 session.setAttribute("flashMessage", "Chỉ số nước không hợp lệ. Số mới (" + newWater + ") không được nhỏ hơn số cũ (" + prevWater + ").");
                 session.setAttribute("flashType", "error");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                response.sendRedirect(errorUrl);
                 return;
             }
 
@@ -212,13 +224,13 @@ public class UpdateMeterReadingServlet extends HttpServlet {
                 if (electricPart == null || electricPart.getSize() == 0) {
                     session.setAttribute("flashMessage", "Vui lòng tải lên ảnh minh chứng công tơ điện.");
                     session.setAttribute("flashType", "error");
-                    response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                    response.sendRedirect(errorUrl);
                     return;
                 }
                 if (waterPart == null || waterPart.getSize() == 0) {
                     session.setAttribute("flashMessage", "Vui lòng tải lên ảnh minh chứng công tơ nước.");
                     session.setAttribute("flashType", "error");
-                    response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                    response.sendRedirect(errorUrl);
                     return;
                 }
             }
@@ -249,12 +261,8 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             dtoToSave.setElectricImg(electricImgUrl);
             dtoToSave.setWaterImg(waterImgUrl);
             dtoToSave.setElectricStatus(electricStatus);
-            dtoToSave.setElectricOldFinal(electricOldFinal);
-            dtoToSave.setElectricNewStart(electricNewStart);
             dtoToSave.setElectricMaxLimit(electricMaxLimit);
             dtoToSave.setWaterStatus(waterStatus);
-            dtoToSave.setWaterOldFinal(waterOldFinal);
-            dtoToSave.setWaterNewStart(waterNewStart);
             dtoToSave.setWaterMaxLimit(waterMaxLimit);
             dtoToSave.setPreviousElectricReading(prevElectric);
             dtoToSave.setPreviousWaterReading(prevWater);
@@ -278,18 +286,18 @@ public class UpdateMeterReadingServlet extends HttpServlet {
             } else {
                 session.setAttribute("flashMessage", "Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng thử lại.");
                 session.setAttribute("flashType", "error");
-                response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+                response.sendRedirect(errorUrl);
             }
 
         } catch (NumberFormatException e) {
-            session.setAttribute("flashMessage", "Dữ liệu nhập vào không hợp lệ. Vui lòng kiểm tra lại.");
+            session.setAttribute("flashMessage", "Dữ liệu nhập vào không hợp lệ. Chỉ số phải là số nguyên không âm (không chứa dấu thập phân).");
             session.setAttribute("flashType", "error");
-            response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+            response.sendRedirect(errorUrl);
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("flashMessage", "Đã xảy ra lỗi hệ thống: " + e.getMessage());
             session.setAttribute("flashType", "error");
-            response.sendRedirect(request.getContextPath() + "/operator/meter-readings");
+            response.sendRedirect(errorUrl);
         }
     }
 

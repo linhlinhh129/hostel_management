@@ -74,7 +74,7 @@
 - [x] T012 Run manual validation following `quickstart.md` scenarios
 - [x] T013 Update Links in `list.jsp` and `history.jsp` to point to the correct Update endpoint
 - [x] T014 Remove JS auto-detect logic in `update.jsp` and show status block by default.
-- [x] T015 Hardcode max limits to 10000 in frontend (`update.jsp`) and backend (`MeterReadingService.java`).
+- [x] T015 Hardcode max limits to 100000 in frontend (`update.jsp`) and backend (`MeterReadingService.java`).
 
 ---
 
