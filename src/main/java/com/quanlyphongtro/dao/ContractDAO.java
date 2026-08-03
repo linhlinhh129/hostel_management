@@ -511,10 +511,7 @@ public class ContractDAO extends BaseDAO {
     public boolean addTenantTransaction(boolean userExists, int userId, String passwordHash, String fullName,
             String phone, String identityNumber, LocalDate dob, String gender, String permanentAddress, String email,
             int roomId, LocalDate startDate, int contractId) {
-        String updUserSql = "UPDATE dbo.users SET status = 'ACTIVE', password_hash = ?, full_name = ?, phone = ?, " +
-                "identity_number = ?, dob = ?, gender = ?, permanent_address = ?, force_change_pass = 1, updated_at = GETDATE() "
-                +
-                "WHERE user_id = ?";
+        String updUserSql = "UPDATE dbo.users SET status = 'ACTIVE', updated_at = GETDATE() WHERE user_id = ?";
         String insUserSql = "INSERT INTO dbo.users (username, password_hash, role, full_name, email, phone, status, identity_number, dob, gender, permanent_address, force_change_pass, created_at, updated_at) "
                 +
                 "VALUES (?, ?, 'TENANT', ?, ?, ?, 'ACTIVE', ?, ?, ?, ?, 1, GETDATE(), GETDATE())";
@@ -529,14 +526,7 @@ public class ContractDAO extends BaseDAO {
             int finalUserId = userId;
             if (userExists) {
                 try (PreparedStatement ps = conn.prepareStatement(updUserSql)) {
-                    ps.setString(1, passwordHash);
-                    ps.setString(2, fullName.trim());
-                    ps.setString(3, phone.trim());
-                    ps.setString(4, identityNumber.trim());
-                    ps.setDate(5, dob != null ? Date.valueOf(dob) : null);
-                    ps.setString(6, gender);
-                    ps.setString(7, permanentAddress);
-                    ps.setInt(8, userId);
+                    ps.setInt(1, userId);
                     ps.executeUpdate();
                 }
             } else {

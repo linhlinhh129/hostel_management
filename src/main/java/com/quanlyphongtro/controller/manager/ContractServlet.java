@@ -449,12 +449,24 @@ public class ContractServlet extends BaseServlet {
                 return;
             }
 
-            String status = verification.get("status");
-            String code = verification.get("code");
+            String resStatus = verification.get("status");
+            if ("FORBIDDEN".equals(resStatus)) {
+                setFlashMessage(req, "error", verification.getOrDefault("message", "Bạn không có quyền xóa hợp đồng này."));
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts");
+                return;
+            }
+            if ("NOT_FOUND".equals(resStatus)) {
+                setFlashMessage(req, "error", verification.getOrDefault("message", "Hợp đồng không tồn tại."));
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts");
+                return;
+            }
 
-            if (!"INACTIVE".equals(status)) {
+            String contractStatus = verification.get("contractStatus");
+            String code = verification.get("contractCode");
+
+            if (!"INACTIVE".equals(contractStatus)) {
                 setFlashMessage(req, "error", "Chỉ được xóa hợp đồng khi trạng thái là INACTIVE.");
-                resp.sendRedirect(req.getContextPath() + "/manager/contracts/detail?id=" + contractId);
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts");
                 return;
             }
 
@@ -462,11 +474,11 @@ public class ContractServlet extends BaseServlet {
             if (success) {
                 try {
                     AuditLogHelper.log(auditLogDAO, req, "contracts", contractId, "DELETE", null,
-                            "Soft Delete contract: " + code, currentUser.getId());
+                            "Soft Delete contract: " + (code != null ? code : contractId), currentUser.getId());
                 } catch (Exception ex) {
                     logger.warn("AuditLog failed after contract delete", ex);
                 }
-                setFlashMessage(req, "success", "Xóa hợp đồng " + code + " thành công!");
+                setFlashMessage(req, "success", "Xóa hợp đồng " + (code != null ? code : "") + " thành công!");
             } else {
                 setFlashMessage(req, "error", "Xóa hợp đồng thất bại.");
             }

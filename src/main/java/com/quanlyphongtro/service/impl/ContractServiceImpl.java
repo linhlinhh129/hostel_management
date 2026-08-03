@@ -274,8 +274,10 @@ public class ContractServiceImpl implements ContractService {
             throw new Exception("Lỗi cập nhật cơ sở dữ liệu khi tạo tài khoản người thuê.");
         }
 
-        // Send email asynchronously
-        EmailService.sendTempPassword(email.trim(), fullName.trim(), email.trim(), plainPassword, loginLink);
+        // Send email asynchronously only for brand new tenant accounts
+        if (!userExists) {
+            EmailService.sendTempPassword(email.trim(), fullName.trim(), email.trim(), plainPassword, loginLink);
+        }
 
         result.put("status", "SUCCESS");
         result.put("userExists", userExists);
