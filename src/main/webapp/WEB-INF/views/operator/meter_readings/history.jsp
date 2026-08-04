@@ -110,8 +110,10 @@
                                                                     <c:choose>
                                                                         <c:when
                                                                             test="${not empty item.currentElectricReading}">
-                                                                            <span style="font-weight:600; color:var(--hms-ink)">
-                                                                                <c:out value="${item.currentElectricReading}" />
+                                                                            <span
+                                                                                style="font-weight:600; color:var(--hms-ink)">
+                                                                                <c:out
+                                                                                    value="${item.currentElectricReading}" />
                                                                             </span>
                                                                         </c:when>
                                                                         <c:otherwise>-</c:otherwise>
@@ -121,8 +123,10 @@
                                                                     <c:choose>
                                                                         <c:when
                                                                             test="${not empty item.currentWaterReading}">
-                                                                            <span style="font-weight:600; color:var(--hms-ink)">
-                                                                                <c:out value="${item.currentWaterReading}" />
+                                                                            <span
+                                                                                style="font-weight:600; color:var(--hms-ink)">
+                                                                                <c:out
+                                                                                    value="${item.currentWaterReading}" />
                                                                             </span>
                                                                         </c:when>
                                                                         <c:otherwise>-</c:otherwise>
@@ -154,12 +158,15 @@
                                                                     <c:if test="${item.status == 'DA_CAP_NHAT'}">
                                                                         <c:choose>
                                                                             <c:when test="${!item.editable}">
-                                                                                <span class="badge-hms badge-success" title="Không thể sửa (Hóa đơn đã thanh toán hoặc đã quá 5 ngày)" style="margin-right: 4px;">🔒 Đã khóa sửa</span>
+                                                                                <span class="badge-hms badge-success"
+                                                                                    title="Không thể sửa (Hóa đơn đã thanh toán hoặc đã quá 5 ngày)"
+                                                                                    style="margin-right: 4px;">🔒 Đã
+                                                                                    khóa sửa</span>
                                                                             </c:when>
                                                                             <c:otherwise>
                                                                                 <a href="${ctx}/operator/meter-readings/update?meterId=${item.meterId}"
-                                                                                   class="btn-mintlify-secondary text-decoration-none"
-                                                                                   style="padding:4px 12px; font-size:12px; margin-right: 4px;">Sửa</a>
+                                                                                    class="btn-mintlify-secondary text-decoration-none"
+                                                                                    style="padding:4px 12px; font-size:12px; margin-right: 4px;">Sửa</a>
                                                                             </c:otherwise>
                                                                         </c:choose>
                                                                         <button type="button"
@@ -218,11 +225,8 @@
                                                                 <span class="text-muted">Kỳ này:</span>
                                                                 <span class="fw-bold" id="modalCurrElectric"></span>
                                                             </div>
-                                                            <div id="modalElectricFormulaContainer" class="text-muted" style="display:none; font-size: 0.8rem; background: #fff; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--hms-border-soft);">
-                                                            </div>
-                                                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
-                                                                <span class="text-muted">Tiêu thụ:</span>
-                                                                <span class="fw-bold text-danger"><span id="modalConsumeElectric"></span> kWh</span>
+                                                            <div id="modalElectricFormulaContainer" class="text-muted"
+                                                                style="display:none; font-size: 0.8rem; background: #fff; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--hms-border-soft);">
                                                             </div>
                                                             <div class="mt-3 text-center">
                                                                 <img id="modalElectricImg" src="" alt="Ảnh công tơ điện"
@@ -244,11 +248,8 @@
                                                                 <span class="text-muted">Kỳ này:</span>
                                                                 <span class="fw-bold" id="modalCurrWater"></span>
                                                             </div>
-                                                            <div id="modalWaterFormulaContainer" class="text-muted" style="display:none; font-size: 0.8rem; background: #fff; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--hms-border-soft);">
-                                                            </div>
-                                                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
-                                                                <span class="text-muted">Tiêu thụ:</span>
-                                                                <span class="fw-bold text-primary"><span id="modalConsumeWater"></span> khối</span>
+                                                            <div id="modalWaterFormulaContainer" class="text-muted"
+                                                                style="display:none; font-size: 0.8rem; background: #fff; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--hms-border-soft);">
                                                             </div>
                                                             <div class="mt-3 text-center">
                                                                 <img id="modalWaterImg" src="" alt="Ảnh công tơ nước"
@@ -284,7 +285,7 @@
                         var currE = parseInt(btn.getAttribute('data-currelectric')) || 0;
                         var usageE = parseInt(btn.getAttribute('data-electricusage')) || 0;
                         var eStatus = btn.getAttribute('data-electricstatus');
-                        
+
                         var prevW = parseInt(btn.getAttribute('data-prevwater')) || 0;
                         var currW = parseInt(btn.getAttribute('data-currwater')) || 0;
                         var usageW = parseInt(btn.getAttribute('data-waterusage')) || 0;
@@ -296,15 +297,13 @@
                         document.getElementById('modalRoomCode').textContent = room;
                         document.getElementById('modalPrevElectric').textContent = prevE;
                         document.getElementById('modalCurrElectric').textContent = currE;
-                        document.getElementById('modalConsumeElectric').textContent = usageE;
                         document.getElementById('modalPrevWater').textContent = prevW;
                         document.getElementById('modalCurrWater').textContent = currW;
-                        document.getElementById('modalConsumeWater').textContent = usageW;
 
                         var eFC = document.getElementById('modalElectricFormulaContainer');
                         if (eStatus === 'ROLLOVER') {
                             eFC.style.display = 'block';
-                            eFC.innerHTML = '<strong>Trạng thái: Quay vòng công tơ</strong><br>Công thức tính tiêu thụ: <br><i>(10000 - Kỳ trước: ' + prevE + ') + Kỳ này: ' + currE + '</i>';
+                            eFC.innerHTML = '<strong>Trạng thái: Quay vòng công tơ</strong>';
                         } else {
                             eFC.style.display = 'none';
                         }
@@ -312,7 +311,7 @@
                         var wFC = document.getElementById('modalWaterFormulaContainer');
                         if (wStatus === 'ROLLOVER') {
                             wFC.style.display = 'block';
-                            wFC.innerHTML = '<strong>Trạng thái: Quay vòng công tơ</strong><br>Công thức tính tiêu thụ: <br><i>(10000 - Kỳ trước: ' + prevW + ') + Kỳ này: ' + currW + '</i>';
+                            wFC.innerHTML = '<strong>Trạng thái: Quay vòng công tơ</strong>';
                         } else {
                             wFC.style.display = 'none';
                         }

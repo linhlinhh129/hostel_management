@@ -1,16 +1,16 @@
-# Graph Report - hostel_management  (2026-07-28)
+# Graph Report - hostel_management  (2026-08-04)
 
 ## Corpus Check
-- 211 files · ~111,086 words
+- 206 files · ~108,513 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2928 nodes · 7365 edges · 135 communities (93 shown, 42 thin omitted)
-- Extraction: 72% EXTRACTED · 28% INFERRED · 0% AMBIGUOUS · INFERRED: 2077 edges (avg confidence: 0.8)
+- 2978 nodes · 7618 edges · 135 communities (92 shown, 43 thin omitted)
+- Extraction: 71% EXTRACTED · 29% INFERRED · 0% AMBIGUOUS · INFERRED: 2207 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b24a062a`
+- Built from commit: `e2509046`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -20,7 +20,7 @@
 - Invoice
 - Notification
 - Request
-- .getConnection
+- NotificationDAO
 - Contract
 - CommentDTO
 - DebtListItemDTO
@@ -29,38 +29,38 @@
 - RoomDetailDTO
 - CommunityPostDTO
 - Room
-- AdminRevenueServlet
+- ValidationException.java
 - PersonnelDAO
 - PaymentDetailDTO
-- RequestDAO
+- .getConnection
 - Facility
 - MeterReading
 - PaymentTransaction
 - AuditLog
 - Dependent
 - ServicePriceHistoryDTO
-- SystemRevenueDTO
+- .trim
 - InvoiceDetailDTO
 - InvoiceDAO
 - FacilityRevenueStatDTO
 - UserSessionDTO
-- ManagerRoomsServlet.java
-- Override
+- RoomService
+- TenantServiceImpl
 - RequestServiceImpl
-- CommunityPostServiceImpl.java
+- .doGet
 - PostComment
 - ContractService
 - PostInteractionService
 - MeterStatusDTO
 - AdminFacilityServlet
-- RevenueDAO
+- .doGet
 - InvoiceListItemDTO
-- .doFilter
+- PasswordUtil.java
 - AdminNotificationServlet
 - EmailConfigDTO
 - .sendError
-- NotFoundException.java
-- .trim
+- AdminAuditLogServlet
+- RequestService
 - HttpSession
 - ResetPasswordServlet.java
 - AdminDashboardServiceImpl
@@ -73,23 +73,22 @@
 - ServicePriceDTO
 - PageResult
 - PaymentServlet.java
-- ListElectricServlet.java
-- BaseServlet
+- PageDTO
+- .doGet
 - FacilityDAO
 - .sendRemindNotification
-- .mapRow
+- PersonnelFormDTO
 - PostCommentDTO
 - HttpServlet
 - .login
-- .doPost
-- .doPost
+- TenantPaymentReturnServlet.java
 - MeterReadingService
-- SystemConfigDAO
+- AppException
 - VNPayConfigDTO
 - PostReactionDAO
 - UserServiceImpl.java
 - EditIncidentReportServlet.java
-- common.ps1
+- SystemConfigDAO
 - DatabaseUtil.java
 - ManagerDashboardServlet.java
 - NewsFeedApiServlet.java
@@ -97,59 +96,62 @@
 - PaymentDAO
 - EmailService
 - CommunityPostService
-- TenantPostDetailServlet.java
+- BaseServlet
 - RoomDAO
 - RoomOccupancyStatDTO
-- .doGet
-- PostReactionDTO
-- TenantMyPostsServlet.java
 - .doPost
-- AppTimeZoneListener.java
+- PostReactionDTO
+- CommunityPostServiceImpl.java
+- .doPost
+- PreparedStatement
 - AuthFilter
 - BaseDAO
 - AdminSystemConfigServlet.java
 - .doPost
-- .getRole
+- DebtPageServlet.java
 - OperatorDashboardServlet.java
 - Q: những class nào phụ trách cái tính năng auth này vậy, cụ thể cho mình biết đi và nhớ comment vào để cho mình biết
 - RevenueActivityDTO
-- .doPost
-- .findById
+- TenantRequestServlet.java
+- ContractDAO
 - Q: ấn đăng xuất ở web thì nó xuất hiện ở class nào vậy mà có 2 tận 2 đăng xuất là sao vậy
-- UserSessionDTO.java
+- InvoiceService
 - Q: giải thích phần jsp của logout qua graphify
 - NotificationListServlet.java
 - EncodingFilter
 - Q: chỉ class LoginServlet giống lệnh graphify
 - Q: giải thích các hàm trong LoginServlet
-- PageDTO
+- AdminPersonnelServlet
 - Q: FirstLoginServlet jsp đoạn nằm ở đâu và luồng backend
 - UserDAO
 - PaymentService
-- .doPost
+- .doGet
 - PostReaction
-- RoomService
+- RoomServiceImpl.java
 - ResetPasswordApiServlet.java
-- MeterReadingHistoryServlet.java
-- TenantCommentServlet.java
+- DependentServiceImpl
+- ResetTokenManager.java
 - TenantDeletePostServlet.java
 - TenantLikeServlet.java
 - Q: giải thích luồng forgot-password
 - Q: JSP của ProfileServlet nằm ở đâu
 - Q: Giải thích luồng ProfileServlet và profile.jsp
+- DebtDAO.java
+- AuditLogHelper.java
+- PasswordValidator.java
+- .unlockTenantAccount
 - User
+- SQLFixtureHelper
 - sw.js
-- create-new-feature.ps1
-- update-agent-context.sh
 
 ## God Nodes (most connected - your core abstractions)
-1. `BaseServlet` - 97 edges
-2. `Invoice` - 96 edges
-3. `InvoiceDetailDTO` - 91 edges
-4. `DebtDetailDTO` - 88 edges
-5. `Facility` - 84 edges
-6. `User` - 80 edges
-7. `Contract` - 78 edges
+1. `Invoice` - 106 edges
+2. `BaseServlet` - 97 edges
+3. `Contract` - 96 edges
+4. `InvoiceDetailDTO` - 95 edges
+5. `DebtDetailDTO` - 88 edges
+6. `Facility` - 84 edges
+7. `User` - 80 edges
 8. `Request` - 76 edges
 9. `Notification` - 65 edges
 10. `Room` - 64 edges
@@ -169,62 +171,70 @@
 ## Import Cycles
 - None detected.
 
-## Communities (135 total, 42 thin omitted)
+## Communities (135 total, 43 thin omitted)
 
 ### Community 0 - ".getId"
-Cohesion: 0.32
-Nodes (5): Override, HttpServletRequest, HttpServletResponse, Override, ManagerTenantsServlet
+Cohesion: 0.17
+Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerTenantsServlet, TenantService
 
-### Community 7 - ".getConnection"
+### Community 7 - "NotificationDAO"
 Cohesion: 0.10
 Nodes (3): NotificationDAO, Override, NotificationServiceImpl
 
 ### Community 11 - "NewsFeedDTO"
-Cohesion: 0.09
-Nodes (3): CommunityPostDAO, ResultSet, NewsFeedDTO
+Cohesion: 0.08
+Nodes (5): CommunityPostDAO, ResultSet, NewsFeedDTO, CommunityPostServiceImpl, Override
 
-### Community 16 - "AdminRevenueServlet"
+### Community 15 - "Room"
+Cohesion: 0.07
+Nodes (3): Override, ResultSet, Room
+
+### Community 16 - "ValidationException.java"
 Cohesion: 0.18
-Nodes (6): AdminRevenueServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, RevenueService
+Nodes (4): WebServlet, WebServlet, ResultSet, Logger
 
 ### Community 17 - "PersonnelDAO"
-Cohesion: 0.11
-Nodes (5): PersonnelDAO, Logger, Override, PersonnelServiceImpl, ValidationUtil
+Cohesion: 0.12
+Nodes (4): PersonnelDAO, Logger, Override, PersonnelServiceImpl
 
-### Community 19 - "RequestDAO"
-Cohesion: 0.08
-Nodes (12): HttpServletRequest, HttpServletResponse, Override, WebServlet, ListRequestServlet, HttpServletRequest, HttpServletResponse, Override (+4 more)
+### Community 19 - ".getConnection"
+Cohesion: 0.12
+Nodes (7): HttpServletRequest, HttpServletResponse, Override, WebServlet, ListRequestServlet, Override, RequestDAO
 
-### Community 23 - "AuditLog"
-Cohesion: 0.09
-Nodes (3): AuditLogDAO, ResultSet, AuditLog
+### Community 20 - "Facility"
+Cohesion: 0.10
+Nodes (4): AuditLogDAO, Facility, Override, ServicePriceServiceImpl
 
-### Community 24 - "Dependent"
-Cohesion: 0.06
-Nodes (11): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantDependentServlet, DependentDAO, ResultSet, Dependent (+3 more)
+### Community 26 - ".trim"
+Cohesion: 0.22
+Nodes (9): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, ManagerTicketsServlet, Pattern (+1 more)
 
 ### Community 28 - "InvoiceDAO"
+Cohesion: 0.14
+Nodes (7): InvoiceDAO, InvoicePriceSnapshot, InvoiceRoomSnapshot, Connection, ResultSet, InvoiceServiceImpl, Override
+
+### Community 29 - "FacilityRevenueStatDTO"
+Cohesion: 0.05
+Nodes (11): AdminRevenueServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, RevenueDAO, FacilityRevenueStatDTO, SystemRevenueDTO (+3 more)
+
+### Community 31 - "RoomService"
+Cohesion: 0.20
+Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerRoomsServlet, RoomService
+
+### Community 32 - "TenantServiceImpl"
 Cohesion: 0.12
-Nodes (6): InvoiceDAO, InvoicePriceSnapshot, InvoiceRoomSnapshot, Connection, InvoiceServiceImpl, Override
-
-### Community 30 - "UserSessionDTO"
-Cohesion: 0.08
-Nodes (8): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, ProfileServlet, UserSessionDTO
-
-### Community 31 - "ManagerRoomsServlet.java"
-Cohesion: 0.29
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerRoomsServlet
+Nodes (3): DependentDAO, Override, TenantServiceImpl
 
 ### Community 33 - "RequestServiceImpl"
-Cohesion: 0.20
+Cohesion: 0.19
 Nodes (3): Logger, Override, RequestServiceImpl
 
-### Community 35 - "CommunityPostServiceImpl.java"
-Cohesion: 0.23
-Nodes (4): CommunityPostServiceImpl, Logger, Override, Part
+### Community 34 - ".doGet"
+Cohesion: 0.18
+Nodes (5): InvoiceDetailServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet
 
 ### Community 37 - "ContractService"
-Cohesion: 0.12
+Cohesion: 0.13
 Nodes (11): ContractServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, HttpServletRequest, HttpServletResponse, Override (+3 more)
 
 ### Community 38 - "PostInteractionService"
@@ -235,81 +245,81 @@ Nodes (13): HttpServletRequest, HttpServletResponse, Logger, Override, WebServle
 Cohesion: 0.07
 Nodes (15): AdminFacilityServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, FacilityFormDTO, HttpServletRequest, FilterChain (+7 more)
 
-### Community 41 - "RevenueDAO"
-Cohesion: 0.25
-Nodes (3): RevenueDAO, Override, RevenueServiceImpl
+### Community 41 - ".doGet"
+Cohesion: 0.18
+Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantDependentServlet, DependentService
 
-### Community 43 - ".doFilter"
-Cohesion: 0.19
-Nodes (7): ErrorMessageConstant, CsrfFilter, FilterChain, Override, ServletRequest, ServletResponse, WebFilter
+### Community 43 - "PasswordUtil.java"
+Cohesion: 0.13
+Nodes (10): Filter, SecureRandom, ErrorMessageConstant, CsrfFilter, FilterChain, Override, ServletRequest, ServletResponse (+2 more)
 
 ### Community 44 - "AdminNotificationServlet"
-Cohesion: 0.33
-Nodes (5): AdminNotificationServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet
+Cohesion: 0.38
+Nodes (4): AdminNotificationServlet, HttpServletRequest, HttpServletResponse, Override
 
 ### Community 46 - ".sendError"
 Cohesion: 0.15
 Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerNotificationsServlet, NotificationService
 
-### Community 47 - "NotFoundException.java"
-Cohesion: 0.18
-Nodes (7): AdminAuditLogServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, NotFoundException, AuditLogService
+### Community 47 - "AdminAuditLogServlet"
+Cohesion: 0.19
+Nodes (6): AdminAuditLogServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, AuditLogService
 
-### Community 48 - ".trim"
-Cohesion: 0.11
-Nodes (15): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, ManagerTicketsServlet, DetailRequestServlet (+7 more)
+### Community 48 - "RequestService"
+Cohesion: 0.10
+Nodes (12): DetailRequestServlet, HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, HttpServletRequest (+4 more)
 
 ### Community 49 - "HttpSession"
-Cohesion: 0.25
+Cohesion: 0.24
 Nodes (9): HttpSession, HttpSessionAttributeListener, HttpSessionBindingEvent, HttpSessionEvent, HttpSessionListener, Override, WebListener, UserSessionListener (+1 more)
 
 ### Community 50 - "ResetPasswordServlet.java"
-Cohesion: 0.25
-Nodes (7): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordServlet, Pattern, PasswordValidator
+Cohesion: 0.42
+Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordServlet
+
+### Community 51 - "AdminDashboardServiceImpl"
+Cohesion: 0.26
+Nodes (3): AdminDashboardServiceImpl, Logger, Override
 
 ### Community 52 - "NewsFeedServiceImpl"
 Cohesion: 0.15
 Nodes (8): CommentDAO, Logger, Logger, NewsFeedDAO, Logger, ReactionDAO, Override, NewsFeedServiceImpl
 
 ### Community 56 - ".doGet"
-Cohesion: 0.18
-Nodes (7): AdminDashboardServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, AdminDashboardService, Logger
+Cohesion: 0.20
+Nodes (6): AdminDashboardServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, AdminDashboardService
 
 ### Community 60 - "PaymentServlet.java"
-Cohesion: 0.24
+Cohesion: 0.27
 Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, PaymentServlet
 
-### Community 61 - "ListElectricServlet.java"
-Cohesion: 0.39
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ListElectricServlet
-
-### Community 62 - "BaseServlet"
-Cohesion: 0.05
-Nodes (27): StatusConstant, BaseServlet, HttpServletRequest, HttpServletResponse, Logger, WebServlet, HttpServletRequest, HttpServletResponse (+19 more)
+### Community 62 - ".doGet"
+Cohesion: 0.19
+Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantNotificationServlet
 
 ### Community 63 - "FacilityDAO"
-Cohesion: 0.12
-Nodes (6): FacilityDAO, Connection, FacilityServiceImpl, Logger, Override, ServicePriceServiceImpl
+Cohesion: 0.15
+Nodes (4): FacilityDAO, Connection, FacilityServiceImpl, Override
 
 ### Community 64 - ".sendRemindNotification"
-Cohesion: 0.14
+Cohesion: 0.13
 Nodes (3): DebtDAO, DebtServiceImpl, Override
 
 ### Community 67 - "HttpServlet"
-Cohesion: 0.21
-Nodes (11): HttpServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, LogoutServlet, HttpServletRequest, HttpServletResponse (+3 more)
+Cohesion: 0.12
+Nodes (18): HttpServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, LogoutServlet, HttpServletRequest, HttpServletResponse (+10 more)
 
-### Community 69 - ".doPost"
-Cohesion: 0.23
-Nodes (7): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, UpdateMeterReadingServlet
-
-### Community 71 - ".doPost"
-Cohesion: 0.17
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, HttpServletRequest, VNPayConfig
-
-### Community 73 - "SystemConfigDAO"
+### Community 71 - "TenantPaymentReturnServlet.java"
 Cohesion: 0.16
-Nodes (8): ConfigMetadata, Connection, Logger, Timestamp, SystemConfigDAO, AppException, ValidationException, Override
+Nodes (7): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantPaymentReturnServlet, HttpServletRequest, VNPayConfig
+
+### Community 72 - "MeterReadingService"
+Cohesion: 0.11
+Nodes (12): HttpServletRequest, HttpServletResponse, Override, WebServlet, ListElectricServlet, HttpServletRequest, HttpServletResponse, Override (+4 more)
+
+### Community 73 - "AppException"
+Cohesion: 0.20
+Nodes (5): Connection, AppException, NotFoundException, ValidationException, Override
 
 ### Community 75 - "PostReactionDAO"
 Cohesion: 0.22
@@ -323,17 +333,17 @@ Nodes (10): RoleConstant, HttpServletRequest, HttpServletResponse, Override, Web
 Cohesion: 0.24
 Nodes (8): EditIncidentReportServlet, HttpServletRequest, HttpServletResponse, Logger, MultipartConfig, Override, Part, WebServlet
 
-### Community 78 - "common.ps1"
-Cohesion: 0.22
-Nodes (10): Find-SpecifyRoot(), Format-SpecKitCommand(), Get-CurrentBranch(), Get-FeaturePathsEnv(), Get-InvokeSeparator(), Get-Python3Command(), Get-RepoRoot(), Resolve-SpecifyInitDir() (+2 more)
+### Community 78 - "SystemConfigDAO"
+Cohesion: 0.38
+Nodes (4): ConfigMetadata, Logger, Timestamp, SystemConfigDAO
 
 ### Community 79 - "DatabaseUtil.java"
-Cohesion: 0.19
+Cohesion: 0.17
 Nodes (7): DataSource, SimpleDateFormat, Logger, SystemConfigServiceImpl, DatabaseUtil, Connection, Logger
 
 ### Community 80 - "ManagerDashboardServlet.java"
-Cohesion: 0.19
-Nodes (8): HttpServletRequest, HttpServletResponse, WebServlet, ManagerDashboardServlet, ManagerDashboardDAO, DashboardService, DashboardServiceImpl, Override
+Cohesion: 0.27
+Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ManagerDashboardServlet, DashboardService
 
 ### Community 81 - "NewsFeedApiServlet.java"
 Cohesion: 0.19
@@ -355,36 +365,36 @@ Nodes (3): Session, EmailService, Logger
 Cohesion: 0.13
 Nodes (11): CommunityPostServlet, Gson, HttpServletRequest, HttpServletResponse, Logger, MultipartConfig, Override, WebServlet (+3 more)
 
-### Community 87 - "TenantPostDetailServlet.java"
-Cohesion: 0.27
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantPostDetailServlet
+### Community 87 - "BaseServlet"
+Cohesion: 0.10
+Nodes (19): BaseServlet, HttpServletRequest, HttpServletResponse, Logger, HttpServletRequest, HttpServletResponse, WebServlet, MyIncidentListServlet (+11 more)
 
 ### Community 88 - "RoomDAO"
 Cohesion: 0.15
 Nodes (3): RoomDAO, Override, RoomServiceImpl
 
-### Community 90 - ".doGet"
-Cohesion: 0.20
-Nodes (3): HttpServletRequest, HttpServletResponse, Override
+### Community 90 - ".doPost"
+Cohesion: 0.10
+Nodes (10): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantInvoiceServlet, HttpServletRequest, HttpServletResponse, Override (+2 more)
 
-### Community 92 - "TenantMyPostsServlet.java"
-Cohesion: 0.16
-Nodes (10): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantMyPostsServlet, HttpServletRequest, HttpServletResponse, Override (+2 more)
+### Community 92 - "CommunityPostServiceImpl.java"
+Cohesion: 0.15
+Nodes (11): HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantMyPostsServlet, HttpServletRequest, HttpServletResponse, Override (+3 more)
 
 ### Community 93 - ".doPost"
 Cohesion: 0.28
 Nodes (7): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, Part, WebServlet, TenantCreatePostServlet
 
-### Community 94 - "AppTimeZoneListener.java"
-Cohesion: 0.43
-Nodes (5): ServletContextEvent, ServletContextListener, AppTimeZoneListener, Override, WebListener
+### Community 94 - "PreparedStatement"
+Cohesion: 0.28
+Nodes (4): PreparedStatement, ManagerDashboardDAO, DashboardServiceImpl, Override
 
 ### Community 95 - "AuthFilter"
-Cohesion: 0.21
-Nodes (8): Filter, AuthFilter, FilterChain, FilterConfig, Override, ServletRequest, ServletResponse, WebFilter
+Cohesion: 0.23
+Nodes (7): AuthFilter, FilterChain, FilterConfig, Override, ServletRequest, ServletResponse, WebFilter
 
 ### Community 96 - "BaseDAO"
-Cohesion: 0.43
+Cohesion: 0.33
 Nodes (4): BaseDAO, Logger, ResultSet, Timestamp
 
 ### Community 97 - "AdminSystemConfigServlet.java"
@@ -392,11 +402,11 @@ Cohesion: 0.21
 Nodes (6): AdminSystemConfigServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, SystemConfigService
 
 ### Community 98 - ".doPost"
-Cohesion: 0.19
-Nodes (7): SecureRandom, FirstLoginServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, PasswordUtil
+Cohesion: 0.15
+Nodes (12): FirstLoginServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, HttpServletRequest, HttpServletResponse, MultipartConfig (+4 more)
 
-### Community 99 - ".getRole"
-Cohesion: 0.21
+### Community 99 - "DebtPageServlet.java"
+Cohesion: 0.22
 Nodes (6): DebtPageServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, DebtService
 
 ### Community 100 - "OperatorDashboardServlet.java"
@@ -407,21 +417,21 @@ Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, Operat
 Cohesion: 0.50
 Nodes (3): Answer, Q: những class nào phụ trách cái tính năng auth này vậy, cụ thể cho mình biết đi và nhớ comment vào để cho mình biết, Source Nodes
 
-### Community 103 - ".doPost"
-Cohesion: 0.27
+### Community 103 - "TenantRequestServlet.java"
+Cohesion: 0.21
 Nodes (6): HttpServletRequest, HttpServletResponse, MultipartConfig, Override, WebServlet, TenantRequestServlet
 
-### Community 104 - ".findById"
-Cohesion: 0.12
+### Community 104 - "ContractDAO"
+Cohesion: 0.11
 Nodes (4): ContractDAO, ResultSet, ContractServiceImpl, Override
 
 ### Community 105 - "Q: ấn đăng xuất ở web thì nó xuất hiện ở class nào vậy mà có 2 tận 2 đăng xuất là sao vậy"
 Cohesion: 0.50
 Nodes (3): Answer, Q: ấn đăng xuất ở web thì nó xuất hiện ở class nào vậy mà có 2 tận 2 đăng xuất là sao vậy, Source Nodes
 
-### Community 106 - "UserSessionDTO.java"
-Cohesion: 0.10
-Nodes (16): InvoiceDetailServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, InvoiceServlet, HttpServletRequest, HttpServletResponse (+8 more)
+### Community 106 - "InvoiceService"
+Cohesion: 0.21
+Nodes (6): InvoiceServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, InvoiceService
 
 ### Community 107 - "Q: giải thích phần jsp của logout qua graphify"
 Cohesion: 0.50
@@ -432,8 +442,8 @@ Cohesion: 0.24
 Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, NotificationListServlet
 
 ### Community 109 - "EncodingFilter"
-Cohesion: 0.24
-Nodes (8): EncodingFilter, FilterChain, FilterConfig, Override, ServletRequest, ServletResponse, WebFilter, TimeZone
+Cohesion: 0.15
+Nodes (13): ServletContextEvent, ServletContextListener, EncodingFilter, FilterChain, FilterConfig, Override, ServletRequest, ServletResponse (+5 more)
 
 ### Community 110 - "Q: chỉ class LoginServlet giống lệnh graphify"
 Cohesion: 0.50
@@ -443,44 +453,36 @@ Nodes (3): Answer, Q: chỉ class LoginServlet giống lệnh graphify, Source N
 Cohesion: 0.50
 Nodes (3): Answer, Q: giải thích các hàm trong LoginServlet, Source Nodes
 
-### Community 112 - "PageDTO"
-Cohesion: 0.06
-Nodes (9): AdminPersonnelServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, PageDTO, HttpServletRequest, PersonnelFormDTO (+1 more)
+### Community 112 - "AdminPersonnelServlet"
+Cohesion: 0.21
+Nodes (5): AdminPersonnelServlet, HttpServletRequest, HttpServletResponse, Override, PersonnelService
 
 ### Community 113 - "Q: FirstLoginServlet jsp đoạn nằm ở đâu và luồng backend"
 Cohesion: 0.50
 Nodes (3): Answer, Q: FirstLoginServlet jsp đoạn nằm ở đâu và luồng backend, Source Nodes
 
 ### Community 114 - "UserDAO"
-Cohesion: 0.13
-Nodes (13): ForgotPasswordApiServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, ForgotPasswordServlet, HttpServletRequest, HttpServletResponse (+5 more)
+Cohesion: 0.11
+Nodes (15): StatusConstant, ForgotPasswordApiServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, ForgotPasswordServlet, HttpServletRequest (+7 more)
 
 ### Community 115 - "PaymentService"
 Cohesion: 0.25
 Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, PaymentDetailServlet, PaymentService
 
-### Community 116 - ".doPost"
-Cohesion: 0.24
+### Community 116 - ".doGet"
+Cohesion: 0.27
 Nodes (6): HttpServletRequest, HttpServletResponse, Override, WebServlet, ServicePricePageServlet, ServicePriceService
 
-### Community 118 - "RoomService"
-Cohesion: 0.19
-Nodes (6): AdminRoomServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet, RoomService
+### Community 118 - "RoomServiceImpl.java"
+Cohesion: 0.29
+Nodes (5): AdminRoomServlet, HttpServletRequest, HttpServletResponse, Override, WebServlet
 
 ### Community 119 - "ResetPasswordApiServlet.java"
-Cohesion: 0.19
-Nodes (7): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordApiServlet, ResetTokenManager, TokenData
-
-### Community 120 - "MeterReadingHistoryServlet.java"
-Cohesion: 0.39
-Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, MeterReadingHistoryServlet
-
-### Community 121 - "TenantCommentServlet.java"
-Cohesion: 0.33
-Nodes (6): Gson, HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantCommentServlet
+Cohesion: 0.29
+Nodes (5): HttpServletRequest, HttpServletResponse, Override, WebServlet, ResetPasswordApiServlet
 
 ### Community 122 - "TenantDeletePostServlet.java"
-Cohesion: 0.39
+Cohesion: 0.33
 Nodes (6): Gson, HttpServletRequest, HttpServletResponse, Override, WebServlet, TenantDeletePostServlet
 
 ### Community 123 - "TenantLikeServlet.java"
@@ -499,33 +501,37 @@ Nodes (3): Answer, Q: JSP của ProfileServlet nằm ở đâu, Source Nodes
 Cohesion: 0.50
 Nodes (3): Answer, Q: Giải thích luồng ProfileServlet và profile.jsp, Source Nodes
 
+### Community 128 - "AuditLogHelper.java"
+Cohesion: 0.50
+Nodes (3): AuditLogHelper, HttpServletRequest, Logger
+
 ### Community 131 - "User"
-Cohesion: 0.13
-Nodes (4): ResultSet, ResultSet, User, Override
+Cohesion: 0.14
+Nodes (3): ResultSet, User, Override
 
 ### Community 134 - "sw.js"
 Cohesion: 0.50
 Nodes (3): networkFirst(), offlineFallback(), STATIC_ASSETS
 
 ## Knowledge Gaps
-- **20 isolated node(s):** `update-agent-context.sh script`, `STATIC_ASSETS`, `Answer`, `Source Nodes`, `Answer` (+15 more)
+- **19 isolated node(s):** `STATIC_ASSETS`, `Answer`, `Source Nodes`, `Answer`, `Source Nodes` (+14 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **42 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BaseServlet` connect `BaseServlet` to `.getId`, `AdminRevenueServlet`, `RequestDAO`, `Dependent`, `UserSessionDTO`, `ManagerRoomsServlet.java`, `ContractService`, `PostInteractionService`, `AdminFacilityServlet`, `AdminNotificationServlet`, `.sendError`, `NotFoundException.java`, `.trim`, `ResetPasswordServlet.java`, `.doGet`, `PaymentServlet.java`, `HttpServlet`, `UserServiceImpl.java`, `ManagerDashboardServlet.java`, `CommunityPostService`, `TenantPostDetailServlet.java`, `TenantMyPostsServlet.java`, `.doPost`, `AdminSystemConfigServlet.java`, `.doPost`, `OperatorDashboardServlet.java`, `.doPost`, `UserSessionDTO.java`, `PageDTO`, `UserDAO`, `PaymentService`, `.doPost`, `RoomService`, `TenantCommentServlet.java`, `TenantDeletePostServlet.java`, `TenantLikeServlet.java`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
-- **Why does `Request` connect `Request` to `RequestServiceImpl`, `OperatorDashboardServlet.java`, `.doPost`, `EditIncidentReportServlet.java`, `.trim`, `.insert`, `RequestDAO`, `.doPost`, `BaseServlet`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
-- **Why does `User` connect `User` to `.login`, `.insert`, `Contract`, `.findById`, `UserServiceImpl.java`, `PageDTO`, `PersonnelDAO`, `UserDAO`, `.mapRow`, `BaseServlet`, `UserSessionDTO`?**
+- **Why does `BaseServlet` connect `BaseServlet` to `.getId`, `ValidationException.java`, `.getConnection`, `.trim`, `FacilityRevenueStatDTO`, `RoomService`, `.doGet`, `ContractService`, `PostInteractionService`, `AdminFacilityServlet`, `.doGet`, `AdminNotificationServlet`, `.sendError`, `AdminAuditLogServlet`, `RequestService`, `ResetPasswordServlet.java`, `.doGet`, `PaymentServlet.java`, `.doGet`, `HttpServlet`, `TenantPaymentReturnServlet.java`, `UserServiceImpl.java`, `ManagerDashboardServlet.java`, `CommunityPostService`, `.doPost`, `CommunityPostServiceImpl.java`, `.doPost`, `AdminSystemConfigServlet.java`, `.doPost`, `OperatorDashboardServlet.java`, `TenantRequestServlet.java`, `InvoiceService`, `AdminPersonnelServlet`, `UserDAO`, `PaymentService`, `.doGet`, `RoomServiceImpl.java`, `TenantDeletePostServlet.java`, `TenantLikeServlet.java`?**
+  _High betweenness centrality (0.116) - this node is a cross-community bridge._
+- **Why does `Contract` connect `Contract` to `User`, `ContractService`, `ContractDAO`, `Room`, `Facility`, `.mapRow`?**
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
+- **Why does `AuditLogDAO` connect `Facility` to `.getId`, `BaseDAO`, `RequestServiceImpl`, `HttpServlet`, `AuditLogHelper.java`, `ContractService`, `MeterReadingService`, `.sendError`, `AdminAuditLogServlet`, `RequestService`, `AdminDashboardServiceImpl`, `.count`, `AuditLog`, `ServicePriceHistoryDTO`, `InvoiceDAO`?**
   _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **What connects `update-agent-context.sh script`, `STATIC_ASSETS`, `Answer` to the rest of the system?**
-  _20 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `STATIC_ASSETS`, `Answer`, `Source Nodes` to the rest of the system?**
+  _19 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `DebtDetailDTO` be split into smaller, more focused modules?**
-  _Cohesion score 0.04460093896713615 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0463768115942029 - nodes in this community are weakly interconnected._
 - **Should `.findById` be split into smaller, more focused modules?**
-  _Cohesion score 0.04878048780487805 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._
 - **Should `Invoice` be split into smaller, more focused modules?**
-  _Cohesion score 0.07827260458839407 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05030181086519115 - nodes in this community are weakly interconnected._

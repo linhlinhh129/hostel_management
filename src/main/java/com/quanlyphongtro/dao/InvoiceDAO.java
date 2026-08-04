@@ -10,7 +10,6 @@ import com.quanlyphongtro.dto.InvoiceDetailDTO;
 import com.quanlyphongtro.dto.RoomDTO;
 import com.quanlyphongtro.model.Invoice;
 import com.quanlyphongtro.util.DatabaseUtil;
-import com.quanlyphongtro.util.PenaltyCalculator;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -417,8 +416,23 @@ public class InvoiceDAO extends BaseDAO {
                     // Cộng thêm lateFee nếu quá hạn
                     Date dueDateSql = rs.getDate("due_date");
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
-                        BigDecimal lateFee = PenaltyCalculator.calculateLateFee(roomFee, dueDateSql, rs.getDate("pending_payment_date"), today);
-                        total = total.add(lateFee);
+                    if (dueDateSql != null && roomFee != null) {
+                        LocalDate dueDate = dueDateSql.toLocalDate();
+                        LocalDate endDate = today;
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
+                        }
+
+                        if (endDate.isAfter(dueDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
+                            BigDecimal lateFee = roomFee
+                                    .multiply(new BigDecimal("0.01"))
+                                    .multiply(new BigDecimal(daysLate))
+                                    .setScale(0, RoundingMode.HALF_UP);
+                            total = total.add(lateFee);
+                        }
+                    }
                 }
                 return total;
             }
@@ -518,7 +532,16 @@ public class InvoiceDAO extends BaseDAO {
         }
 
         if (found) {
-            BigDecimal lateFee = PenaltyCalculator.calculateLateFee(roomFee, dueDate, (java.sql.Date) null, paymentDate);
+            BigDecimal lateFee = BigDecimal.ZERO;
+            if (dueDate != null && roomFee != null) {
+                LocalDate dueLocalDate = dueDate.toLocalDate();
+                if (paymentDate.isAfter(dueLocalDate)) {
+                    long daysLate = ChronoUnit.DAYS.between(dueLocalDate, paymentDate);
+                    lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                            .multiply(new BigDecimal(daysLate))
+                            .setScale(0, RoundingMode.HALF_UP);
+                }
+            }
             if (totalAmount == null)
                 totalAmount = BigDecimal.ZERO;
             BigDecimal finalTotal = totalAmount.add(lateFee);
@@ -551,7 +574,7 @@ public class InvoiceDAO extends BaseDAO {
     }
 
     public BigDecimal calculateRealtimeLatePenalty(int invoiceId) {
-        String sql = "SELECT room_fee, due_date, status, late_fee, " +
+        String sql = "SELECT room_fee, due_date, " +
                 "(SELECT TOP 1 created_at FROM payments p WHERE p.invoice_id = invoices.invoice_id AND p.status = 'PENDING' AND p.deleted_at IS NULL ORDER BY p.created_at DESC) AS pending_payment_date "
                 +
                 "FROM dbo.invoices WHERE invoice_id = ? AND deleted_at IS NULL";
@@ -560,12 +583,18 @@ public class InvoiceDAO extends BaseDAO {
             ps.setInt(1, invoiceId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    if ("FROZEN".equals(rs.getString("status"))) {
-                        BigDecimal lateFee = rs.getBigDecimal("late_fee");
-                        return lateFee != null ? lateFee : BigDecimal.ZERO;
-                    }
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
-                    return PenaltyCalculator.calculateLateFee(roomFee, rs.getDate("due_date"), rs.getDate("pending_payment_date"), LocalDate.now());
+                    LocalDate dueDate = rs.getDate("due_date").toLocalDate();
+                    LocalDate endDate = LocalDate.now();
+                    Date pendingDate = rs.getDate("pending_payment_date");
+                    if (pendingDate != null) {
+                        endDate = pendingDate.toLocalDate();
+                    }
+                    if (dueDate != null && roomFee != null && endDate.isAfter(dueDate)) {
+                        long daysLate = ChronoUnit.DAYS.between(dueDate, endDate);
+                        BigDecimal penaltyRate = new BigDecimal("0.01").multiply(new BigDecimal(daysLate));
+                        return roomFee.multiply(penaltyRate).setScale(0, RoundingMode.HALF_UP);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -574,46 +603,11 @@ public class InvoiceDAO extends BaseDAO {
         return BigDecimal.ZERO;
     }
 
-    private void buildInvoiceSearchCondition(StringBuilder sql, String keyword, String status, String billingPeriod) {
-        if (status != null && !status.trim().isEmpty()) {
-            sql.append("AND i.status = ? ");
-        }
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
-        }
-        if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
-            sql.append("AND (YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ? OR i.code LIKE ?) ");
-        }
-    }
-
-    private int bindInvoiceSearchParams(PreparedStatement ps, int paramIndex, String keyword, String status, String billingPeriod) throws SQLException {
-        if (status != null && !status.trim().isEmpty()) {
-            ps.setString(paramIndex++, status);
-        }
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            String kw = "%" + keyword + "%";
-            ps.setString(paramIndex++, kw);
-            ps.setString(paramIndex++, kw);
-            ps.setString(paramIndex++, kw);
-        }
-        if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
-            try {
-                int year = Integer.parseInt(billingPeriod.substring(0, 4));
-                int month = Integer.parseInt(billingPeriod.substring(4, 6));
-                ps.setInt(paramIndex++, year);
-                ps.setInt(paramIndex++, month);
-                ps.setString(paramIndex++, "%-" + billingPeriod);
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return paramIndex;
-    }
-
     public List<InvoiceListItemDTO> findInvoices(int managerId, String keyword, String status, String billingPeriod,
             int offset, int limit) {
         List<InvoiceListItemDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT i.invoice_id, i.code, i.total_amount, i.room_fee, i.due_date, i.status, i.late_fee, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, "
+                "SELECT i.invoice_id, i.code, i.total_amount, i.room_fee, i.due_date, i.status, r.code AS room_code, COALESCE(u.full_name, c.tenant_full_name) AS tenant_name, "
                         +
                         "FORMAT(mr.reading_date, 'MM/yyyy') AS billing_period, "
                         +
@@ -627,7 +621,16 @@ public class InvoiceDAO extends BaseDAO {
                         "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
                         "LEFT JOIN users u ON u.user_id = i.tenant_id " +
                         "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
-        buildInvoiceSearchCondition(sql, keyword, status, billingPeriod);
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND i.status = ? ");
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
+        }
+        if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+            sql.append("AND (YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ? OR i.code LIKE ?) ");
+        }
 
         sql.append("ORDER BY i.created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
@@ -636,7 +639,26 @@ public class InvoiceDAO extends BaseDAO {
 
             int paramIndex = 1;
             ps.setInt(paramIndex++, managerId);
-            paramIndex = bindInvoiceSearchParams(ps, paramIndex, keyword, status, billingPeriod);
+
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+            }
+            if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+                try {
+                    int year = Integer.parseInt(billingPeriod.substring(0, 4));
+                    int month = Integer.parseInt(billingPeriod.substring(4, 6));
+                    ps.setInt(paramIndex++, year);
+                    ps.setInt(paramIndex++, month);
+                    ps.setString(paramIndex++, "%-" + billingPeriod);
+                } catch (NumberFormatException ignored) {
+                }
+            }
             ps.setInt(paramIndex++, offset);
             ps.setInt(paramIndex++, limit);
 
@@ -652,16 +674,23 @@ public class InvoiceDAO extends BaseDAO {
                     Date d = rs.getDate("due_date");
                     BigDecimal roomFee = rs.getBigDecimal("room_fee");
 
-                    if (!"PAID".equals(invoiceStatus)) {
-                        if ("FROZEN".equals(invoiceStatus)) {
-                            lateFee = rs.getBigDecimal("late_fee");
-                            if (lateFee == null) lateFee = BigDecimal.ZERO;
-                        } else {
-                            lateFee = PenaltyCalculator.calculateLateFee(roomFee, d, rs.getDate("pending_payment_date"), LocalDate.now());
+                    if (!"PAID".equals(invoiceStatus) && d != null && roomFee != null) {
+                        LocalDate dueLocalDate = d.toLocalDate();
+                        LocalDate endDate = LocalDate.now();
+                        Date pendingDate = rs.getDate("pending_payment_date");
+                        if (pendingDate != null) {
+                            endDate = pendingDate.toLocalDate();
                         }
-                        if (baseTotal != null) baseTotal = baseTotal.add(lateFee);
-                        if (lateFee.compareTo(BigDecimal.ZERO) > 0 && "UNPAID".equals(invoiceStatus)) {
-                            invoiceStatus = "OVERDUE";
+                        if (endDate.isAfter(dueLocalDate)) {
+                            long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
+                            lateFee = roomFee.multiply(new BigDecimal("0.01"))
+                                    .multiply(new BigDecimal(daysLate))
+                                    .setScale(0, RoundingMode.HALF_UP);
+                            if (baseTotal != null)
+                                baseTotal = baseTotal.add(lateFee);
+                            if ("UNPAID".equals(invoiceStatus)) {
+                                invoiceStatus = "OVERDUE";
+                            }
                         }
                     }
 
@@ -714,14 +743,42 @@ public class InvoiceDAO extends BaseDAO {
                         "LEFT JOIN contracts c ON c.contract_id = i.contract_id " +
                         "LEFT JOIN users u ON u.user_id = i.tenant_id " +
                         "WHERE i.deleted_at IS NULL AND f.manager_id = ? ");
-        buildInvoiceSearchCondition(sql, keyword, status, billingPeriod);
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND i.status = ? ");
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (i.code LIKE ? OR r.code LIKE ? OR COALESCE(u.full_name, c.tenant_full_name) LIKE ?) ");
+        }
+        if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+            sql.append("AND (YEAR(mr.reading_date) = ? AND MONTH(mr.reading_date) = ? OR i.code LIKE ?) ");
+        }
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int paramIndex = 1;
             ps.setInt(paramIndex++, managerId);
-            bindInvoiceSearchParams(ps, paramIndex, keyword, status, billingPeriod);
+
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = "%" + keyword + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+            }
+            if (billingPeriod != null && !billingPeriod.trim().isEmpty() && billingPeriod.length() == 6) {
+                try {
+                    int year = Integer.parseInt(billingPeriod.substring(0, 4));
+                    int month = Integer.parseInt(billingPeriod.substring(4, 6));
+                    ps.setInt(paramIndex++, year);
+                    ps.setInt(paramIndex++, month);
+                    ps.setString(paramIndex++, "%-" + billingPeriod);
+                } catch (NumberFormatException ignored) {
+                }
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -851,7 +908,7 @@ public class InvoiceDAO extends BaseDAO {
 
                     // Tính phí chậm nộp runtime hoặc lấy từ DB
                     BigDecimal lateFee = BigDecimal.ZERO;
-                    if ("PAID".equals(dto.getStatus()) || "FROZEN".equals(dto.getStatus())) {
+                    if ("PAID".equals(dto.getStatus())) {
                         try {
                             BigDecimal dbLateFee = rs.getBigDecimal("late_fee");
                             if (dbLateFee != null)
@@ -859,9 +916,28 @@ public class InvoiceDAO extends BaseDAO {
                         } catch (SQLException ignore) {
                         }
                     } else {
-                        lateFee = PenaltyCalculator.calculateLateFee(dto.getRoomFee(), rs.getDate("due_date"), rs.getTimestamp("pending_payment_date"), LocalDate.now());
-                        if (lateFee.compareTo(BigDecimal.ZERO) > 0 && "UNPAID".equals(dto.getStatus())) {
-                            dto.setStatus("OVERDUE");
+                        Date dueDateSql = rs.getDate("due_date");
+                        if (dueDateSql != null && dto.getRoomFee() != null) {
+                            LocalDate dueLocalDate = dueDateSql.toLocalDate();
+                            LocalDate endDate = LocalDate.now();
+                            if (hasColumn(rs, "pending_payment_date")) {
+                                try {
+                                    Timestamp pendingTimestamp = rs.getTimestamp("pending_payment_date");
+                                    if (pendingTimestamp != null)
+                                        endDate = pendingTimestamp.toLocalDateTime().toLocalDate();
+                                } catch (Exception ignore) {
+                                }
+                            }
+                            if (endDate.isAfter(dueLocalDate)) {
+                                long daysLate = ChronoUnit.DAYS.between(dueLocalDate, endDate);
+                                lateFee = dto.getRoomFee()
+                                        .multiply(new BigDecimal("0.01"))
+                                        .multiply(new BigDecimal(daysLate))
+                                        .setScale(0, RoundingMode.HALF_UP);
+                                if ("UNPAID".equals(dto.getStatus())) {
+                                    dto.setStatus("OVERDUE");
+                                }
+                            }
                         }
                     }
                     dto.setLateFee(lateFee);
