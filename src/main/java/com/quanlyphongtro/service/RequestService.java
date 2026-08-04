@@ -14,11 +14,17 @@ public interface RequestService {
     int countPendingRequests(int senderId);
 
     // Operator methods
+    // Lấy thông tin chi tiết một yêu cầu sự cố
     Request getRequestDetail(int requestId);
+    // Nhân viên vận hành tiếp nhận xử lý yêu cầu sự cố
     boolean acceptRequest(int requestId, int operatorId);
+    // Nhân viên vận hành từ chối tiếp nhận yêu cầu sự cố
     boolean rejectRequest(int requestId, int operatorId, String reason);
+    // Báo cáo hoàn thành xử lý sự cố (đính kèm ghi chú và ảnh minh chứng)
     boolean completeRequest(int requestId, String notes, String attachmentUrls2);
+    // Đặt lịch hẹn xử lý sự cố
     boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule);
+    // Đặt lịch hẹn xử lý sự cố kèm ID nhân viên vận hành
     boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule, int operatorId);
 
     // Manager methods

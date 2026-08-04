@@ -35,11 +35,13 @@ public class IncidentReportServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(IncidentReportServlet.class);
     private RequestDAO requestDAO;
 
+    // Khởi tạo DAO quản lý sự cố
     @Override
     public void init() throws ServletException {
         requestDAO = new RequestDAO();
     }
 
+    // Hiển thị form tạo báo cáo sự cố
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -69,6 +71,7 @@ public class IncidentReportServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/operator/incidents/create.jsp").forward(request, response);
     }
 
+    // Xử lý tạo mới báo cáo sự cố (lưu thông tin, upload ảnh minh chứng)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -179,6 +182,7 @@ public class IncidentReportServlet extends HttpServlet {
         }
     }
 
+    // Trích xuất tên file từ header Content-Disposition của Multipart part
     private String extractFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
         String[] items = contentDisp.split(";");

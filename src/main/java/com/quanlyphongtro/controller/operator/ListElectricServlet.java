@@ -22,11 +22,13 @@ import java.util.List;
 public class ListElectricServlet extends HttpServlet {
     private MeterReadingService meterReadingService;
 
+    // Khởi tạo dịch vụ quản lý chỉ số điện nước
     @Override
     public void init() throws ServletException {
         this.meterReadingService = new MeterReadingService();
     }
 
+    // Hiển thị danh sách trạng thái ghi số điện nước tháng hiện tại
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);

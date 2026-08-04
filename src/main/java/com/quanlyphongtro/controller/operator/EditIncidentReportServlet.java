@@ -38,12 +38,14 @@ public class EditIncidentReportServlet extends HttpServlet {
     private RequestDAO requestDAO;
     private FacilityDAO facilityDAO;
 
+    // Khởi tạo các DAO truy xuất dữ liệu sự cố và cơ sở
     @Override
     public void init() throws ServletException {
         requestDAO = new RequestDAO();
         facilityDAO = new FacilityDAO();
     }
 
+    // Hiển thị giao diện chỉnh sửa báo cáo sự cố của Operator (chỉ áp dụng với báo cáo PENDING)
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -98,6 +100,7 @@ public class EditIncidentReportServlet extends HttpServlet {
         }
     }
 
+    // Xử lý cập nhật thông tin báo cáo sự cố (tên, mô tả, vị trí, ảnh đính kèm mới)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -227,6 +230,7 @@ public class EditIncidentReportServlet extends HttpServlet {
         }
     }
     
+    // Tải lại dữ liệu lên form khi xảy ra lỗi trong quá trình submit dữ liệu
     private void doGetForError(HttpServletRequest request, HttpServletResponse response, int requestId, UserSessionDTO currentUser) throws ServletException, IOException {
         try {
             Request incident = requestDAO.getRequestById(requestId);
@@ -241,6 +245,7 @@ public class EditIncidentReportServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/operator/incidents/edit.jsp").forward(request, response);
     }
     
+    // Lấy danh sách cơ sở và phòng thuộc quyền quản lý của Operator để hiển thị trên form
     private void loadFacilities(HttpServletRequest request, UserSessionDTO currentUser) {
         List<Facility> allFacilities = facilityDAO.findActiveList();
         List<Facility> myFacilities = new ArrayList<>();
@@ -259,6 +264,7 @@ public class EditIncidentReportServlet extends HttpServlet {
         request.setAttribute("facilityRoomsMap", facilityRoomsMap);
     }
     
+    // Tách thông tin tiêu đề và nội dung báo cáo cũ để điền sẵn (pre-fill) vào form
     private void parseIncidentData(HttpServletRequest request, Request incident) {
         String title = incident.getTitle();
         String content = incident.getContent();
@@ -308,6 +314,7 @@ public class EditIncidentReportServlet extends HttpServlet {
         request.setAttribute("parsedContent", parsedContent);
     }
 
+    // Trích xuất tên file từ header Content-Disposition của Multipart part
     private String extractFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
         String[] items = contentDisp.split(";");

@@ -26,11 +26,13 @@ public class UpdateMeterReadingServlet extends HttpServlet {
     private MeterReadingService meterReadingService;
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
+    // Khởi tạo dịch vụ quản lý chỉ số điện nước
     @Override
     public void init() throws ServletException {
         this.meterReadingService = new MeterReadingService();
     }
 
+    // Hiển thị form cập nhật chỉ số điện nước (tải số cũ, ảnh minh chứng cũ nếu có)
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String meterIdStr = request.getParameter("meterId");
@@ -87,6 +89,7 @@ public class UpdateMeterReadingServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/operator/meter_readings/update.jsp").forward(request, response);
     }
 
+    // Xử lý lưu/cập nhật chỉ số mới, thực hiện các nghiệp vụ kiểm tra chênh lệch bất thường và lưu vết Audit Log
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
@@ -301,6 +304,7 @@ public class UpdateMeterReadingServlet extends HttpServlet {
         }
     }
 
+    // Trích xuất tên file gốc từ Multipart Part
     private String getFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
         String[] tokens = contentDisp.split(";");

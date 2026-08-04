@@ -19,6 +19,7 @@ public class NotificationListServlet extends HttpServlet {
 
     private final NotificationDAO notificationDAO = new NotificationDAO();
 
+    // Hiển thị danh sách hoặc chi tiết thông báo hệ thống dành cho nhân viên vận hành
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);

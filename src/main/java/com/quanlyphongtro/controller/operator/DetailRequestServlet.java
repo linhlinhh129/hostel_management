@@ -28,11 +28,13 @@ public class DetailRequestServlet extends HttpServlet {
     private RequestService requestService;
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
+    // Khởi tạo dịch vụ xử lý yêu cầu sự cố
     @Override
     public void init() throws ServletException {
         this.requestService = new RequestServiceImpl();
     }
 
+    // Hiển thị chi tiết thông tin yêu cầu sự cố
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String idParam = request.getParameter("id");
@@ -58,6 +60,7 @@ public class DetailRequestServlet extends HttpServlet {
         }
     }
 
+    // Xử lý các tác vụ của Operator trên yêu cầu sự cố (tiếp nhận, từ chối, lên lịch, báo cáo hoàn thành)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -106,12 +109,6 @@ public class DetailRequestServlet extends HttpServlet {
                     LocalDateTime appointSchedule = LocalDateTime.parse(cleanDateStr);
                     if (appointSchedule.toLocalDate().isBefore(java.time.LocalDate.now())) {
                         request.setAttribute("error", "Không được chọn ngày trong quá khứ.");
-                        doGet(request, response);
-                        return;
-                    }
-                    int hour = appointSchedule.getHour();
-                    if (hour < 8 || hour >= 18) {
-                        request.setAttribute("error", "Giờ làm việc chỉ từ 08:00 đến 18:00.");
                         doGet(request, response);
                         return;
                     }

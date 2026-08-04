@@ -15,6 +15,7 @@ import java.util.List;
 @WebServlet("/operator/incidents/my-reports")
 public class MyIncidentListServlet extends BaseServlet {
 
+    // Lấy danh sách sự cố tự báo cáo bởi Operator
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         UserSessionDTO currentUser = getCurrentUser(request);

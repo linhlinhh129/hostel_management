@@ -486,11 +486,6 @@
                         alert('Không thể chọn lịch hẹn trong quá khứ. Vui lòng chọn thời gian từ hiện tại trở đi.');
                         return false;
                       }
-                      var hour = dateObj.getHours();
-                      if (hour < 8 || hour >= 18) {
-                        alert('Giờ làm việc chỉ từ 08:00 đến 18:00. Vui lòng chọn lại.');
-                        return false;
-                      }
                     }
                     return true;
                   }

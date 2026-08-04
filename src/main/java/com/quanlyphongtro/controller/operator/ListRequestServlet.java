@@ -17,11 +17,13 @@ public class ListRequestServlet extends BaseServlet {
 
     private RequestDAO requestDAO;
 
+    // Khởi tạo DAO truy cập dữ liệu yêu cầu/sự cố
     @Override
     public void init() throws ServletException {
         this.requestDAO = new RequestDAO();
     }
 
+    // Hiển thị danh sách yêu cầu sự cố được phân công hoặc đang chờ tiếp nhận
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

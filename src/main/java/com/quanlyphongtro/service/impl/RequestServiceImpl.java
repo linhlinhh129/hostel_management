@@ -45,17 +45,20 @@ public class RequestServiceImpl implements RequestService {
         return requestDAO.countPendingBySenderId(senderId);
     }
 
+    // Lấy thông tin chi tiết một yêu cầu sự cố
     @Override
     public Request getRequestDetail(int requestId) {
         return requestDAO.getRequestById(requestId);
     }
 
+    // Nhân viên vận hành tiếp nhận xử lý yêu cầu sự cố
     @Override
     public boolean acceptRequest(int requestId, int operatorId) {
         // Only accept if status is currently PENDING
         return requestDAO.updateRequestStatus(requestId, "ASSIGNED", "PENDING", operatorId, null);
     }
 
+    // Nhân viên vận hành từ chối tiếp nhận yêu cầu sự cố
     @Override
     public boolean rejectRequest(int requestId, int operatorId, String reason) {
         // Reject request, keeping staff ID but updating status to REJECTED and adding
@@ -63,16 +66,19 @@ public class RequestServiceImpl implements RequestService {
         return requestDAO.updateRequestStatus(requestId, "REJECTED", "PENDING", operatorId, reason);
     }
 
+    // Báo cáo hoàn thành xử lý sự cố (đính kèm ghi chú và ảnh minh chứng)
     @Override
     public boolean completeRequest(int requestId, String notes, String attachmentUrls2) {
         return requestDAO.completeRequest(requestId, notes, attachmentUrls2);
     }
 
+    // Đặt lịch hẹn xử lý sự cố
     @Override
     public boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule) {
         return requestDAO.updateAppointmentSchedule(requestId, appointSchedule);
     }
 
+    // Đặt lịch hẹn xử lý sự cố kèm ID nhân viên vận hành
     @Override
     public boolean scheduleAppointment(int requestId, LocalDateTime appointSchedule, int operatorId) {
         return requestDAO.updateAppointmentSchedule(requestId, appointSchedule, operatorId);

@@ -28,12 +28,14 @@ public class OperatorDashboardServlet extends BaseServlet {
     private OperatorDashboardDAO dashboardDAO;
     private MeterReadingService meterReadingService;
 
+    // Khởi tạo DAO dashboard và service điện nước
     @Override
     public void init() throws ServletException {
         this.dashboardDAO = new OperatorDashboardDAO();
         this.meterReadingService = new MeterReadingService();
     }
 
+    // Hiển thị các thống kê tổng quan của Operator (tiến độ điện nước, yêu cầu đang xử lý, lịch hẹn)
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
